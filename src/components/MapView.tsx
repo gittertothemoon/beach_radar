@@ -184,25 +184,58 @@ const MapViewportFix = () => {
   const map = useMap();
 
   useEffect(() => {
-    const scheduleInvalidate = () => {
-      window.requestAnimationFrame(() => map.invalidateSize({ animate: false }));
-      window.setTimeout(() => map.invalidateSize({ animate: false }), 250);
+    let zooming = false;
+    let pending = false;
+    let rafId: number | null = null;
+    let timeoutId: number | null = null;
+
+    const runInvalidate = () => {
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+      if (timeoutId !== null) window.clearTimeout(timeoutId);
+      rafId = window.requestAnimationFrame(() =>
+        map.invalidateSize({ animate: false }),
+      );
+      timeoutId = window.setTimeout(() => {
+        map.invalidateSize({ animate: false });
+      }, 250);
     };
 
+    const scheduleInvalidate = () => {
+      if (zooming) {
+        pending = true;
+        return;
+      }
+      runInvalidate();
+    };
+
+    const handleZoomStart = () => {
+      zooming = true;
+    };
+
+    const handleZoomEnd = () => {
+      zooming = false;
+      if (pending) {
+        pending = false;
+        runInvalidate();
+      }
+    };
+
+    map.on("zoomstart", handleZoomStart);
+    map.on("zoomend", handleZoomEnd);
     scheduleInvalidate();
     window.addEventListener("resize", scheduleInvalidate);
     window.addEventListener("orientationchange", scheduleInvalidate);
     window.addEventListener("visibilitychange", scheduleInvalidate);
     const visualViewport = window.visualViewport;
     visualViewport?.addEventListener("resize", scheduleInvalidate);
-    visualViewport?.addEventListener("scroll", scheduleInvalidate);
 
     return () => {
+      map.off("zoomstart", handleZoomStart);
+      map.off("zoomend", handleZoomEnd);
       window.removeEventListener("resize", scheduleInvalidate);
       window.removeEventListener("orientationchange", scheduleInvalidate);
       window.removeEventListener("visibilitychange", scheduleInvalidate);
       visualViewport?.removeEventListener("resize", scheduleInvalidate);
-      visualViewport?.removeEventListener("scroll", scheduleInvalidate);
     };
   }, [map]);
 
@@ -221,6 +254,7 @@ const MapView = ({
     minZoom={10}
     maxZoom={18}
     zoomControl={false}
+    bounceAtZoomLimits={false}
     className="h-full w-full"
   >
     <TileLayer
