@@ -180,6 +180,35 @@ const ClusteredMarkers = ({
   );
 };
 
+const MapViewportFix = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const scheduleInvalidate = () => {
+      window.requestAnimationFrame(() => map.invalidateSize({ animate: false }));
+      window.setTimeout(() => map.invalidateSize({ animate: false }), 250);
+    };
+
+    scheduleInvalidate();
+    window.addEventListener("resize", scheduleInvalidate);
+    window.addEventListener("orientationchange", scheduleInvalidate);
+    window.addEventListener("visibilitychange", scheduleInvalidate);
+    const visualViewport = window.visualViewport;
+    visualViewport?.addEventListener("resize", scheduleInvalidate);
+    visualViewport?.addEventListener("scroll", scheduleInvalidate);
+
+    return () => {
+      window.removeEventListener("resize", scheduleInvalidate);
+      window.removeEventListener("orientationchange", scheduleInvalidate);
+      window.removeEventListener("visibilitychange", scheduleInvalidate);
+      visualViewport?.removeEventListener("resize", scheduleInvalidate);
+      visualViewport?.removeEventListener("scroll", scheduleInvalidate);
+    };
+  }, [map]);
+
+  return null;
+};
+
 const MapView = ({
   beaches,
   selectedBeachId,
@@ -198,6 +227,7 @@ const MapView = ({
       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     />
+    <MapViewportFix />
     <ClusteredMarkers
       beaches={beaches}
       selectedBeachId={selectedBeachId}
