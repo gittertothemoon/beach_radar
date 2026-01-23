@@ -452,7 +452,7 @@ function App() {
         type="button"
         onClick={handleLocateClick}
         aria-label={STRINGS.aria.myLocation}
-        className={`fixed right-4 top-[calc(env(safe-area-inset-top)+78px)] z-30 flex h-11 w-11 items-center justify-center rounded-full border shadow-lg backdrop-blur transition ${
+        className={`fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+120px)] z-60 flex h-11 w-11 items-center justify-center rounded-full border shadow-lg backdrop-blur transition ${
           followMode
             ? "border-sky-300/80 bg-sky-300 text-slate-950"
             : "border-slate-800/80 bg-slate-950/80 text-slate-100"
