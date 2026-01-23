@@ -93,7 +93,7 @@ const TopSearch = ({
   };
 
   return (
-    <div className="fixed left-0 right-0 top-0 z-30 px-4 pt-[calc(env(safe-area-inset-top)+14px)]">
+    <div className="fixed left-0 right-0 top-0 z-40 px-4 pt-[calc(env(safe-area-inset-top)+14px)]">
       <div ref={containerRef} className="mx-auto max-w-screen-sm">
         <div className="relative">
           <div className="flex items-center gap-3 rounded-2xl border border-slate-800/80 bg-slate-950/80 px-4 py-3 shadow-lg backdrop-blur">
@@ -145,7 +145,7 @@ const TopSearch = ({
             </span>
           </div>
           {open && suggestions.length > 0 ? (
-            <div className="absolute left-0 right-0 mt-2 overflow-hidden rounded-2xl border border-slate-800/90 bg-slate-950/95 shadow-xl backdrop-blur">
+            <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-slate-800/90 bg-slate-950/95 shadow-xl backdrop-blur">
               <div className="max-h-72 overflow-y-auto py-2">
                 {suggestions.map((beach) => (
                   <button
