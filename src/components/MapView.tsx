@@ -229,7 +229,17 @@ const ClusteredMarkers = ({
                 const bounds = L.latLngBounds(
                   cluster.beaches.map((beach) => [beach.lat, beach.lng]),
                 );
-                map.fitBounds(bounds, { padding: [48, 48], maxZoom: 16 });
+                const maxZoom = map.getMaxZoom?.() ?? 18;
+                const nextZoom = map.getBoundsZoom(bounds, false, [48, 48]);
+                if (!Number.isFinite(nextZoom) || nextZoom <= map.getZoom()) {
+                  map.setView(
+                    [cluster.lat, cluster.lng],
+                    Math.min(map.getZoom() + 2, maxZoom),
+                    { animate: true },
+                  );
+                  return;
+                }
+                map.fitBounds(bounds, { padding: [48, 48], maxZoom });
               },
             }}
           />

@@ -1,8 +1,8 @@
 [
   {
     "id": "bagno-mario-74-a-rimini-ddce78",
-    "name": "Bagno Mario 74/A",
-    "address": "Bagno 74, Lungomare Giuseppe di Vittorio, 22, 47921 Rimini RN",
+    "name": "Bagno 74",
+    "address": "Lungomare Giuseppe di Vittorio, 22, 47921 Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -14,8 +14,8 @@
   },
   {
     "id": "bahia-rico-s-cafe-rimini-ea2238",
-    "name": "Bahia Rico’s Cafè",
-    "address": "Bahia Rico’s Cafè, Viale Giuliano Dati, 99/H, 47922 Rimini RN",
+    "name": "Bahia Rico's Cafè",
+    "address": "Viale Giuliano Dati, 99/H, 47922 Viserba, Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -27,8 +27,8 @@
   },
   {
     "id": "bagno-tamarindo-rimini-2fcdc6",
-    "name": "Bagno Tamarindo",
-    "address": "Playa Tamarindo, Viale Giuliano Dati, 47/D, 47922 Rimini RN",
+    "name": "Playa Tamarindo",
+    "address": "Viale Giuliano Dati, 47/D, 47922 Viserba, Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -40,8 +40,8 @@
   },
   {
     "id": "kalima-beach-club-rimini-9ee5d9",
-    "name": "Kalima Beach Club",
-    "address": "Kalima Beach Club – N. 17, Viale Paolo Toscanelli, 71, 47922 Rimini RN",
+    "name": "Kalima Beach Club 17",
+    "address": "Viale Paolo Toscanelli, 71, 47922 Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -53,8 +53,8 @@
   },
   {
     "id": "bagno-13-riva-e-mare-rimini-3089ae",
-    "name": "Bagno 13 Riva e Mare",
-    "address": "Hotel Riva e Mare, Viale XXV Marzo 1831, 7, 47922 Rivabella, Rimini RN",
+    "name": "Hotel Riva e Mare",
+    "address": "Viale XXV Marzo 1831, 7, 47922 Rivabella, Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -67,7 +67,7 @@
   {
     "id": "bagno-crown-rimini-3bb3b1",
     "name": "Bagno Crown",
-    "address": "Bagno Crown, Viale Paolo Toscanelli, 47922 Rimini RN",
+    "address": "Viale Paolo Toscanelli, 108, 47922 Viserba, Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -79,8 +79,8 @@
   },
   {
     "id": "bagni-onda-marina-beach-rimini-37eac1",
-    "name": "Bagni Onda Marina Beach",
-    "address": "Bagno Augusto N. 11, Lungomare Claudio Tintori, 16b, 47921 Rimini RN",
+    "name": "Bagno Augusto 11",
+    "address": "Lungomare Claudio Tintori, 16/B, 47921 Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -92,8 +92,8 @@
   },
   {
     "id": "bagno-celli-5-6-rimini-6ff6ed",
-    "name": "Bagno Celli 5/6",
-    "address": "Bagno Celli N. 6, Viale Paolo Toscanelli, 37, 47921 Rimini RN",
+    "name": "Bagno Celli 6",
+    "address": "Viale Paolo Toscanelli, 37/T, 47921 Rivabella, Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -105,8 +105,8 @@
   },
   {
     "id": "bagno-131-miramare-beach-rimini-ba52c8",
-    "name": "Bagno 131 Miramare Beach",
-    "address": "Bagno 131, Lungomare Guido Spadazzi, 2, 47900 Rimini RN",
+    "name": "Bagno 131",
+    "address": "Lungomare Guido Spadazzi, 2, 47924 Miramare, Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -118,8 +118,8 @@
   },
   {
     "id": "bagno-orchidea-129-rimini-abaf00",
-    "name": "Bagno Orchidea 129",
-    "address": "Bagno 129 Orchidea, Viale Regina Margherita, 70/D, 47924 Rimini RN",
+    "name": "Bagno 129 Orchidea",
+    "address": "Viale Regina Margherita, 70/D, 47924 Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -131,8 +131,8 @@
   },
   {
     "id": "bagni-101-lupi-di-mare-rimini-c41e04",
-    "name": "Bagni 101 Lupi di Mare",
-    "address": "Bagno 101, Viale Regina Margherita, 101, 47924 Rimini RN",
+    "name": "Bagno 101 (stabilimento)",
+    "address": "Viale Regina Margherita, 8/N, 47924 Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -144,8 +144,8 @@
   },
   {
     "id": "bagno-96-97-98-acquamarina-rimini-196d0c",
-    "name": "Bagno 96/97/98 Acquamarina",
-    "address": "Bagno 96, Lungomare Giuseppe di Vittorio, 50, 47924 Rimini RN",
+    "name": "Bagno 96",
+    "address": "Lungomare Giuseppe di Vittorio, 50, 47924 Bellariva, Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -158,7 +158,7 @@
   {
     "id": "spiaggia-90-rimini-e4d88a",
     "name": "Spiaggia 90",
-    "address": "Spiaggia 90, Lungomare Giuseppe di Vittorio, 40/a, 47924 Rimini RN",
+    "address": "Lungomare Giuseppe di Vittorio, 40/A, 47924 Bellariva, Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -170,8 +170,8 @@
   },
   {
     "id": "bagno-carlo-87-88-rimini-8897fa",
-    "name": "Bagno Carlo 87&88",
-    "address": "Bagno Carlo 87 & Vittorio 88 (zona sud), Lungomare Di Vittorio, 38/a e 38/b – Rimini",
+    "name": "Bagno Carlo 87 & Vittorio 88",
+    "address": "Lungomare Giuseppe di Vittorio, 38/A–38/B, 47924 Bellariva, Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -183,8 +183,8 @@
   },
   {
     "id": "bagno-74-andrea-rimini-909266",
-    "name": "Bagno 74 Andrea",
-    "address": "Bagno 74, Lungomare Giuseppe di Vittorio, 22, 47921 Rimini RN",
+    "name": "Bagno 74",
+    "address": "Lungomare Giuseppe di Vittorio, 22, 47921 Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -197,7 +197,7 @@
   {
     "id": "bagno-73-riviera-ondebeach-rimini-850226",
     "name": "Bagno 73 Riviera Ondebeach",
-    "address": "Bagno 73 Riviera Ondebeach, Lungomare Giuseppe di Vittorio, 20/b, 47921 Rimini RN",
+    "address": "Lungomare Giuseppe di Vittorio, 20/B, 47921 Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -209,8 +209,8 @@
   },
   {
     "id": "bagno-70-71-onde-beach-rimini-6aff20",
-    "name": "Bagno 70-71 Onde Beach",
-    "address": "Bagno Rinato 68/69, Viale San Salvador, 95, 47922 Rimini RN",
+    "name": "Bagno Rinato 68/69",
+    "address": "Viale San Salvador, 101, 47922 Torre Pedrera, Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -222,8 +222,8 @@
   },
   {
     "id": "bagno-69-biagio-rimini-13f535",
-    "name": "Bagno 69 Biagio",
-    "address": "Bagno Rinato 68/69, Viale San Salvador, 95, 47922 Rimini RN",
+    "name": "Bagno Rinato 68/69",
+    "address": "Viale San Salvador, 101, 47922 Torre Pedrera, Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -235,8 +235,8 @@
   },
   {
     "id": "bagno-65-carlo-rimini-cac04c",
-    "name": "Bagno 65 Carlo",
-    "address": "Bagno Carlo 65, Lungomare Giuseppe di Vittorio, 10/b, 47921 Rimini RN",
+    "name": "Bagno Carlo 65",
+    "address": "Lungomare Giuseppe di Vittorio, 10/B, 47921 Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -248,8 +248,8 @@
   },
   {
     "id": "bagni-64-dario-rimini-b12e11",
-    "name": "Bagni 64 Dario",
-    "address": "Bagno Dario 64, Viale Vittorio Veneto, 47900 Rimini RN",
+    "name": "Bagno Dario 64 (Libra)",
+    "address": "Lungomare Giuseppe di Vittorio, 10, 47921 Rimini (RN), Italia",
     "city": "Rimini",
     "province": "RN",
     "region": "Emilia-Romagna",
@@ -262,7 +262,7 @@
   {
     "id": "bagno-costa-dei-pini-cervia-d26d98",
     "name": "Bagno Costa dei Pini",
-    "address": "Bagno Costa dei Pini, Via Arenile Demaniale, 85/86, 48015 Cervia RA",
+    "address": "Arenile Demaniale, 75, 48015 Pinarella di Cervia (RA), Italia",
     "city": "Cervia",
     "province": "RA",
     "region": "Emilia-Romagna",
@@ -275,7 +275,7 @@
   {
     "id": "bagno-endas-74-cervia-c5ec85",
     "name": "Bagno Endas 74",
-    "address": "Bagno Endas 74, Via Arenile Demaniale, 85/86, 48015 Cervia RA",
+    "address": "Arenile Demaniale, 74, 48015 Pinarella di Cervia (RA), Italia",
     "city": "Cervia",
     "province": "RA",
     "region": "Emilia-Romagna",
@@ -288,7 +288,7 @@
   {
     "id": "bagno-franco-cervia-b43d77",
     "name": "Bagno Franco",
-    "address": "Bagno Franco, viale Italia 70/71 48015 Pinarella di, 48015 Cervia RA",
+    "address": "Arenile Demaniale, 70/71, 48015 Pinarella di Cervia (RA), Italia",
     "city": "Cervia",
     "province": "RA",
     "region": "Emilia-Romagna",
@@ -300,8 +300,8 @@
   },
   {
     "id": "bagno-altamarea-69-cervia-7b358b",
-    "name": "Bagno Altamarea 69",
-    "address": "Bagno Altamarea 69, Via Arenile Demaniale, 69, 48015 Cervia RA",
+    "name": "Bagno Alta Marea 69",
+    "address": "Arenile Demaniale, 69, 48015 Pinarella di Cervia (RA), Italia",
     "city": "Cervia",
     "province": "RA",
     "region": "Emilia-Romagna",
@@ -314,7 +314,7 @@
   {
     "id": "bagno-harmony-68-cervia-cf182b",
     "name": "Bagno Harmony 68",
-    "address": "Bagno Harmony 68, Via Arenile Demaniale, 68, 48015 Cervia RA",
+    "address": "Arenile Demaniale, 68, 48015 Pinarella di Cervia (RA), Italia",
     "city": "Cervia",
     "province": "RA",
     "region": "Emilia-Romagna",
@@ -327,7 +327,7 @@
   {
     "id": "bagno-oasi-67-cervia-964dd8",
     "name": "Bagno Oasi 67",
-    "address": "Bagno Oasi 67, Viale Italia, 67, 48015 Cervia RA",
+    "address": "Arenile Demaniale, 67, 48015 Pinarella di Cervia (RA), Italia",
     "city": "Cervia",
     "province": "RA",
     "region": "Emilia-Romagna",
@@ -339,8 +339,8 @@
   },
   {
     "id": "bagno-mediterraneo-cervia-daad57",
-    "name": "Bagno Mediterraneo",
-    "address": "Bagno Mediterraneo 65, Via Arenile Demaniale, 65, 48015 Cervia RA",
+    "name": "Bagno Mediterraneo 65",
+    "address": "Arenile Demaniale, 65, 48015 Pinarella di Cervia (RA), Italia",
     "city": "Cervia",
     "province": "RA",
     "region": "Emilia-Romagna",
@@ -353,7 +353,7 @@
   {
     "id": "vanilla-beach-cervia-e1f17a",
     "name": "Vanilla Beach",
-    "address": "Vanilla Beach, Via Arenile Demaniale, 85/86, 48015 Cervia RA",
+    "address": "Arenile Demaniale, 60/61, 48015 Pinarella di Cervia (RA), Italia",
     "city": "Cervia",
     "province": "RA",
     "region": "Emilia-Romagna",
@@ -366,7 +366,7 @@
   {
     "id": "bagno-bruno-cervia-f6e5ae",
     "name": "Bagno Bruno",
-    "address": "Bagno Bruno, Via Arenile Demaniale, 63, 48015 Cervia RA",
+    "address": "Arenile Demaniale, 64, 48015 Pinarella di Cervia (RA), Italia",
     "city": "Cervia",
     "province": "RA",
     "region": "Emilia-Romagna",
@@ -379,7 +379,7 @@
   {
     "id": "bagno-settebello-cervia-714e44",
     "name": "Bagno Settebello",
-    "address": "Bagno Settebello, Arenile demaniale 76, Pinarella di Cervia",
+    "address": "Arenile Demaniale, 76, 48015 Pinarella di Cervia (RA), Italia",
     "city": "Cervia",
     "province": "RA",
     "region": "Emilia-Romagna",

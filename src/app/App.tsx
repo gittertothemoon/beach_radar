@@ -6,7 +6,7 @@ import BottomSheet from "../components/BottomSheet";
 import LidoModalCard from "../components/LidoModalCard";
 import ReportModal from "../components/ReportModal";
 import { shareBeachCard } from "../components/ShareCard";
-import { beaches } from "../data/beaches.seed";
+import { SPOTS } from "../data/spots";
 import { STRINGS } from "../i18n/it";
 import { aggregateBeachStats } from "../lib/aggregate";
 import { distanceInMeters } from "../lib/geo";
@@ -72,6 +72,11 @@ function App() {
   useEffect(() => {
     const interval = window.setInterval(() => setNow(Date.now()), 60000);
     return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.info(`Loaded spots: ${SPOTS.length}`);
   }, []);
 
   useEffect(() => {
@@ -233,7 +238,7 @@ function App() {
   }, []);
 
   const beachViews = useMemo<BeachWithStats[]>(() => {
-    return beaches.map((beach) => {
+    return SPOTS.map((beach) => {
       const override = overrides[beach.id];
       const lat = override?.lat ?? beach.lat;
       const lng = override?.lng ?? beach.lng;

@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed:geocode": "node scripts/geocode-seed.mjs",
+    "seed:sync": "node scripts/sync-seed.mjs"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
