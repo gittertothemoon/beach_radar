@@ -1,5 +1,12 @@
 import type { BeachWithStats } from "../lib/types";
-import { formatConfidence, formatDistance, formatMinutesAgo } from "../lib/format";
+import { STRINGS } from "../i18n/it";
+import {
+  formatConfidenceInline,
+  formatDistanceLabel,
+  formatMinutesAgo,
+  formatReportCount,
+  formatStateLabel,
+} from "../lib/format";
 
 type BottomSheetProps = {
   beaches: BeachWithStats[];
@@ -41,14 +48,14 @@ const BottomSheet = ({
         className="flex w-full items-center justify-between px-6 py-4 text-left"
         onClick={onToggle}
         aria-expanded={isOpen}
-        aria-label="Espandi elenco spiagge"
+        aria-label={STRINGS.aria.expandBeaches}
       >
         <div>
           <div className="text-sm font-semibold text-slate-100">
-            Spiagge vicine
+            {STRINGS.labels.nearbyBeaches}
           </div>
           <div className="text-xs text-slate-500">
-            {beaches.length} risultati
+            {STRINGS.search.resultsCount(beaches.length)}
           </div>
         </div>
         <div className="h-1.5 w-10 rounded-full bg-slate-700" />
@@ -71,10 +78,10 @@ const BottomSheet = ({
                     beach.state,
                   )}`}
                 >
-                  {beach.state}
+                  {formatStateLabel(beach.state)}
                 </span>
                 <span className="text-xs text-slate-500">
-                  {formatDistance(beach.distanceM)}
+                  {formatDistanceLabel(beach.distanceM)}
                 </span>
               </div>
               <div className="mt-2 text-base font-semibold text-slate-100">
@@ -82,9 +89,13 @@ const BottomSheet = ({
               </div>
               <div className="text-xs text-slate-500">{beach.region}</div>
               <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                <span>{formatConfidence(beach.confidence)}</span>
+                <span>{formatConfidenceInline(beach.confidence)}</span>
                 <span>{formatMinutesAgo(beach.updatedAt, now)}</span>
-                <span>{beach.reportsCount} report</span>
+                <span>
+                  {beach.state === "PRED"
+                    ? STRINGS.reports.noneRecent
+                    : formatReportCount(beach.reportsCount)}
+                </span>
               </div>
             </button>
           ))}

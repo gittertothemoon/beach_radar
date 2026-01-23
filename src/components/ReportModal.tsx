@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { CrowdLevel } from "../lib/types";
 import type { LatLng } from "../lib/geo";
-import { formatDistance } from "../lib/format";
+import { STRINGS } from "../i18n/it";
 
 const RADIUS_M = 700;
 
 const levelOptions: { level: CrowdLevel; label: string }[] = [
-  { level: 1, label: "Vuota" },
-  { level: 2, label: "Bassa" },
-  { level: 3, label: "Media" },
-  { level: 4, label: "Piena" },
+  { level: 1, label: STRINGS.crowdLevels[1] },
+  { level: 2, label: STRINGS.crowdLevels[2] },
+  { level: 3, label: STRINGS.crowdLevels[3] },
+  { level: 4, label: STRINGS.crowdLevels[4] },
 ];
 
 type ReportModalProps = {
@@ -85,13 +85,13 @@ const ReportModal = ({
   if (!isOpen) return null;
 
   const locationMessage = () => {
-    if (geoStatus === "loading") return "Calcolo posizione...";
-    if (geoStatus === "denied") return "Posizione negata. Abilita il GPS.";
-    if (geoStatus === "error") return geoError ?? "Posizione non disponibile.";
-    if (!userLocation) return "Richiedi posizione per segnalare.";
-    if (distanceM !== null && distanceM > RADIUS_M)
-      return `Troppo lontano (${formatDistance(distanceM)}).`;
-    if (distanceM !== null) return `Sei a ${formatDistance(distanceM)}.`;
+    if (geoStatus === "loading") return STRINGS.report.locationSearching;
+    if (geoStatus === "denied") return STRINGS.report.locationDenied;
+    if (geoStatus === "error")
+      return geoError ?? STRINGS.report.locationUnavailable;
+    if (!userLocation) return STRINGS.report.locationRequired;
+    if (distanceM !== null && distanceM > RADIUS_M) return STRINGS.report.tooFar;
+    if (distanceM !== null) return STRINGS.report.nearEnough;
     return "";
   };
 
@@ -101,22 +101,22 @@ const ReportModal = ({
         ref={containerRef}
         role="dialog"
         aria-modal="true"
-        aria-label={`Segnala ${beachName}`}
+        aria-label={STRINGS.aria.reportBeach(beachName)}
         className="w-full max-w-screen-sm rounded-3xl border border-slate-800/80 bg-slate-950/95 px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-6 shadow-2xl"
       >
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-xl font-semibold text-slate-100">
-              Segnala crowd
+              {STRINGS.report.title}
             </h3>
             <p className="text-sm text-slate-500">{beachName}</p>
           </div>
           <button
             onClick={onClose}
-            aria-label="Chiudi segnalazione"
+            aria-label={STRINGS.aria.closeReport}
             className="rounded-full border border-slate-800/80 bg-slate-900/70 px-3 py-1 text-xs text-slate-400"
           >
-            Chiudi
+            {STRINGS.actions.close}
           </button>
         </div>
 

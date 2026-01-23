@@ -3,10 +3,11 @@ import type { Map as LeafletMap } from "leaflet";
 import MapView from "../components/MapView";
 import TopSearch from "../components/TopSearch";
 import BottomSheet from "../components/BottomSheet";
-import BeachDrawer from "../components/BeachDrawer";
+import LidoModalCard from "../components/LidoModalCard";
 import ReportModal from "../components/ReportModal";
 import { shareBeachCard } from "../components/ShareCard";
 import { beaches } from "../data/beaches.seed";
+import { STRINGS } from "../i18n/it";
 import { aggregateBeachStats } from "../lib/aggregate";
 import { distanceInMeters } from "../lib/geo";
 import {
@@ -96,11 +97,11 @@ function App() {
   const handleGeoError = useCallback((error: GeolocationPositionError | null) => {
     if (error && error.code === error.PERMISSION_DENIED) {
       setGeoStatus("denied");
-      setGeoError("Permesso negato.");
+      setGeoError(STRINGS.location.permissionDenied);
       return;
     }
     setGeoStatus("error");
-    setGeoError("Errore nel recupero posizione.");
+    setGeoError(STRINGS.location.fetchError);
   }, []);
 
   const updateLocation = useCallback((position: GeolocationPosition) => {
@@ -120,11 +121,9 @@ function App() {
     (options?: { flyTo?: boolean; showToast?: boolean }) => {
       if (!navigator.geolocation) {
         setGeoStatus("error");
-        setGeoError("Geolocalizzazione non supportata.");
+        setGeoError(STRINGS.location.notSupported);
         if (options?.showToast) {
-          setLocationToast(
-            "Posizione non disponibile. Abilita i permessi per usare 'La mia posizione'.",
-          );
+          setLocationToast(STRINGS.location.toastUnavailable);
         }
         return;
       }
@@ -141,9 +140,7 @@ function App() {
         (error) => {
           handleGeoError(error);
           if (options?.showToast) {
-            setLocationToast(
-              "Posizione non disponibile. Abilita i permessi per usare 'La mia posizione'.",
-            );
+            setLocationToast(STRINGS.location.toastUnavailable);
           }
         },
         { enableHighAccuracy: true, maximumAge: 15000, timeout: 8000 },
@@ -168,9 +165,7 @@ function App() {
 
     if (!navigator.geolocation) {
       handleGeoError(null);
-      setLocationToast(
-        "Posizione non disponibile. Abilita i permessi per usare 'La mia posizione'.",
-      );
+      setLocationToast(STRINGS.location.toastUnavailable);
       setFollowMode(false);
       return;
     }
@@ -192,9 +187,7 @@ function App() {
       },
       (error) => {
         handleGeoError(error);
-        setLocationToast(
-          "Posizione non disponibile. Abilita i permessi per usare 'La mia posizione'.",
-        );
+        setLocationToast(STRINGS.location.toastUnavailable);
         setFollowMode(false);
       },
       { enableHighAccuracy: true, maximumAge: 15000, timeout: 8000 },
@@ -212,7 +205,7 @@ function App() {
     (beachId: string, lat: number, lng: number) => {
       const nextOverrides = setOverride(beachId, lat, lng);
       setOverrides(nextOverrides);
-      if (isDebug) setDebugToast("Position saved");
+      if (isDebug) setDebugToast(STRINGS.debug.positionSaved);
     },
     [isDebug],
   );
@@ -272,7 +265,7 @@ function App() {
     beachViews.forEach((beach) => {
       if (beach.state === "PRED") predCount += 1;
     });
-    return predCount / total >= 0.85 ? "contribuisci con un report" : null;
+    return predCount / total >= 0.85 ? STRINGS.banners.limitedData : null;
   }, [beachViews]);
 
   const sortedBeaches = useMemo(() => {
@@ -323,7 +316,10 @@ function App() {
     [beachViews],
   );
 
-  const handleCloseDrawer = () => setSelectedBeachId(null);
+  const handleCloseDrawer = () => {
+    if (reportOpen) return;
+    setSelectedBeachId(null);
+  };
 
   const handleSubmitReport = (level: CrowdLevel) => {
     if (!selectedBeach) return;
@@ -404,7 +400,7 @@ function App() {
       <button
         type="button"
         onClick={handleLocateClick}
-        aria-label="La mia posizione"
+        aria-label={STRINGS.aria.myLocation}
         className={`fixed right-4 top-[calc(env(safe-area-inset-top)+78px)] z-30 flex h-11 w-11 items-center justify-center rounded-full border shadow-lg backdrop-blur transition ${
           followMode
             ? "border-sky-300/80 bg-sky-300 text-slate-950"
@@ -436,11 +432,13 @@ function App() {
       {isDebug ? (
         <div className="fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+18px)] z-40 w-[min(92vw,320px)] rounded-2xl border border-slate-800/80 bg-slate-950/90 p-4 shadow-2xl backdrop-blur">
           <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-slate-400">
-            <span>Debug</span>
-            <span className="text-[10px] text-slate-500">v1</span>
+            <span>{STRINGS.debug.title}</span>
+            <span className="text-[10px] text-slate-500">
+              {STRINGS.debug.version}
+            </span>
           </div>
           <label className="mt-3 flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100">
-            <span>Edit beach positions</span>
+            <span>{STRINGS.debug.editPositions}</span>
             <input
               type="checkbox"
               checked={editPositions}
@@ -449,14 +447,14 @@ function App() {
             />
           </label>
           <div className="mt-3 rounded-xl border border-slate-800/70 bg-slate-900/40 px-3 py-2 text-xs text-slate-400">
-            <div className="text-slate-500">Selected beach</div>
+            <div className="text-slate-500">{STRINGS.debug.selectedBeach}</div>
             <div className="mt-1 text-slate-100">
-              {selectedBeach ? selectedBeach.id : "none"}
+              {selectedBeach ? selectedBeach.id : STRINGS.debug.none}
             </div>
             {selectedBeach ? (
               <div className="mt-1 text-slate-500">
-                lat {selectedBeach.lat.toFixed(5)} · lng{" "}
-                {selectedBeach.lng.toFixed(5)}
+                {STRINGS.debug.lat} {selectedBeach.lat.toFixed(5)} ·{" "}
+                {STRINGS.debug.lng} {selectedBeach.lng.toFixed(5)}
               </div>
             ) : null}
           </div>
@@ -469,7 +467,7 @@ function App() {
             disabled={!selectedBeachId || !selectedOverride}
             className="mt-3 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Reset override for selected
+            {STRINGS.debug.resetOverride}
           </button>
         </div>
       ) : null}
@@ -482,8 +480,9 @@ function App() {
         now={now}
       />
       {selectedBeach ? (
-        <BeachDrawer
+        <LidoModalCard
           beach={selectedBeach}
+          isOpen={Boolean(selectedBeach)}
           now={now}
           onClose={handleCloseDrawer}
           onReport={() => {

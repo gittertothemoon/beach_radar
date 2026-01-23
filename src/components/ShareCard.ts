@@ -1,3 +1,5 @@
+import { STRINGS } from "../i18n/it";
+import { formatStateLabel } from "../lib/format";
 import type { BeachState, CrowdLevel } from "../lib/types";
 
 export type ShareCardData = {
@@ -74,7 +76,7 @@ const renderShareCard = async (data: ShareCardData) => {
 
   ctx.fillStyle = "#94a3b8";
   ctx.font = "32px 'Space Grotesk', sans-serif";
-  ctx.fillText("Beach Radar", 80, 140);
+  ctx.fillText(STRINGS.appName, 80, 140);
 
   ctx.fillStyle = "#e2e8f0";
   ctx.font = "72px 'Space Grotesk', sans-serif";
@@ -95,16 +97,28 @@ const renderShareCard = async (data: ShareCardData) => {
 
   ctx.fillStyle = "#e2e8f0";
   ctx.font = "40px 'Space Grotesk', sans-serif";
-  ctx.fillText(`${data.state}`, 280, badgeY + 55);
+  ctx.fillText(formatStateLabel(data.state), 280, badgeY + 55);
 
   ctx.fillStyle = "#e2e8f0";
   ctx.font = "48px 'Space Grotesk', sans-serif";
-  ctx.fillText(`Confidence: ${data.confidence}`, 80, 700);
+  ctx.fillText(
+    `${STRINGS.share.confidenceLabel}: ${data.confidence}`,
+    80,
+    700,
+  );
 
   ctx.fillStyle = "#94a3b8";
   ctx.font = "36px 'Space Grotesk', sans-serif";
-  ctx.fillText(`Updated: ${data.updatedLabel}`, 80, 770);
-  ctx.fillText(`Reports: ${data.reportsCount}`, 80, 830);
+  ctx.fillText(
+    `${STRINGS.share.updatedLabel}: ${data.updatedLabel}`,
+    80,
+    770,
+  );
+  const reportsLine =
+    data.reportsCount > 0
+      ? `${STRINGS.share.reportsLabel}: ${data.reportsCount}`
+      : STRINGS.reports.noneRecent;
+  ctx.fillText(reportsLine, 80, 830);
 
   ctx.strokeStyle = "rgba(148, 163, 184, 0.2)";
   ctx.lineWidth = 2;
@@ -130,8 +144,8 @@ export const shareBeachCard = async (data: ShareCardData) => {
 
   if (navigator.share && canShareFiles) {
     await navigator.share({
-      title: "Beach Radar",
-      text: `${data.name} • ${data.confidence}`,
+      title: STRINGS.appName,
+      text: STRINGS.share.shareText(data.name, data.confidence),
       files: [file],
     });
     return;

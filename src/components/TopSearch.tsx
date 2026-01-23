@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { STRINGS } from "../i18n/it";
 
 type SearchBeach = {
   id: string;
@@ -96,7 +97,9 @@ const TopSearch = ({
       <div ref={containerRef} className="mx-auto max-w-screen-sm">
         <div className="relative">
           <div className="flex items-center gap-3 rounded-2xl border border-slate-800/80 bg-slate-950/80 px-4 py-3 shadow-lg backdrop-blur">
-            <span className="text-sm text-slate-400">Cerca</span>
+            <span className="text-sm text-slate-400">
+              {STRINGS.search.label}
+            </span>
             <input
               ref={inputRef}
               value={value}
@@ -118,8 +121,8 @@ const TopSearch = ({
                   handleSelect(suggestions[0].id);
                 }
               }}
-              placeholder="Spiagge, localita"
-              aria-label="Cerca spiagge"
+              placeholder={STRINGS.search.placeholder}
+              aria-label={STRINGS.aria.searchBeaches}
               aria-expanded={open}
               className="min-w-0 flex-1 bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
             />
@@ -131,13 +134,15 @@ const TopSearch = ({
                   setOpen(false);
                   inputRef.current?.focus();
                 }}
-                aria-label="Cancella ricerca"
+                aria-label={STRINGS.aria.clearSearch}
                 className="rounded-full border border-slate-800/80 bg-slate-900/70 px-2 py-1 text-xs text-slate-300"
               >
-                X
+                {STRINGS.actions.clearSymbol}
               </button>
             ) : null}
-            <span className="text-xs text-slate-500">{resultCount}</span>
+            <span className="text-xs text-slate-500">
+              {STRINGS.search.resultsCount(resultCount)}
+            </span>
           </div>
           {open && suggestions.length > 0 ? (
             <div className="absolute left-0 right-0 mt-2 overflow-hidden rounded-2xl border border-slate-800/90 bg-slate-950/95 shadow-xl backdrop-blur">
@@ -161,8 +166,10 @@ const TopSearch = ({
         </div>
       </div>
       {notice ? (
-        <div className="mx-auto mt-2 max-w-screen-sm rounded-full border border-slate-700/70 bg-slate-950/70 px-4 py-2 text-[11px] text-slate-200 shadow-md backdrop-blur">
-          <span className="text-sky-300">Dati live limitati:</span> {notice}
+        <div className="mx-auto mt-2 max-w-screen-sm">
+          <div className="w-[70vw] whitespace-nowrap rounded-full border border-slate-700/70 bg-slate-950/70 px-3 py-1.5 text-[10px] tracking-tight text-slate-200 shadow-md backdrop-blur sm:w-auto sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-normal">
+            {notice}
+          </div>
         </div>
       ) : null}
     </div>

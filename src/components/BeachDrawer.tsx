@@ -1,5 +1,11 @@
 import type { BeachWithStats } from "../lib/types";
-import { crowdLabel, formatConfidence, formatMinutesAgo } from "../lib/format";
+import { STRINGS } from "../i18n/it";
+import {
+  crowdLabel,
+  formatConfidence,
+  formatMinutesAgo,
+  formatStateLabel,
+} from "../lib/format";
 
 type BeachDrawerProps = {
   beach: BeachWithStats;
@@ -20,7 +26,13 @@ const stateClass = (state: string) => {
   }
 };
 
-const BeachDrawer = ({ beach, now, onClose, onReport, onShare }: BeachDrawerProps) => {
+const BeachDrawer = ({
+  beach,
+  now,
+  onClose,
+  onReport,
+  onShare,
+}: BeachDrawerProps) => {
   const isPred = beach.state === "PRED";
   const reportCount = isPred ? 0 : beach.reportsCount;
 
@@ -35,10 +47,12 @@ const BeachDrawer = ({ beach, now, onClose, onReport, onShare }: BeachDrawerProp
                   beach.state,
                 )}`}
               >
-                {beach.state}
+                {formatStateLabel(beach.state)}
               </span>
               {isPred ? (
-                <span className="text-xs text-slate-400">Stima (baseline)</span>
+                <span className="text-xs text-slate-400">
+                  {STRINGS.status.predLong}
+                </span>
               ) : null}
             </div>
             <h2 className="mt-3 text-2xl font-semibold text-slate-100">
@@ -48,31 +62,37 @@ const BeachDrawer = ({ beach, now, onClose, onReport, onShare }: BeachDrawerProp
           </div>
           <button
             onClick={onClose}
-            aria-label="Chiudi dettagli spiaggia"
+            aria-label={STRINGS.aria.closeBeachDetails}
             className="rounded-full border border-slate-800/80 bg-slate-900/70 px-3 py-1 text-xs text-slate-400"
           >
-            Chiudi
+            {STRINGS.actions.close}
           </button>
         </div>
 
         <div className="mt-6 grid gap-3 rounded-2xl border border-slate-800/70 bg-slate-900/50 p-4 text-sm text-slate-200">
           <div className="flex items-center justify-between">
-            <span className="text-slate-400">Crowd</span>
+            <span className="text-slate-400">{STRINGS.labels.crowd}</span>
             <span className="font-semibold">{crowdLabel(beach.crowdLevel)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-400">Confidence</span>
-            <span className="font-semibold">{formatConfidence(beach.confidence)}</span>
+            <span className="text-slate-400">{STRINGS.labels.confidence}</span>
+            <span className="font-semibold">
+              {formatConfidence(beach.confidence)}
+            </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-400">Aggiornamento</span>
+            <span className="text-slate-400">{STRINGS.labels.update}</span>
             <span className="font-semibold">
               {formatMinutesAgo(beach.updatedAt, now)}
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-400">Report</span>
-            <span className="font-semibold">{reportCount}</span>
+            <span className="text-slate-400">{STRINGS.labels.reports}</span>
+            <span className="font-semibold">
+              {reportCount === 0
+                ? STRINGS.reports.noneRecent
+                : reportCount.toString()}
+            </span>
           </div>
         </div>
 
@@ -81,13 +101,13 @@ const BeachDrawer = ({ beach, now, onClose, onReport, onShare }: BeachDrawerProp
             onClick={onReport}
             className="rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-emerald-950"
           >
-            Segnala
+            {STRINGS.actions.report}
           </button>
           <button
             onClick={onShare}
             className="rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-slate-100"
           >
-            Condividi
+            {STRINGS.actions.share}
           </button>
         </div>
       </div>

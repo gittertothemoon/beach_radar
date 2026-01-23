@@ -1,3 +1,4 @@
+import { STRINGS } from "../i18n/it";
 import type { CrowdLevel, Report } from "./types";
 
 const REPORTS_KEY = "beach-radar-reports-v1";
@@ -62,7 +63,7 @@ export const tryAddReport = (input: {
   if (recent && now - recent.createdAt < RATE_LIMIT_MIN * 60 * 1000) {
     return {
       ok: false,
-      reason: "Attendi qualche minuto prima di segnalare di nuovo.",
+      reason: STRINGS.report.tooSoon,
     };
   }
 

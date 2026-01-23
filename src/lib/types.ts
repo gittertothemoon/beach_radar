@@ -7,6 +7,11 @@ export type Beach = {
   lat: number;
   lng: number;
   baselineLevel?: CrowdLevel;
+  address?: string;
+  hours?: string;
+  phone?: string;
+  website?: string;
+  services?: string[];
 };
 
 export type Report = {
