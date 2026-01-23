@@ -226,11 +226,12 @@ const ClusteredMarkers = ({
             icon={createClusterIcon(cluster)}
             eventHandlers={{
               click: () => {
+                const padding = L.point(48, 48);
                 const bounds = L.latLngBounds(
                   cluster.beaches.map((beach) => [beach.lat, beach.lng]),
                 );
                 const maxZoom = map.getMaxZoom?.() ?? 18;
-                const nextZoom = map.getBoundsZoom(bounds, false, [48, 48]);
+                const nextZoom = map.getBoundsZoom(bounds, false, padding);
                 if (!Number.isFinite(nextZoom) || nextZoom <= map.getZoom()) {
                   map.setView(
                     [cluster.lat, cluster.lng],
@@ -239,7 +240,7 @@ const ClusteredMarkers = ({
                   );
                   return;
                 }
-                map.fitBounds(bounds, { padding: [48, 48], maxZoom });
+                map.fitBounds(bounds, { padding, maxZoom });
               },
             }}
           />
