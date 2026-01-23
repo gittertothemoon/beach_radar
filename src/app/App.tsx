@@ -419,7 +419,7 @@ function App() {
       >
         <div className="flex flex-col items-center gap-0">
           <img src={logo} alt="Beach Radar" className="h-64 w-auto" />
-          <img src={logoText} alt="Beach Radar" className="-mt-36 h-64 w-auto" />
+          <img src={logoText} alt="Beach Radar" className="-mt-32 h-64 w-auto" />
         </div>
       </div>
     );
