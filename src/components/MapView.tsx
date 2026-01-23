@@ -1,8 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { MapContainer, Marker, TileLayer, useMap, useMapEvent } from "react-leaflet";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Circle,
+  MapContainer,
+  Marker,
+  TileLayer,
+  useMap,
+  useMapEvent,
+} from "react-leaflet";
 import L from "leaflet";
 import type { BeachWithStats } from "../lib/types";
-import type { LatLng } from "../lib/geo";
+import type { LatLng, UserLocation } from "../lib/geo";
 
 type Cluster = {
   id: string;
@@ -13,6 +20,11 @@ type Cluster = {
 };
 
 const CLUSTER_RADIUS_PX = 44;
+const LOCATION_Z_INDEX = 1200;
+
+const isValidCoord = (value: number) => Number.isFinite(value);
+const hasValidCoords = (beach: BeachWithStats) =>
+  isValidCoord(beach.lat) && isValidCoord(beach.lng);
 
 const createMarkerIcon = (
   crowdLevel: number,
@@ -45,9 +57,18 @@ const createClusterIcon = (cluster: Cluster) =>
     iconAnchor: [22, 22],
   });
 
-const clusterBeaches = (beaches: BeachWithStats[], map: L.Map) => {
+const clusterBeaches = (
+  beaches: BeachWithStats[],
+  map: L.Map,
+  selectedBeachId?: string | null,
+) => {
+  const selected =
+    selectedBeachId && beaches.find((beach) => beach.id === selectedBeachId);
+  const rest = selected
+    ? beaches.filter((beach) => beach.id !== selectedBeachId)
+    : beaches;
   const zoom = map.getZoom();
-  const projected = beaches.map((beach) => ({
+  const projected = rest.map((beach) => ({
     beach,
     point: map.project([beach.lat, beach.lng], zoom),
   }));
@@ -96,6 +117,16 @@ const clusterBeaches = (beaches: BeachWithStats[], map: L.Map) => {
     });
   }
 
+  if (selected) {
+    clusters.push({
+      id: selected.id,
+      lat: selected.lat,
+      lng: selected.lng,
+      beaches: [selected],
+      state: getClusterState([selected]),
+    });
+  }
+
   return clusters;
 };
 
@@ -104,20 +135,36 @@ type MapViewProps = {
   selectedBeachId: string | null;
   onSelectBeach: (beachId: string) => void;
   center: LatLng;
+  editMode?: boolean;
+  onOverride?: (beachId: string, lat: number, lng: number) => void;
+  onMapReady?: (map: L.Map) => void;
+  userLocation?: UserLocation | null;
+  onUserInteract?: () => void;
 };
 
 const ClusteredMarkers = ({
   beaches,
   selectedBeachId,
   onSelectBeach,
-}: Pick<MapViewProps, "beaches" | "selectedBeachId" | "onSelectBeach">) => {
+  editMode,
+  onOverride,
+}: Pick<
+  MapViewProps,
+  "beaches" | "selectedBeachId" | "onSelectBeach" | "editMode" | "onOverride"
+>) => {
   const map = useMap();
   const [clusters, setClusters] = useState<Cluster[]>([]);
   const markerRefs = useRef(new Map<string, L.Marker>());
+  const validBeaches = useMemo(
+    () => beaches.filter((beach) => hasValidCoords(beach)),
+    [beaches],
+  );
 
   const rebuildClusters = useCallback(() => {
-    setClusters(clusterBeaches(beaches, map));
-  }, [beaches, map]);
+    setClusters(
+      clusterBeaches(validBeaches, map, editMode ? selectedBeachId : null),
+    );
+  }, [editMode, map, selectedBeachId, validBeaches]);
 
   useEffect(() => {
     rebuildClusters();
@@ -137,6 +184,8 @@ const ClusteredMarkers = ({
       {clusters.map((cluster) => {
         if (cluster.beaches.length === 1) {
           const beach = cluster.beaches[0];
+          const isSelected = beach.id === selectedBeachId;
+          const isDraggable = Boolean(editMode && isSelected);
           return (
             <Marker
               key={beach.id}
@@ -144,10 +193,20 @@ const ClusteredMarkers = ({
               icon={createMarkerIcon(
                 beach.crowdLevel,
                 beach.state,
-                beach.id === selectedBeachId,
+                isSelected,
               )}
+              draggable={isDraggable}
               eventHandlers={{
                 click: () => onSelectBeach(beach.id),
+                ...(isDraggable && onOverride
+                  ? {
+                      dragend: (event) => {
+                        const marker = event.target as L.Marker;
+                        const { lat, lng } = marker.getLatLng();
+                        onOverride(beach.id, lat, lng);
+                      },
+                    }
+                  : {}),
               }}
               ref={(marker) => {
                 if (marker) {
@@ -242,11 +301,79 @@ const MapViewportFix = () => {
   return null;
 };
 
+const userLocationIcon = L.divIcon({
+  className: "",
+  html: '<div class="user-location-dot"></div>',
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+
+const UserLocationLayer = ({ location }: { location: UserLocation }) => {
+  if (!Number.isFinite(location.lat) || !Number.isFinite(location.lng)) {
+    return null;
+  }
+
+  return (
+    <>
+      <Circle
+        center={[location.lat, location.lng]}
+        radius={location.accuracy}
+        pathOptions={{
+          color: "#60a5fa",
+          fillColor: "#60a5fa",
+          fillOpacity: 0.18,
+          weight: 1,
+        }}
+      />
+      <Marker
+        position={[location.lat, location.lng]}
+        icon={userLocationIcon}
+        zIndexOffset={LOCATION_Z_INDEX}
+        interactive={false}
+      />
+    </>
+  );
+};
+
+const MapInteractionWatcher = ({
+  onUserInteract,
+}: {
+  onUserInteract?: () => void;
+}) => {
+  const getOriginalEvent = (event: L.LeafletEvent) =>
+    (event as L.LeafletEvent & { originalEvent?: Event }).originalEvent;
+
+  useMapEvent("dragstart", (event) => {
+    if (!getOriginalEvent(event)) return;
+    onUserInteract?.();
+  });
+  useMapEvent("zoomstart", (event) => {
+    if (!getOriginalEvent(event)) return;
+    onUserInteract?.();
+  });
+  return null;
+};
+
+const MapReady = ({ onReady }: { onReady?: (map: L.Map) => void }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    onReady?.(map);
+  }, [map, onReady]);
+
+  return null;
+};
+
 const MapView = ({
   beaches,
   selectedBeachId,
   onSelectBeach,
   center,
+  editMode,
+  onOverride,
+  onMapReady,
+  userLocation,
+  onUserInteract,
 }: MapViewProps) => (
   <MapContainer
     center={[center.lat, center.lng]}
@@ -262,11 +389,16 @@ const MapView = ({
       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     />
     <MapViewportFix />
+    <MapReady onReady={onMapReady} />
+    <MapInteractionWatcher onUserInteract={onUserInteract} />
     <ClusteredMarkers
       beaches={beaches}
       selectedBeachId={selectedBeachId}
       onSelectBeach={onSelectBeach}
+      editMode={editMode}
+      onOverride={onOverride}
     />
+    {userLocation ? <UserLocationLayer location={userLocation} /> : null}
   </MapContainer>
 );
 

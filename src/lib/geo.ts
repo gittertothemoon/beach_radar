@@ -1,5 +1,7 @@
 export type LatLng = { lat: number; lng: number };
 
+export type UserLocation = LatLng & { accuracy: number; ts: number };
+
 const EARTH_RADIUS_M = 6371000;
 
 const toRad = (value: number) => (value * Math.PI) / 180;

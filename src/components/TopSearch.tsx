@@ -1,34 +1,172 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+
+type SearchBeach = {
+  id: string;
+  name: string;
+  region: string;
+};
+
 type TopSearchProps = {
   value: string;
   onChange: (value: string) => void;
   resultCount: number;
   notice?: string | null;
+  beaches: SearchBeach[];
+  onSelectSuggestion: (beachId: string) => void;
 };
+
+const MAX_SUGGESTIONS = 12;
 
 const TopSearch = ({
   value,
   onChange,
   resultCount,
   notice,
-}: TopSearchProps) => (
-  <div className="fixed left-0 right-0 top-0 z-30 px-4 pt-[calc(env(safe-area-inset-top)+14px)]">
-    <div className="mx-auto flex max-w-screen-sm items-center gap-3 rounded-2xl border border-slate-800/80 bg-slate-950/80 px-4 py-3 shadow-lg backdrop-blur">
-      <span className="text-sm text-slate-400">Cerca</span>
-      <input
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder="Spiagge, localita"
-        aria-label="Cerca spiagge"
-        className="w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
-      />
-      <span className="text-xs text-slate-500">{resultCount}</span>
-    </div>
-    {notice ? (
-      <div className="mx-auto mt-2 max-w-screen-sm rounded-full border border-slate-700/70 bg-slate-950/70 px-4 py-2 text-[11px] text-slate-200 shadow-md backdrop-blur">
-        <span className="text-sky-300">Dati live limitati:</span> {notice}
+  beaches,
+  onSelectSuggestion,
+}: TopSearchProps) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [open, setOpen] = useState(false);
+  const normalized = value.trim().toLowerCase();
+
+  const suggestions = useMemo(() => {
+    if (!normalized) return [];
+    const hasExactCity = beaches.some(
+      (beach) => beach.region.toLowerCase() === normalized,
+    );
+    const matches = beaches
+      .map((beach) => {
+        const name = beach.name.toLowerCase();
+        const city = beach.region.toLowerCase();
+        let rank: number | null = null;
+
+        if (name.startsWith(normalized)) rank = 1;
+        else if (city.startsWith(normalized)) rank = 2;
+        else if (name.includes(normalized)) rank = 3;
+        else if (city.includes(normalized)) rank = 4;
+
+        if (rank === null) return null;
+        return {
+          beach,
+          rank,
+          exactCityMatch: hasExactCity && city === normalized,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null)
+      .sort((a, b) => {
+        if (a.exactCityMatch !== b.exactCityMatch) {
+          return a.exactCityMatch ? -1 : 1;
+        }
+        if (a.rank !== b.rank) return a.rank - b.rank;
+        return a.beach.name.localeCompare(b.beach.name);
+      })
+      .slice(0, MAX_SUGGESTIONS)
+      .map((item) => item.beach);
+
+    return matches;
+  }, [beaches, normalized]);
+
+  useEffect(() => {
+    if (!normalized) setOpen(false);
+  }, [normalized]);
+
+  useEffect(() => {
+    const handleOutside = (event: MouseEvent | TouchEvent) => {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    document.addEventListener("touchstart", handleOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("touchstart", handleOutside);
+    };
+  }, []);
+
+  const handleSelect = (beachId: string) => {
+    onSelectSuggestion(beachId);
+    setOpen(false);
+  };
+
+  return (
+    <div className="fixed left-0 right-0 top-0 z-30 px-4 pt-[calc(env(safe-area-inset-top)+14px)]">
+      <div ref={containerRef} className="mx-auto max-w-screen-sm">
+        <div className="relative">
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-800/80 bg-slate-950/80 px-4 py-3 shadow-lg backdrop-blur">
+            <span className="text-sm text-slate-400">Cerca</span>
+            <input
+              ref={inputRef}
+              value={value}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                onChange(nextValue);
+                if (nextValue.trim()) setOpen(true);
+              }}
+              onFocus={() => {
+                if (normalized && suggestions.length > 0) setOpen(true);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  setOpen(false);
+                  return;
+                }
+                if (event.key === "Enter" && open && suggestions.length > 0) {
+                  event.preventDefault();
+                  handleSelect(suggestions[0].id);
+                }
+              }}
+              placeholder="Spiagge, localita"
+              aria-label="Cerca spiagge"
+              aria-expanded={open}
+              className="min-w-0 flex-1 bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+            />
+            {value ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onChange("");
+                  setOpen(false);
+                  inputRef.current?.focus();
+                }}
+                aria-label="Cancella ricerca"
+                className="rounded-full border border-slate-800/80 bg-slate-900/70 px-2 py-1 text-xs text-slate-300"
+              >
+                X
+              </button>
+            ) : null}
+            <span className="text-xs text-slate-500">{resultCount}</span>
+          </div>
+          {open && suggestions.length > 0 ? (
+            <div className="absolute left-0 right-0 mt-2 overflow-hidden rounded-2xl border border-slate-800/90 bg-slate-950/95 shadow-xl backdrop-blur">
+              <div className="max-h-72 overflow-y-auto py-2">
+                {suggestions.map((beach) => (
+                  <button
+                    key={beach.id}
+                    type="button"
+                    onClick={() => handleSelect(beach.id)}
+                    className="flex w-full items-center justify-between gap-3 px-4 py-2 text-left text-sm text-slate-100 transition hover:bg-slate-900/80"
+                  >
+                    <span className="truncate font-medium">{beach.name}</span>
+                    <span className="shrink-0 rounded-full border border-slate-800/80 bg-slate-900/70 px-2 py-0.5 text-[11px] text-slate-400">
+                      {beach.region}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
-    ) : null}
-  </div>
-);
+      {notice ? (
+        <div className="mx-auto mt-2 max-w-screen-sm rounded-full border border-slate-700/70 bg-slate-950/70 px-4 py-2 text-[11px] text-slate-200 shadow-md backdrop-blur">
+          <span className="text-sky-300">Dati live limitati:</span> {notice}
+        </div>
+      ) : null}
+    </div>
+  );
+};
 
 export default TopSearch;
