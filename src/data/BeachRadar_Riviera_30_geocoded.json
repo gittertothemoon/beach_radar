@@ -357,27 +357,6 @@
     }
   },
   {
-    "id": "bagno-69-biagio-rimini-13f535",
-    "name": "Bagno Rinato 68/69",
-    "address": "Viale San Salvador, 101, 47922 Torre Pedrera, Rimini (RN), Italia",
-    "city": "Rimini",
-    "province": "RN",
-    "region": "Emilia-Romagna",
-    "baselineLevel": 2,
-    "baselineSource": "PRED",
-    "lat": 44.1096138,
-    "lng": 12.5097843,
-    "notes": "lat/lng to be filled via geocoding script (Nominatim) before importing into app.",
-    "geocodeMeta": {
-      "queryUsed": "Viale San Salvador, 101, 47922 Torre Pedrera, Rimini , Italia",
-      "fromCache": true,
-      "place_id": null,
-      "osm_id": null,
-      "display_name": "101, Viale San Salvador, Torre Pedrera, Rimini, Emilia-Romagna, 47922, Italia",
-      "status": "geocoded"
-    }
-  },
-  {
     "id": "bagno-65-carlo-rimini-cac04c",
     "name": "Bagno Carlo 65",
     "address": "Lungomare Giuseppe di Vittorio, 10/B, 47921 Rimini (RN), Italia",

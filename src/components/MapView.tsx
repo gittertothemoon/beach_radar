@@ -15,11 +15,18 @@ type Cluster = {
   id: string;
   lat: number;
   lng: number;
-  beaches: BeachWithStats[];
+  members: {
+    beach: BeachWithStats;
+    lat: number;
+    lng: number;
+  }[];
   state: "live" | "recent" | "pred" | "mixed";
 };
 
 const CLUSTER_RADIUS_PX = 44;
+const DUPLICATE_SPREAD_MIN_ZOOM = 16;
+const DUPLICATE_SPREAD_PX = 54;
+const DUPLICATE_COORD_DP = 6;
 const LOCATION_Z_INDEX = 1200;
 
 const isValidCoord = (value: number) => Number.isFinite(value);
@@ -52,15 +59,58 @@ const getClusterState = (beaches: BeachWithStats[]): Cluster["state"] => {
 const createClusterIcon = (cluster: Cluster) =>
   L.divIcon({
     className: "",
-    html: `<div class="beach-cluster ${cluster.state}"><span class="cluster-prefix">x</span><span class="cluster-count">${cluster.beaches.length}</span></div>`,
+    html: `<div class="beach-cluster ${cluster.state}"><span class="cluster-prefix">x</span><span class="cluster-count">${cluster.members.length}</span></div>`,
     iconSize: [44, 44],
     iconAnchor: [22, 22],
   });
+
+const buildDuplicateDisplayPositions = (
+  beaches: BeachWithStats[],
+  map: L.Map,
+) => {
+  const zoom = map.getZoom();
+  if (zoom < DUPLICATE_SPREAD_MIN_ZOOM) {
+    return new Map<string, { lat: number; lng: number; point: L.Point }>();
+  }
+
+  const groups = new Map<string, BeachWithStats[]>();
+  beaches.forEach((beach) => {
+    const key = `${beach.lat.toFixed(DUPLICATE_COORD_DP)},${beach.lng.toFixed(
+      DUPLICATE_COORD_DP,
+    )}`;
+    const group = groups.get(key);
+    if (group) {
+      group.push(beach);
+    } else {
+      groups.set(key, [beach]);
+    }
+  });
+
+  const positions = new Map<string, { lat: number; lng: number; point: L.Point }>();
+  groups.forEach((group) => {
+    if (group.length < 2) return;
+    const ordered = [...group].sort((a, b) => a.id.localeCompare(b.id));
+    const base = map.project([ordered[0].lat, ordered[0].lng], zoom);
+    ordered.forEach((beach, index) => {
+      const angle = (index / ordered.length) * Math.PI * 2;
+      const offset = L.point(
+        Math.cos(angle) * DUPLICATE_SPREAD_PX,
+        Math.sin(angle) * DUPLICATE_SPREAD_PX,
+      );
+      const point = base.add(offset);
+      const latlng = map.unproject(point, zoom);
+      positions.set(beach.id, { lat: latlng.lat, lng: latlng.lng, point });
+    });
+  });
+
+  return positions;
+};
 
 const clusterBeaches = (
   beaches: BeachWithStats[],
   map: L.Map,
   selectedBeachId?: string | null,
+  allowDuplicateSpread = true,
 ) => {
   const selected =
     selectedBeachId && beaches.find((beach) => beach.id === selectedBeachId);
@@ -68,10 +118,20 @@ const clusterBeaches = (
     ? beaches.filter((beach) => beach.id !== selectedBeachId)
     : beaches;
   const zoom = map.getZoom();
-  const projected = rest.map((beach) => ({
-    beach,
-    point: map.project([beach.lat, beach.lng], zoom),
-  }));
+  const duplicatePositions = allowDuplicateSpread
+    ? buildDuplicateDisplayPositions(beaches, map)
+    : new Map<string, { lat: number; lng: number; point: L.Point }>();
+  const projected = rest.map((beach) => {
+    const display = duplicatePositions.get(beach.id);
+    const lat = display?.lat ?? beach.lat;
+    const lng = display?.lng ?? beach.lng;
+    return {
+      beach,
+      lat,
+      lng,
+      point: display?.point ?? map.project([lat, lng], zoom),
+    };
+  });
   const visited = new Set<number>();
   const clusters: Cluster[] = [];
 
@@ -95,10 +155,8 @@ const clusterBeaches = (
       }
     }
 
-    const lat =
-      members.reduce((sum, item) => sum + item.beach.lat, 0) / members.length;
-    const lng =
-      members.reduce((sum, item) => sum + item.beach.lng, 0) / members.length;
+    const lat = members.reduce((sum, item) => sum + item.lat, 0) / members.length;
+    const lng = members.reduce((sum, item) => sum + item.lng, 0) / members.length;
     const clusterItems = members.map((item) => item.beach);
     const clusterId =
       members.length === 1
@@ -112,17 +170,24 @@ const clusterBeaches = (
       id: clusterId,
       lat,
       lng,
-      beaches: clusterItems,
+      members: members.map((item) => ({
+        beach: item.beach,
+        lat: item.lat,
+        lng: item.lng,
+      })),
       state: getClusterState(clusterItems),
     });
   }
 
   if (selected) {
+    const display = duplicatePositions.get(selected.id);
+    const lat = display?.lat ?? selected.lat;
+    const lng = display?.lng ?? selected.lng;
     clusters.push({
       id: selected.id,
-      lat: selected.lat,
-      lng: selected.lng,
-      beaches: [selected],
+      lat,
+      lng,
+      members: [{ beach: selected, lat, lng }],
       state: getClusterState([selected]),
     });
   }
@@ -162,7 +227,12 @@ const ClusteredMarkers = ({
 
   const rebuildClusters = useCallback(() => {
     setClusters(
-      clusterBeaches(validBeaches, map, editMode ? selectedBeachId : null),
+      clusterBeaches(
+        validBeaches,
+        map,
+        editMode ? selectedBeachId : null,
+        !editMode,
+      ),
     );
   }, [editMode, map, selectedBeachId, validBeaches]);
 
@@ -182,14 +252,15 @@ const ClusteredMarkers = ({
   return (
     <>
       {clusters.map((cluster) => {
-        if (cluster.beaches.length === 1) {
-          const beach = cluster.beaches[0];
+        if (cluster.members.length === 1) {
+          const member = cluster.members[0];
+          const beach = member.beach;
           const isSelected = beach.id === selectedBeachId;
           const isDraggable = Boolean(editMode && isSelected);
           return (
             <Marker
               key={beach.id}
-              position={[beach.lat, beach.lng]}
+              position={[member.lat, member.lng]}
               icon={createMarkerIcon(
                 beach.crowdLevel,
                 beach.state,
@@ -228,7 +299,7 @@ const ClusteredMarkers = ({
               click: () => {
                 const padding = L.point(48, 48);
                 const bounds = L.latLngBounds(
-                  cluster.beaches.map((beach) => [beach.lat, beach.lng]),
+                  cluster.members.map((member) => [member.lat, member.lng]),
                 );
                 const maxZoom = map.getMaxZoom?.() ?? 18;
                 const nextZoom = map.getBoundsZoom(bounds, false, padding);
