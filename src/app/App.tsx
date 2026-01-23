@@ -295,16 +295,13 @@ function App() {
     }
   }, [selectedBeach, selectedBeachId]);
 
-  const handleSelectBeach = (beachId: string) => {
-    setSelectedBeachId(beachId);
-    setSheetOpen(false);
-  };
-
-  const handleSelectSuggestion = useCallback(
-    (beachId: string) => {
+  const focusBeach = useCallback(
+    (beachId: string, options?: { updateSearch?: boolean }) => {
       const beach = beachViews.find((item) => item.id === beachId);
       if (!beach) return;
-      setSearch(beach.name);
+      if (options?.updateSearch) {
+        setSearch(beach.name);
+      }
       setSelectedBeachId(beach.id);
       setSheetOpen(false);
       const map = mapRef.current;
@@ -319,6 +316,20 @@ function App() {
       }
     },
     [beachViews],
+  );
+
+  const handleSelectBeach = useCallback(
+    (beachId: string) => {
+      focusBeach(beachId);
+    },
+    [focusBeach],
+  );
+
+  const handleSelectSuggestion = useCallback(
+    (beachId: string) => {
+      focusBeach(beachId, { updateSearch: true });
+    },
+    [focusBeach],
   );
 
   const handleCloseDrawer = () => {

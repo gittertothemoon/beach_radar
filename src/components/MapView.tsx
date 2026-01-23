@@ -27,6 +27,7 @@ const CLUSTER_RADIUS_PX = 44;
 const DUPLICATE_SPREAD_MIN_ZOOM = 16;
 const DUPLICATE_SPREAD_PX = 54;
 const DUPLICATE_COORD_DP = 6;
+const CLUSTER_SPIDERFY_PX = 64;
 const LOCATION_Z_INDEX = 1200;
 
 const isValidCoord = (value: number) => Number.isFinite(value);
@@ -111,6 +112,7 @@ const clusterBeaches = (
   map: L.Map,
   selectedBeachId?: string | null,
   allowDuplicateSpread = true,
+  expandedClusters?: Set<string>,
 ) => {
   const selected =
     selectedBeachId && beaches.find((beach) => beach.id === selectedBeachId);
@@ -118,6 +120,7 @@ const clusterBeaches = (
     ? beaches.filter((beach) => beach.id !== selectedBeachId)
     : beaches;
   const zoom = map.getZoom();
+  const maxZoom = map.getMaxZoom?.() ?? 18;
   const duplicatePositions = allowDuplicateSpread
     ? buildDuplicateDisplayPositions(beaches, map)
     : new Map<string, { lat: number; lng: number; point: L.Point }>();
@@ -165,6 +168,29 @@ const clusterBeaches = (
             .map((item) => item.beach.id)
             .sort()
             .join("|")}`;
+
+    if (members.length > 1 && zoom >= maxZoom && expandedClusters?.has(clusterId)) {
+      const center = members
+        .reduce((acc, item) => acc.add(item.point), L.point(0, 0))
+        .divideBy(members.length);
+      members.forEach((item, index) => {
+        const angle = (index / members.length) * Math.PI * 2;
+        const offset = L.point(
+          Math.cos(angle) * CLUSTER_SPIDERFY_PX,
+          Math.sin(angle) * CLUSTER_SPIDERFY_PX,
+        );
+        const point = center.add(offset);
+        const latlng = map.unproject(point, zoom);
+        clusters.push({
+          id: item.beach.id,
+          lat: latlng.lat,
+          lng: latlng.lng,
+          members: [{ beach: item.beach, lat: latlng.lat, lng: latlng.lng }],
+          state: getClusterState([item.beach]),
+        });
+      });
+      continue;
+    }
 
     clusters.push({
       id: clusterId,
@@ -219,6 +245,11 @@ const ClusteredMarkers = ({
 >) => {
   const map = useMap();
   const [clusters, setClusters] = useState<Cluster[]>([]);
+  const [expandedClusters, setExpandedClusters] = useState<string[]>([]);
+  const expandedClusterSet = useMemo(
+    () => new Set(expandedClusters),
+    [expandedClusters],
+  );
   const markerRefs = useRef(new Map<string, L.Marker>());
   const validBeaches = useMemo(
     () => beaches.filter((beach) => hasValidCoords(beach)),
@@ -232,9 +263,10 @@ const ClusteredMarkers = ({
         map,
         editMode ? selectedBeachId : null,
         !editMode,
+        expandedClusterSet,
       ),
     );
-  }, [editMode, map, selectedBeachId, validBeaches]);
+  }, [editMode, map, selectedBeachId, validBeaches, expandedClusterSet]);
 
   useEffect(() => {
     rebuildClusters();
@@ -242,6 +274,12 @@ const ClusteredMarkers = ({
 
   useMapEvent("zoomend", rebuildClusters);
   useMapEvent("moveend", rebuildClusters);
+  useMapEvent("zoomend", () => {
+    const maxZoom = map.getMaxZoom?.() ?? 18;
+    if (map.getZoom() < maxZoom && expandedClusters.length) {
+      setExpandedClusters([]);
+    }
+  });
 
   useEffect(() => {
     markerRefs.current.forEach((marker, id) => {
@@ -302,11 +340,18 @@ const ClusteredMarkers = ({
                   cluster.members.map((member) => [member.lat, member.lng]),
                 );
                 const maxZoom = map.getMaxZoom?.() ?? 18;
+                const currentZoom = map.getZoom();
                 const nextZoom = map.getBoundsZoom(bounds, false, padding);
-                if (!Number.isFinite(nextZoom) || nextZoom <= map.getZoom()) {
+                if (!Number.isFinite(nextZoom) || nextZoom <= currentZoom) {
+                  if (currentZoom >= maxZoom) {
+                    setExpandedClusters((prev) =>
+                      prev.includes(cluster.id) ? prev : [...prev, cluster.id],
+                    );
+                    return;
+                  }
                   map.setView(
                     [cluster.lat, cluster.lng],
-                    Math.min(map.getZoom() + 2, maxZoom),
+                    Math.min(currentZoom + 2, maxZoom),
                     { animate: true },
                   );
                   return;
