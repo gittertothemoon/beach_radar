@@ -6,6 +6,9 @@ import BottomSheet from "../components/BottomSheet";
 import LidoModalCard from "../components/LidoModalCard";
 import ReportModal from "../components/ReportModal";
 import { shareBeachCard } from "../components/ShareCard";
+import logo from "../assets/logo.png";
+import logoText from "../assets/beach-radar-scritta.png";
+import splashBg from "../assets/initial-bg.png";
 import { SPOTS } from "../data/spots";
 import { STRINGS } from "../i18n/it";
 import { aggregateBeachStats } from "../lib/aggregate";
@@ -53,6 +56,9 @@ function App() {
   const [followMode, setFollowMode] = useState(false);
   const [locationToast, setLocationToast] = useState<string | null>(null);
   const [debugToast, setDebugToast] = useState<string | null>(null);
+  const [splashPhase, setSplashPhase] = useState<
+    "visible" | "fading" | "hidden"
+  >("visible");
   const mapRef = useRef<LeafletMap | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const followInitializedRef = useRef(false);
@@ -72,6 +78,19 @@ function App() {
   useEffect(() => {
     const interval = window.setInterval(() => setNow(Date.now()), 60000);
     return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const fadeTimeout = window.setTimeout(() => {
+      setSplashPhase("fading");
+    }, 1700);
+    const hideTimeout = window.setTimeout(() => {
+      setSplashPhase("hidden");
+    }, 2000);
+    return () => {
+      window.clearTimeout(fadeTimeout);
+      window.clearTimeout(hideTimeout);
+    };
   }, []);
 
   useEffect(() => {
@@ -389,6 +408,22 @@ function App() {
           lng: selectedBeach.lng,
         })
       : null;
+
+  if (splashPhase !== "hidden") {
+    return (
+      <div
+        className={`fixed inset-0 z-50 flex items-center justify-center bg-cover bg-center transition-opacity duration-400 ${
+          splashPhase === "fading" ? "opacity-0" : "opacity-100"
+        }`}
+        style={{ backgroundImage: `url(${splashBg})` }}
+      >
+        <div className="flex flex-col items-center gap-0">
+          <img src={logo} alt="Beach Radar" className="h-64 w-auto" />
+          <img src={logoText} alt="Beach Radar" className="-mt-36 h-64 w-auto" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-full w-full">
