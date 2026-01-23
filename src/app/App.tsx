@@ -83,10 +83,10 @@ function App() {
   useEffect(() => {
     const fadeTimeout = window.setTimeout(() => {
       setSplashPhase("fading");
-    }, 1700);
+    }, 2100);
     const hideTimeout = window.setTimeout(() => {
       setSplashPhase("hidden");
-    }, 2000);
+    }, 2500);
     return () => {
       window.clearTimeout(fadeTimeout);
       window.clearTimeout(hideTimeout);
