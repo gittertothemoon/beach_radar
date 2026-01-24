@@ -4,7 +4,7 @@ import { crowdLevelLabel } from "../lib/format";
 import type { BeachState, CrowdLevel } from "../lib/types";
 import logoUrl from "../assets/logo.png";
 import wordmarkUrl from "../assets/beach-radar-scritta.png";
-import shareBgUrl from "../assets/sharecard-bg.PNG";
+import shareBgUrl from "../assets/sharecard-bg.png";
 
 export type ShareCardData = {
   name: string;

@@ -557,7 +557,6 @@ const MapView = ({
       updateWhenZooming
       updateInterval={30}
       keepBuffer={8}
-      reuseTiles
       noWrap
       bounds={WORLD_BOUNDS}
     />
