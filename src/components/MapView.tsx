@@ -541,6 +541,7 @@ const MapView = ({
     zoom={12}
     minZoom={2}
     maxZoom={18}
+    fadeAnimation={false}
     maxBounds={WORLD_BOUNDS}
     maxBoundsViscosity={1}
     zoomControl={false}
@@ -552,6 +553,11 @@ const MapView = ({
       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       minZoom={2}
       maxZoom={18}
+      updateWhenIdle={false}
+      updateWhenZooming
+      updateInterval={30}
+      keepBuffer={8}
+      reuseTiles
       noWrap
       bounds={WORLD_BOUNDS}
     />

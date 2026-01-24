@@ -21,6 +21,7 @@
   --level-2: #facc15;
   --level-3: #f97316;
   --level-4: #ef4444;
+  --map-bg: #c8d5e4;
   --radius-14: 12px;
   --radius-16: 14px;
   --hairline: rgba(255, 255, 255, 0.12);
@@ -133,7 +134,7 @@ body {
   z-index: 0;
   height: 100%;
   width: 100%;
-  background: var(--bg);
+  background: var(--map-bg);
   font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
   touch-action: none;
   overscroll-behavior: none;
