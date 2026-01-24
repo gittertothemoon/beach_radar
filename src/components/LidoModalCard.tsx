@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import type { BeachWithStats } from "../lib/types";
 import { STRINGS } from "../i18n/it";
 import {
-  crowdLabel,
+  crowdLevelLabel,
   formatConfidence,
   formatMinutesAgo,
   formatStateLabel,
@@ -145,16 +145,10 @@ const LidoModalCard = ({
             <div className="flex items-center justify-between text-xs uppercase tracking-wide text-slate-400">
               <span>{STRINGS.labels.crowdStatus}</span>
               <span className="text-[11px] font-semibold text-slate-300">
-                {formatStateLabel(beach.state)}
+                {crowdLevelLabel(beach.crowdLevel)}
               </span>
             </div>
             <div className="mt-3 grid gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">{STRINGS.labels.level}</span>
-                <span className="font-semibold">
-                  {crowdLabel(beach.crowdLevel)}
-                </span>
-              </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">
                   {STRINGS.labels.confidence}

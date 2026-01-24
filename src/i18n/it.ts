@@ -58,8 +58,8 @@ export const STRINGS = {
   },
   crowdLevels: {
     1: "Vuota",
-    2: "Bassa",
-    3: "Media",
+    2: "Poco Affollata",
+    3: "Affollata",
     4: "Piena",
   },
   time: {

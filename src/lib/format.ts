@@ -63,3 +63,6 @@ export const crowdLabel = (level: number) => {
       return "";
   }
 };
+
+export const crowdLevelLabel = (level: number) =>
+  STRINGS.crowdLevels[level as 1 | 2 | 3 | 4] ?? "";
