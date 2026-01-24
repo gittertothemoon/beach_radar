@@ -4,6 +4,7 @@ import { crowdLevelLabel } from "../lib/format";
 import type { BeachState, CrowdLevel } from "../lib/types";
 import logoUrl from "../assets/logo.png";
 import wordmarkUrl from "../assets/beach-radar-scritta.png";
+import shareBgUrl from "../assets/sharecard-bg.PNG";
 
 export type ShareCardData = {
   name: string;
@@ -117,9 +118,10 @@ const renderShareCard = async (data: ShareCardData) => {
   ctx.scale(dpr, dpr);
   await document.fonts?.ready;
 
-  const [logo, wordmark] = await Promise.all([
+  const [logo, wordmark, shareBg] = await Promise.all([
     loadImage(logoUrl),
     loadImage(wordmarkUrl).catch(() => null),
+    loadImage(shareBgUrl),
   ]);
 
   const drawRoundedRect = (
@@ -148,19 +150,12 @@ const renderShareCard = async (data: ShareCardData) => {
   const padding = 48;
   const contentWidth = width - padding * 2;
 
-  const gradient = ctx.createLinearGradient(0, 0, 0, height);
-  gradient.addColorStop(0, "#0b1017");
-  gradient.addColorStop(1, "#121c2c");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, height);
-
-  ctx.strokeStyle = "rgba(56, 189, 248, 0.08)";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(-40, 1460);
-  ctx.bezierCurveTo(260, 1400, 520, 1500, 820, 1440);
-  ctx.bezierCurveTo(980, 1400, 1120, 1440, 1180, 1480);
-  ctx.stroke();
+  const scale = Math.max(width / shareBg.width, height / shareBg.height);
+  const bgWidth = shareBg.width * scale;
+  const bgHeight = shareBg.height * scale;
+  const bgX = (width - bgWidth) / 2;
+  const bgY = (height - bgHeight) / 2;
+  ctx.drawImage(shareBg, bgX, bgY, bgWidth, bgHeight);
 
   const noiseSeed = seedRandom(12345);
   const noiseCanvas = document.createElement("canvas");
