@@ -107,7 +107,15 @@ const seedRandom = (seed: number) => {
 const CANVAS_WIDTH = 1080;
 const CANVAS_HEIGHT = 1920;
 
-const renderShareCard = async (data: ShareCardData) => {
+type ShareCardExportOptions = {
+  mimeType?: "image/png" | "image/jpeg";
+  quality?: number;
+};
+
+const renderShareCard = async (
+  data: ShareCardData,
+  options: ShareCardExportOptions = {},
+) => {
   const canvas = document.createElement("canvas");
   const dpr =
     typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
@@ -293,19 +301,23 @@ const renderShareCard = async (data: ShareCardData) => {
   ctx.font = "600 26px 'Space Grotesk', sans-serif";
   ctx.fillText("beach-radar.vercel.app", padding + 20, footerY + 88);
 
+  const mimeType = options.mimeType ?? "image/jpeg";
+  const quality = options.quality ?? 0.9;
+
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob);
       else reject(new Error("Failed to export card"));
-    }, "image/png");
+    }, mimeType, quality);
   });
 };
 
 export const shareBeachCard = async (data: ShareCardData) => {
   track("share_card_generate");
-  const blob = await renderShareCard(data);
-  const fileName = `beach-radar-${sanitizeFileName(data.name)}.png`;
-  const file = new File([blob], fileName, { type: "image/png" });
+  const mimeType = "image/jpeg";
+  const blob = await renderShareCard(data, { mimeType, quality: 0.9 });
+  const fileName = `beach-radar-${sanitizeFileName(data.name)}.jpg`;
+  const file = new File([blob], fileName, { type: mimeType });
 
   const canShareFiles =
     typeof navigator !== "undefined" &&
