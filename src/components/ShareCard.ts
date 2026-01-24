@@ -1,7 +1,9 @@
 import { STRINGS } from "../i18n/it";
 import { track } from "../lib/analytics";
-import { formatStateLabel } from "../lib/format";
+import { crowdLevelLabel } from "../lib/format";
 import type { BeachState, CrowdLevel } from "../lib/types";
+import logoUrl from "../assets/logo.png";
+import wordmarkUrl from "../assets/beach-radar-scritta.png";
 
 export type ShareCardData = {
   name: string;
@@ -24,6 +26,27 @@ const stateColor = (state: BeachState) => {
   }
 };
 
+const levelColor = (level: CrowdLevel) => {
+  switch (level) {
+    case 1:
+      return "#22c55e";
+    case 2:
+      return "#facc15";
+    case 3:
+      return "#f97316";
+    default:
+      return "#ef4444";
+  }
+};
+
+const toRgba = (hex: string, alpha: number) => {
+  const value = hex.replace("#", "");
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 const sanitizeFileName = (value: string) =>
   value
     .toLowerCase()
@@ -31,12 +54,73 @@ const sanitizeFileName = (value: string) =>
     .replace(/(^-|-$)+/g, "")
     .slice(0, 40);
 
+const loadImage = (src: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load ${src}`));
+    img.src = src;
+  });
+
+const wrapText = (
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+  maxLines: number,
+) => {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let current = "";
+  words.forEach((word) => {
+    const next = current ? `${current} ${word}` : word;
+    if (ctx.measureText(next).width <= maxWidth) {
+      current = next;
+      return;
+    }
+    if (current) lines.push(current);
+    current = word;
+  });
+  if (current) lines.push(current);
+  if (lines.length <= maxLines) return lines;
+
+  const limited = lines.slice(0, maxLines);
+  let last = limited[limited.length - 1];
+  const ellipsis = "…";
+  while (ctx.measureText(`${last}${ellipsis}`).width > maxWidth && last.length) {
+    last = last.slice(0, -1);
+  }
+  limited[limited.length - 1] = `${last}${ellipsis}`;
+  return limited;
+};
+
+const seedRandom = (seed: number) => {
+  let t = seed;
+  return () => {
+    t += 0x6d2b79f5;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const CANVAS_WIDTH = 1080;
+const CANVAS_HEIGHT = 1920;
+
 const renderShareCard = async (data: ShareCardData) => {
   const canvas = document.createElement("canvas");
-  canvas.width = 1080;
-  canvas.height = 1920;
+  const dpr =
+    typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+  canvas.width = CANVAS_WIDTH * dpr;
+  canvas.height = CANVAS_HEIGHT * dpr;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas not available");
+  ctx.scale(dpr, dpr);
+  await document.fonts?.ready;
+
+  const [logo, wordmark] = await Promise.all([
+    loadImage(logoUrl),
+    loadImage(wordmarkUrl).catch(() => null),
+  ]);
 
   const drawRoundedRect = (
     x: number,
@@ -59,71 +143,160 @@ const renderShareCard = async (data: ShareCardData) => {
     ctx.closePath();
   };
 
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  const width = CANVAS_WIDTH;
+  const height = CANVAS_HEIGHT;
+  const padding = 48;
+  const contentWidth = width - padding * 2;
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, "#0b1017");
-  gradient.addColorStop(1, "#111827");
+  gradient.addColorStop(1, "#121c2c");
   ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, width, height);
 
-  ctx.fillStyle = "rgba(56, 189, 248, 0.12)";
+  ctx.strokeStyle = "rgba(56, 189, 248, 0.08)";
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.arc(880, 420, 360, 0, Math.PI * 2);
+  ctx.moveTo(-40, 1460);
+  ctx.bezierCurveTo(260, 1400, 520, 1500, 820, 1440);
+  ctx.bezierCurveTo(980, 1400, 1120, 1440, 1180, 1480);
+  ctx.stroke();
+
+  const noiseSeed = seedRandom(12345);
+  const noiseCanvas = document.createElement("canvas");
+  noiseCanvas.width = 160;
+  noiseCanvas.height = 160;
+  const noiseCtx = noiseCanvas.getContext("2d");
+  if (noiseCtx) {
+    const imageData = noiseCtx.createImageData(160, 160);
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      const value = Math.floor(noiseSeed() * 255);
+      imageData.data[i] = value;
+      imageData.data[i + 1] = value;
+      imageData.data[i + 2] = value;
+      imageData.data[i + 3] = 18;
+    }
+    noiseCtx.putImageData(imageData, 0, 0);
+    ctx.globalAlpha = 0.06;
+    ctx.drawImage(noiseCanvas, 0, 0, width, height);
+    ctx.globalAlpha = 1;
+  }
+
+  const headerY = 60;
+  const logoHeight = 490;
+  const logoWidth = (logo.width / logo.height) * logoHeight;
+  const centerX = width / 2;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(logo, centerX - logoWidth / 2, headerY, logoWidth, logoHeight);
+
+  const wordmarkHeight = 281;
+  const wordmarkY = headerY + logoHeight - 210;
+  if (wordmark) {
+    const scale = wordmarkHeight / wordmark.height;
+    const wordmarkWidth = wordmark.width * scale;
+    ctx.drawImage(
+      wordmark,
+      centerX - wordmarkWidth / 2,
+      wordmarkY,
+      wordmarkWidth,
+      wordmarkHeight,
+    );
+  } else {
+    ctx.fillStyle = "#f8fafc";
+    ctx.font = "700 281px 'Space Grotesk', sans-serif";
+    const fallbackText = "BEACH RADAR";
+    const fallbackWidth = ctx.measureText(fallbackText).width;
+    ctx.fillText(fallbackText, centerX - fallbackWidth / 2, wordmarkY + 32);
+  }
+
+  const pillText = data.state === "PRED" ? "STIMA" : "LIVE";
+  ctx.font = "700 26px 'Space Grotesk', sans-serif";
+  const pillWidth = ctx.measureText(pillText).width + 36;
+  const pillHeight = 44;
+  const pillX = width - padding - pillWidth;
+  const pillY = headerY + 10;
+  const pillColor = stateColor(data.state);
+  ctx.fillStyle = toRgba(pillColor, 0.18);
+  drawRoundedRect(pillX, pillY, pillWidth, pillHeight, 22);
   ctx.fill();
-
-  ctx.fillStyle = "rgba(34, 197, 94, 0.1)";
-  ctx.beginPath();
-  ctx.arc(200, 1400, 320, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "32px 'Space Grotesk', sans-serif";
-  ctx.fillText(STRINGS.appName, 80, 140);
-
-  ctx.fillStyle = "#e2e8f0";
-  ctx.font = "72px 'Space Grotesk', sans-serif";
-  ctx.fillText(data.name, 80, 260, 920);
-
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "36px 'Space Grotesk', sans-serif";
-  ctx.fillText(data.region, 80, 320, 920);
-
-  const badgeY = 520;
-  ctx.fillStyle = stateColor(data.state);
-  drawRoundedRect(80, badgeY, 180, 80, 40);
-  ctx.fill();
-
-  ctx.fillStyle = "#0b1017";
-  ctx.font = "48px 'Space Grotesk', sans-serif";
-  ctx.fillText(`${data.crowdLevel}`, 140, badgeY + 58);
-
-  ctx.fillStyle = "#e2e8f0";
-  ctx.font = "40px 'Space Grotesk', sans-serif";
-  ctx.fillText(formatStateLabel(data.state), 280, badgeY + 55);
-
-  ctx.fillStyle = "#e2e8f0";
-  ctx.font = "48px 'Space Grotesk', sans-serif";
-  ctx.fillText(
-    `${STRINGS.share.confidenceLabel}: ${data.confidence}`,
-    80,
-    700,
-  );
-
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "36px 'Space Grotesk', sans-serif";
-  ctx.fillText(
-    `${STRINGS.share.updatedLabel}: ${data.updatedLabel}`,
-    80,
-    770,
-  );
-  const reportsLine =
-    data.reportsCount > 0
-      ? `${STRINGS.share.reportsLabel}: ${data.reportsCount}`
-      : STRINGS.reports.noneRecent;
-  ctx.fillText(reportsLine, 80, 830);
-
-  ctx.strokeStyle = "rgba(148, 163, 184, 0.2)";
+  ctx.strokeStyle = toRgba(pillColor, 0.5);
   ctx.lineWidth = 2;
-  ctx.strokeRect(60, 100, 960, 1760);
+  ctx.stroke();
+  ctx.fillStyle = pillColor;
+  ctx.fillText(pillText, pillX + 18, pillY + 31);
+
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = "700 68px 'Space Grotesk', sans-serif";
+  const titleLines = wrapText(ctx, data.name, contentWidth, 2);
+  const titleY = 760;
+  const titleLineHeight = 78;
+  titleLines.forEach((line, index) => {
+    ctx.fillText(line, padding, titleY + index * titleLineHeight);
+  });
+
+  const regionY = titleY + titleLines.length * titleLineHeight + 18;
+  ctx.fillStyle = "rgba(226, 232, 240, 0.94)";
+  ctx.font = "500 35px 'Space Grotesk', sans-serif";
+  ctx.fillText(data.region, padding, regionY);
+
+  const statusY = regionY + 48;
+  const statusHeight = 200;
+  ctx.fillStyle = "rgba(15, 23, 42, 0.72)";
+  drawRoundedRect(padding, statusY, contentWidth, statusHeight, 24);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(226, 232, 240, 0.74)";
+  ctx.font = "600 24px 'Space Grotesk', sans-serif";
+  ctx.fillText(
+    STRINGS.labels.crowdStatus.toUpperCase(),
+    padding + 28,
+    statusY + 56,
+  );
+
+  const crowdLabel = crowdLevelLabel(data.crowdLevel) || STRINGS.labels.crowd;
+  ctx.fillStyle = levelColor(data.crowdLevel);
+  ctx.font = "700 58px 'Space Grotesk', sans-serif";
+  ctx.fillText(crowdLabel.toUpperCase(), padding + 28, statusY + 130, contentWidth - 56);
+
+  const metaY = statusY + statusHeight + 56;
+  ctx.fillStyle = "rgba(226, 232, 240, 0.94)";
+  ctx.font = "500 36px 'Space Grotesk', sans-serif";
+  const metaLines: string[] = [];
+  if (data.confidence) {
+    metaLines.push(`${STRINGS.share.confidenceLabel}: ${data.confidence}`);
+  }
+  if (data.updatedLabel) {
+    metaLines.push(`${STRINGS.share.updatedLabel}: ${data.updatedLabel}`);
+  }
+  if (data.reportsCount > 0) {
+    metaLines.push(`${STRINGS.share.reportsLabel}: ${data.reportsCount}`);
+  } else {
+    metaLines.push(STRINGS.reports.noneRecent);
+  }
+  metaLines.forEach((line, index) => {
+    ctx.fillText(line, padding, metaY + index * 48);
+  });
+
+  const footerHeight = 132;
+  const footerY = height - padding - footerHeight;
+  ctx.fillStyle = "rgba(12, 18, 30, 0.82)";
+  drawRoundedRect(padding, footerY, contentWidth, footerHeight, 20);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(226, 232, 240, 0.9)";
+  ctx.font = "500 26px 'Space Grotesk', sans-serif";
+  ctx.fillText("Apri questa spiaggia su", padding + 20, footerY + 48);
+
+  ctx.fillStyle = "rgba(226, 232, 240, 0.96)";
+  ctx.font = "600 26px 'Space Grotesk', sans-serif";
+  ctx.fillText("beach-radar.vercel.app", padding + 20, footerY + 88);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
