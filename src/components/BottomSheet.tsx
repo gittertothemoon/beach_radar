@@ -141,10 +141,10 @@ const BottomSheet = ({
     >
       <div
         ref={sheetRef}
-        className="mx-auto max-w-screen-sm rounded-t-3xl border border-slate-800/80 bg-slate-950/95 shadow-2xl"
+        className="mx-auto max-w-screen-sm rounded-t-[24px] br-surface-strong"
       >
         <button
-          className="flex w-full items-center justify-between px-6 py-4 text-left"
+          className="br-press flex w-full items-center justify-between px-6 py-4 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20"
           onClick={() => {
             if (suppressClickRef.current) {
               suppressClickRef.current = false;
@@ -161,44 +161,46 @@ const BottomSheet = ({
           style={{ touchAction: "none" }}
         >
           <div>
-            <div className="text-sm font-semibold text-slate-100">
+            <div className="text-[15px] font-semibold text-slate-100">
               {STRINGS.labels.nearbyBeaches}
             </div>
-            <div className="text-xs text-slate-500">
+            <div className="text-[11px] text-slate-500">
               {STRINGS.search.resultsCount(beaches.length)}
             </div>
           </div>
-          <div className="h-1.5 w-10 rounded-full bg-slate-700" />
+          <div className="h-1 w-10 rounded-full bg-slate-600/80" />
         </button>
         <div className="max-h-[62vh] overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-          <div className="space-y-3 pb-6">
+          <div className="space-y-2.5 pb-6">
             {beaches.map((beach) => (
               <button
                 key={beach.id}
                 onClick={() => onSelectBeach(beach.id)}
-                className={`w-full rounded-2xl border px-4 py-3 text-left transition ${
+                className={`br-press w-full rounded-[14px] border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20 ${
                   beach.id === selectedBeachId
-                    ? "border-sky-400/60 bg-slate-900/80"
-                    : "border-slate-800/70 bg-slate-900/40"
+                    ? "border-sky-300/40 bg-slate-900/60"
+                    : "border-white/10 bg-slate-900/35"
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span
-                    className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${stateBadge(
+                    className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${stateBadge(
                       beach.state,
                     )}`}
                   >
                     {formatStateLabel(beach.state)}
                   </span>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-[11px] text-slate-500">
                     {formatDistanceLabel(beach.distanceM)}
                   </span>
                 </div>
-                <div className="mt-2 text-base font-semibold text-slate-100">
+                <div className="mt-1.5 text-[15px] font-semibold text-slate-100">
                   {beach.name}
                 </div>
-                <div className="text-xs text-slate-500">{beach.region}</div>
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+                <div className="text-[12px] text-slate-500">
+                  {beach.region}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
                   <span>{formatConfidenceInline(beach.confidence)}</span>
                   <span>{formatMinutesAgo(beach.updatedAt, now)}</span>
                   <span>

@@ -57,6 +57,8 @@ const main = async () => {
     const name = typeof spot?.name === "string" ? spot.name.trim() : "";
     const beachId = typeof spot?.id === "string" ? spot.id.trim() : "";
     if (!name || !beachId) return;
+    const status = typeof spot?.status === "string" ? spot.status : null;
+    if (status && status !== "pilot") return;
 
     const city = typeof spot?.city === "string" ? spot.city.trim() : "";
     const base = slugify(`${name}-${city}`) || slugify(name) || beachId;

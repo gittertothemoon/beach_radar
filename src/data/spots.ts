@@ -13,6 +13,7 @@ type SeedSpot = {
   lat?: number | string | null;
   lng?: number | string | null;
   notes?: string;
+  status?: "pilot" | "draft" | "inactive";
 };
 
 export type Spot = Beach & {
@@ -21,6 +22,7 @@ export type Spot = Beach & {
   baselineSource?: string;
   notes?: string;
   rawRegion?: string;
+  status?: "pilot" | "draft" | "inactive";
 };
 
 const parseCoord = (value: SeedSpot["lat"]) => {
@@ -30,6 +32,13 @@ const parseCoord = (value: SeedSpot["lat"]) => {
     return Number.isFinite(parsed) ? parsed : Number.NaN;
   }
   return Number.NaN;
+};
+
+const normalizeStatus = (value: SeedSpot["status"]) => {
+  if (value === "pilot" || value === "draft" || value === "inactive") {
+    return value;
+  }
+  return "pilot";
 };
 
 const normalizeSpot = (spot: SeedSpot): Spot => ({
@@ -45,6 +54,9 @@ const normalizeSpot = (spot: SeedSpot): Spot => ({
   notes: spot.notes,
   lat: parseCoord(spot.lat),
   lng: parseCoord(spot.lng),
+  status: normalizeStatus(spot.status),
 });
 
-export const SPOTS: Spot[] = (rawSpots as SeedSpot[]).map(normalizeSpot);
+export const SPOTS: Spot[] = (rawSpots as SeedSpot[])
+  .map(normalizeSpot)
+  .filter((spot) => spot.status !== "inactive");

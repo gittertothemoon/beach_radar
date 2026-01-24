@@ -12,6 +12,10 @@ const ROOT = process.cwd();
 const MASTER_PATH = path.resolve(ROOT, "tools/posters/templates/master.png");
 const CSV_PATH = path.resolve(ROOT, "tools/posters/input/lidi.csv");
 const OUT_DIR = path.resolve(ROOT, "tools/posters/out");
+const DATASET_PATH = path.resolve(
+  ROOT,
+  "src/data/BeachRadar_Riviera_30_geocoded.json",
+);
 const ONLY_SRC = process.env.POSTER_ONLY_SRC?.trim();
 const DEBUG_PLATE = process.env.POSTER_DEBUG_PLATE === "1";
 const DEBUG_URL = process.env.POSTER_DEBUG_URL === "1";
@@ -91,6 +95,37 @@ const main = async () => {
   ) {
     console.error(
       `Unexpected CSV header. Expected: ${expectedHeader.join(",")}`,
+    );
+    process.exit(1);
+  }
+
+  let dataset;
+  try {
+    const datasetRaw = await fs.readFile(DATASET_PATH, "utf8");
+    dataset = JSON.parse(datasetRaw);
+  } catch (error) {
+    console.error(
+      `Failed to load runtime dataset at ${DATASET_PATH}: ${error?.message ?? error}`,
+    );
+    process.exit(1);
+  }
+
+  if (!Array.isArray(dataset)) {
+    console.error("Runtime dataset is not an array.");
+    process.exit(1);
+  }
+
+  const validIds = new Set(
+    dataset
+      .map((spot) => (typeof spot?.id === "string" ? spot.id.trim() : ""))
+      .filter(Boolean),
+  );
+  const missingIds = rows
+    .map((row) => String(row.beachId ?? "").trim())
+    .filter((id) => id && !validIds.has(id));
+  if (missingIds.length > 0) {
+    console.error(
+      `ERROR: beachId not found in runtime dataset: ${missingIds.join(", ")}`,
     );
     process.exit(1);
   }

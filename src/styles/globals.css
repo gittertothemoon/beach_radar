@@ -21,6 +21,12 @@
   --level-2: #facc15;
   --level-3: #f97316;
   --level-4: #ef4444;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --hairline: rgba(255, 255, 255, 0.12);
+  --surface-strong: rgba(12, 18, 30, 0.74);
+  --surface: rgba(12, 18, 30, 0.66);
+  --surface-soft: rgba(12, 18, 30, 0.6);
 }
 
 * {
@@ -41,6 +47,50 @@ body {
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
+}
+
+@layer components {
+  .br-surface {
+    background-color: var(--surface);
+    border: 1px solid var(--hairline);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .br-surface-strong {
+    background-color: var(--surface-strong);
+    border: 1px solid var(--hairline);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .br-surface-soft {
+    background-color: var(--surface-soft);
+    border: 1px solid var(--hairline);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .br-hairline {
+    border-color: var(--hairline);
+  }
+
+  .br-radius-m {
+    border-radius: var(--radius-16);
+  }
+
+  .br-radius-s {
+    border-radius: var(--radius-14);
+  }
+
+  .br-press {
+    transition: transform 120ms ease, opacity 120ms ease;
+  }
+
+  .br-press:active {
+    transform: scale(0.98);
+    opacity: 0.92;
+  }
 }
 
 .leaflet-container {

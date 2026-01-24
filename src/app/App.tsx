@@ -339,8 +339,16 @@ function App() {
     }
   }, []);
 
+  const visibleSpots = useMemo(
+    () =>
+      isDebug
+        ? SPOTS
+        : SPOTS.filter((spot) => spot.status !== "draft"),
+    [isDebug],
+  );
+
   const beachViews = useMemo<BeachWithStats[]>(() => {
-    return SPOTS.map((beach) => {
+    return visibleSpots.map((beach) => {
       const override = overrides[beach.id];
       const lat = override?.lat ?? beach.lat;
       const lng = override?.lng ?? beach.lng;
@@ -353,7 +361,7 @@ function App() {
         : null;
       return { ...beach, lat, lng, ...stats, distanceM };
     });
-  }, [overrides, reports, now, userLocation]);
+  }, [visibleSpots, overrides, reports, now, userLocation]);
 
   const normalizedSearch = search.trim().toLowerCase();
   const filteredBeaches = useMemo(() => {
@@ -421,12 +429,21 @@ function App() {
       const map = mapRef.current;
       if (map && Number.isFinite(beach.lat) && Number.isFinite(beach.lng)) {
         const offsetY = Math.round(map.getSize().y * 0.25);
+        const currentZoom = map.getZoom();
+        const zoomDelta = Number.isFinite(currentZoom)
+          ? Math.max(0, BEACH_FOCUS_ZOOM - currentZoom)
+          : 0;
+        const flyDuration = Math.min(3.2, Math.max(1.4, 0.8 + zoomDelta * 0.15));
         map.once("moveend", () => {
           if (offsetY) {
             map.panBy([0, -offsetY], { animate: true });
           }
         });
-        map.flyTo([beach.lat, beach.lng], BEACH_FOCUS_ZOOM, { animate: true });
+        map.flyTo([beach.lat, beach.lng], BEACH_FOCUS_ZOOM, {
+          animate: true,
+          duration: flyDuration,
+          easeLinearity: 0.25,
+        });
       }
     },
     [beachViews],
@@ -659,10 +676,10 @@ function App() {
         type="button"
         onClick={handleLocateClick}
         aria-label={STRINGS.aria.myLocation}
-        className={`fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+120px)] z-60 flex h-11 w-11 items-center justify-center rounded-full border shadow-lg backdrop-blur transition ${
+        className={`br-press fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+120px)] z-60 flex h-12 w-12 items-center justify-center rounded-full border backdrop-blur transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 ${
           followMode
-            ? "border-sky-300/80 bg-sky-300 text-slate-950"
-            : "border-slate-800/80 bg-slate-950/80 text-slate-100"
+            ? "border-sky-200/60 bg-sky-300/85 text-slate-950"
+            : "border-white/12 bg-slate-950/60 text-slate-100"
         }`}
       >
         <svg

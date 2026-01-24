@@ -96,8 +96,8 @@ const TopSearch = ({
     <div className="fixed left-0 right-0 top-0 z-40 px-4 pt-[calc(env(safe-area-inset-top)+14px)]">
       <div ref={containerRef} className="mx-auto max-w-screen-sm">
         <div className="relative">
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-800/80 bg-slate-950/80 px-4 py-3 shadow-lg backdrop-blur">
-            <span className="text-sm text-slate-400">
+          <div className="br-radius-m br-surface-strong flex h-12 items-center gap-2.5 px-4 focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/20">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
               {STRINGS.search.label}
             </span>
             <input
@@ -124,7 +124,7 @@ const TopSearch = ({
               placeholder={STRINGS.search.placeholder}
               aria-label={STRINGS.aria.searchBeaches}
               aria-expanded={open}
-              className="min-w-0 flex-1 bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+              className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-slate-100 placeholder:text-slate-500/80 focus:outline-none"
             />
             {value ? (
               <button
@@ -135,27 +135,29 @@ const TopSearch = ({
                   inputRef.current?.focus();
                 }}
                 aria-label={STRINGS.aria.clearSearch}
-                className="rounded-full border border-slate-800/80 bg-slate-900/70 px-2 py-1 text-xs text-slate-300"
+                className="br-press inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-slate-900/50 text-[12px] font-semibold text-slate-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25"
               >
                 {STRINGS.actions.clearSymbol}
               </button>
             ) : null}
-            <span className="text-xs text-slate-500">
+            <span className="text-[11px] text-slate-500">
               {STRINGS.search.resultsCount(resultCount)}
             </span>
           </div>
           {open && suggestions.length > 0 ? (
-            <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-slate-800/90 bg-slate-950/95 shadow-xl backdrop-blur">
-              <div className="max-h-72 overflow-y-auto py-2">
+            <div className="br-radius-m br-surface absolute left-0 right-0 z-50 mt-2 overflow-hidden">
+              <div className="max-h-72 divide-y divide-white/10 overflow-y-auto py-1.5">
                 {suggestions.map((beach) => (
                   <button
                     key={beach.id}
                     type="button"
                     onClick={() => handleSelect(beach.id)}
-                    className="flex w-full items-center justify-between gap-3 px-4 py-2 text-left text-sm text-slate-100 transition hover:bg-slate-900/80"
+                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[15px] text-slate-100 transition-colors hover:bg-slate-900/40 focus-visible:bg-slate-900/50 focus-visible:outline-none"
                   >
-                    <span className="truncate font-medium">{beach.name}</span>
-                    <span className="shrink-0 rounded-full border border-slate-800/80 bg-slate-900/70 px-2 py-0.5 text-[11px] text-slate-400">
+                    <span className="truncate font-semibold tracking-[-0.01em]">
+                      {beach.name}
+                    </span>
+                    <span className="shrink-0 rounded-full border border-white/10 bg-slate-900/40 px-2 py-0.5 text-[11px] text-slate-400">
                       {beach.region}
                     </span>
                   </button>
@@ -167,7 +169,7 @@ const TopSearch = ({
       </div>
       {notice ? (
         <div className="mx-auto mt-2 max-w-screen-sm">
-          <div className="w-[70vw] whitespace-nowrap rounded-full border border-slate-700/70 bg-slate-950/70 px-3 py-1.5 text-[10px] tracking-tight text-slate-200 shadow-md backdrop-blur sm:w-auto sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-normal">
+          <div className="br-press w-[70vw] whitespace-nowrap rounded-full border border-slate-700/60 bg-slate-950/60 px-3 py-1.5 text-[10px] tracking-tight text-slate-200 backdrop-blur sm:w-auto sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-normal">
             {notice}
           </div>
         </div>

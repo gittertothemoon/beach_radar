@@ -29,10 +29,23 @@ const DUPLICATE_SPREAD_PX = 54;
 const DUPLICATE_COORD_DP = 6;
 const CLUSTER_SPIDERFY_PX = 64;
 const LOCATION_Z_INDEX = 1200;
+const WORLD_BOUNDS = L.latLngBounds(
+  [-85.05112878, -180],
+  [85.05112878, 180],
+);
 
 const isValidCoord = (value: number) => Number.isFinite(value);
 const hasValidCoords = (beach: BeachWithStats) =>
   isValidCoord(beach.lat) && isValidCoord(beach.lng);
+const getSafeZoom = (map: L.Map) => {
+  const rawZoom = map.getZoom();
+  const minZoom = map.getMinZoom?.() ?? 0;
+  if (!Number.isFinite(rawZoom)) {
+    return Number.isFinite(minZoom) ? minZoom : 0;
+  }
+  if (!Number.isFinite(minZoom)) return rawZoom;
+  return Math.max(rawZoom, minZoom);
+};
 
 const createMarkerIcon = (
   crowdLevel: number,
@@ -69,7 +82,7 @@ const buildDuplicateDisplayPositions = (
   beaches: BeachWithStats[],
   map: L.Map,
 ) => {
-  const zoom = map.getZoom();
+  const zoom = getSafeZoom(map);
   if (zoom < DUPLICATE_SPREAD_MIN_ZOOM) {
     return new Map<string, { lat: number; lng: number; point: L.Point }>();
   }
@@ -119,7 +132,7 @@ const clusterBeaches = (
   const rest = selected
     ? beaches.filter((beach) => beach.id !== selectedBeachId)
     : beaches;
-  const zoom = map.getZoom();
+  const zoom = getSafeZoom(map);
   const maxZoom = map.getMaxZoom?.() ?? 18;
   const duplicatePositions = allowDuplicateSpread
     ? buildDuplicateDisplayPositions(beaches, map)
@@ -341,6 +354,13 @@ const ClusteredMarkers = ({
                 );
                 const maxZoom = map.getMaxZoom?.() ?? 18;
                 const currentZoom = map.getZoom();
+                const getZoomDuration = (targetZoom: number) => {
+                  const safeCurrent = Number.isFinite(currentZoom)
+                    ? currentZoom
+                    : targetZoom;
+                  const zoomDelta = Math.max(0, targetZoom - safeCurrent);
+                  return Math.min(3.2, Math.max(1.4, 0.8 + zoomDelta * 0.15));
+                };
                 const nextZoom = map.getBoundsZoom(bounds, false, padding);
                 if (!Number.isFinite(nextZoom) || nextZoom <= currentZoom) {
                   if (currentZoom >= maxZoom) {
@@ -349,14 +369,22 @@ const ClusteredMarkers = ({
                     );
                     return;
                   }
-                  map.setView(
-                    [cluster.lat, cluster.lng],
-                    Math.min(currentZoom + 2, maxZoom),
-                    { animate: true },
-                  );
+                  const targetZoom = Math.min(currentZoom + 2, maxZoom);
+                  map.flyTo([cluster.lat, cluster.lng], targetZoom, {
+                    animate: true,
+                    duration: getZoomDuration(targetZoom),
+                    easeLinearity: 0.25,
+                  });
                   return;
                 }
-                map.fitBounds(bounds, { padding, maxZoom });
+                const targetZoom = Math.min(nextZoom, maxZoom);
+                map.fitBounds(bounds, {
+                  padding,
+                  maxZoom,
+                  animate: true,
+                  duration: getZoomDuration(targetZoom),
+                  easeLinearity: 0.25,
+                });
               },
             }}
           />
@@ -403,6 +431,12 @@ const MapViewportFix = () => {
       if (pending) {
         pending = false;
         runInvalidate();
+      }
+      if (
+        typeof window !== "undefined" &&
+        window.localStorage.getItem("br_debug_v1") === "1"
+      ) {
+        console.info("[br] zoomend", map.getZoom());
       }
     };
 
@@ -505,8 +539,10 @@ const MapView = ({
   <MapContainer
     center={[center.lat, center.lng]}
     zoom={12}
-    minZoom={10}
+    minZoom={2}
     maxZoom={18}
+    maxBounds={WORLD_BOUNDS}
+    maxBoundsViscosity={1}
     zoomControl={false}
     bounceAtZoomLimits={false}
     className="h-full w-full"
@@ -514,6 +550,10 @@ const MapView = ({
     <TileLayer
       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      minZoom={2}
+      maxZoom={18}
+      noWrap
+      bounds={WORLD_BOUNDS}
     />
     <MapViewportFix />
     <MapReady onReady={onMapReady} />
