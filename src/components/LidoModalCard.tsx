@@ -20,11 +20,11 @@ type LidoModalCardProps = {
 const stateClass = (state: string) => {
   switch (state) {
     case "LIVE":
-      return "bg-emerald-500/15 text-emerald-300 border-emerald-400/40";
+      return "bg-emerald-500/30 text-emerald-100 border-emerald-300/60";
     case "RECENT":
-      return "bg-amber-400/15 text-amber-200 border-amber-300/40";
+      return "bg-amber-400/30 text-amber-100 border-amber-300/60";
     default:
-      return "bg-slate-500/15 text-slate-300 border-slate-400/40";
+      return "bg-slate-400/25 text-slate-100 border-slate-300/50";
   }
 };
 
@@ -107,7 +107,7 @@ const LidoModalCard = ({
         aria-modal="true"
         aria-label={STRINGS.aria.beachDetails(beach.name)}
         onClick={(event) => event.stopPropagation()}
-        className="flex max-h-[80svh] w-[min(92vw,560px)] flex-col overflow-hidden rounded-[18px] br-surface-strong"
+        className="flex max-h-[80svh] w-[min(92vw,560px)] flex-col overflow-hidden rounded-[18px] contrast-guard"
       >
         <div className="flex items-start justify-between px-6 pt-6">
           <div>
@@ -120,37 +120,37 @@ const LidoModalCard = ({
                 {formatStateLabel(beach.state)}
               </span>
               {isPred ? (
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] br-text-secondary">
                   {STRINGS.status.predLong}
                 </span>
               ) : null}
             </div>
-            <h2 className="mt-3 text-[22px] font-semibold tracking-[-0.01em] text-slate-100">
+            <h2 className="mt-3 text-[22px] font-semibold tracking-[-0.01em] br-text-primary">
               {beach.name}
             </h2>
-            <p className="text-[13px] text-slate-500">{beach.region}</p>
+            <p className="text-[13px] br-text-secondary">{beach.region}</p>
           </div>
           <button
             ref={closeButtonRef}
             onClick={onClose}
             aria-label={STRINGS.aria.closeBeachDetails}
-            className="br-press rounded-full border border-white/10 bg-slate-900/40 px-3 py-1.5 text-[11px] font-semibold text-slate-300 focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/20 focus-visible:outline-offset-1"
+            className="br-press rounded-full border border-white/15 bg-slate-900/55 px-3 py-1.5 text-[11px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
           >
             {STRINGS.actions.close}
           </button>
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-6 pb-6 pt-4">
-          <div className="rounded-[12px] border border-white/8 bg-slate-900/25 p-4 text-sm text-slate-200 backdrop-blur-sm">
-            <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-slate-400">
+          <div className="rounded-[12px] border border-white/12 bg-slate-900/35 p-4 text-sm br-text-primary backdrop-blur-sm">
+            <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-secondary">
               <span>{STRINGS.labels.crowdStatus}</span>
-              <span className="text-[11px] font-semibold text-slate-300">
+              <span className="text-[11px] font-semibold br-text-primary">
                 {crowdLevelLabel(beach.crowdLevel)}
               </span>
             </div>
             <div className="mt-3 grid gap-2">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">
+                <span className="br-text-secondary">
                   {STRINGS.labels.confidence}
                 </span>
                 <span className="font-semibold">
@@ -158,7 +158,7 @@ const LidoModalCard = ({
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">
+                <span className="br-text-secondary">
                   {STRINGS.labels.lastUpdate}
                 </span>
                 <span className="font-semibold">
@@ -168,11 +168,11 @@ const LidoModalCard = ({
             </div>
           </div>
 
-          <div className="rounded-[12px] border border-white/8 bg-slate-900/22 p-4 backdrop-blur-sm">
-            <div className="text-[11px] uppercase tracking-[0.12em] text-slate-400">
+          <div className="rounded-[12px] border border-white/12 bg-slate-900/32 p-4 backdrop-blur-sm">
+            <div className="text-[11px] uppercase tracking-[0.12em] br-text-secondary">
               {STRINGS.labels.address}
             </div>
-            <p className="mt-2 text-[13px] text-slate-100">
+            <p className="mt-2 text-[13px] br-text-primary">
               {address || STRINGS.empty.notAvailable}
             </p>
             {mapsLink ? (
@@ -180,55 +180,55 @@ const LidoModalCard = ({
                 href={mapsLink}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 inline-flex text-[12px] font-semibold text-sky-300"
+                className="mt-2 inline-flex text-[12px] font-semibold text-sky-200"
               >
                 {STRINGS.actions.openInMaps}
               </a>
             ) : null}
           </div>
 
-          <div className="rounded-[12px] border border-white/8 bg-slate-900/22 p-4 backdrop-blur-sm">
-            <div className="text-[11px] uppercase tracking-[0.12em] text-slate-400">
+          <div className="rounded-[12px] border border-white/12 bg-slate-900/32 p-4 backdrop-blur-sm">
+            <div className="text-[11px] uppercase tracking-[0.12em] br-text-secondary">
               {STRINGS.labels.hours}
             </div>
-            <p className="mt-2 text-[13px] text-slate-100">
+            <p className="mt-2 text-[13px] br-text-primary">
               {hours || STRINGS.empty.toConfirm}
             </p>
           </div>
 
-          <div className="rounded-[12px] border border-white/8 bg-slate-900/22 p-4 backdrop-blur-sm">
-            <div className="text-[11px] uppercase tracking-[0.12em] text-slate-400">
+          <div className="rounded-[12px] border border-white/12 bg-slate-900/32 p-4 backdrop-blur-sm">
+            <div className="text-[11px] uppercase tracking-[0.12em] br-text-secondary">
               {STRINGS.labels.usefulInfo}
             </div>
-            <div className="mt-3 grid gap-2 text-[13px] text-slate-200">
+            <div className="mt-3 grid gap-2 text-[13px] br-text-primary">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">{STRINGS.labels.phone}</span>
+                <span className="br-text-secondary">{STRINGS.labels.phone}</span>
                 {phone ? (
                   <a
                     href={`tel:${phone}`}
-                    className="font-semibold text-slate-100"
+                    className="font-semibold br-text-primary"
                   >
                     {phone}
                   </a>
                 ) : (
-                  <span className="font-semibold text-slate-500">
+                  <span className="font-semibold br-text-secondary">
                     {STRINGS.empty.notAvailable}
                   </span>
                 )}
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">{STRINGS.labels.website}</span>
+                <span className="br-text-secondary">{STRINGS.labels.website}</span>
                 {websiteHref ? (
                   <a
                     href={websiteHref}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-semibold text-slate-100"
+                    className="font-semibold br-text-primary"
                   >
                     {website}
                   </a>
                 ) : (
-                  <span className="font-semibold text-slate-500">
+                  <span className="font-semibold br-text-secondary">
                     {STRINGS.empty.notAvailable}
                   </span>
                 )}
@@ -240,14 +240,14 @@ const LidoModalCard = ({
                   {services.map((service) => (
                     <span
                       key={service}
-                      className="rounded-full border border-white/10 bg-slate-900/40 px-3 py-1 text-[11px] font-semibold text-slate-200"
+                      className="rounded-full border border-white/15 bg-slate-900/60 px-3 py-1 text-[11px] font-semibold br-text-primary"
                     >
                       {service}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-[13px] text-slate-500">
+                <p className="text-[13px] br-text-secondary">
                   {STRINGS.empty.notAvailable}
                 </p>
               )}
@@ -255,7 +255,7 @@ const LidoModalCard = ({
           </div>
         </div>
 
-        <div className="br-hairline border-t bg-slate-950/60 px-6 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4">
+        <div className="br-hairline border-t bg-slate-950/70 px-6 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4">
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={onReport}
@@ -265,7 +265,7 @@ const LidoModalCard = ({
             </button>
             <button
               onClick={onShare}
-              className="br-press rounded-[12px] border border-white/10 bg-slate-900/40 px-4 py-3 text-[14px] font-semibold text-slate-100 focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/20 focus-visible:outline-offset-1"
+              className="br-press rounded-[12px] border border-white/15 bg-slate-900/55 px-4 py-3 text-[14px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
             >
               {STRINGS.actions.share}
             </button>

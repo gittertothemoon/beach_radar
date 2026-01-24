@@ -26,11 +26,11 @@ const VELOCITY_THRESHOLD = 0.45;
 const stateBadge = (state: string) => {
   switch (state) {
     case "LIVE":
-      return "bg-emerald-500/15 text-emerald-300 border-emerald-400/40";
+      return "bg-emerald-500/30 text-emerald-100 border-emerald-300/60";
     case "RECENT":
-      return "bg-amber-400/15 text-amber-200 border-amber-300/40";
+      return "bg-amber-400/30 text-amber-100 border-amber-300/60";
     default:
-      return "bg-slate-500/15 text-slate-300 border-slate-400/40";
+      return "bg-slate-400/25 text-slate-100 border-slate-300/50";
   }
 };
 
@@ -141,10 +141,10 @@ const BottomSheet = ({
     >
       <div
         ref={sheetRef}
-        className="mx-auto max-w-screen-sm rounded-t-[24px] br-surface-strong"
+        className="mx-auto max-w-screen-sm rounded-t-[22px] contrast-guard"
       >
         <button
-          className="br-press flex w-full items-center justify-between px-6 py-4 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/20 focus-visible:outline-offset-1"
+          className="br-press flex w-full items-center justify-between px-6 py-4 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
           onClick={() => {
             if (suppressClickRef.current) {
               suppressClickRef.current = false;
@@ -161,24 +161,24 @@ const BottomSheet = ({
           style={{ touchAction: "none" }}
         >
           <div>
-            <div className="text-[15px] font-semibold text-slate-100">
+            <div className="text-[15px] font-semibold br-text-primary">
               {STRINGS.labels.nearbyBeaches}
             </div>
-            <div className="text-[11px] text-slate-500">
+            <div className="text-[11px] br-text-secondary">
               {STRINGS.search.resultsCount(beaches.length)}
             </div>
           </div>
-          <div className="h-1 w-10 rounded-full bg-slate-600/80" />
+          <div className="h-1 w-10 rounded-full bg-white/25" />
         </button>
         <div className="max-h-[62vh] overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-          <div className="divide-y divide-white/10 pb-6">
+          <div className="divide-y divide-[color:var(--hairline)] pb-6">
             {beaches.map((beach) => (
               <button
                 key={beach.id}
                 onClick={() => onSelectBeach(beach.id)}
-                className={`br-press w-full px-4 py-3 text-left transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/20 focus-visible:outline-offset-1 ${
+                className={`br-press w-full px-4 py-3 text-left transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
                   beach.id === selectedBeachId
-                    ? "bg-white/6"
+                    ? "bg-white/10"
                     : "bg-transparent"
                 }`}
               >
@@ -190,17 +190,17 @@ const BottomSheet = ({
                   >
                     {formatStateLabel(beach.state)}
                   </span>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] br-text-secondary">
                     {formatDistanceLabel(beach.distanceM)}
                   </span>
                 </div>
-                <div className="mt-1.5 text-[15px] font-semibold text-slate-50">
+                <div className="mt-1.5 text-[15px] font-semibold br-text-primary">
                   {beach.name}
                 </div>
-                <div className="text-[12px] text-slate-500">
+                <div className="text-[12px] br-text-secondary">
                   {beach.region}
                 </div>
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] br-text-secondary">
                   <span>{formatConfidenceInline(beach.confidence)}</span>
                   <span>{formatMinutesAgo(beach.updatedAt, now)}</span>
                   <span>

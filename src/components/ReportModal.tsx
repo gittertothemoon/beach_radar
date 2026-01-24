@@ -102,30 +102,30 @@ const ReportModal = ({
         role="dialog"
         aria-modal="true"
         aria-label={STRINGS.aria.reportBeach(beachName)}
-        className="w-full max-w-screen-sm rounded-3xl border border-slate-800/80 bg-slate-950/95 px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-6 shadow-2xl"
+        className="w-full max-w-screen-sm rounded-[18px] contrast-guard px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-6"
       >
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-xl font-semibold text-slate-100">
+            <h3 className="text-xl font-semibold br-text-primary">
               {STRINGS.report.title}
             </h3>
-            <p className="text-sm text-slate-500">{beachName}</p>
+            <p className="text-sm br-text-secondary">{beachName}</p>
           </div>
           <button
             onClick={onClose}
             aria-label={STRINGS.aria.closeReport}
-            className="rounded-full border border-slate-800/80 bg-slate-900/70 px-3 py-1 text-xs text-slate-400"
+            className="br-press rounded-full border border-white/15 bg-slate-900/55 px-3 py-1.5 text-xs font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
           >
             {STRINGS.actions.close}
           </button>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-slate-800/70 bg-slate-900/40 px-4 py-3 text-xs text-slate-400">
+        <div className="mt-4 rounded-[12px] border border-white/12 bg-slate-900/35 px-4 py-3 text-xs br-text-secondary backdrop-blur-sm">
           {locationMessage()}
         </div>
 
         {submitError ? (
-          <div className="mt-3 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-xs text-rose-200">
+          <div className="mt-3 rounded-[12px] border border-rose-300/50 bg-rose-500/20 px-4 py-2 text-xs text-rose-50">
             {submitError}
           </div>
         ) : null}
@@ -136,7 +136,7 @@ const ReportModal = ({
               key={option.level}
               onClick={() => onSubmit(option.level)}
               disabled={!canReport}
-              className="rounded-2xl border border-slate-700/70 bg-slate-900/60 px-3 py-4 text-sm font-semibold text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-40"
+              className="br-press rounded-[12px] border border-white/15 bg-slate-900/60 px-3 py-4 text-sm font-semibold br-text-primary transition disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
             >
               {option.level} • {option.label}
             </button>

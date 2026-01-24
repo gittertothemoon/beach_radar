@@ -96,8 +96,8 @@ const TopSearch = ({
     <div className="fixed left-0 right-0 top-0 z-40 px-4 pt-[calc(env(safe-area-inset-top)+14px)]">
       <div ref={containerRef} className="mx-auto max-w-screen-sm">
         <div className="relative">
-          <div className="br-radius-m br-surface-strong flex h-12 items-center gap-2.5 px-4 focus-within:border-white/15 focus-within:outline focus-within:outline-1 focus-within:outline-white/15 focus-within:outline-offset-1">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <div className="contrast-guard br-radius-m flex h-12 items-center gap-2.5 px-4 focus-within:outline focus-within:outline-1 focus-within:outline-[color:var(--focus-ring)] focus-within:outline-offset-1">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] br-text-secondary">
               {STRINGS.search.label}
             </span>
             <input
@@ -124,7 +124,7 @@ const TopSearch = ({
               placeholder={STRINGS.search.placeholder}
               aria-label={STRINGS.aria.searchBeaches}
               aria-expanded={open}
-              className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-slate-100 placeholder:text-slate-500/80 focus:outline-none"
+              className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-[color:var(--text-primary)] placeholder:text-[color:var(--text-secondary)] focus:outline-none"
             />
             {value ? (
               <button
@@ -135,29 +135,29 @@ const TopSearch = ({
                   inputRef.current?.focus();
                 }}
                 aria-label={STRINGS.aria.clearSearch}
-                className="br-press inline-flex h-7 w-7 items-center justify-center rounded-full border border-transparent bg-slate-900/35 text-[12px] font-semibold text-slate-200 focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/20 focus-visible:outline-offset-1"
+                className="br-press inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-slate-900/55 text-[12px] font-semibold text-[color:var(--text-primary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
               >
                 {STRINGS.actions.clearSymbol}
               </button>
             ) : null}
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[11px] br-text-secondary">
               {STRINGS.search.resultsCount(resultCount)}
             </span>
           </div>
           {open && suggestions.length > 0 ? (
             <div className="br-radius-m br-surface absolute left-0 right-0 z-50 mt-2 overflow-hidden">
-              <div className="max-h-60 divide-y divide-white/10 overflow-y-auto py-1">
+              <div className="max-h-56 divide-y divide-[color:var(--hairline)] overflow-y-auto py-1">
                 {suggestions.map((beach) => (
                   <button
                     key={beach.id}
                     type="button"
                     onClick={() => handleSelect(beach.id)}
-                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[15px] text-slate-100 transition-colors hover:bg-slate-900/35 focus-visible:bg-slate-900/40 focus-visible:outline-none"
+                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[15px] text-[color:var(--text-primary)] transition-colors hover:bg-slate-900/45 focus-visible:bg-slate-900/50 focus-visible:outline-none"
                   >
                     <span className="truncate font-semibold tracking-[-0.01em]">
                       {beach.name}
                     </span>
-                    <span className="shrink-0 rounded-full border border-white/8 bg-slate-900/30 px-1.5 py-0.5 text-[10px] text-slate-400">
+                    <span className="shrink-0 rounded-full border border-white/15 bg-slate-900/60 px-1.5 py-0.5 text-[10px] text-[color:var(--text-secondary)]">
                       {beach.region}
                     </span>
                   </button>
@@ -169,7 +169,7 @@ const TopSearch = ({
       </div>
       {notice ? (
         <div className="mx-auto mt-2 max-w-screen-sm">
-          <div className="br-press w-[70vw] whitespace-nowrap rounded-full border border-slate-700/60 bg-slate-950/60 px-3 py-1.5 text-[10px] tracking-tight text-slate-200 backdrop-blur sm:w-auto sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-normal">
+          <div className="br-press br-surface-soft w-[70vw] whitespace-nowrap rounded-full px-3 py-1.5 text-[10px] tracking-tight br-text-primary sm:w-auto sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-normal">
             {notice}
           </div>
         </div>
