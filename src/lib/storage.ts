@@ -1,5 +1,5 @@
 import { STRINGS } from "../i18n/it";
-import type { CrowdLevel, Report } from "./types";
+import type { AttributionSnapshot, CrowdLevel, Report } from "./types";
 
 const REPORTS_KEY = "beach-radar-reports-v1";
 const REPORTER_KEY = "beach-radar-reporter-v1";
@@ -49,6 +49,7 @@ export const tryAddReport = (input: {
   crowdLevel: CrowdLevel;
   reporterHash: string;
   now?: number;
+  attribution?: AttributionSnapshot;
 }): { ok: true; reports: Report[] } | { ok: false; reason: string } => {
   const now = input.now ?? Date.now();
   const reports = loadReports();
@@ -73,6 +74,7 @@ export const tryAddReport = (input: {
     createdAt: now,
     crowdLevel: input.crowdLevel,
     reporterHash: input.reporterHash,
+    attribution: input.attribution,
   };
 
   const nextReports = [newReport, ...reports];

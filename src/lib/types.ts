@@ -1,5 +1,15 @@
 export type CrowdLevel = 1 | 2 | 3 | 4;
 
+export type AttributionSnapshot = {
+  v: 1;
+  src?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  first_seen_at: string;
+  last_seen_at: string;
+};
+
 export type Beach = {
   id: string;
   name: string;
@@ -20,6 +30,7 @@ export type Report = {
   createdAt: number;
   crowdLevel: CrowdLevel;
   reporterHash: string;
+  attribution?: AttributionSnapshot;
 };
 
 export type BeachState = "LIVE" | "RECENT" | "PRED";

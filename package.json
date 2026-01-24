@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "seed:geocode": "node scripts/geocode-seed.mjs",
-    "seed:sync": "node scripts/sync-seed.mjs"
+    "seed:sync": "node scripts/sync-seed.mjs",
+    "posters:csv": "node tools/posters/make-csv.mjs",
+    "posters:gen": "node tools/posters/generate.mjs"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
@@ -33,6 +35,8 @@
     "tailwindcss": "^3.4.17",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
+    "qrcode": "^1.5.3",
+    "sharp": "^0.34.3",
     "vite": "^7.2.4"
   }
 }

@@ -1,4 +1,5 @@
 import { STRINGS } from "../i18n/it";
+import { track } from "../lib/analytics";
 import { formatStateLabel } from "../lib/format";
 import type { BeachState, CrowdLevel } from "../lib/types";
 
@@ -133,6 +134,7 @@ const renderShareCard = async (data: ShareCardData) => {
 };
 
 export const shareBeachCard = async (data: ShareCardData) => {
+  track("share_card_generate");
   const blob = await renderShareCard(data);
   const fileName = `beach-radar-${sanitizeFileName(data.name)}.png`;
   const file = new File([blob], fileName, { type: "image/png" });
@@ -151,6 +153,7 @@ export const shareBeachCard = async (data: ShareCardData) => {
     return;
   }
 
+  track("share_card_download");
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;

@@ -27,12 +27,27 @@ import {
   loadReports,
   tryAddReport,
 } from "../lib/storage";
+import {
+  ANALYTICS_UPDATE_EVENT,
+  type AnalyticsSource,
+  clearEvents,
+  loadEvents,
+  track,
+} from "../lib/analytics";
+import {
+  ATTRIBUTION_UPDATE_EVENT,
+  clearAttribution,
+  extractAttributionParams,
+  loadAttribution,
+  upsertAttribution,
+} from "../lib/attribution";
 import type { BeachWithStats, CrowdLevel, Report } from "../lib/types";
 import type { LatLng, UserLocation } from "../lib/geo";
 import type { BeachOverrides } from "../lib/overrides";
 
 const DEFAULT_CENTER: LatLng = { lat: 44.0678, lng: 12.5695 };
 const BEACH_FOCUS_ZOOM = 17;
+const REPORT_RADIUS_M = 700;
 
 type GeoStatus = "idle" | "loading" | "ready" | "denied" | "error";
 
@@ -46,6 +61,20 @@ function App() {
     typeof window === "undefined" ? {} : loadOverrides(),
   );
   const [selectedBeachId, setSelectedBeachId] = useState<string | null>(null);
+  const [pendingDeepLinkBeachId, setPendingDeepLinkBeachId] = useState<
+    string | null
+  >(null);
+  const [deepLinkInfo, setDeepLinkInfo] = useState<{
+    id: string | null;
+    matched: boolean | null;
+    params: {
+      src?: string;
+      utm_source?: string;
+      utm_medium?: string;
+      utm_campaign?: string;
+    };
+  }>({ id: null, matched: null, params: {} });
+  const [deepLinkWarning, setDeepLinkWarning] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
@@ -56,14 +85,21 @@ function App() {
   const [followMode, setFollowMode] = useState(false);
   const [locationToast, setLocationToast] = useState<string | null>(null);
   const [debugToast, setDebugToast] = useState<string | null>(null);
+  const [debugRefreshKey, setDebugRefreshKey] = useState(0);
   const [splashPhase, setSplashPhase] = useState<
     "visible" | "fading" | "hidden"
   >("visible");
+  const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef<LeafletMap | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const followInitializedRef = useRef(false);
   const followModeRef = useRef(false);
   const lastLocateTapRef = useRef(0);
+  const didInitRef = useRef(false);
+  const lastSelectedBeachIdRef = useRef<string | null>(null);
+  const selectionSourceRef = useRef<AnalyticsSource | null>(null);
+  const reportOpenRef = useRef(false);
+  const deepLinkProcessedRef = useRef(false);
 
   const isDebug = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -74,6 +110,17 @@ function App() {
   }, []);
 
   const effectiveEditMode = isDebug && editPositions;
+
+  useEffect(() => {
+    if (!isDebug || typeof window === "undefined") return;
+    const handleUpdate = () => setDebugRefreshKey((prev) => prev + 1);
+    window.addEventListener(ANALYTICS_UPDATE_EVENT, handleUpdate);
+    window.addEventListener(ATTRIBUTION_UPDATE_EVENT, handleUpdate);
+    return () => {
+      window.removeEventListener(ANALYTICS_UPDATE_EVENT, handleUpdate);
+      window.removeEventListener(ATTRIBUTION_UPDATE_EVENT, handleUpdate);
+    };
+  }, [isDebug]);
 
   useEffect(() => {
     const interval = window.setInterval(() => setNow(Date.now()), 60000);
@@ -96,6 +143,42 @@ function App() {
   useEffect(() => {
     // eslint-disable-next-line no-console
     console.info(`Loaded spots: ${SPOTS.length}`);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+
+    track("app_open");
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const beachParam = searchParams.get("beach");
+    const beachIdParam = searchParams.get("beachId");
+    const deepLinkId = beachParam ?? beachIdParam;
+    if (deepLinkId) {
+      setPendingDeepLinkBeachId(deepLinkId);
+    }
+
+    const attributionParams = extractAttributionParams(searchParams);
+    setDeepLinkInfo({
+      id: deepLinkId ?? null,
+      matched: deepLinkId ? null : false,
+      params: attributionParams,
+    });
+    setDeepLinkWarning(null);
+    upsertAttribution(attributionParams);
+
+    const srcParam = attributionParams.src;
+    const utmSource = attributionParams.utm_source?.toLowerCase();
+    const utmMedium = attributionParams.utm_medium?.toLowerCase();
+    const utmCampaign = attributionParams.utm_campaign;
+    const isQrOpen =
+      Boolean(srcParam) || utmSource === "qr" || utmMedium === "poster";
+
+    if (isQrOpen) {
+      track("qr_open", { src: srcParam, utm_campaign: utmCampaign });
+    }
   }, []);
 
   useEffect(() => {
@@ -307,6 +390,18 @@ function App() {
     (beach) => beach.id === selectedBeachId,
   );
   const selectedOverride = selectedBeachId ? overrides[selectedBeachId] : null;
+  const beachIdSet = useMemo(
+    () => new Set(beachViews.map((beach) => beach.id)),
+    [beachViews],
+  );
+  const debugAttribution = useMemo(
+    () => (isDebug ? loadAttribution() : null),
+    [debugRefreshKey, isDebug],
+  );
+  const debugEvents = useMemo(
+    () => (isDebug ? loadEvents() : []),
+    [debugRefreshKey, isDebug],
+  );
 
   useEffect(() => {
     if (selectedBeachId && !selectedBeach) {
@@ -337,6 +432,41 @@ function App() {
     [beachViews],
   );
 
+  useEffect(() => {
+    if (!pendingDeepLinkBeachId) return;
+    if (deepLinkProcessedRef.current) return;
+    if (beachViews.length === 0) return;
+    const beachExists = beachIdSet.has(pendingDeepLinkBeachId);
+    setDeepLinkInfo((prev) => ({
+      ...prev,
+      matched: beachExists,
+    }));
+    if (!beachExists) {
+      setPendingDeepLinkBeachId(null);
+      deepLinkProcessedRef.current = true;
+      const warning = `Deep link beach id not found in SPOTS: ${pendingDeepLinkBeachId}`;
+      setDeepLinkWarning(warning);
+      const sampleIds = beachViews.slice(0, 5).map((beach) => beach.id);
+      // eslint-disable-next-line no-console
+      console.warn(warning, "Sample ids:", sampleIds);
+      return;
+    }
+
+    selectionSourceRef.current = "deeplink";
+    setSelectedBeachId(pendingDeepLinkBeachId);
+    setSheetOpen(false);
+    deepLinkProcessedRef.current = true;
+  }, [beachIdSet, beachViews, pendingDeepLinkBeachId]);
+
+  useEffect(() => {
+    if (!pendingDeepLinkBeachId) return;
+    if (!mapReady || !mapRef.current) return;
+    if (deepLinkInfo.matched === false) return;
+    selectionSourceRef.current = "deeplink";
+    focusBeach(pendingDeepLinkBeachId, { updateSearch: false });
+    setPendingDeepLinkBeachId(null);
+  }, [deepLinkInfo.matched, focusBeach, mapReady, pendingDeepLinkBeachId]);
+
   const handleSelectBeach = useCallback(
     (beachId: string) => {
       focusBeach(beachId);
@@ -344,12 +474,43 @@ function App() {
     [focusBeach],
   );
 
+  const handleSelectBeachFromMarker = useCallback(
+    (beachId: string) => {
+      selectionSourceRef.current = "marker";
+      focusBeach(beachId);
+    },
+    [focusBeach],
+  );
+
   const handleSelectSuggestion = useCallback(
     (beachId: string) => {
+      selectionSourceRef.current = "search";
       focusBeach(beachId, { updateSearch: true });
     },
     [focusBeach],
   );
+
+  useEffect(() => {
+    if (!selectedBeachId) {
+      lastSelectedBeachIdRef.current = null;
+      return;
+    }
+    if (selectedBeachId === lastSelectedBeachIdRef.current) return;
+    lastSelectedBeachIdRef.current = selectedBeachId;
+    const source = selectionSourceRef.current ?? undefined;
+    track("beach_view", { beachId: selectedBeachId, source });
+    selectionSourceRef.current = null;
+  }, [selectedBeachId]);
+
+  useEffect(() => {
+    if (!reportOpen) {
+      reportOpenRef.current = false;
+      return;
+    }
+    if (reportOpenRef.current) return;
+    reportOpenRef.current = true;
+    track("report_open", { beachId: selectedBeachId ?? undefined });
+  }, [reportOpen, selectedBeachId]);
 
   const handleCloseDrawer = () => {
     if (reportOpen) return;
@@ -358,19 +519,37 @@ function App() {
 
   const handleSubmitReport = (level: CrowdLevel) => {
     if (!selectedBeach) return;
+    if (
+      reportDistanceM !== null &&
+      reportDistanceM > REPORT_RADIUS_M
+    ) {
+      track("report_submit_blocked_geofence", { beachId: selectedBeach.id });
+      return;
+    }
     const reporterHash = getReporterHash();
+    const attribution = loadAttribution() ?? undefined;
     const result = tryAddReport({
       beachId: selectedBeach.id,
       crowdLevel: level,
       reporterHash,
+      attribution,
     });
     if (result.ok) {
       setReports(result.reports);
       setNow(Date.now());
       setReportError(null);
       setReportOpen(false);
+      track("report_submit_success", {
+        beachId: selectedBeach.id,
+        level,
+      });
     } else {
       setReportError(result.reason);
+      if (result.reason === STRINGS.report.tooSoon) {
+        track("report_submit_blocked_rate_limit", {
+          beachId: selectedBeach.id,
+        });
+      }
     }
   };
 
@@ -389,6 +568,33 @@ function App() {
     } catch {
       // Share failures should be silent for MVP.
     }
+  };
+
+  const handleCopyDebugExport = async () => {
+    const payload = {
+      attribution: debugAttribution ?? undefined,
+      events: debugEvents,
+    };
+    if (!navigator.clipboard?.writeText) {
+      setDebugToast(STRINGS.debug.exportFailed);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      setDebugToast(STRINGS.debug.exportCopied);
+    } catch {
+      setDebugToast(STRINGS.debug.exportFailed);
+    }
+  };
+
+  const handleClearEvents = () => {
+    clearEvents();
+    setDebugToast(STRINGS.debug.eventsCleared);
+  };
+
+  const handleClearAttribution = () => {
+    clearAttribution();
+    setDebugToast(STRINGS.debug.attributionCleared);
   };
 
   const firstBeach = beachViews.find(
@@ -430,12 +636,13 @@ function App() {
       <MapView
         beaches={filteredBeaches}
         selectedBeachId={selectedBeachId}
-        onSelectBeach={handleSelectBeach}
+        onSelectBeach={handleSelectBeachFromMarker}
         center={mapCenter}
         editMode={effectiveEditMode}
         onOverride={handleOverride}
         onMapReady={(map) => {
           mapRef.current = map;
+          setMapReady(true);
         }}
         userLocation={userLocation ?? undefined}
         onUserInteract={handleUserInteract}
@@ -509,6 +716,37 @@ function App() {
               </div>
             ) : null}
           </div>
+          <div className="mt-3 rounded-xl border border-slate-800/70 bg-slate-900/40 px-3 py-2 text-xs text-slate-400">
+            <div className="text-slate-500">{STRINGS.debug.deeplink}</div>
+            <div className="mt-1 text-slate-100">
+              {deepLinkInfo.id ?? STRINGS.debug.none}
+            </div>
+            <div className="mt-1 text-slate-500">
+              {STRINGS.debug.deeplinkMatched}{" "}
+              <span className="text-slate-100">
+                {deepLinkInfo.id
+                  ? deepLinkInfo.matched === null
+                    ? STRINGS.debug.pending
+                    : deepLinkInfo.matched
+                      ? STRINGS.debug.yes
+                      : STRINGS.debug.no
+                  : STRINGS.debug.none}
+              </span>
+            </div>
+            <div className="mt-1 text-slate-500">
+              {STRINGS.debug.deeplinkParams}
+            </div>
+            <div className="mt-1 whitespace-pre-wrap break-words text-[11px] text-slate-100">
+              {Object.keys(deepLinkInfo.params).length > 0
+                ? JSON.stringify(deepLinkInfo.params)
+                : STRINGS.debug.none}
+            </div>
+            {deepLinkWarning ? (
+              <div className="mt-2 rounded-lg border border-rose-500/40 bg-rose-500/10 px-2 py-1 text-[11px] text-rose-200">
+                {deepLinkWarning}
+              </div>
+            ) : null}
+          </div>
           <button
             type="button"
             onClick={() => {
@@ -519,6 +757,39 @@ function App() {
             className="mt-3 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-40"
           >
             {STRINGS.debug.resetOverride}
+          </button>
+          <div className="mt-3 rounded-xl border border-slate-800/70 bg-slate-900/40 px-3 py-2 text-xs text-slate-400">
+            <div className="text-slate-500">{STRINGS.debug.attribution}</div>
+            <div className="mt-1 whitespace-pre-wrap break-words text-[11px] text-slate-100">
+              {debugAttribution
+                ? JSON.stringify(debugAttribution)
+                : STRINGS.debug.none}
+            </div>
+          </div>
+          <div className="mt-3 rounded-xl border border-slate-800/70 bg-slate-900/40 px-3 py-2 text-xs text-slate-400">
+            <div className="text-slate-500">{STRINGS.debug.eventsCount}</div>
+            <div className="mt-1 text-slate-100">{debugEvents.length}</div>
+          </div>
+          <button
+            type="button"
+            onClick={handleCopyDebugExport}
+            className="mt-3 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition"
+          >
+            {STRINGS.debug.copyExport}
+          </button>
+          <button
+            type="button"
+            onClick={handleClearEvents}
+            className="mt-2 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition"
+          >
+            {STRINGS.debug.clearEvents}
+          </button>
+          <button
+            type="button"
+            onClick={handleClearAttribution}
+            className="mt-2 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition"
+          >
+            {STRINGS.debug.clearAttribution}
           </button>
         </div>
       ) : null}
