@@ -144,7 +144,7 @@ const BottomSheet = ({
         className="mx-auto max-w-screen-sm rounded-t-[24px] br-surface-strong"
       >
         <button
-          className="br-press flex w-full items-center justify-between px-6 py-4 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20"
+          className="br-press flex w-full items-center justify-between px-6 py-4 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/20 focus-visible:outline-offset-1"
           onClick={() => {
             if (suppressClickRef.current) {
               suppressClickRef.current = false;
@@ -171,15 +171,15 @@ const BottomSheet = ({
           <div className="h-1 w-10 rounded-full bg-slate-600/80" />
         </button>
         <div className="max-h-[62vh] overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-          <div className="space-y-2.5 pb-6">
+          <div className="divide-y divide-white/10 pb-6">
             {beaches.map((beach) => (
               <button
                 key={beach.id}
                 onClick={() => onSelectBeach(beach.id)}
-                className={`br-press w-full rounded-[14px] border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20 ${
+                className={`br-press w-full px-4 py-3 text-left transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/20 focus-visible:outline-offset-1 ${
                   beach.id === selectedBeachId
-                    ? "border-sky-300/40 bg-slate-900/60"
-                    : "border-white/10 bg-slate-900/35"
+                    ? "bg-white/6"
+                    : "bg-transparent"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -194,7 +194,7 @@ const BottomSheet = ({
                     {formatDistanceLabel(beach.distanceM)}
                   </span>
                 </div>
-                <div className="mt-1.5 text-[15px] font-semibold text-slate-100">
+                <div className="mt-1.5 text-[15px] font-semibold text-slate-50">
                   {beach.name}
                 </div>
                 <div className="text-[12px] text-slate-500">

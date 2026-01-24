@@ -21,12 +21,12 @@
   --level-2: #facc15;
   --level-3: #f97316;
   --level-4: #ef4444;
-  --radius-14: 14px;
-  --radius-16: 16px;
-  --hairline: rgba(255, 255, 255, 0.12);
-  --surface-strong: rgba(12, 18, 30, 0.74);
-  --surface: rgba(12, 18, 30, 0.66);
-  --surface-soft: rgba(12, 18, 30, 0.6);
+  --radius-14: 12px;
+  --radius-16: 14px;
+  --hairline: rgba(255, 255, 255, 0.08);
+  --surface-strong: rgba(12, 18, 30, 0.68);
+  --surface: rgba(12, 18, 30, 0.6);
+  --surface-soft: rgba(12, 18, 30, 0.5);
 }
 
 * {
@@ -53,15 +53,15 @@ body {
   .br-surface {
     background-color: var(--surface);
     border: 1px solid var(--hairline);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 
   .br-surface-strong {
     background-color: var(--surface-strong);
     border: 1px solid var(--hairline);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 
   .br-surface-soft {

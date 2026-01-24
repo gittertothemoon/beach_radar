@@ -96,7 +96,7 @@ const TopSearch = ({
     <div className="fixed left-0 right-0 top-0 z-40 px-4 pt-[calc(env(safe-area-inset-top)+14px)]">
       <div ref={containerRef} className="mx-auto max-w-screen-sm">
         <div className="relative">
-          <div className="br-radius-m br-surface-strong flex h-12 items-center gap-2.5 px-4 focus-within:border-white/20 focus-within:ring-1 focus-within:ring-white/20">
+          <div className="br-radius-m br-surface-strong flex h-12 items-center gap-2.5 px-4 focus-within:border-white/15 focus-within:outline focus-within:outline-1 focus-within:outline-white/15 focus-within:outline-offset-1">
             <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
               {STRINGS.search.label}
             </span>
@@ -135,7 +135,7 @@ const TopSearch = ({
                   inputRef.current?.focus();
                 }}
                 aria-label={STRINGS.aria.clearSearch}
-                className="br-press inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-slate-900/50 text-[12px] font-semibold text-slate-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25"
+                className="br-press inline-flex h-7 w-7 items-center justify-center rounded-full border border-transparent bg-slate-900/35 text-[12px] font-semibold text-slate-200 focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/20 focus-visible:outline-offset-1"
               >
                 {STRINGS.actions.clearSymbol}
               </button>
@@ -146,18 +146,18 @@ const TopSearch = ({
           </div>
           {open && suggestions.length > 0 ? (
             <div className="br-radius-m br-surface absolute left-0 right-0 z-50 mt-2 overflow-hidden">
-              <div className="max-h-72 divide-y divide-white/10 overflow-y-auto py-1.5">
+              <div className="max-h-60 divide-y divide-white/10 overflow-y-auto py-1">
                 {suggestions.map((beach) => (
                   <button
                     key={beach.id}
                     type="button"
                     onClick={() => handleSelect(beach.id)}
-                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[15px] text-slate-100 transition-colors hover:bg-slate-900/40 focus-visible:bg-slate-900/50 focus-visible:outline-none"
+                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[15px] text-slate-100 transition-colors hover:bg-slate-900/35 focus-visible:bg-slate-900/40 focus-visible:outline-none"
                   >
                     <span className="truncate font-semibold tracking-[-0.01em]">
                       {beach.name}
                     </span>
-                    <span className="shrink-0 rounded-full border border-white/10 bg-slate-900/40 px-2 py-0.5 text-[11px] text-slate-400">
+                    <span className="shrink-0 rounded-full border border-white/8 bg-slate-900/30 px-1.5 py-0.5 text-[10px] text-slate-400">
                       {beach.region}
                     </span>
                   </button>

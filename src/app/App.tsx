@@ -676,7 +676,7 @@ function App() {
         type="button"
         onClick={handleLocateClick}
         aria-label={STRINGS.aria.myLocation}
-        className={`br-press fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+120px)] z-60 flex h-12 w-12 items-center justify-center rounded-full border backdrop-blur transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 ${
+        className={`br-press fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+72px)] z-60 flex h-12 w-12 items-center justify-center rounded-full border backdrop-blur transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 sm:bottom-[calc(env(safe-area-inset-bottom)+120px)] ${
           followMode
             ? "border-sky-200/60 bg-sky-300/85 text-slate-950"
             : "border-white/12 bg-slate-950/60 text-slate-100"
