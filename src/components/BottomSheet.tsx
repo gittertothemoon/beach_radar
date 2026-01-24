@@ -164,7 +164,7 @@ const BottomSheet = ({
             <div className="text-[15px] font-semibold br-text-primary">
               {STRINGS.labels.nearbyBeaches}
             </div>
-            <div className="text-[11px] br-text-secondary">
+            <div className="text-[11px] br-text-tertiary">
               {STRINGS.search.resultsCount(beaches.length)}
             </div>
           </div>
@@ -190,7 +190,7 @@ const BottomSheet = ({
                   >
                     {formatStateLabel(beach.state)}
                   </span>
-                  <span className="text-[11px] br-text-secondary">
+                  <span className="text-[11px] br-text-tertiary">
                     {formatDistanceLabel(beach.distanceM)}
                   </span>
                 </div>
@@ -200,7 +200,7 @@ const BottomSheet = ({
                 <div className="text-[12px] br-text-secondary">
                   {beach.region}
                 </div>
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] br-text-secondary">
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] br-text-tertiary">
                   <span>{formatConfidenceInline(beach.confidence)}</span>
                   <span>{formatMinutesAgo(beach.updatedAt, now)}</span>
                   <span>

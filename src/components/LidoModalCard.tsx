@@ -120,7 +120,7 @@ const LidoModalCard = ({
                 {formatStateLabel(beach.state)}
               </span>
               {isPred ? (
-                <span className="text-[11px] br-text-secondary">
+                <span className="text-[11px] br-text-tertiary">
                   {STRINGS.status.predLong}
                 </span>
               ) : null}
@@ -141,8 +141,8 @@ const LidoModalCard = ({
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-6 pb-6 pt-4">
-          <div className="rounded-[12px] border border-white/12 bg-slate-900/35 p-4 text-sm br-text-primary backdrop-blur-sm">
-            <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-secondary">
+          <div className="rounded-[12px] border border-white/15 bg-slate-900/45 p-4 text-sm br-text-primary backdrop-blur-sm">
+            <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
               <span>{STRINGS.labels.crowdStatus}</span>
               <span className="text-[11px] font-semibold br-text-primary">
                 {crowdLevelLabel(beach.crowdLevel)}
@@ -150,7 +150,7 @@ const LidoModalCard = ({
             </div>
             <div className="mt-3 grid gap-2">
               <div className="flex items-center justify-between">
-                <span className="br-text-secondary">
+                <span className="br-text-tertiary">
                   {STRINGS.labels.confidence}
                 </span>
                 <span className="font-semibold">
@@ -158,7 +158,7 @@ const LidoModalCard = ({
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="br-text-secondary">
+                <span className="br-text-tertiary">
                   {STRINGS.labels.lastUpdate}
                 </span>
                 <span className="font-semibold">
@@ -168,8 +168,8 @@ const LidoModalCard = ({
             </div>
           </div>
 
-          <div className="rounded-[12px] border border-white/12 bg-slate-900/32 p-4 backdrop-blur-sm">
-            <div className="text-[11px] uppercase tracking-[0.12em] br-text-secondary">
+          <div className="rounded-[12px] border border-white/15 bg-slate-900/42 p-4 backdrop-blur-sm">
+            <div className="text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
               {STRINGS.labels.address}
             </div>
             <p className="mt-2 text-[13px] br-text-primary">
@@ -180,15 +180,15 @@ const LidoModalCard = ({
                 href={mapsLink}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 inline-flex text-[12px] font-semibold text-sky-200"
+                className="mt-2 inline-flex text-[12px] font-semibold text-sky-100"
               >
                 {STRINGS.actions.openInMaps}
               </a>
             ) : null}
           </div>
 
-          <div className="rounded-[12px] border border-white/12 bg-slate-900/32 p-4 backdrop-blur-sm">
-            <div className="text-[11px] uppercase tracking-[0.12em] br-text-secondary">
+          <div className="rounded-[12px] border border-white/15 bg-slate-900/42 p-4 backdrop-blur-sm">
+            <div className="text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
               {STRINGS.labels.hours}
             </div>
             <p className="mt-2 text-[13px] br-text-primary">
@@ -196,13 +196,13 @@ const LidoModalCard = ({
             </p>
           </div>
 
-          <div className="rounded-[12px] border border-white/12 bg-slate-900/32 p-4 backdrop-blur-sm">
-            <div className="text-[11px] uppercase tracking-[0.12em] br-text-secondary">
+          <div className="rounded-[12px] border border-white/15 bg-slate-900/42 p-4 backdrop-blur-sm">
+            <div className="text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
               {STRINGS.labels.usefulInfo}
             </div>
             <div className="mt-3 grid gap-2 text-[13px] br-text-primary">
               <div className="flex items-center justify-between">
-                <span className="br-text-secondary">{STRINGS.labels.phone}</span>
+                <span className="br-text-tertiary">{STRINGS.labels.phone}</span>
                 {phone ? (
                   <a
                     href={`tel:${phone}`}
@@ -211,13 +211,13 @@ const LidoModalCard = ({
                     {phone}
                   </a>
                 ) : (
-                  <span className="font-semibold br-text-secondary">
+                  <span className="font-semibold br-text-tertiary">
                     {STRINGS.empty.notAvailable}
                   </span>
                 )}
               </div>
               <div className="flex items-center justify-between">
-                <span className="br-text-secondary">{STRINGS.labels.website}</span>
+                <span className="br-text-tertiary">{STRINGS.labels.website}</span>
                 {websiteHref ? (
                   <a
                     href={websiteHref}
@@ -228,7 +228,7 @@ const LidoModalCard = ({
                     {website}
                   </a>
                 ) : (
-                  <span className="font-semibold br-text-secondary">
+                  <span className="font-semibold br-text-tertiary">
                     {STRINGS.empty.notAvailable}
                   </span>
                 )}
@@ -240,14 +240,14 @@ const LidoModalCard = ({
                   {services.map((service) => (
                     <span
                       key={service}
-                      className="rounded-full border border-white/15 bg-slate-900/60 px-3 py-1 text-[11px] font-semibold br-text-primary"
+                      className="rounded-full border border-white/20 bg-slate-900/70 px-3 py-1 text-[11px] font-semibold br-text-primary"
                     >
                       {service}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-[13px] br-text-secondary">
+                <p className="text-[13px] br-text-tertiary">
                   {STRINGS.empty.notAvailable}
                 </p>
               )}

@@ -23,13 +23,17 @@
   --level-4: #ef4444;
   --radius-14: 12px;
   --radius-16: 14px;
-  --hairline: rgba(255, 255, 255, 0.14);
-  --surface-strong: rgba(11, 16, 26, 0.82);
-  --surface-medium: rgba(11, 16, 26, 0.74);
-  --surface-weak: rgba(11, 16, 26, 0.66);
+  --hairline: rgba(255, 255, 255, 0.12);
+  --surface-ultra: rgba(11, 16, 26, 0.88);
+  --surface-strong: rgba(11, 16, 26, 0.84);
+  --surface-elevated: rgba(11, 16, 26, 0.78);
+  --surface-medium: rgba(11, 16, 26, 0.72);
+  --surface-weak: rgba(11, 16, 26, 0.64);
   --text-primary: #f8fafc;
-  --text-secondary: rgba(226, 232, 240, 0.86);
-  --focus-ring: rgba(255, 255, 255, 0.35);
+  --text-secondary: rgba(226, 232, 240, 0.88);
+  --text-tertiary: rgba(226, 232, 240, 0.74);
+  --muted-strong: rgba(148, 163, 184, 0.9);
+  --focus-ring: rgba(255, 255, 255, 0.4);
 }
 
 * {
@@ -54,7 +58,7 @@ body {
 
 @layer components {
   .br-surface {
-    background-color: var(--surface-medium);
+    background-color: var(--surface-elevated);
     border: 1px solid var(--hairline);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
@@ -97,8 +101,16 @@ body {
     color: var(--text-secondary);
   }
 
+  .br-text-tertiary {
+    color: var(--text-tertiary);
+  }
+
+  .br-text-muted-strong {
+    color: var(--muted-strong);
+  }
+
   .contrast-guard {
-    background-color: var(--surface-strong);
+    background-color: var(--surface-ultra);
     border: 1px solid var(--hairline);
     color: var(--text-primary);
     backdrop-filter: blur(4px);
@@ -131,7 +143,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.1);
   pointer-events: none;
   z-index: 300;
 }
