@@ -109,14 +109,14 @@
     "lng": 12.5824881,
     "source": "GOOGLE_EARTH"
   },
-  "BR-RN-023": {
-    "lat": 44.0678353,
-    "lng": 12.5833583,
-    "source": "GOOGLE_EARTH"
-  },
   "BR-RN-024": {
     "lat": 44.0677881,
     "lng": 12.5837586,
+    "source": "GOOGLE_EARTH"
+  },
+  "BR-RN-023": {
+    "lat": 44.0678353,
+    "lng": 12.5833583,
     "source": "GOOGLE_EARTH"
   },
   "BR-RN-025": {
@@ -498,57 +498,5 @@
     "lat": 44.0942722,
     "lng": 12.529427,
     "source": "GOOGLE_EARTH"
-  },
-  "bagno-altamarea-69-cervia-7b358b": {
-    "lat": 44.234763124955,
-    "lng": 12.375745910312,
-    "source": "discovercervia"
-  },
-  "bagno-bruno-cervia-f6e5ae": {
-    "lat": 44.2359,
-    "lng": 12.3752,
-    "source": "manual",
-    "note": "TEMP - needs verification"
-  },
-  "bagno-costa-dei-pini-cervia-d26d98": {
-    "lat": 44.235950938633,
-    "lng": 12.375134303705,
-    "source": "discovercervia"
-  },
-  "bagno-endas-74-cervia-c5ec85": {
-    "lat": 44.2358,
-    "lng": 12.3752,
-    "source": "manual",
-    "note": "TEMP - needs verification"
-  },
-  "bagno-franco-cervia-b43d77": {
-    "lat": 44.23521035353,
-    "lng": 12.375646083467,
-    "source": "discovercervia"
-  },
-  "bagno-harmony-68-cervia-cf182b": {
-    "lat": 44.2346358,
-    "lng": 12.3761297,
-    "source": "discovercervia"
-  },
-  "bagno-mediterraneo-cervia-daad57": {
-    "lat": 44.2343065,
-    "lng": 12.3764564,
-    "source": "discovercervia"
-  },
-  "bagno-oasi-67-cervia-964dd8": {
-    "lat": 44.2344656,
-    "lng": 12.3758448,
-    "source": "discovercervia"
-  },
-  "bagno-settebello-cervia-714e44": {
-    "lat": 44.2360866,
-    "lng": 12.3751832,
-    "source": "discovercervia"
-  },
-  "vanilla-beach-cervia-e1f17a": {
-    "lat": 44.2333697,
-    "lng": 12.3765724,
-    "source": "discovercervia"
   }
 }

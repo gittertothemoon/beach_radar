@@ -1,5 +1,5 @@
 import type { Beach } from "../lib/types";
-import rawSpots from "./BeachRadar_Riviera_30_geocoded.json";
+import rawSpots from "./BeachRadar_Rimini_100_geocoded.json";
 
 type SeedSpot = {
   id: string;
@@ -56,6 +56,9 @@ const normalizeSpot = (spot: SeedSpot): Spot => ({
   lng: parseCoord(spot.lng),
   status: normalizeStatus(spot.status),
 });
+
+export const hasFiniteCoords = (spot: Pick<Spot, "lat" | "lng">) =>
+  Number.isFinite(spot.lat) && Number.isFinite(spot.lng);
 
 export const SPOTS: Spot[] = (rawSpots as SeedSpot[])
   .map(normalizeSpot)

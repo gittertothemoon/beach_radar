@@ -1,0 +1,2002 @@
+[
+  {
+    "id": "BR-RN-001",
+    "name": "Bagno Uno",
+    "address": "Lungomare Claudio Tintori 2, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0762395",
+    "lng": "12.5760479",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 2, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-002",
+    "name": "Prime Spiagge bagni 5.6.7",
+    "address": "Lungomare Claudio Tintori 10, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.074598",
+    "lng": "12.5770995",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 10, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-003",
+    "name": "Bagno N. 7 Alan Di G.A.E. Di Iaci Gaspare E C. Snc",
+    "address": "Lungomare Claudio Tintori 15, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0744934",
+    "lng": "12.5775252",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 15, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-004",
+    "name": "Beach 8 Luciano - Centro Nautico",
+    "address": "Lungomare Claudio Tintori 12, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0740137",
+    "lng": "12.5777146",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 12, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-005",
+    "name": "La Spiaggia del Grand Hotel Rimini",
+    "address": "Lungomare Claudio Tintori 12, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0737541",
+    "lng": "12.578315",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 12, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-006",
+    "name": "Bagno 9 Mauro",
+    "address": "Lungomare Claudio Tintori, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.073298",
+    "lng": "12.5789202",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-007",
+    "name": "Bagno delle Rose 10",
+    "address": "Lungomare Claudio Tintori 16, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0729656",
+    "lng": "12.5791241",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 16, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-008",
+    "name": "Bagno 12 Azzurro",
+    "address": "Lungomare Claudio Tintori 18, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0721177",
+    "lng": "12.5787776",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 18, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-009",
+    "name": "Bagno 14 B. L'Amarissimo",
+    "address": "Lungomare Claudio Tintori 20, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0719663",
+    "lng": "12.5798659",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 20, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-010",
+    "name": "Bagno 15 Oasi",
+    "address": "Lungomare Claudio Tintori, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0716993",
+    "lng": "12.5801758",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-011",
+    "name": "Bagno 16 Giorgio",
+    "address": "Lungomare Claudio Tintori, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0713832",
+    "lng": "12.5804296",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-012",
+    "name": "Bagno 17 Rimini",
+    "address": "Lungomare Claudio Tintori 22A, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0711716",
+    "lng": "12.5805854",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 22A, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-013",
+    "name": "Bagno 18 Attilio",
+    "address": "Lungomare Claudio Tintori 24, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0708861",
+    "lng": "12.5808477",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 24, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-014",
+    "name": "Bagno 19 Gastone",
+    "address": "Lungomare Claudio Tintori, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0706143",
+    "lng": "12.5809691",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-015",
+    "name": "Bagno 20 Arcobaleno",
+    "address": "Lungomare Claudio Tintori 26, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0703086",
+    "lng": "12.581347",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 26, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-016",
+    "name": "Bagni 21 Sirena Beach",
+    "address": "Lungomare Claudio Tintori 21, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0698353",
+    "lng": "12.5808313",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 21, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-017",
+    "name": "Bagni 23 Sirena Beach",
+    "address": "Lungomare Claudio Tintori 23/C, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0697332",
+    "lng": "12.5817902",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 23/C, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-018",
+    "name": "Bagno 24 Rimini",
+    "address": "Lungomare Claudio Tintori 28, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0694947",
+    "lng": "12.5820021",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 28, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-019",
+    "name": "Bagno Aldo 25",
+    "address": "Lungomare Claudio Tintori, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0692003",
+    "lng": "12.5821928",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-020",
+    "name": "Bagno Tiki 26 Rimini",
+    "address": "Lungomare Claudio Tintori 30/A, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.068857",
+    "lng": "12.5825674",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 30/A, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-021",
+    "name": "La Community 27",
+    "address": "Lungomare Claudio Tintori 32A, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0685788",
+    "lng": "12.5828138",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 32A, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-022",
+    "name": "Bagno 28A Belvedere",
+    "address": "Lungomare Claudio Tintori 34B, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0676950",
+    "lng": "12.5824881",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 34B, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-024",
+    "name": "Bagno 28 Nettuno Beach",
+    "address": "Lungomare Claudio Tintori 34/a, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0677881",
+    "lng": "12.5837586",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Claudio Tintori 34/a, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-023",
+    "name": "Bagno Nettuno",
+    "address": "Lungomare Augusto Murri 2, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0678353",
+    "lng": "12.5833583",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 2, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-025",
+    "name": "Spiaggia 29 Rimini",
+    "address": "Lungomare Augusto Murri 4, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0674345",
+    "lng": "12.5839557",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 4, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-026",
+    "name": "Bagno 30 Marino",
+    "address": "Lungomare Augusto Murri 2/C, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0671748",
+    "lng": "12.5841754",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 2/C, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-027",
+    "name": "La Dolce Vita 34 Rimini",
+    "address": "Lungomare Augusto Murri 6, 47900 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0662101",
+    "lng": "12.5850858",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 6, 47900 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-028",
+    "name": "Adriatic Village - Beach 35",
+    "address": "Lungomare Augusto Murri 6/B, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0658508",
+    "lng": "12.5855376",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 6/B, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-029",
+    "name": "Adriatic Village - Beach 36",
+    "address": "Lungomare Augusto Murri 8, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0656511",
+    "lng": "12.5857297",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 8, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-030",
+    "name": "Adriatic Village - Beach 37",
+    "address": "Lungomare Augusto Murri 8/ A, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0654179",
+    "lng": "12.5859644",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 8/ A, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-031",
+    "name": "Bagno 38 Marco",
+    "address": "Lungomare Augusto Murri 10A, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0651409",
+    "lng": "12.5862333",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 10A, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-032",
+    "name": "Bagno 39 Carlo",
+    "address": "Lungomare Augusto Murri, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0648833",
+    "lng": "12.5864854",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-033",
+    "name": "Bagno Matteo 40 Sud",
+    "address": "Lungomare Augusto Murri 12, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0646549",
+    "lng": "12.5867603",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 12, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-034",
+    "name": "Bagno 41 Lucio",
+    "address": "Lungomare Augusto Murri 14, 47900 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0642499",
+    "lng": "12.5871086",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 14, 47900 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-035",
+    "name": "Papaya Beach Bagno 42",
+    "address": "Lungomare Augusto Murri 16, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0640029",
+    "lng": "12.5874147",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 16, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-036",
+    "name": "Bagno 43 - Bagno onda",
+    "address": "Lungomare Augusto Murri, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0636700",
+    "lng": "12.5877222",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-037",
+    "name": "Bagno 44 Pino",
+    "address": "Lungomare Augusto Murri 18/a, 47900 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0634207",
+    "lng": "12.5879543",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 18/a, 47900 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-038",
+    "name": "L'Altra Spiaggia 45",
+    "address": "Lungomare Augusto Murri 24, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0631280",
+    "lng": "12.5882439",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 24, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-039",
+    "name": "Bagno 46 Rimini",
+    "address": "Lungomare Augusto Murri 20/A, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0629261",
+    "lng": "12.5884017",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 20/A, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-040",
+    "name": "Le Spiagge Rimini",
+    "address": "Lungomare Augusto Murri 32, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0625262",
+    "lng": "12.5883604",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 32, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-041",
+    "name": "Bagno 48",
+    "address": "Lungomare Augusto Murri 24a, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0623374",
+    "lng": "12.5890078",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 24a, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-042",
+    "name": "Bagno 50 - Le Spiagge Rimini",
+    "address": "Lungomare Augusto Murri 26/B, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0617875",
+    "lng": "12.5895358",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 26/B, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-043",
+    "name": "Bagno 51",
+    "address": "Lungomare Augusto Murri, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0615217",
+    "lng": "12.5898063",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-044",
+    "name": "Bagno 52 - Peppo Fantasy Beach",
+    "address": "Lungomare Augusto Murri, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0613658",
+    "lng": "12.5899673",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-045",
+    "name": "Bagno 53 - Le Spiagge Rimini",
+    "address": "Lungomare Augusto Murri 30/a, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0610610",
+    "lng": "12.5903061",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 30/a, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-046",
+    "name": "Bagno 54 - Le Spiagge Rimini",
+    "address": "Lungomare Augusto Murri 32, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0607795",
+    "lng": "12.5905723",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 32, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-047",
+    "name": "Bagno 55 - Le Spiagge Rimini",
+    "address": "Lungomare Augusto Murri 36/a, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0604744",
+    "lng": "12.5908893",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 36/a, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-048",
+    "name": "Bagno 56 Primo Sas Di Tacchi Gilberto E C.",
+    "address": "Lungomare Augusto Murri, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0601773",
+    "lng": "12.5911615",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-049",
+    "name": "Bagno 57 - Le Spiagge Rimini",
+    "address": "Lungomare Augusto Murri 36/a, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0598978",
+    "lng": "12.5915472",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 36/a, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-050",
+    "name": "Bagno 58 - Le Spiagge Rimini",
+    "address": "Lungomare Augusto Murri 38, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0597783",
+    "lng": "12.5915378",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Augusto Murri 38, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-051",
+    "name": "Bagno 60",
+    "address": "Lungomare Giuseppe di Vittorio 4, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0592394",
+    "lng": "12.5921107",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 4, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-052",
+    "name": "Bagno 61",
+    "address": "Lungomare Giuseppe di Vittorio 6, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0590379",
+    "lng": "12.5923038",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 6, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-053",
+    "name": "Bagno 62 - Le Spiagge Rimini",
+    "address": "Lungomare Giuseppe di Vittorio 6/a, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0588121",
+    "lng": "12.5925101",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 6/a, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-054",
+    "name": "Bagno 63 Vittorio",
+    "address": "Lungomare Giuseppe di Vittorio, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0581071",
+    "lng": "12.5928170",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-055",
+    "name": "Bagno Dario 64",
+    "address": "Lungomare Giuseppe di Vittorio, 47900 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0576457",
+    "lng": "12.5936851",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio, 47900 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-056",
+    "name": "Bagno 66 Rimini",
+    "address": "Lungomare Giuseppe di Vittorio, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0569950",
+    "lng": "12.5940306",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-057",
+    "name": "Bagno 67",
+    "address": "Lungomare Giuseppe di Vittorio 16A, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0559298",
+    "lng": "12.5953946",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 16A, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-058",
+    "name": "Bagno 70",
+    "address": "Lungomare Giuseppe di Vittorio 18A, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0554122",
+    "lng": "12.5960113",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 18A, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-059",
+    "name": "Bagno 71 Amarcord",
+    "address": "Lungomare Giuseppe di Vittorio 18/b, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0552825",
+    "lng": "12.5968542",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 18/b, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-060",
+    "name": "Bagno Claudio 72 Ondebeach",
+    "address": "Lungomare Giuseppe di Vittorio 20 A, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0549375",
+    "lng": "12.5964485",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 20 A, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-061",
+    "name": "Bagno 73 Riviera Ondebeach",
+    "address": "Lungomare Giuseppe di Vittorio 20/B, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0546599",
+    "lng": "12.5965333",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 20/B, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-062",
+    "name": "Bagni 75 Bulli",
+    "address": "Lungomare Giuseppe di Vittorio 20/D, 47924 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0542106",
+    "lng": "12.5971669",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 20/D, 47924 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-063",
+    "name": "Bagno 78 Sabbia d'Oro",
+    "address": "Lungomare Giuseppe di Vittorio 24, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0534266",
+    "lng": "12.5975675",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 24, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-064",
+    "name": "Bagno 79 Giovanni",
+    "address": "Lungomare Giuseppe di Vittorio 24, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0531118",
+    "lng": "12.5984129",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 24, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-065",
+    "name": "Spiaggia 80 Rimini",
+    "address": "Lungomare Giuseppe di Vittorio, 47924 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0527522",
+    "lng": "12.5988192",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio, 47924 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-066",
+    "name": "Bagno 81",
+    "address": "Lungomare Giuseppe di Vittorio 28, 47924 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0523448",
+    "lng": "12.5991412",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 28, 47924 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-067",
+    "name": "Aloha Your Beach 83 - (Bagno 83)",
+    "address": "Lungomare Giuseppe di Vittorio 30, 47924 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0519149",
+    "lng": "12.5995959",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 30, 47924 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-068",
+    "name": "Bagno 84 Graziano Rimini | Luxury Beach & Suite",
+    "address": "Lungomare Giuseppe di Vittorio 30a, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0515314",
+    "lng": "12.5998555",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 30a, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-069",
+    "name": "Bagno 85 La Playa",
+    "address": "Lungomare Giuseppe di Vittorio 32, 47924 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0510882",
+    "lng": "12.6002415",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 32, 47924 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-070",
+    "name": "Bagno 85A Luca e Dea",
+    "address": "Lungomare Giuseppe di Vittorio 32/b, 47924 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0508761",
+    "lng": "12.6007599",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 32/b, 47924 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-071",
+    "name": "Bagno Gibo 85B",
+    "address": "Lungomare Giuseppe di Vittorio 34, 47924 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0506484",
+    "lng": "12.6010627",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 34, 47924 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-072",
+    "name": "Bagno 86 Lailai Island",
+    "address": "Lungomare Giuseppe di Vittorio 34/A, 47924 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0501234",
+    "lng": "12.6014132",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 34/A, 47924 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-073",
+    "name": "Bagno 86A Rimini Brand",
+    "address": "Lungomare Giuseppe di Vittorio 36a, 47921 Bellariva RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0493580",
+    "lng": "12.6019683",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Bellariva.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 36a, 47921 Bellariva RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-074",
+    "name": "Bagno 87 Carlo",
+    "address": "47924 Bellariva RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0489679",
+    "lng": "12.6027024",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Bellariva.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "47924 Bellariva RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-075",
+    "name": "Bagno 88 Vittorio",
+    "address": "Lungomare Giuseppe di Vittorio 38b, 47921 Bellariva RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0488435",
+    "lng": "12.6029290",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Bellariva.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 38b, 47921 Bellariva RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-076",
+    "name": "Bagno 89 Lele",
+    "address": "Lungomare Giuseppe di Vittorio 38C, 47924 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0486806",
+    "lng": "12.6032191",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 38C, 47924 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-077",
+    "name": "Spiaggia 90",
+    "address": "Lungomare Giuseppe di Vittorio 40/a, 47924 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0484736",
+    "lng": "12.6034589",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Lungomare Giuseppe di Vittorio 40/a, 47924 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-078",
+    "name": "Lido San Giuliano",
+    "address": "Viale Ortigara, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0755969",
+    "lng": "12.5672599",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Ortigara, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-079",
+    "name": "Bagno Riviera 1 di Rimini a Rivabella",
+    "address": "Viale Paolo Toscanelli 5\\A, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0758409",
+    "lng": "12.5610058",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Paolo Toscanelli 5\\A, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-080",
+    "name": "Bagno Celli N. 6",
+    "address": "Viale Paolo Toscanelli 37, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0781752",
+    "lng": "12.5548464",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Paolo Toscanelli 37, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-081",
+    "name": "Lazy Beach Bagno 7 Rivabella",
+    "address": "Viale Paolo Toscanelli 39a, 47921 Rivabella RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0785791",
+    "lng": "12.5540347",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Rivabella.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Paolo Toscanelli 39a, 47921 Rivabella RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-082",
+    "name": "Bagno 10 Vatikaki",
+    "address": "Viale Paolo Toscanelli, 47921 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0797193",
+    "lng": "12.5517577",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Paolo Toscanelli, 47921 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-083",
+    "name": "Dolcevita 11 Beach Club & Restaurant",
+    "address": "Viale Paolo Toscanelli 59-63, 47922 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0797648",
+    "lng": "12.5511433",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Paolo Toscanelli 59-63, 47922 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-084",
+    "name": "Bagno 16 Club del Sole",
+    "address": "Viale Paolo Toscanelli, 47922 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0809110",
+    "lng": "12.5495799",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Paolo Toscanelli, 47922 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-085",
+    "name": "Kalima Beach Club - N. 17",
+    "address": "Viale Paolo Toscanelli 71, 47922 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0822847",
+    "lng": "12.5471436",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Paolo Toscanelli 71, 47922 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-086",
+    "name": "Bagno 18 Golden Beach",
+    "address": "Viale Paolo Toscanelli 73, 47922 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0831595",
+    "lng": "12.5459646",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Paolo Toscanelli 73, 47922 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-087",
+    "name": "Bagno 19 Bruno",
+    "address": "Viale Giuliano Dati, 47922 Viserba RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0837260",
+    "lng": "12.5451256",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Viserba.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Giuliano Dati, 47922 Viserba RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-088",
+    "name": "Spiaggia Vistamare Viserba 19-20",
+    "address": "Viale Paolo Toscanelli 83, 47921 Viserba RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0841698",
+    "lng": "12.5443891",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Viserba.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Paolo Toscanelli 83, 47921 Viserba RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-089",
+    "name": "Bagno Gastone 21",
+    "address": "Viale Giuliano Dati 1, 47922 Viserba RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0843047",
+    "lng": "12.5443268",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Viserba.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Giuliano Dati 1, 47922 Viserba RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-090",
+    "name": "Bagno 22 Anna",
+    "address": "Viale Giuliano Dati 1/C, 47922 Viserba RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0849374",
+    "lng": "12.5435144",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Viserba.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Giuliano Dati 1/C, 47922 Viserba RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-091",
+    "name": "Bagno Marinagrande Di Viserba",
+    "address": "Viale Giuliano Dati 19, 47922 Viserba RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0861846",
+    "lng": "12.5417113",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Viserba.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Giuliano Dati 19, 47922 Viserba RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-092",
+    "name": "Bagno N°27 Marinagrande",
+    "address": "Viale Giuliano Dati 29, 47922 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0871534",
+    "lng": "12.5402153",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Giuliano Dati 29, 47922 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-093",
+    "name": "Playa Tamarindo",
+    "address": "Viale Giuliano Dati 47/D, 47922 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0879287",
+    "lng": "12.5391162",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Giuliano Dati 47/D, 47922 Rimini RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-094",
+    "name": "Bagno 31 playa tamarindo",
+    "address": "Viale Giuliano Dati 93, 47922 Viserba RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0883588",
+    "lng": "12.5385781",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Viserba.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Giuliano Dati 93, 47922 Viserba RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-095",
+    "name": "Bahia Rico's Spiagge 35/36 Viserba",
+    "address": "Viale Giuliano Dati 105A, 47922 Viserba RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0898351",
+    "lng": "12.5362525",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Viserba.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Giuliano Dati 105A, 47922 Viserba RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-096",
+    "name": "Bagno 37 Pietro",
+    "address": "Viale Giuliano Dati 111 a, 47922 Viserba RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0906944",
+    "lng": "12.5348672",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Viserba.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Giuliano Dati 111 a, 47922 Viserba RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-097",
+    "name": "Bagno 38 Egisto",
+    "address": "Viale Giuliano Dati 113H, 47922 Viserba RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0907810",
+    "lng": "12.5344033",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Viserba.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Giuliano Dati 113H, 47922 Viserba RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-098",
+    "name": "Spiaggia 39 Cigno",
+    "address": "Viale Porto Palos 3a, 47922 Viserbella RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0919688",
+    "lng": "12.5335241",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Viserbella.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Porto Palos 3a, 47922 Viserbella RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-099",
+    "name": "Bagno 40/42 Angelo",
+    "address": "Viale Porto Palos 3, 47922 Viserbella RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0925443",
+    "lng": "12.5330774",
+    "notes": "Pinned via seed override (Google Earth). Locality hint: Viserbella.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Porto Palos 3, 47922 Viserbella RN, Italia",
+      "fromCache": true
+    }
+  },
+  {
+    "id": "BR-RN-100",
+    "name": "Spiagge Salsedine 44-45",
+    "address": "Viale Porto Palos 31, 47922 Rimini RN, Italia",
+    "city": "Rimini",
+    "province": "RN",
+    "region": "Emilia-Romagna",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": "44.0942722",
+    "lng": "12.5294270",
+    "notes": "Pinned via seed override (Google Earth).",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "provider": "GOOGLE_EARTH",
+      "query": null,
+      "display_name": "Viale Porto Palos 31, 47922 Rimini RN, Italia",
+      "fromCache": true
+    }
+  }
+]

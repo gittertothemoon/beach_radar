@@ -1,10 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const INPUT_PATH = path.resolve("seed/BeachRadar_Riviera_30_geocoded.json");
+const INPUT_PATH = path.resolve("seed/BeachRadar_Rimini_100_geocoded.json");
 const OVERRIDES_PATH = path.resolve("seed/seed-overrides.json");
 const OUTPUT_PATH = path.resolve(
-  "src/data/BeachRadar_Riviera_30_geocoded.json",
+  "src/data/BeachRadar_Rimini_100_geocoded.json",
 );
 
 const loadJson = async (filePath, fallback) => {

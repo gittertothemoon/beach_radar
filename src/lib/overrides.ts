@@ -53,3 +53,9 @@ export const clearOverride = (beachId: string): BeachOverrides => {
   }
   return overrides;
 };
+
+export const clearOverrides = (): BeachOverrides => {
+  if (typeof window === "undefined") return {};
+  window.localStorage.removeItem(STORAGE_KEY);
+  return {};
+};

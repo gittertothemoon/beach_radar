@@ -20,9 +20,9 @@ const VIEWBOX = {
 };
 const NOMINATIM_LIMIT = 5;
 
-const SEED_PATH = path.resolve("seed/BeachRadar_Riviera_30_seed.json");
-const OUTPUT_JSON = path.resolve("seed/BeachRadar_Riviera_30_geocoded.json");
-const OUTPUT_CSV = path.resolve("seed/BeachRadar_Riviera_30_geocoded.csv");
+const SEED_PATH = path.resolve("BeachRadar_Rimini_100_seed_schema.json");
+const OUTPUT_JSON = path.resolve("seed/BeachRadar_Rimini_100_geocoded.json");
+const OUTPUT_CSV = path.resolve("seed/BeachRadar_Rimini_100_geocoded.csv");
 const CACHE_PATH = path.resolve(".cache/nominatim-cache.json");
 const OVERRIDES_PATH = path.resolve("seed/seed-overrides.json");
 
@@ -434,6 +434,7 @@ const main = async () => {
     failed: 0,
     from_cache: 0,
     overrides: 0,
+    nominatim: 0,
   };
 
   const geocodeQuery = async (query, spot) => {
@@ -547,6 +548,9 @@ const main = async () => {
       if (override && geocodeMeta.status === "override") {
         stats.overrides += 1;
       }
+      if (geocodeMeta.status === "geocoded") {
+        stats.nominatim += 1;
+      }
       if (notes.includes("GEOCODE_FAILED")) {
         notes = notes.replace(/\s*GEOCODE_FAILED\s*/g, " ").trim();
       }
@@ -578,6 +582,10 @@ const main = async () => {
   // eslint-disable-next-line no-console
   console.log(
     `Geocode summary: total=${stats.total} ok=${stats.ok} failed=${stats.failed} from_cache=${stats.from_cache} overrides=${stats.overrides}`,
+  );
+  // eslint-disable-next-line no-console
+  console.log(
+    `Geocode sources: overrides=${stats.overrides} nominatim=${stats.nominatim} cache=${stats.from_cache}`,
   );
   if (failedIds.length > 0) {
     // eslint-disable-next-line no-console

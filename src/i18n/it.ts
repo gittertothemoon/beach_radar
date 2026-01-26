@@ -111,6 +111,9 @@ export const STRINGS = {
     selectedBeach: "Spiaggia selezionata",
     none: "nessuna",
     resetOverride: "Ripristina posizione selezionata",
+    resetOverrides: "Reset pin overrides",
+    overrideWarning: (count: number) =>
+      `Local pin overrides are active (${count}). These override seed coordinates. Use Reset to validate seed.`,
     positionSaved: "Posizione salvata",
     lat: "lat",
     lng: "lng",

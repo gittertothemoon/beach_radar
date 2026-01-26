@@ -9,12 +9,13 @@ import { shareBeachCard } from "../components/ShareCard";
 import logo from "../assets/logo.png";
 import logoText from "../assets/beach-radar-scritta.png";
 import splashBg from "../assets/initial-bg.png";
-import { SPOTS } from "../data/spots";
+import { SPOTS, hasFiniteCoords } from "../data/spots";
 import { STRINGS } from "../i18n/it";
 import { aggregateBeachStats } from "../lib/aggregate";
 import { distanceInMeters } from "../lib/geo";
 import {
   clearOverride,
+  clearOverrides,
   loadOverrides,
   setOverride,
 } from "../lib/overrides";
@@ -322,6 +323,11 @@ function App() {
     setOverrides(nextOverrides);
   }, []);
 
+  const handleResetAllOverrides = useCallback(() => {
+    const nextOverrides = clearOverrides();
+    setOverrides(nextOverrides);
+  }, []);
+
   const handleLocateClick = useCallback(() => {
     const nowTs = Date.now();
     if (nowTs - lastLocateTapRef.current < 2000) {
@@ -347,20 +353,44 @@ function App() {
     [isDebug],
   );
 
-  const beachViews = useMemo<BeachWithStats[]>(() => {
-    return visibleSpots.map((beach) => {
+  const coordStats = useMemo(() => {
+    const total = visibleSpots.length;
+    let valid = 0;
+    visibleSpots.forEach((beach) => {
       const override = overrides[beach.id];
       const lat = override?.lat ?? beach.lat;
       const lng = override?.lng ?? beach.lng;
-      const hasValidCoords = Number.isFinite(lat) && Number.isFinite(lng);
-      const stats = aggregateBeachStats(beach, reports, now);
-      const distanceM = userLocation
-        ? hasValidCoords
-          ? distanceInMeters(userLocation, { lat, lng })
-          : null
-        : null;
-      return { ...beach, lat, lng, ...stats, distanceM };
+      if (Number.isFinite(lat) && Number.isFinite(lng)) valid += 1;
     });
+    return { total, valid, missing: total - valid };
+  }, [visibleSpots, overrides]);
+
+  const overrideCount = useMemo(() => Object.keys(overrides).length, [overrides]);
+
+  useEffect(() => {
+    if (!isDebug) return;
+    // eslint-disable-next-line no-console
+    console.info(
+      `Debug coords: total=${coordStats.total} valid=${coordStats.valid} missing=${coordStats.missing}`,
+    );
+  }, [coordStats.missing, coordStats.total, coordStats.valid, isDebug]);
+
+  const beachViews = useMemo<BeachWithStats[]>(() => {
+    return visibleSpots
+      .map((beach) => {
+        const override = overrides[beach.id];
+        const lat = override?.lat ?? beach.lat;
+        const lng = override?.lng ?? beach.lng;
+        const hasValidCoords = Number.isFinite(lat) && Number.isFinite(lng);
+        const stats = aggregateBeachStats(beach, reports, now);
+        const distanceM = userLocation
+          ? hasValidCoords
+            ? distanceInMeters(userLocation, { lat, lng })
+            : null
+          : null;
+        return { ...beach, lat, lng, ...stats, distanceM };
+      })
+      .filter((beach) => hasFiniteCoords(beach));
   }, [visibleSpots, overrides, reports, now, userLocation]);
 
   const normalizedSearch = search.trim().toLowerCase();
@@ -699,6 +729,13 @@ function App() {
           {locationToast}
         </div>
       ) : null}
+      {isDebug && overrideCount > 0 ? (
+        <div className="fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+84px)] z-40 w-[min(92vw,360px)] -translate-x-1/2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-[11px] text-amber-100 shadow-lg backdrop-blur">
+          <div className="text-amber-100">
+            {STRINGS.debug.overrideWarning(overrideCount)}
+          </div>
+        </div>
+      ) : null}
       {isDebug && debugToast ? (
         <div className="fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+18px)] z-40 -translate-x-1/2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 py-2 text-[11px] text-emerald-100 shadow-lg backdrop-blur">
           {debugToast}
@@ -774,6 +811,14 @@ function App() {
             className="mt-3 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-40"
           >
             {STRINGS.debug.resetOverride}
+          </button>
+          <button
+            type="button"
+            onClick={handleResetAllOverrides}
+            disabled={overrideCount === 0}
+            className="mt-2 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {STRINGS.debug.resetOverrides}
           </button>
           <div className="mt-3 rounded-xl border border-slate-800/70 bg-slate-900/40 px-3 py-2 text-xs text-slate-400">
             <div className="text-slate-500">{STRINGS.debug.attribution}</div>
