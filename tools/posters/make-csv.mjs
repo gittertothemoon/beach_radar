@@ -4,7 +4,7 @@ import path from "node:path";
 const ROOT = process.cwd();
 const SOURCE_JSON = path.resolve(
   ROOT,
-  "src/data/BeachRadar_Riviera_30_geocoded.json",
+  "src/data/BeachRadar_Rimini_100_geocoded.json",
 );
 const OUTPUT_CSV = path.resolve(ROOT, "tools/posters/input/lidi.csv");
 

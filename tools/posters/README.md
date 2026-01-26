@@ -13,7 +13,7 @@ npm run posters:gen
 - Posters are written to: `tools/posters/out/`
 
 ## Validation
-- Before generating any PNGs, the script checks that every CSV `beachId` exists in the runtime dataset (`src/data/BeachRadar_Riviera_30_geocoded.json`).
+- Before generating any PNGs, the script checks that every CSV `beachId` exists in the runtime dataset (`src/data/BeachRadar_Rimini_100_geocoded.json`).
 - If any are missing, it prints an error and exits with code 1 (no posters generated).
 
 ## Status gating

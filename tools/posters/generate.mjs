@@ -14,7 +14,7 @@ const CSV_PATH = path.resolve(ROOT, "tools/posters/input/lidi.csv");
 const OUT_DIR = path.resolve(ROOT, "tools/posters/out");
 const DATASET_PATH = path.resolve(
   ROOT,
-  "src/data/BeachRadar_Riviera_30_geocoded.json",
+  "src/data/BeachRadar_Rimini_100_geocoded.json",
 );
 const ONLY_SRC = process.env.POSTER_ONLY_SRC?.trim();
 const DEBUG_PLATE = process.env.POSTER_DEBUG_PLATE === "1";
