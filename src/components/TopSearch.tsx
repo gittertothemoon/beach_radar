@@ -30,6 +30,7 @@ const TopSearch = ({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [open, setOpen] = useState(false);
   const normalized = value.trim().toLowerCase();
+  const effectiveOpen = open && normalized.length > 0;
 
   const suggestions = useMemo(() => {
     if (!normalized) return [];
@@ -67,10 +68,6 @@ const TopSearch = ({
 
     return matches;
   }, [beaches, normalized]);
-
-  useEffect(() => {
-    if (!normalized) setOpen(false);
-  }, [normalized]);
 
   useEffect(() => {
     const handleOutside = (event: MouseEvent | TouchEvent) => {
@@ -116,14 +113,18 @@ const TopSearch = ({
                   setOpen(false);
                   return;
                 }
-                if (event.key === "Enter" && open && suggestions.length > 0) {
+                if (
+                  event.key === "Enter" &&
+                  effectiveOpen &&
+                  suggestions.length > 0
+                ) {
                   event.preventDefault();
                   handleSelect(suggestions[0].id);
                 }
               }}
               placeholder={STRINGS.search.placeholder}
               aria-label={STRINGS.aria.searchBeaches}
-              aria-expanded={open}
+              aria-expanded={effectiveOpen}
               className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-[color:var(--text-primary)] placeholder:text-[color:var(--text-tertiary)] focus:outline-none"
             />
             {value ? (
@@ -144,7 +145,7 @@ const TopSearch = ({
               {STRINGS.search.resultsCount(resultCount)}
             </span>
           </div>
-          {open && suggestions.length > 0 ? (
+          {effectiveOpen && suggestions.length > 0 ? (
             <div className="br-radius-m br-surface absolute left-0 right-0 z-50 mt-2 overflow-hidden">
               <div className="max-h-56 divide-y divide-[color:var(--hairline)] overflow-y-auto py-1">
                 {suggestions.map((beach) => (

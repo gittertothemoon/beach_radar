@@ -257,7 +257,7 @@ const ClusteredMarkers = ({
   "beaches" | "selectedBeachId" | "onSelectBeach" | "editMode" | "onOverride"
 >) => {
   const map = useMap();
-  const [clusters, setClusters] = useState<Cluster[]>([]);
+  const [mapTick, setMapTick] = useState(0);
   const [expandedClusters, setExpandedClusters] = useState<string[]>([]);
   const expandedClusterSet = useMemo(
     () => new Set(expandedClusters),
@@ -269,8 +269,8 @@ const ClusteredMarkers = ({
     [beaches],
   );
 
-  const rebuildClusters = useCallback(() => {
-    setClusters(
+  const clusters = useMemo(
+    () =>
       clusterBeaches(
         validBeaches,
         map,
@@ -278,15 +278,15 @@ const ClusteredMarkers = ({
         !editMode,
         expandedClusterSet,
       ),
-    );
-  }, [editMode, map, selectedBeachId, validBeaches, expandedClusterSet]);
+    [validBeaches, map, editMode, selectedBeachId, expandedClusterSet, mapTick],
+  );
 
-  useEffect(() => {
-    rebuildClusters();
-  }, [rebuildClusters]);
+  const handleMapChange = useCallback(() => {
+    setMapTick((prev) => prev + 1);
+  }, []);
 
-  useMapEvent("zoomend", rebuildClusters);
-  useMapEvent("moveend", rebuildClusters);
+  useMapEvent("zoomend", handleMapChange);
+  useMapEvent("moveend", handleMapChange);
   useMapEvent("zoomend", () => {
     const maxZoom = map.getMaxZoom?.() ?? 18;
     if (map.getZoom() < maxZoom && expandedClusters.length) {

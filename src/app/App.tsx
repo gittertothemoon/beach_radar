@@ -57,7 +57,7 @@ function App() {
   const [reports, setReports] = useState<Report[]>(() =>
     typeof window === "undefined" ? [] : loadReports(),
   );
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(Date.now);
   const [overrides, setOverrides] = useState<BeachOverrides>(() =>
     typeof window === "undefined" ? {} : loadOverrides(),
   );
@@ -124,7 +124,7 @@ function App() {
   }, [isDebug]);
 
   useEffect(() => {
-    const interval = window.setInterval(() => setNow(Date.now()), 60000);
+    const interval = window.setInterval(() => setNow(Date.now), 60000);
     return () => window.clearInterval(interval);
   }, []);
 
@@ -158,6 +158,7 @@ function App() {
     const beachIdParam = searchParams.get("beachId");
     const deepLinkId = beachParam ?? beachIdParam;
     if (deepLinkId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPendingDeepLinkBeachId(deepLinkId);
     }
 
@@ -258,6 +259,7 @@ function App() {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     requestLocation();
   }, [requestLocation]);
 
@@ -272,6 +274,7 @@ function App() {
     }
 
     if (!navigator.geolocation) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       handleGeoError(null);
       setLocationToast(STRINGS.location.toastUnavailable);
       setFollowMode(false);
@@ -443,6 +446,7 @@ function App() {
 
   useEffect(() => {
     if (selectedBeachId && !selectedBeach) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedBeachId(null);
     }
   }, [selectedBeach, selectedBeachId]);
@@ -484,6 +488,7 @@ function App() {
     if (deepLinkProcessedRef.current) return;
     if (beachViews.length === 0) return;
     const beachExists = beachIdSet.has(pendingDeepLinkBeachId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDeepLinkInfo((prev) => ({
       ...prev,
       matched: beachExists,
@@ -510,6 +515,7 @@ function App() {
     if (!mapReady || !mapRef.current) return;
     if (deepLinkInfo.matched === false) return;
     selectionSourceRef.current = "deeplink";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     focusBeach(pendingDeepLinkBeachId, { updateSearch: false });
     setPendingDeepLinkBeachId(null);
   }, [deepLinkInfo.matched, focusBeach, mapReady, pendingDeepLinkBeachId]);
@@ -583,7 +589,7 @@ function App() {
     });
     if (result.ok) {
       setReports(result.reports);
-      setNow(Date.now());
+      setNow(Date.now);
       setReportError(null);
       setReportOpen(false);
       track("report_submit_success", {
