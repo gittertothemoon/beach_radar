@@ -3,7 +3,19 @@ import path from "node:path";
 import QRCode from "qrcode";
 import sharp from "sharp";
 
-const BASE_URL = "https://beach-radar.vercel.app";
+const DEFAULT_BASE_URL = "https://beach-radar.vercel.app";
+
+const normalizeBaseUrl = (value) => value.replace(/\/+$/, "");
+
+const readBaseUrlFromEnv = () => {
+  const raw = (
+    process.env.VITE_PUBLIC_BASE_URL ?? process.env.PUBLIC_BASE_URL
+  )?.trim();
+  if (!raw) return DEFAULT_BASE_URL;
+  return normalizeBaseUrl(raw);
+};
+
+const BASE_URL = readBaseUrlFromEnv();
 
 const QR_PLATE = { x: 302, y: 850, w: 420, h: 420, r: 30 };
 const QR_PADDING = 20;

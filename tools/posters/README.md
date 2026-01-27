@@ -30,8 +30,10 @@ Current defaults:
 
 ## Example deeplink
 ```
-https://beach-radar.vercel.app/?beach=beach-123&src=la-baia-rimini&utm_source=qr&utm_medium=poster&utm_campaign=pilot2026
+https://<tuo-dominio>/?beach=beach-123&src=la-baia-rimini&utm_source=qr&utm_medium=poster&utm_campaign=pilot2026
 ```
+
+Nota: l'URL base usato dal generatore poster è configurabile via `VITE_PUBLIC_BASE_URL` (o `PUBLIC_BASE_URL`).
 
 ## Fast iteration (single poster)
 Generate only one poster using:

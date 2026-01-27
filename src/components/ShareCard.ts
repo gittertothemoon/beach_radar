@@ -2,6 +2,7 @@ import { STRINGS } from "../i18n/it";
 import { track } from "../lib/analytics";
 import { crowdLevelLabel } from "../lib/format";
 import type { BeachState, CrowdLevel } from "../lib/types";
+import { PUBLIC_HOSTNAME } from "../config/publicUrl";
 import logoUrl from "../assets/logo.png";
 import wordmarkUrl from "../assets/beach-radar-scritta.png";
 import shareBgUrl from "../assets/sharecard-bg.png";
@@ -299,7 +300,7 @@ const renderShareCard = async (
 
   ctx.fillStyle = "rgba(226, 232, 240, 0.96)";
   ctx.font = "600 26px 'Space Grotesk', sans-serif";
-  ctx.fillText("beach-radar.vercel.app", padding + 20, footerY + 88);
+  ctx.fillText(PUBLIC_HOSTNAME, padding + 20, footerY + 88);
 
   const mimeType = options.mimeType ?? "image/jpeg";
   const quality = options.quality ?? 0.9;
