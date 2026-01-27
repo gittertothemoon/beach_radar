@@ -14,21 +14,33 @@ const clamp = (min: number, max: number, value: number) =>
 const getRoundedZoom = (zoom: number) =>
   Number.isFinite(zoom) ? Math.round(zoom) : 12;
 
+const UMBRELLA_MIN_SIZE = 20;
+const UMBRELLA_MAX_SIZE = 40;
+const CLUSTER_MIN_SIZE = 32;
+const CLUSTER_MAX_SIZE = 48;
+const CLUSTER_LABEL_TOP_PERCENT = 42;
+
 const getUmbrellaSizeForZoom = (zoom: number) => {
   const z = getRoundedZoom(zoom);
-  if (z <= 11) return 22;
-  if (z <= 13) return 26;
-  if (z <= 15) return 30;
-  if (z === 16) return 34;
-  return 38;
+  if (z <= 12) return clamp(UMBRELLA_MIN_SIZE, UMBRELLA_MAX_SIZE, 22);
+  if (z <= 14) return clamp(UMBRELLA_MIN_SIZE, UMBRELLA_MAX_SIZE, 26);
+  if (z <= 16) return clamp(UMBRELLA_MIN_SIZE, UMBRELLA_MAX_SIZE, 32);
+  return clamp(UMBRELLA_MIN_SIZE, UMBRELLA_MAX_SIZE, 38);
 };
 
-const getClusterZoomFactor = (zoom: number) => {
+const getClusterSizeForZoom = (zoom: number) => {
   const z = getRoundedZoom(zoom);
-  if (z <= 8) return 0.75;
-  if (z <= 11) return 0.9;
-  if (z <= 14) return 1.0;
-  return 1.05;
+  if (z <= 10) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 44);
+  if (z <= 13) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 40);
+  if (z <= 16) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 36);
+  return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 34);
+};
+
+const getClusterDigitScale = (digitCount: number) => {
+  if (digitCount === 1) return 1.05;
+  if (digitCount === 2) return 1;
+  if (digitCount === 3) return 0.9;
+  return 0.82;
 };
 
 const beachPinCache = new Map<string, L.Icon>();
@@ -48,8 +60,9 @@ export const createBeachPinIcon = (options: BeachPinOptions) => {
   const isPred = options.state === "PRED";
   const baseSize = getUmbrellaSizeForZoom(options.zoom);
   const size = isSelected ? Math.round(baseSize * 1.08) : baseSize;
-  const anchorX = Math.round(size * 0.41);
-  const anchorY = Math.round(size * 0.86);
+  const anchorX = Math.round(size * 0.5);
+  const anchorY = Math.round(size * 0.8);
+  const popupAnchorY = -Math.round(size * 0.65);
   const className = [
     "br-beach-pin",
     isSelected ? "br-beach-pin--selected" : "",
@@ -62,6 +75,7 @@ export const createBeachPinIcon = (options: BeachPinOptions) => {
     iconUrl: beachPin,
     iconSize: [size, size],
     iconAnchor: [anchorX, anchorY],
+    popupAnchor: [0, popupAnchorY],
     className,
   });
 
@@ -71,28 +85,27 @@ export const createBeachPinIcon = (options: BeachPinOptions) => {
 
 export const createClusterPinDivIcon = (count: number, zoom: number) => {
   const safeCount = Math.max(1, Math.round(count));
-  const countText = `\u00d7${safeCount}`;
   const digitCount = String(safeCount).length;
-  const base = 34 + 8 * Math.log10(safeCount + 1);
-  const scaledBase = clamp(34, 56, base);
-  const size = Math.round(scaledBase * getClusterZoomFactor(zoom));
-  const digitScale = digitCount === 1 ? 1 : digitCount === 2 ? 0.9 : 0.78;
-  const safeTop = Math.round(size * 0.12);
-  const safeLeft = Math.round(size * 0.18);
-  const safeBottom = Math.round(size * 0.26);
-  const fontBase = Math.round(size * 0.34);
-  const key = `${size}|${countText}|${digitScale}`;
+  const size = getClusterSizeForZoom(zoom);
+  const digitScale = getClusterDigitScale(digitCount);
+  const baseFontSize = size * 0.34;
+  const fontSize = Math.round(
+    clamp(11, size * 0.38, baseFontSize * digitScale),
+  );
+  const key = `${size}|${digitCount}|${safeCount}|${fontSize}`;
   const cached = clusterPinCache.get(key);
   if (cached) return cached;
 
   const anchorX = Math.round(size * 0.5);
-  const anchorY = Math.round(size * 0.96);
+  const anchorY = Math.round(size * 0.92);
+  const popupAnchorY = -Math.round(size * 0.75);
 
   const icon = L.divIcon({
     className: "",
-    html: `<div class="br-cluster" style="--s:${size}px;--safe-top:${safeTop}px;--safe-left:${safeLeft}px;--safe-bottom:${safeBottom}px;--digit-scale:${digitScale};--fs-base:${fontBase}px"><img class="br-cluster__img" src="${clusterPin}" alt="" loading="eager" decoding="async" /><div class="br-cluster__safe"><div class="br-cluster__count">${countText}</div></div></div>`,
+    html: `<div class="br-cluster" style="--s:${size}px"><img class="br-cluster__img" src="${clusterPin}" alt="" loading="eager" decoding="async" /><span class="br-cluster__label" style="--label-top:${CLUSTER_LABEL_TOP_PERCENT}%;--fs:${fontSize}px"><span class="br-cluster__x">x</span><span class="br-cluster__n">${safeCount}</span></span></div>`,
     iconSize: [size, size],
     iconAnchor: [anchorX, anchorY],
+    popupAnchor: [0, popupAnchorY],
   });
 
   clusterPinCache.set(key, icon);
