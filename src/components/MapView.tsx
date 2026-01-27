@@ -10,6 +10,7 @@ import {
 import L from "leaflet";
 import type { BeachWithStats } from "../lib/types";
 import type { LatLng, UserLocation } from "../lib/geo";
+import { createBeachPinIcon, createClusterPinDivIcon } from "../map/markerIcons";
 
 type Cluster = {
   id: string;
@@ -51,15 +52,10 @@ const createMarkerIcon = (
   crowdLevel: number,
   state: "LIVE" | "RECENT" | "PRED",
   selected: boolean,
-) =>
-  L.divIcon({
-    className: "",
-    html: `<div class="beach-marker level-${crowdLevel} ${state.toLowerCase()}${
-      selected ? " selected" : ""
-    }">${crowdLevel}</div>`,
-    iconSize: [36, 36],
-    iconAnchor: [18, 18],
-  });
+) => {
+  void crowdLevel;
+  return createBeachPinIcon({ selected, state });
+};
 
 const getClusterState = (beaches: BeachWithStats[]): Cluster["state"] => {
   const states = new Set(beaches.map((beach) => beach.state));
@@ -70,13 +66,9 @@ const getClusterState = (beaches: BeachWithStats[]): Cluster["state"] => {
   return "mixed";
 };
 
-const createClusterIcon = (cluster: Cluster) =>
-  L.divIcon({
-    className: "",
-    html: `<div class="beach-cluster ${cluster.state}"><span class="cluster-prefix">x</span><span class="cluster-count">${cluster.members.length}</span></div>`,
-    iconSize: [44, 44],
-    iconAnchor: [22, 22],
-  });
+const createClusterIcon = (cluster: Cluster) => {
+  return createClusterPinDivIcon(cluster.members.length);
+};
 
 const buildDuplicateDisplayPositions = (
   beaches: BeachWithStats[],
