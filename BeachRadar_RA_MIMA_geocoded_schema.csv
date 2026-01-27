@@ -1,0 +1,39 @@
+id,name,address,city,province,region,baselineLevel,baselineSource,lat,lng,notes
+BR-RA-MIMA-001,Haiti .339,"Viale Xxvi Traversa 339, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2998741,12.3474269,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-002,Pineta .337B,"337/B Via XXV Traversa Pineta, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2992792,12.3474177,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-003,Pineta Family Village Beach .332,"Via XXIV 332/B, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2971122,12.3480596,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-004,Spiaggia Libera della Colonia,"Traversa XIX Pineta, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2945141,12.3484896,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-005,Colombina .320,"Via XIII Traversa, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2926286,12.3489433,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-006,Bagno Del Pino 318,"Traversa XVII Mare 312, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2919846,12.3488311,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-007,Bagno Dario,"Traversa XVI Pineta 315, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2911741,12.3490511,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-008,Bagno Del Pino 312,"XV Traversa, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2904867,12.3493389,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-009,Gabbiano .311,"Via XV Traversa Pineta 11, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2901202,12.3494962,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-010,King's Beach #310,"Lungomare MiMa 310, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.289922,12.3496961,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-011,Bagno Deanna 309,"Via XIII Traversa 309, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2896811,12.3495902,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-012,Targhini .308,"Lungomare MiMa 308, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2892484,12.3497028,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-013,Bagno Virtual Beach 299,"V. IX Traversa, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2862401,12.3503657,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-014,Premier Palm Beach .296,"Lungomare MiMa 296, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.285218,12.3510353,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-015,Duenoveuno Beach .291,"Traversa VI, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2841147,12.3510359,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-016,Bagno Gallia 287,"Piazzale Torino, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2833037,12.3515451,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-017,Flamingo beach .283,"Lungomare MiMa 283, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2823171,12.3519447,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-018,Papeete Beach,"Via III Traversa 281, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2816929,12.3521182,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-019,Bagno Rouge 280,"Via III Traversa 26, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2813145,12.3522253,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-020,Corallo Beach .279,"Viale 2a Traversa 279, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2811056,12.3524274,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-021,Bicio Papao .276,"Viale Spalato 276, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2798486,12.352992,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-022,Club Milano .273,"Viale Spalato 273, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2791311,12.3531779,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-023,Mi.Ma. Beach .272,"Lungomare MiMa 272, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.278805,12.3531846,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-024,Albacore .271,"Lungomare MiMa 271, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2785706,12.3529579,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-025,Roma .269,"Viale Forlì, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2781366,12.3533353,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-026,Spiaggia Centrale [libera],"Lungomare MiMa 268, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2778624,12.3532754,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-027,Zefiro 268 - Ristorante e Spiaggia,"Viale Forlì 268, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2776404,12.3531474,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-028,Margò Beach 266,"Via Zara 266, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2771687,12.3535234,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-029,La Barcaccia .265,"Lungomare MiMa 265, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2769648,12.35346,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-030,Adriatico .263,"Lungomare MiMa 263, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2764147,12.3536336,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-031,Tonino .262,"Lungomare MiMa 262, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2761351,12.3538365,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-032,Bagno Giulianini 260,"Viale Luigi Cadorna 260, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2756638,12.3536083,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-033,Casta Beach .259,"Lungomare MiMa 259, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.275569,12.3538427,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-034,Spiaggia Milano Marittima,"48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.275002,12.3551196,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-035,Enzo Malusi .258 by fam. Alessandrini,"Arenile Demaniale/ Viale Enrico Toti 258, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2747034,12.3545179,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-036,Umberto Beach .254,"Viale F. Baracca 254, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.273693,12.3547725,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-037,Bagno Oreste,"Via Arenile Demaniale 250, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2727852,12.3549255,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-MIMA-038,MarePineta • Beach Club & Ristorante,"Lungomare MiMa 248, 48015 Milano Marittima RA, Italia",Milano Marittima,RA,Emilia-Romagna,2,PRED,44.2719823,12.355595,lat/lng to be filled via overrides/geocoding pipeline.

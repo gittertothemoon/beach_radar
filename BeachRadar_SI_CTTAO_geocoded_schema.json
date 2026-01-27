@@ -1,0 +1,682 @@
+[
+  {
+    "id": "BR-SI-CTTAO-001",
+    "name": "Le Capannine",
+    "address": "Viale Presidente Kennedy 93, 95100 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4430254,
+    "lng": 15.0863957,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-002",
+    "name": "Lido tempo libero",
+    "address": "Viale Presidente Kennedy, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4464264,
+    "lng": 15.0852776,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-003",
+    "name": "Lido Delfino",
+    "address": "Viale Presidente Kennedy 91, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4469146,
+    "lng": 15.0858659,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-004",
+    "name": "Lido America",
+    "address": "Viale Presidente Kennedy 89, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4485848,
+    "lng": 15.08595,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-005",
+    "name": "LIDO NIKI VILLAGE",
+    "address": "Viale Presidente Kennedy 87, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4496269,
+    "lng": 15.0860042,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-006",
+    "name": "Lido Jolly",
+    "address": "Viale Presidente Kennedy 85, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4509353,
+    "lng": 15.0854768,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-007",
+    "name": "Lido Internazionale",
+    "address": "Viale Presidente Kennedy 83, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4541373,
+    "lng": 15.0854087,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-008",
+    "name": "Lido Roma",
+    "address": "Viale Presidente Kennedy 77, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4552197,
+    "lng": 15.085349,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-009",
+    "name": "LIDO ALKAMAR",
+    "address": "Viale Presidente Kennedy 75, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4560445,
+    "lng": 15.0853973,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-010",
+    "name": "LIDO VENERE",
+    "address": "Viale Presidente Kennedy 73, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4578133,
+    "lng": 15.0844033,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-011",
+    "name": "Circolo La Pineta",
+    "address": "Viale Presidente Kennedy 71, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4587863,
+    "lng": 15.084313,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-012",
+    "name": "Lido Etna di Marino Maria Grazia & C Sas",
+    "address": "Viale Presidente Kennedy 69, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4600415,
+    "lng": 15.0849444,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-013",
+    "name": "Lido Europa",
+    "address": "Viale Presidente Kennedy 65, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4616677,
+    "lng": 15.0840554,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-014",
+    "name": "Lido Le Palme",
+    "address": "Viale Presidente Kennedy, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.46225769999999,
+    "lng": 15.0848697,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-015",
+    "name": "Lido Il Ciclope",
+    "address": "Viale Presidente Kennedy 59A, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4628953,
+    "lng": 15.0850039,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-016",
+    "name": "Lido Polifemo",
+    "address": "Viale Presidente Kennedy 59, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4636999,
+    "lng": 15.0838741,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-017",
+    "name": "Lido SableSalè ~ Your Summer Experience",
+    "address": "Viale Presidente Kennedy 57/A, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4641616,
+    "lng": 15.0852269,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-018",
+    "name": "Beteyà Parco Avventura Inclusivo",
+    "address": "Viale Presidente Kennedy 55, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4655276,
+    "lng": 15.0840127,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-019",
+    "name": "Lido Colonia don Bosco",
+    "address": "Viale Presidente Kennedy 55, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4665275,
+    "lng": 15.0850949,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-020",
+    "name": "Lido Cled",
+    "address": "Viale Kennedy 53A, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4680715,
+    "lng": 15.0849787,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-021",
+    "name": "Le Piramidi Beach",
+    "address": "Viale Presidente Kennedy 45, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4722671,
+    "lng": 15.084486,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-022",
+    "name": "Lido Belvedere",
+    "address": "Viale Presidente Kennedy 41, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4734278,
+    "lng": 15.0838824,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-023",
+    "name": "Lido Aurora",
+    "address": "Viale Presidente Kennedy 37/A, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4745738,
+    "lng": 15.0841884,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-024",
+    "name": "Lido Excelsior Srl",
+    "address": "Viale Presidente Kennedy 35, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4755973,
+    "lng": 15.0843925,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-025",
+    "name": "Lido Verde",
+    "address": "Viale Presidente Kennedy 33, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4766104,
+    "lng": 15.084347,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-026",
+    "name": "Lido Aeronautica Militare 41° Stormo",
+    "address": "Viale Presidente Kennedy 25, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4782422,
+    "lng": 15.0836656,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-027",
+    "name": "LIDO DEL FINANZIERE",
+    "address": "Viale Presidente Kennedy 23, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4785669,
+    "lng": 15.0837967,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-028",
+    "name": "Lido Sud Express",
+    "address": "Viale Presidente Kennedy 23, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.478837,
+    "lng": 15.0837249,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-029",
+    "name": "Lido Arcobaleno",
+    "address": "Viale Presidente Kennedy 19, 95121 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.4799482,
+    "lng": 15.0839182,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-030",
+    "name": "Lido Grotta Smeralda",
+    "address": "Via Antonello da Messina 11, 95021 Aci Castello CT, Italia",
+    "city": "Aci Castello",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.5409716,
+    "lng": 15.1344156,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-031",
+    "name": "Esagono Beach Club",
+    "address": "Via Antonello da Messina 46, 95021 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.5424652,
+    "lng": 15.1391316,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-032",
+    "name": "Lido La Giunca",
+    "address": "Lungomare Scardamiano 67, 95021 Aci Castello CT, Italia",
+    "city": "Aci Castello",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.5587084,
+    "lng": 15.1531015,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-033",
+    "name": "Lido dei Ciclopi - Gli Ulivi S.P.A.",
+    "address": "Via Provinciale 2, 95021 Aci Castello CT, Italia",
+    "city": "Aci Castello",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.5604267,
+    "lng": 15.1567464,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-034",
+    "name": "Bellatrix Club",
+    "address": "Via Acicastello 38/40, 95126 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.5349541,
+    "lng": 15.1254752,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-035",
+    "name": "Lido Aldebaran",
+    "address": "Via Privata Dei Villini Sul Mare 34, 95126 Catania CT, Italia",
+    "city": "Catania",
+    "province": "CT",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.534425,
+    "lng": 15.1223871,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-036",
+    "name": "Lido Tao Beach Club",
+    "address": "Via Nazionale 175, 98039 Taormina ME, Italia",
+    "city": "Taormina",
+    "province": "ME",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.8638279,
+    "lng": 15.2964961,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-037",
+    "name": "Lido Spisone",
+    "address": "Via Nazionale 167, 98039 Taormina ME, Italia",
+    "city": "Taormina",
+    "province": "ME",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.8598964,
+    "lng": 15.2966162,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-038",
+    "name": "Spiaggia di Mazzarò",
+    "address": "Italia",
+    "city": "",
+    "province": "",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.8555727,
+    "lng": 15.3012438,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-039",
+    "name": "Spiaggia di Isola Bella",
+    "address": "Via Nazionale 109, 98039 Taormina ME, Italia",
+    "city": "Taormina",
+    "province": "ME",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.8510772,
+    "lng": 15.2995841,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  },
+  {
+    "id": "BR-SI-CTTAO-040",
+    "name": "Lorenzina Beach Club Taormina",
+    "address": "Via Nazionale 35, 98039 Villagonia ME, Italia",
+    "city": "Villagonia",
+    "province": "ME",
+    "region": "Sicilia",
+    "baselineLevel": 2,
+    "baselineSource": "PRED",
+    "lat": 37.8476606,
+    "lng": 15.285912,
+    "notes": "lat/lng to be filled via overrides/geocoding pipeline.",
+    "geocodeMeta": {
+      "status": "OVERRIDE",
+      "source": "GOOGLE_EARTH"
+    }
+  }
+]

@@ -1,0 +1,42 @@
+id,name,address,city,province,region,baselineLevel,baselineSource,lat,lng,notes
+BR-RA-CERVIA-001,Le Saline Beach 237,"Via Arrigo Boito, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2688262,12.3569985,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-002,Bagno Sorriso 228,"Lungomare Gabriele D'Annunzio 228, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2661661,12.3579221,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-003,cerviAmare 222-226,"Lungomare Gabriele D'Annunzio 222/226, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2651918,12.3581564,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-004,Simple 205,"Lungomare Grazia Deledda 205, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2612963,12.3602393,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-005,Sarabi Beach,"Lungomare Grazia Deledda 203, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2609088,12.3604105,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-006,Bagno Anna Cervia,"Lungomare Grazia Deledda 199, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2601379,12.3607697,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-007,Oba Oba Beach .194,"Lungomare Grazia Deledda 194, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.25904,12.3611307,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-008,Spiaggia libera di Cervia,"Lungomare Grazia Deledda 38, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2585236,12.3617176,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-009,IronMan start,"48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2572644,12.3628227,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-010,Bagno Marco N. 184,"Lungomare Grazia Deledda 184, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2561595,12.3627027,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-011,Fantini Club,"Lungomare Grazia Deledda 182, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2553863,12.3633813,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-012,Bagno Romagnolo,"Lungomare Grazia Deledda 173, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2534479,12.3640223,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-013,Bagno 169,"Lungomare Grazia Deledda 170, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2530084,12.3644282,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-014,Bagno Jacarè,"Lungomare Grazia Deledda 167, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2527391,12.3645927,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-015,Isola 159,"Lungomare Grazia Deledda 159/b, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2512501,12.3653573,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-016,Bagno Balmor 156,"Lungomare Grazia Deledda 156, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.25057,12.365804,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-017,Saretina 152,"Lungomare Grazia Deledda 152, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2499722,12.3660464,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-018,Medusa Beach 146 Cervia,"Lungomare Grazia Deledda 146, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2488638,12.366702,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-019,spiaggia libera,"Via Arenile Demaniale 127, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2467183,12.368316,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-020,Bagno Delfino,"Via Arenile Demaniale 127-131, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2458754,12.3686022,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-021,Bagno Paola,"Via Arenile Demaniale 126, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2453351,12.3689351,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-022,Bagno Vittorio 124,"Via Arenile Demaniale 124, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.244704,12.3692855,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-023,Bagno Pineta 120,"Via Arenile Demaniale 93, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2435969,12.3701926,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-024,Bagno Sole Pinarella,"Viale Italia, 48015 Pinarella RA",Pinarella,RA,Emilia-Romagna,2,PRED,44.2426075,12.3708471,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-025,Adriasol Spiaggia 111,"Via Arenile Demaniale 85/86, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2419037,12.3714275,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-026,Bagno Andreucci Beach 107,"Via Arenile Demaniale, 48015 Pinarella di Cervia RA, Italia",Pinarella di Cervia,RA,Emilia-Romagna,2,PRED,44.2411245,12.3717831,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-027,Bagno Anna 95,"Via Arenile Demaniale 95, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2394073,12.3729076,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-028,Bagno Palm Beach 87/88,"Via Arenile Demaniale 87, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.237872,12.3738113,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-029,Spiaggia Margherita 85-86,"Via Arenile Demaniale, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2374271,12.3741083,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-030,Tre Stelle 80,"Via Arenile Demaniale 80, 48015 RA, Italia",RA,RA,Emilia-Romagna,2,PRED,44.2366919,12.374708,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-031,Bagno Settebello Nr.76,"Via Arenile Demaniale 76, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.236078,12.3750665,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-032,Bagno Franco,"viale Italia 70/71 48015 Pinarella di, 48015 Cervia RA",Cervia,RA,Emilia-Romagna,2,PRED,44.2351799,12.3756304,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-033,Bagno Oasi 67,"Viale Italia 67, 48015 Cervia RA",Cervia,RA,Emilia-Romagna,2,PRED,44.2344422,12.3761565,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-034,Bagno Mediterraneo 65,"Via Arenile Demaniale 65, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2343026,12.3764824,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-035,Vanilla Beach,"Via Arenile Demaniale 60/61, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2336122,12.3766343,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-036,Stabilimento Balneare Aeronautica Militare,"Via Arenile Demaniale 14, 48015 Tagliata di Cervia RA, Italia",Tagliata di Cervia,RA,Emilia-Romagna,2,PRED,44.226667,12.3817712,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-037,Bagno Jolly 16,"Via Arenile Demaniale 15, 48015 Tagliata di Cervia RA, Italia",Tagliata di Cervia,RA,Emilia-Romagna,2,PRED,44.2272432,12.3814705,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-038,Bagno Primavera n.26,"48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2285501,12.380308,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-039,KalypsoBeach 29,"48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2289658,12.3800536,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-040,Bagno Danico 39-40,"Viale Italia 328, 48015 Cervia RA",Cervia,RA,Emilia-Romagna,2,PRED,44.230347,12.3789844,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RA-CERVIA-041,Bagno 59 Pinarella di Cervia,"Via Arenile Demaniale 59, 48015 Cervia RA, Italia",Cervia,RA,Emilia-Romagna,2,PRED,44.2333697,12.3765724,lat/lng to be filled via overrides/geocoding pipeline.

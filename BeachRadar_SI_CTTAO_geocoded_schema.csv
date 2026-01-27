@@ -1,0 +1,41 @@
+id,name,address,city,province,region,baselineLevel,baselineSource,lat,lng,notes
+BR-SI-CTTAO-001,Le Capannine,"Viale Presidente Kennedy 93, 95100 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4430254,15.0863957,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-002,Lido tempo libero,"Viale Presidente Kennedy, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4464264,15.0852776,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-003,Lido Delfino,"Viale Presidente Kennedy 91, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4469146,15.0858659,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-004,Lido America,"Viale Presidente Kennedy 89, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4485848,15.08595,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-005,LIDO NIKI VILLAGE,"Viale Presidente Kennedy 87, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4496269,15.0860042,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-006,Lido Jolly,"Viale Presidente Kennedy 85, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4509353,15.0854768,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-007,Lido Internazionale,"Viale Presidente Kennedy 83, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4541373,15.0854087,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-008,Lido Roma,"Viale Presidente Kennedy 77, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4552197,15.085349,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-009,LIDO ALKAMAR,"Viale Presidente Kennedy 75, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4560445,15.0853973,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-010,LIDO VENERE,"Viale Presidente Kennedy 73, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4578133,15.0844033,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-011,Circolo La Pineta,"Viale Presidente Kennedy 71, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4587863,15.084313,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-012,Lido Etna di Marino Maria Grazia & C Sas,"Viale Presidente Kennedy 69, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4600415,15.0849444,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-013,Lido Europa,"Viale Presidente Kennedy 65, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4616677,15.0840554,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-014,Lido Le Palme,"Viale Presidente Kennedy, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.46225769999999,15.0848697,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-015,Lido Il Ciclope,"Viale Presidente Kennedy 59A, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4628953,15.0850039,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-016,Lido Polifemo,"Viale Presidente Kennedy 59, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4636999,15.0838741,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-017,Lido SableSalè ~ Your Summer Experience,"Viale Presidente Kennedy 57/A, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4641616,15.0852269,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-018,Beteyà Parco Avventura Inclusivo,"Viale Presidente Kennedy 55, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4655276,15.0840127,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-019,Lido Colonia don Bosco,"Viale Presidente Kennedy 55, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4665275,15.0850949,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-020,Lido Cled,"Viale Kennedy 53A, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4680715,15.0849787,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-021,Le Piramidi Beach,"Viale Presidente Kennedy 45, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4722671,15.084486,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-022,Lido Belvedere,"Viale Presidente Kennedy 41, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4734278,15.0838824,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-023,Lido Aurora,"Viale Presidente Kennedy 37/A, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4745738,15.0841884,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-024,Lido Excelsior Srl,"Viale Presidente Kennedy 35, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4755973,15.0843925,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-025,Lido Verde,"Viale Presidente Kennedy 33, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4766104,15.084347,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-026,Lido Aeronautica Militare 41° Stormo,"Viale Presidente Kennedy 25, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4782422,15.0836656,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-027,LIDO DEL FINANZIERE,"Viale Presidente Kennedy 23, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4785669,15.0837967,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-028,Lido Sud Express,"Viale Presidente Kennedy 23, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.478837,15.0837249,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-029,Lido Arcobaleno,"Viale Presidente Kennedy 19, 95121 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.4799482,15.0839182,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-030,Lido Grotta Smeralda,"Via Antonello da Messina 11, 95021 Aci Castello CT, Italia",Aci Castello,CT,Sicilia,2,PRED,37.5409716,15.1344156,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-031,Esagono Beach Club,"Via Antonello da Messina 46, 95021 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.5424652,15.1391316,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-032,Lido La Giunca,"Lungomare Scardamiano 67, 95021 Aci Castello CT, Italia",Aci Castello,CT,Sicilia,2,PRED,37.5587084,15.1531015,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-033,Lido dei Ciclopi - Gli Ulivi S.P.A.,"Via Provinciale 2, 95021 Aci Castello CT, Italia",Aci Castello,CT,Sicilia,2,PRED,37.5604267,15.1567464,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-034,Bellatrix Club,"Via Acicastello 38/40, 95126 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.5349541,15.1254752,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-035,Lido Aldebaran,"Via Privata Dei Villini Sul Mare 34, 95126 Catania CT, Italia",Catania,CT,Sicilia,2,PRED,37.534425,15.1223871,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-036,Lido Tao Beach Club,"Via Nazionale 175, 98039 Taormina ME, Italia",Taormina,ME,Sicilia,2,PRED,37.8638279,15.2964961,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-037,Lido Spisone,"Via Nazionale 167, 98039 Taormina ME, Italia",Taormina,ME,Sicilia,2,PRED,37.8598964,15.2966162,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-038,Spiaggia di Mazzarò,Italia,,,Sicilia,2,PRED,37.8555727,15.3012438,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-039,Spiaggia di Isola Bella,"Via Nazionale 109, 98039 Taormina ME, Italia",Taormina,ME,Sicilia,2,PRED,37.8510772,15.2995841,lat/lng to be filled via overrides/geocoding pipeline.
+BR-SI-CTTAO-040,Lorenzina Beach Club Taormina,"Via Nazionale 35, 98039 Villagonia ME, Italia",Villagonia,ME,Sicilia,2,PRED,37.8476606,15.285912,lat/lng to be filled via overrides/geocoding pipeline.
