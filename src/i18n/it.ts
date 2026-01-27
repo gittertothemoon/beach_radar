@@ -33,7 +33,7 @@ export const STRINGS = {
     crowdStatus: "Stato affollamento",
     crowd: "Affollamento",
     level: "Livello",
-    confidence: "Affidabilità",
+    confidence: "Affidabilità segnalazione",
     update: "Aggiornamento",
     lastUpdate: "Ultimo aggiornamento",
     reports: "Segnalazioni",
@@ -48,13 +48,13 @@ export const STRINGS = {
     live: "Aggiornato ora",
     recent: "Aggiornato poco fa",
     pred: "Stima",
-    predLong: "Stima (in assenza di segnalazioni)",
+    predLong: "In assenza di segnalazioni",
   },
   confidence: {
-    low: "bassa",
-    medium: "media",
-    high: "alta",
-    inline: (band: string) => `Affidabilità ${band}`,
+    low: "Bassa",
+    medium: "Media",
+    high: "Alta",
+    inline: (band: string) => `Affidabilità segnalazione ${band}`,
   },
   crowdLevels: {
     1: "Vuota",
@@ -64,7 +64,11 @@ export const STRINGS = {
   },
   time: {
     now: "ora",
+    justNow: "poco fa",
     minutesAgo: (minutes: number) => `${minutes} min fa`,
+    hourAgo: "1 ora fa",
+    hoursAgo: (hours: number) => `${hours} ore fa`,
+    notAvailable: "N/A",
   },
   distance: {
     unknown: "Distanza non disponibile",
@@ -99,12 +103,12 @@ export const STRINGS = {
     toConfirm: "Da confermare",
   },
   share: {
-    confidenceLabel: "Affidabilità",
+    confidenceLabel: "Affidabilità segnalazione",
     updatedLabel: "Aggiornato",
     reportsLabel: "Segnalazioni",
     preparing: "Preparazione...",
     shareText: (name: string, confidence: string) =>
-      `${name} • Affidabilità ${confidence}`,
+      `${name} • Affidabilità segnalazione ${confidence}`,
   },
   debug: {
     title: "Debug",

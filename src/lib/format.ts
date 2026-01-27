@@ -2,10 +2,13 @@ import { STRINGS } from "../i18n/it";
 import type { BeachState } from "./types";
 
 export const formatMinutesAgo = (updatedAt: number | null, now: number) => {
-  if (!updatedAt) return STRINGS.status.pred;
+  if (!updatedAt) return STRINGS.time.notAvailable;
   const minutes = Math.max(0, Math.round((now - updatedAt) / 60000));
-  if (minutes <= 1) return STRINGS.time.now;
-  return STRINGS.time.minutesAgo(minutes);
+  if (minutes <= 2) return STRINGS.time.justNow;
+  if (minutes < 60) return STRINGS.time.minutesAgo(minutes);
+  const hours = Math.max(1, Math.round(minutes / 60));
+  if (hours === 1) return STRINGS.time.hourAgo;
+  return STRINGS.time.hoursAgo(hours);
 };
 
 export const formatDistance = (distanceM: number | null) => {
