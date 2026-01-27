@@ -21,10 +21,10 @@ const els = {
   submitButton: document.getElementById("submitButton"),
   submitLabel: document.querySelector("[data-label]"),
   successTitle: document.getElementById("successTitle"),
-  shareButton: document.getElementById("shareButton"),
-  copyEmailButton: document.getElementById("copyEmailButton"),
-  copyHint: document.getElementById("copyHint"),
+  whatsappInviteButton: document.getElementById("whatsappInviteButton"),
+  resetButton: document.getElementById("resetButton"),
   privacyButton: document.getElementById("privacyButton"),
+  privacyInlineButton: document.getElementById("privacyInlineButton"),
   privacyModal: document.getElementById("privacyModal"),
 };
 
@@ -52,9 +52,18 @@ function bindEvents() {
   });
 
   els.form.addEventListener("submit", onSubmit);
-  els.shareButton.addEventListener("click", onShare);
-  els.copyEmailButton.addEventListener("click", onCopyEmail);
-  els.privacyButton.addEventListener("click", openPrivacy);
+  if (els.whatsappInviteButton) {
+    els.whatsappInviteButton.addEventListener("click", onWhatsappInvite);
+  }
+  if (els.resetButton) {
+    els.resetButton.addEventListener("click", resetFlow);
+  }
+  if (els.privacyButton) {
+    els.privacyButton.addEventListener("click", openPrivacy);
+  }
+  if (els.privacyInlineButton) {
+    els.privacyInlineButton.addEventListener("click", openPrivacy);
+  }
 
   els.privacyModal.addEventListener("click", (event) => {
     const target = event.target;
@@ -161,13 +170,6 @@ function showSuccess() {
     els.successTitle.setAttribute("tabindex", "-1");
     els.successTitle.focus({ preventScroll: true });
   }
-
-  if (SUBSCRIBE_ENDPOINT) {
-    els.copyHint.textContent = "Perfetto. Ti avviseremo appena apriamo l'accesso anticipato.";
-  } else {
-    els.copyHint.textContent =
-      "Endpoint non configurato: abbiamo salvato localmente. Potrai copiare/esportare più tardi.";
-  }
 }
 
 function disableForm() {
@@ -175,12 +177,17 @@ function disableForm() {
   controls.forEach((control) => control.setAttribute("disabled", "true"));
 }
 
+function enableForm() {
+  const controls = els.form.querySelectorAll("input, button");
+  controls.forEach((control) => control.removeAttribute("disabled"));
+}
+
 function setSubmitting(next) {
   isSubmitting = next;
   els.submitButton.classList.toggle("is-loading", next);
   els.submitButton.disabled = next;
   if (els.submitLabel) {
-    els.submitLabel.textContent = next ? "Invio…" : "Ottieni invito";
+    els.submitLabel.textContent = next ? "Invio…" : "Voglio l’accesso early";
   }
 }
 
@@ -223,47 +230,43 @@ function clearEmailError() {
   els.email.setAttribute("aria-invalid", "false");
 }
 
-async function onShare() {
+async function onWhatsappInvite() {
   const shareUrl = getShareUrl();
-  const shareData = {
-    title: "Beach Radar",
-    text: "Scopri in 5 secondi se la tua spiaggia è piena.",
-    url: shareUrl,
-  };
+  const shareText = "Guarda Beach Radar: scopri in 5 secondi se la tua spiaggia è piena.";
+  const message = `${shareText}\n${shareUrl}`;
+
+  track("br_prereg_invite_whatsapp", {
+    attribution,
+    mode: navigator.share ? "share_sheet" : "wa_link",
+  });
 
   if (navigator.share) {
     try {
-      await navigator.share(shareData);
+      await navigator.share({
+        title: "Beach Radar",
+        text: shareText,
+        url: shareUrl,
+      });
       return;
     } catch (error) {
-      // Fall back to copy when share is dismissed or unsupported.
+      // If the share sheet is dismissed, fall back to WhatsApp link.
     }
   }
 
-  const copied = await copyToClipboard(shareUrl);
-  if (copied) {
-    const original = els.shareButton.textContent;
-    els.shareButton.textContent = "Link copiato";
-    window.setTimeout(() => {
-      els.shareButton.textContent = original;
-    }, 1200);
-  }
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+  window.open(waUrl, "_blank", "noopener");
 }
 
-async function onCopyEmail() {
-  const emailToCopy = lastPayload?.email || (els.email.value || "").trim();
-  if (!emailToCopy) {
-    return;
-  }
-
-  const copied = await copyToClipboard(emailToCopy);
-  if (copied) {
-    const original = els.copyEmailButton.textContent;
-    els.copyEmailButton.textContent = "Email copiata";
-    window.setTimeout(() => {
-      els.copyEmailButton.textContent = original;
-    }, 1200);
-  }
+function resetFlow() {
+  els.panelInner.classList.remove("is-success");
+  els.successPanel.hidden = true;
+  lastPayload = null;
+  setSubmitting(false);
+  enableForm();
+  els.email.value = "";
+  clearEmailError();
+  updateSubmitState();
+  els.email.focus({ preventScroll: true });
 }
 
 function getShareUrl() {
@@ -271,32 +274,6 @@ function getShareUrl() {
   url.search = "";
   url.hash = "";
   return url.toString();
-}
-
-async function copyToClipboard(value) {
-  try {
-    await navigator.clipboard.writeText(value);
-    return true;
-  } catch (error) {
-    return fallbackCopy(value);
-  }
-}
-
-function fallbackCopy(value) {
-  try {
-    const input = document.createElement("input");
-    input.value = value;
-    input.setAttribute("readonly", "true");
-    input.style.position = "absolute";
-    input.style.left = "-9999px";
-    document.body.appendChild(input);
-    input.select();
-    const result = document.execCommand("copy");
-    document.body.removeChild(input);
-    return result;
-  } catch (error) {
-    return false;
-  }
 }
 
 function captureAttribution() {
@@ -343,7 +320,10 @@ function openPrivacy() {
 function closePrivacy() {
   els.privacyModal.hidden = true;
   document.body.style.overflow = "hidden";
-  els.privacyButton.focus({ preventScroll: true });
+  const focusTarget = els.privacyInlineButton || els.privacyButton;
+  if (focusTarget) {
+    focusTarget.focus({ preventScroll: true });
+  }
 }
 
 function getEmailDomain(email) {
