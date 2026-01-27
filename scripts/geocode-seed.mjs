@@ -433,8 +433,10 @@ const main = async () => {
     ok: 0,
     failed: 0,
     from_cache: 0,
-    overrides: 0,
-    nominatim: 0,
+    override_entries: 0,
+    overrides_used: 0,
+    nominatim_calls: 0,
+    nominatim_results: 0,
   };
 
   const geocodeQuery = async (query, spot) => {
@@ -445,6 +447,7 @@ const main = async () => {
       }
     }
 
+    stats.nominatim_calls += 1;
     const now = Date.now();
     const waitMs = Math.max(0, REQUEST_DELAY_MS - (now - lastRequestAt));
     if (waitMs > 0) await sleep(waitMs);
@@ -485,15 +488,20 @@ const main = async () => {
       display_name: null,
     };
 
-    const override = overrides[spot.id];
-    if (override) {
+    const hasOverride = Object.prototype.hasOwnProperty.call(overrides, spot.id);
+    const override = hasOverride ? overrides[spot.id] : undefined;
+    if (hasOverride) {
+      stats.override_entries += 1;
       const parsedOverride = parseOverride(override);
       if (parsedOverride) {
         lat = parsedOverride.lat;
         lng = parsedOverride.lng;
+        stats.overrides_used += 1;
       } else {
-        lat = null;
-        lng = null;
+        // Keep any existing finite seed coordinates, but never fall back to Nominatim
+        // when an override entry exists (even if invalid).
+        lat = Number.isFinite(lat) ? lat : null;
+        lng = Number.isFinite(lng) ? lng : null;
       }
       geocodeMeta = {
         queryUsed: "override",
@@ -502,8 +510,8 @@ const main = async () => {
         osm_id: null,
         display_name: null,
         status: parsedOverride ? "override" : "override_invalid",
-        source: override.source ?? "manual",
-        note: override.note ?? null,
+        source: override?.source ?? "manual",
+        note: override?.note ?? null,
       };
     } else if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
       let result = null;
@@ -545,11 +553,8 @@ const main = async () => {
     const ok = Number.isFinite(lat) && Number.isFinite(lng);
     if (ok) {
       stats.ok += 1;
-      if (override && geocodeMeta.status === "override") {
-        stats.overrides += 1;
-      }
       if (geocodeMeta.status === "geocoded") {
-        stats.nominatim += 1;
+        stats.nominatim_results += 1;
       }
       if (notes.includes("GEOCODE_FAILED")) {
         notes = notes.replace(/\s*GEOCODE_FAILED\s*/g, " ").trim();
@@ -581,11 +586,11 @@ const main = async () => {
 
   // eslint-disable-next-line no-console
   console.log(
-    `Geocode summary: total=${stats.total} ok=${stats.ok} failed=${stats.failed} from_cache=${stats.from_cache} overrides=${stats.overrides}`,
+    `Geocode summary: total=${stats.total} ok=${stats.ok} failed=${stats.failed} from_cache=${stats.from_cache} override_entries=${stats.override_entries} overrides_used=${stats.overrides_used} nominatim_calls=${stats.nominatim_calls}`,
   );
   // eslint-disable-next-line no-console
   console.log(
-    `Geocode sources: overrides=${stats.overrides} nominatim=${stats.nominatim} cache=${stats.from_cache}`,
+    `Geocode sources: overrides_used=${stats.overrides_used} override_entries=${stats.override_entries} nominatim_calls=${stats.nominatim_calls} nominatim_results=${stats.nominatim_results} cache_hits=${stats.from_cache}`,
   );
   if (failedIds.length > 0) {
     // eslint-disable-next-line no-console
