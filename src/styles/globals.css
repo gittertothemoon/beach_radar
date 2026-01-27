@@ -150,8 +150,6 @@ body {
 }
 
 .br-beach-pin {
-  width: 64px;
-  height: 64px;
   display: block;
   background: transparent;
   pointer-events: auto;
@@ -162,43 +160,46 @@ body {
 }
 
 .br-beach-pin--selected {
-  transform: scale(1.08);
+  transform: none;
 }
 
 .br-beach-pin--pred {
   opacity: 0.88;
 }
 
-.br-cluster-pin {
+.br-cluster {
+  width: var(--s);
+  height: var(--s);
   position: relative;
-  width: 72px;
-  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: auto;
 }
 
-.br-cluster-img {
-  position: absolute;
-  inset: 0;
+.br-cluster__img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
   display: block;
   background: transparent;
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
+  image-rendering: auto;
 }
 
-.br-cluster-count {
+.br-cluster__count {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  font-size: 20px;
+  color: #fff;
+  font-size: clamp(12px, calc(var(--s) * 0.34), 22px);
   font-weight: 800;
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 2px rgba(2, 6, 23, 0.5);
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
   pointer-events: none;
 }
 
