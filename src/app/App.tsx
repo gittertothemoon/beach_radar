@@ -507,7 +507,10 @@ function App() {
   }, [selectedBeach, selectedBeachId]);
 
   const focusBeach = useCallback(
-    (beachId: string, options?: { updateSearch?: boolean }) => {
+    (
+      beachId: string,
+      options?: { updateSearch?: boolean; moveMap?: boolean },
+    ) => {
       const beach = beachViewsBase.find((item) => item.id === beachId);
       if (!beach) return;
       if (options?.updateSearch) {
@@ -515,8 +518,14 @@ function App() {
       }
       setSelectedBeachId(beach.id);
       setSheetOpen(false);
+      const shouldMoveMap = options?.moveMap ?? true;
       const map = mapRef.current;
-      if (map && Number.isFinite(beach.lat) && Number.isFinite(beach.lng)) {
+      if (
+        shouldMoveMap &&
+        map &&
+        Number.isFinite(beach.lat) &&
+        Number.isFinite(beach.lng)
+      ) {
         const offsetY = Math.round(map.getSize().y * 0.25);
         const currentZoom = map.getZoom();
         const zoomDelta = Number.isFinite(currentZoom)
@@ -585,7 +594,7 @@ function App() {
   const handleSelectBeachFromMarker = useCallback(
     (beachId: string) => {
       selectionSourceRef.current = "marker";
-      focusBeach(beachId);
+      focusBeach(beachId, { moveMap: false });
     },
     [focusBeach],
   );
