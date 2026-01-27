@@ -77,3 +77,15 @@ export default defineConfig([
 2. Open `https://beach-radar.vercel.app` and confirm it returns a 301 redirect to `https://beachradar.it`.
 3. Open `http://beachradar.it` and confirm it returns a 301 redirect to `https://beachradar.it`.
 4. Paste `https://beachradar.it` in WhatsApp/Telegram/iMessage and confirm the preview shows the expected title, description, and image.
+
+## Performance Profiling (Chrome)
+1. Start the app with `npm run dev`.
+2. Enable the dev performance overlay by visiting `/debug` or running `localStorage.setItem(\"br_debug_v1\", \"1\")` in the console, then refresh.
+3. Open Chrome DevTools → Performance.
+4. Click Record, then exercise the hotspots for 10–20 seconds:
+   Pan/zoom the map, open/close the Lido modal, type quickly in search, and generate a share card.
+5. Stop recording and check:
+   Look for long main-thread tasks, repeated layout/paint work, and clustering spikes.
+6. Open DevTools → React Profiler.
+7. Record while repeating the same actions and confirm render counts align with the overlay:
+   MapView should not re-cluster on selection changes in normal mode, and search renders should feel throttled while typing.

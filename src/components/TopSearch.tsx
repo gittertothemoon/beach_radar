@@ -1,5 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { STRINGS } from "../i18n/it";
+import { isPerfEnabled, useRenderCounter } from "../lib/perf";
+import { normalizeSearchText, useDebouncedValue } from "../lib/search";
 
 type SearchBeach = {
   id: string;
@@ -18,7 +27,14 @@ type TopSearchProps = {
 
 const MAX_SUGGESTIONS = 12;
 
-const TopSearch = ({
+type IndexedBeach = SearchBeach & {
+  nameNorm: string;
+  regionNorm: string;
+};
+
+const DEBOUNCE_MS = 100;
+
+const TopSearchComponent = ({
   value,
   onChange,
   resultCount,
@@ -26,33 +42,46 @@ const TopSearch = ({
   beaches,
   onSelectSuggestion,
 }: TopSearchProps) => {
+  const perfEnabled = isPerfEnabled();
+  useRenderCounter("TopSearch", perfEnabled);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [open, setOpen] = useState(false);
-  const normalized = value.trim().toLowerCase();
-  const effectiveOpen = open && normalized.length > 0;
+  const normalized = useMemo(() => normalizeSearchText(value), [value]);
+  const debouncedNormalized = useDebouncedValue(normalized, DEBOUNCE_MS);
+  const effectiveOpen = open && debouncedNormalized.length > 0;
+
+  const indexedBeaches = useMemo<IndexedBeach[]>(
+    () =>
+      beaches.map((beach) => ({
+        ...beach,
+        nameNorm: normalizeSearchText(beach.name),
+        regionNorm: normalizeSearchText(beach.region),
+      })),
+    [beaches],
+  );
 
   const suggestions = useMemo(() => {
-    if (!normalized) return [];
-    const hasExactCity = beaches.some(
-      (beach) => beach.region.toLowerCase() === normalized,
+    if (!debouncedNormalized) return [];
+    const hasExactCity = indexedBeaches.some(
+      (beach) => beach.regionNorm === debouncedNormalized,
     );
-    const matches = beaches
+    const matches = indexedBeaches
       .map((beach) => {
-        const name = beach.name.toLowerCase();
-        const city = beach.region.toLowerCase();
+        const name = beach.nameNorm;
+        const city = beach.regionNorm;
         let rank: number | null = null;
 
-        if (name.startsWith(normalized)) rank = 1;
-        else if (city.startsWith(normalized)) rank = 2;
-        else if (name.includes(normalized)) rank = 3;
-        else if (city.includes(normalized)) rank = 4;
+        if (name.startsWith(debouncedNormalized)) rank = 1;
+        else if (city.startsWith(debouncedNormalized)) rank = 2;
+        else if (name.includes(debouncedNormalized)) rank = 3;
+        else if (city.includes(debouncedNormalized)) rank = 4;
 
         if (rank === null) return null;
         return {
           beach,
           rank,
-          exactCityMatch: hasExactCity && city === normalized,
+          exactCityMatch: hasExactCity && city === debouncedNormalized,
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null)
@@ -67,7 +96,7 @@ const TopSearch = ({
       .map((item) => item.beach);
 
     return matches;
-  }, [beaches, normalized]);
+  }, [debouncedNormalized, indexedBeaches]);
 
   useEffect(() => {
     const handleOutside = (event: MouseEvent | TouchEvent) => {
@@ -84,10 +113,13 @@ const TopSearch = ({
     };
   }, []);
 
-  const handleSelect = (beachId: string) => {
-    onSelectSuggestion(beachId);
-    setOpen(false);
-  };
+  const handleSelect = useCallback(
+    (beachId: string) => {
+      onSelectSuggestion(beachId);
+      setOpen(false);
+    },
+    [onSelectSuggestion],
+  );
 
   return (
     <div className="fixed left-0 right-0 top-0 z-40 px-4 pt-[calc(env(safe-area-inset-top)+14px)]">
@@ -178,5 +210,15 @@ const TopSearch = ({
     </div>
   );
 };
+
+const areEqual = (prev: TopSearchProps, next: TopSearchProps) =>
+  prev.value === next.value &&
+  prev.resultCount === next.resultCount &&
+  prev.notice === next.notice &&
+  prev.beaches === next.beaches &&
+  prev.onChange === next.onChange &&
+  prev.onSelectSuggestion === next.onSelectSuggestion;
+
+const TopSearch = memo(TopSearchComponent, areEqual);
 
 export default TopSearch;

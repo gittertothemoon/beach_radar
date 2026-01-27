@@ -7,18 +7,48 @@ const clamp = (value: number, min: number, max: number) =>
 
 const calcWeight = (ageMin: number) => Math.exp(-ageMin / 18) * 1;
 
-export const aggregateBeachStats = (
+export type ReportsIndex = Map<string, Report[]>;
+
+export const buildReportsIndex = (reports: Report[]): ReportsIndex => {
+  const index: ReportsIndex = new Map();
+  for (const report of reports) {
+    const bucket = index.get(report.beachId);
+    if (bucket) {
+      bucket.push(report);
+    } else {
+      index.set(report.beachId, [report]);
+    }
+  }
+  index.forEach((bucket) => {
+    bucket.sort((a, b) => b.createdAt - a.createdAt);
+  });
+  return index;
+};
+
+const aggregateFromReports = (
   beach: Beach,
   reports: Report[],
   now: number,
 ): BeachStats => {
-  const active = reports.filter((report) => {
-    if (report.beachId !== beach.id) return false;
-    const ageMin = (now - report.createdAt) / 60000;
-    return ageMin <= REPORT_TTL_MIN;
-  });
+  const weights = new Map<CrowdLevel, number>();
+  let totalWeight = 0;
+  let latestReportAt = 0;
+  let activeCount = 0;
 
-  if (active.length === 0) {
+  for (const report of reports) {
+    const ageMin = (now - report.createdAt) / 60000;
+    if (ageMin > REPORT_TTL_MIN) {
+      // Reports are sorted by createdAt desc, so we can stop early.
+      break;
+    }
+    activeCount += 1;
+    const weight = calcWeight(ageMin);
+    totalWeight += weight;
+    weights.set(report.crowdLevel, (weights.get(report.crowdLevel) ?? 0) + weight);
+    if (report.createdAt > latestReportAt) latestReportAt = report.createdAt;
+  }
+
+  if (activeCount === 0) {
     return {
       crowdLevel: beach.baselineLevel ?? 2,
       state: "PRED",
@@ -28,33 +58,21 @@ export const aggregateBeachStats = (
     };
   }
 
-  const weights = new Map<CrowdLevel, number>();
-  let totalWeight = 0;
-  let latestReportAt = 0;
-
-  active.forEach((report) => {
-    const ageMin = (now - report.createdAt) / 60000;
-    const weight = calcWeight(ageMin);
-    totalWeight += weight;
-    weights.set(report.crowdLevel, (weights.get(report.crowdLevel) ?? 0) + weight);
-    if (report.createdAt > latestReportAt) latestReportAt = report.createdAt;
-  });
-
   const levels: CrowdLevel[] = [1, 2, 3, 4];
   let bestLevel: CrowdLevel = levels[0];
   let bestWeight = -1;
 
-  levels.forEach((level) => {
+  for (const level of levels) {
     const weight = weights.get(level) ?? 0;
     if (weight > bestWeight || (weight === bestWeight && level > bestLevel)) {
       bestWeight = weight;
       bestLevel = level;
     }
-  });
+  }
 
   const updatedMin = (now - latestReportAt) / 60000;
   const agreement = totalWeight > 0 ? bestWeight / totalWeight : 0;
-  const nBoost = Math.min(1, active.length / 10);
+  const nBoost = Math.min(1, activeCount / 10);
   const recencyBoost = clamp(1 - updatedMin / 45, 0, 1);
 
   const confidence = clamp(
@@ -70,6 +88,33 @@ export const aggregateBeachStats = (
     state,
     confidence,
     updatedAt: latestReportAt,
-    reportsCount: active.length,
+    reportsCount: activeCount,
   };
+};
+
+export const aggregateBeachStatsFromIndex = (
+  beach: Beach,
+  reportsIndex: ReportsIndex,
+  now: number,
+) => {
+  const reports = reportsIndex.get(beach.id);
+  if (!reports || reports.length === 0) {
+    return {
+      crowdLevel: beach.baselineLevel ?? 2,
+      state: "PRED" as const,
+      confidence: 0.15,
+      updatedAt: null,
+      reportsCount: 0,
+    };
+  }
+  return aggregateFromReports(beach, reports, now);
+};
+
+export const aggregateBeachStats = (
+  beach: Beach,
+  reports: Report[],
+  now: number,
+): BeachStats => {
+  const reportsIndex = buildReportsIndex(reports);
+  return aggregateBeachStatsFromIndex(beach, reportsIndex, now);
 };

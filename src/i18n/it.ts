@@ -102,6 +102,7 @@ export const STRINGS = {
     confidenceLabel: "Affidabilità",
     updatedLabel: "Aggiornato",
     reportsLabel: "Segnalazioni",
+    preparing: "Preparazione...",
     shareText: (name: string, confidence: string) =>
       `${name} • Affidabilità ${confidence}`,
   },
@@ -133,5 +134,12 @@ export const STRINGS = {
     exportFailed: "Copia non riuscita",
     eventsCleared: "Eventi cancellati",
     attributionCleared: "Attribuzione cancellata",
+    perfTitle: "Performance",
+    perfReset: "Reset",
+    perfClusterLast: (ms: number) => `Clustering: ${ms.toFixed(1)}ms`,
+    perfClusterMeta: (clusters: number, singles: number, zoom: number | null) =>
+      `cluster=${clusters} · singoli=${singles} · zoom=${zoom ?? "?"}`,
+    perfIconCache: (size: number) => `Cache icone: ${size}`,
+    perfRender: (name: string, count?: number) => `${name}: ${count ?? 0}`,
   },
 } as const;

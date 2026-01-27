@@ -5,13 +5,17 @@ import TopSearch from "../components/TopSearch";
 import BottomSheet from "../components/BottomSheet";
 import LidoModalCard from "../components/LidoModalCard";
 import ReportModal from "../components/ReportModal";
+import PerformanceOverlay from "../components/PerformanceOverlay";
 import { shareBeachCard } from "../components/ShareCard";
 import logo from "../assets/logo.png";
 import logoText from "../assets/beach-radar-scritta.png";
 import splashBg from "../assets/initial-bg.png";
 import { SPOTS, hasFiniteCoords } from "../data/spots";
 import { STRINGS } from "../i18n/it";
-import { aggregateBeachStats } from "../lib/aggregate";
+import {
+  aggregateBeachStatsFromIndex,
+  buildReportsIndex,
+} from "../lib/aggregate";
 import { distanceInMeters } from "../lib/geo";
 import {
   clearOverride,
@@ -42,6 +46,12 @@ import {
   loadAttribution,
   upsertAttribution,
 } from "../lib/attribution";
+import {
+  clearPerfStats,
+  getPerfSnapshot,
+  subscribePerf,
+  useRenderCounter,
+} from "../lib/perf";
 import type { BeachWithStats, CrowdLevel, Report } from "../lib/types";
 import type { LatLng, UserLocation } from "../lib/geo";
 import type { BeachOverrides } from "../lib/overrides";
@@ -85,8 +95,10 @@ function App() {
   const [editPositions, setEditPositions] = useState(false);
   const [followMode, setFollowMode] = useState(false);
   const [locationToast, setLocationToast] = useState<string | null>(null);
+  const [shareToast, setShareToast] = useState<string | null>(null);
   const [debugToast, setDebugToast] = useState<string | null>(null);
   const [debugRefreshKey, setDebugRefreshKey] = useState(0);
+  const [perfSnapshot, setPerfSnapshot] = useState(() => getPerfSnapshot());
   const [splashPhase, setSplashPhase] = useState<
     "visible" | "fading" | "hidden"
   >("visible");
@@ -112,6 +124,8 @@ function App() {
 
   const effectiveEditMode = isDebug && editPositions;
 
+  useRenderCounter("App", isDebug);
+
   useEffect(() => {
     if (!isDebug || typeof window === "undefined") return;
     const handleUpdate = () => setDebugRefreshKey((prev) => prev + 1);
@@ -121,6 +135,12 @@ function App() {
       window.removeEventListener(ANALYTICS_UPDATE_EVENT, handleUpdate);
       window.removeEventListener(ATTRIBUTION_UPDATE_EVENT, handleUpdate);
     };
+  }, [isDebug]);
+
+  useEffect(() => {
+    if (!isDebug) return;
+    setPerfSnapshot(getPerfSnapshot());
+    return subscribePerf((snapshot) => setPerfSnapshot(snapshot));
   }, [isDebug]);
 
   useEffect(() => {
@@ -356,6 +376,8 @@ function App() {
     [isDebug],
   );
 
+  const reportsIndex = useMemo(() => buildReportsIndex(reports), [reports]);
+
   const coordStats = useMemo(() => {
     const total = visibleSpots.length;
     let valid = 0;
@@ -378,43 +400,66 @@ function App() {
     );
   }, [coordStats.missing, coordStats.total, coordStats.valid, isDebug]);
 
-  const beachViews = useMemo<BeachWithStats[]>(() => {
+  const beachViewsBase = useMemo<BeachWithStats[]>(() => {
     return visibleSpots
       .map((beach) => {
         const override = overrides[beach.id];
         const lat = override?.lat ?? beach.lat;
         const lng = override?.lng ?? beach.lng;
-        const hasValidCoords = Number.isFinite(lat) && Number.isFinite(lng);
-        const stats = aggregateBeachStats(beach, reports, now);
-        const distanceM = userLocation
-          ? hasValidCoords
-            ? distanceInMeters(userLocation, { lat, lng })
-            : null
-          : null;
-        return { ...beach, lat, lng, ...stats, distanceM };
+        const stats = aggregateBeachStatsFromIndex(beach, reportsIndex, now);
+        return { ...beach, lat, lng, ...stats, distanceM: null };
       })
       .filter((beach) => hasFiniteCoords(beach));
-  }, [visibleSpots, overrides, reports, now, userLocation]);
+  }, [visibleSpots, overrides, reportsIndex, now]);
+
+  const beachViews = useMemo<BeachWithStats[]>(() => {
+    if (!userLocation) return beachViewsBase;
+    return beachViewsBase.map((beach) => ({
+      ...beach,
+      distanceM: distanceInMeters(userLocation, { lat: beach.lat, lng: beach.lng }),
+    }));
+  }, [beachViewsBase, userLocation]);
 
   const normalizedSearch = search.trim().toLowerCase();
-  const filteredBeaches = useMemo(() => {
-    if (!normalizedSearch) return beachViews;
-    return beachViews.filter(
-      (beach) =>
+
+  const searchBeaches = useMemo(
+    () => visibleSpots.map(({ id, name, region }) => ({ id, name, region })),
+    [visibleSpots],
+  );
+
+  const matchedBeachIds = useMemo(() => {
+    if (!normalizedSearch) return null;
+    const nextMatches = new Set<string>();
+    for (const beach of beachViewsBase) {
+      if (
         beach.name.toLowerCase().includes(normalizedSearch) ||
-        beach.region.toLowerCase().includes(normalizedSearch),
-    );
-  }, [beachViews, normalizedSearch]);
+        beach.region.toLowerCase().includes(normalizedSearch)
+      ) {
+        nextMatches.add(beach.id);
+      }
+    }
+    return nextMatches;
+  }, [beachViewsBase, normalizedSearch]);
+
+  const filteredBeachesBase = useMemo(() => {
+    if (!matchedBeachIds) return beachViewsBase;
+    return beachViewsBase.filter((beach) => matchedBeachIds.has(beach.id));
+  }, [beachViewsBase, matchedBeachIds]);
+
+  const filteredBeaches = useMemo(() => {
+    if (!matchedBeachIds) return beachViews;
+    return beachViews.filter((beach) => matchedBeachIds.has(beach.id));
+  }, [beachViews, matchedBeachIds]);
 
   const liveDataNotice = useMemo(() => {
-    const total = beachViews.length;
+    const total = beachViewsBase.length;
     if (total === 0) return null;
     let predCount = 0;
-    beachViews.forEach((beach) => {
+    beachViewsBase.forEach((beach) => {
       if (beach.state === "PRED") predCount += 1;
     });
     return predCount / total >= 0.85 ? STRINGS.banners.limitedData : null;
-  }, [beachViews]);
+  }, [beachViewsBase]);
 
   const sortedBeaches = useMemo(() => {
     return [...filteredBeaches].sort((a, b) => {
@@ -427,13 +472,23 @@ function App() {
     });
   }, [filteredBeaches]);
 
-  const selectedBeach = beachViews.find(
+  const selectedBeach = beachViewsBase.find(
     (beach) => beach.id === selectedBeachId,
   );
+  const reportDistanceM =
+    selectedBeach &&
+    userLocation &&
+    Number.isFinite(selectedBeach.lat) &&
+    Number.isFinite(selectedBeach.lng)
+      ? distanceInMeters(userLocation, {
+          lat: selectedBeach.lat,
+          lng: selectedBeach.lng,
+        })
+      : null;
   const selectedOverride = selectedBeachId ? overrides[selectedBeachId] : null;
   const beachIdSet = useMemo(
-    () => new Set(beachViews.map((beach) => beach.id)),
-    [beachViews],
+    () => new Set(beachViewsBase.map((beach) => beach.id)),
+    [beachViewsBase],
   );
   const debugAttribution = useMemo(
     () => (isDebug ? loadAttribution() : null),
@@ -453,7 +508,7 @@ function App() {
 
   const focusBeach = useCallback(
     (beachId: string, options?: { updateSearch?: boolean }) => {
-      const beach = beachViews.find((item) => item.id === beachId);
+      const beach = beachViewsBase.find((item) => item.id === beachId);
       if (!beach) return;
       if (options?.updateSearch) {
         setSearch(beach.name);
@@ -480,13 +535,13 @@ function App() {
         });
       }
     },
-    [beachViews],
+    [beachViewsBase],
   );
 
   useEffect(() => {
     if (!pendingDeepLinkBeachId) return;
     if (deepLinkProcessedRef.current) return;
-    if (beachViews.length === 0) return;
+    if (beachViewsBase.length === 0) return;
     const beachExists = beachIdSet.has(pendingDeepLinkBeachId);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDeepLinkInfo((prev) => ({
@@ -498,7 +553,7 @@ function App() {
       deepLinkProcessedRef.current = true;
       const warning = `Deep link beach id not found in SPOTS: ${pendingDeepLinkBeachId}`;
       setDeepLinkWarning(warning);
-      const sampleIds = beachViews.slice(0, 5).map((beach) => beach.id);
+      const sampleIds = beachViewsBase.slice(0, 5).map((beach) => beach.id);
       // eslint-disable-next-line no-console
       console.warn(warning, "Sample ids:", sampleIds);
       return;
@@ -508,7 +563,7 @@ function App() {
     setSelectedBeachId(pendingDeepLinkBeachId);
     setSheetOpen(false);
     deepLinkProcessedRef.current = true;
-  }, [beachIdSet, beachViews, pendingDeepLinkBeachId]);
+  }, [beachIdSet, beachViewsBase, pendingDeepLinkBeachId]);
 
   useEffect(() => {
     if (!pendingDeepLinkBeachId) return;
@@ -543,6 +598,25 @@ function App() {
     [focusBeach],
   );
 
+  const handleMapReady = useCallback((map: LeafletMap) => {
+    mapRef.current = map;
+    setMapReady(true);
+  }, []);
+
+  const handleToggleSheet = useCallback(() => {
+    setSheetOpen((prev) => !prev);
+  }, []);
+
+  const handleOpenReport = useCallback(() => {
+    setReportOpen(true);
+    setReportError(null);
+  }, []);
+
+  const handleCloseReport = useCallback(() => {
+    setReportOpen(false);
+    setReportError(null);
+  }, []);
+
   useEffect(() => {
     if (!selectedBeachId) {
       lastSelectedBeachIdRef.current = null;
@@ -565,12 +639,12 @@ function App() {
     track("report_open", { beachId: selectedBeachId ?? undefined });
   }, [reportOpen, selectedBeachId]);
 
-  const handleCloseDrawer = () => {
+  const handleCloseDrawer = useCallback(() => {
     if (reportOpen) return;
     setSelectedBeachId(null);
-  };
+  }, [reportOpen]);
 
-  const handleSubmitReport = (level: CrowdLevel) => {
+  const handleSubmitReport = useCallback((level: CrowdLevel) => {
     if (!selectedBeach) return;
     if (
       reportDistanceM !== null &&
@@ -604,10 +678,11 @@ function App() {
         });
       }
     }
-  };
+  }, [reportDistanceM, selectedBeach]);
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     if (!selectedBeach) return;
+    setShareToast(STRINGS.share.preparing);
     try {
       await shareBeachCard({
         name: selectedBeach.name,
@@ -620,8 +695,10 @@ function App() {
       });
     } catch {
       // Share failures should be silent for MVP.
+    } finally {
+      setShareToast(null);
     }
-  };
+  }, [now, selectedBeach]);
 
   const handleCopyDebugExport = async () => {
     const payload = {
@@ -650,23 +727,14 @@ function App() {
     setDebugToast(STRINGS.debug.attributionCleared);
   };
 
-  const firstBeach = beachViews.find(
-    (beach) => Number.isFinite(beach.lat) && Number.isFinite(beach.lng),
-  );
-  const mapCenter = firstBeach
-    ? { lat: firstBeach.lat, lng: firstBeach.lng }
-    : DEFAULT_CENTER;
-
-  const reportDistanceM =
-    selectedBeach &&
-    userLocation &&
-    Number.isFinite(selectedBeach.lat) &&
-    Number.isFinite(selectedBeach.lng)
-      ? distanceInMeters(userLocation, {
-          lat: selectedBeach.lat,
-          lng: selectedBeach.lng,
-        })
-      : null;
+  const mapCenter = useMemo(() => {
+    const firstBeach = beachViewsBase.find(
+      (beach) => Number.isFinite(beach.lat) && Number.isFinite(beach.lng),
+    );
+    return firstBeach
+      ? { lat: firstBeach.lat, lng: firstBeach.lng }
+      : DEFAULT_CENTER;
+  }, [beachViewsBase]);
 
   if (splashPhase !== "hidden") {
     return (
@@ -687,25 +755,23 @@ function App() {
   return (
     <div className="relative h-full w-full">
       <MapView
-        beaches={filteredBeaches}
+        beaches={filteredBeachesBase}
         selectedBeachId={selectedBeachId}
         onSelectBeach={handleSelectBeachFromMarker}
         center={mapCenter}
         editMode={effectiveEditMode}
         onOverride={handleOverride}
-        onMapReady={(map) => {
-          mapRef.current = map;
-          setMapReady(true);
-        }}
+        onMapReady={handleMapReady}
         userLocation={userLocation ?? undefined}
         onUserInteract={handleUserInteract}
       />
+      {isDebug ? <PerformanceOverlay /> : null}
       <TopSearch
         value={search}
         onChange={setSearch}
         resultCount={filteredBeaches.length}
         notice={liveDataNotice}
-        beaches={beachViews}
+        beaches={searchBeaches}
         onSelectSuggestion={handleSelectSuggestion}
       />
       <button
@@ -733,6 +799,11 @@ function App() {
       {locationToast ? (
         <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+130px)] z-40 -translate-x-1/2 rounded-full border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-[11px] text-amber-100 shadow-lg backdrop-blur">
           {locationToast}
+        </div>
+      ) : null}
+      {shareToast ? (
+        <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+168px)] z-40 -translate-x-1/2 rounded-full border border-sky-400/40 bg-sky-500/10 px-4 py-2 text-[11px] text-sky-100 shadow-lg backdrop-blur">
+          {shareToast}
         </div>
       ) : null}
       {isDebug && overrideCount > 0 ? (
@@ -838,6 +909,58 @@ function App() {
             <div className="text-slate-500">{STRINGS.debug.eventsCount}</div>
             <div className="mt-1 text-slate-100">{debugEvents.length}</div>
           </div>
+          <div className="mt-3 rounded-xl border border-slate-800/70 bg-slate-900/40 px-3 py-2 text-xs text-slate-400">
+            <div className="flex items-center justify-between">
+              <div className="text-slate-500">{STRINGS.debug.perfTitle}</div>
+              <button
+                type="button"
+                onClick={clearPerfStats}
+                className="rounded-lg border border-slate-700/80 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-300 transition hover:border-slate-500/80 hover:text-slate-100"
+              >
+                {STRINGS.debug.perfReset}
+              </button>
+            </div>
+            <div className="mt-1 text-slate-100">
+              {STRINGS.debug.perfClusterLast(perfSnapshot.cluster.lastMs)}
+            </div>
+            <div className="mt-1 text-[11px] text-slate-500">
+              {STRINGS.debug.perfClusterMeta(
+                perfSnapshot.cluster.lastClusterCount,
+                perfSnapshot.cluster.lastSingleCount,
+                perfSnapshot.cluster.lastZoom,
+              )}
+            </div>
+            <div className="mt-1 text-[11px] text-slate-500">
+              {STRINGS.debug.perfIconCache(perfSnapshot.markerIconCacheSize)}
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-slate-400">
+              <div>{STRINGS.debug.perfRender("App", perfSnapshot.renderCounts.App)}</div>
+              <div>
+                {STRINGS.debug.perfRender(
+                  "MapView",
+                  perfSnapshot.renderCounts.MapView,
+                )}
+              </div>
+              <div>
+                {STRINGS.debug.perfRender(
+                  "TopSearch",
+                  perfSnapshot.renderCounts.TopSearch,
+                )}
+              </div>
+              <div>
+                {STRINGS.debug.perfRender(
+                  "BottomSheet",
+                  perfSnapshot.renderCounts.BottomSheet,
+                )}
+              </div>
+              <div className="col-span-2">
+                {STRINGS.debug.perfRender(
+                  "LidoModalCard",
+                  perfSnapshot.renderCounts.LidoModalCard,
+                )}
+              </div>
+            </div>
+          </div>
           <button
             type="button"
             onClick={handleCopyDebugExport}
@@ -866,7 +989,7 @@ function App() {
         selectedBeachId={selectedBeachId}
         onSelectBeach={handleSelectBeach}
         isOpen={sheetOpen}
-        onToggle={() => setSheetOpen((prev) => !prev)}
+        onToggle={handleToggleSheet}
         now={now}
       />
       {selectedBeach ? (
@@ -875,10 +998,7 @@ function App() {
           isOpen={Boolean(selectedBeach)}
           now={now}
           onClose={handleCloseDrawer}
-          onReport={() => {
-            setReportOpen(true);
-            setReportError(null);
-          }}
+          onReport={handleOpenReport}
           onShare={handleShare}
         />
       ) : null}
@@ -891,10 +1011,7 @@ function App() {
           geoStatus={geoStatus}
           geoError={geoError}
           onRequestLocation={requestLocation}
-          onClose={() => {
-            setReportOpen(false);
-            setReportError(null);
-          }}
+          onClose={handleCloseReport}
           onSubmit={handleSubmitReport}
           submitError={reportError}
         />

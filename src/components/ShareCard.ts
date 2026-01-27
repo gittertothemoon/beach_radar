@@ -6,6 +6,7 @@ import { PUBLIC_HOSTNAME } from "../config/publicUrl";
 import logoUrl from "../assets/logo.png";
 import wordmarkUrl from "../assets/beach-radar-scritta.png";
 import shareBgUrl from "../assets/sharecard-bg.png";
+import { isPerfEnabled, recordTiming } from "../lib/perf";
 
 export type ShareCardData = {
   name: string;
@@ -62,6 +63,41 @@ const loadImage = (src: string) =>
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error(`Failed to load ${src}`));
     img.src = src;
+  });
+
+const imagePromiseCache = new Map<string, Promise<HTMLImageElement>>();
+
+const loadImageCached = (src: string) => {
+  const cached = imagePromiseCache.get(src);
+  if (cached) return cached;
+  const nextPromise = loadImage(src).catch((error) => {
+    imagePromiseCache.delete(src);
+    throw error;
+  });
+  imagePromiseCache.set(src, nextPromise);
+  return nextPromise;
+};
+
+type IdleWindow = Window & {
+  requestIdleCallback?: (
+    callback: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,
+    options?: { timeout?: number },
+  ) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
+const runWhenIdle = () =>
+  new Promise<void>((resolve) => {
+    if (typeof window === "undefined") {
+      resolve();
+      return;
+    }
+    const idleWindow = window as IdleWindow;
+    if (typeof idleWindow.requestIdleCallback === "function") {
+      idleWindow.requestIdleCallback(() => resolve(), { timeout: 250 });
+      return;
+    }
+    window.setTimeout(resolve, 0);
   });
 
 const wrapText = (
@@ -128,9 +164,9 @@ const renderShareCard = async (
   await document.fonts?.ready;
 
   const [logo, wordmark, shareBg] = await Promise.all([
-    loadImage(logoUrl),
-    loadImage(wordmarkUrl).catch(() => null),
-    loadImage(shareBgUrl),
+    loadImageCached(logoUrl),
+    loadImageCached(wordmarkUrl).catch(() => null),
+    loadImageCached(shareBgUrl),
   ]);
 
   const drawRoundedRect = (
@@ -316,7 +352,13 @@ const renderShareCard = async (
 export const shareBeachCard = async (data: ShareCardData) => {
   track("share_card_generate");
   const mimeType = "image/jpeg";
+  await runWhenIdle();
+  const perfEnabled = isPerfEnabled();
+  const start = perfEnabled ? performance.now() : 0;
   const blob = await renderShareCard(data, { mimeType, quality: 0.9 });
+  if (perfEnabled) {
+    recordTiming("share_card_render", performance.now() - start, perfEnabled);
+  }
   const fileName = `beach-radar-${sanitizeFileName(data.name)}.jpg`;
   const file = new File([blob], fileName, { type: mimeType });
 

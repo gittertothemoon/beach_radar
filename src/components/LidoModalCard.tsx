@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import type { BeachWithStats } from "../lib/types";
 import { STRINGS } from "../i18n/it";
 import {
@@ -7,6 +7,7 @@ import {
   formatMinutesAgo,
   formatStateLabel,
 } from "../lib/format";
+import { isPerfEnabled, useRenderCounter } from "../lib/perf";
 
 type LidoModalCardProps = {
   beach: BeachWithStats;
@@ -28,7 +29,17 @@ const stateClass = (state: string) => {
   }
 };
 
-const LidoModalCard = ({
+const sameServices = (a?: string[], b?: string[]) => {
+  if (a === b) return true;
+  if (!a || !b) return !a && !b;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+};
+
+const LidoModalCardComponent = ({
   beach,
   isOpen,
   now,
@@ -36,6 +47,8 @@ const LidoModalCard = ({
   onReport,
   onShare,
 }: LidoModalCardProps) => {
+  const perfEnabled = isPerfEnabled();
+  useRenderCounter("LidoModalCard", perfEnabled);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const isPred = beach.state === "PRED";
@@ -275,5 +288,34 @@ const LidoModalCard = ({
     </div>
   );
 };
+
+const lidoModalEqual = (prev: LidoModalCardProps, next: LidoModalCardProps) => {
+  if (prev.isOpen !== next.isOpen) return false;
+  if (prev.now !== next.now) return false;
+  if (prev.onClose !== next.onClose) return false;
+  if (prev.onReport !== next.onReport) return false;
+  if (prev.onShare !== next.onShare) return false;
+  const a = prev.beach;
+  const b = next.beach;
+  return (
+    a.id === b.id &&
+    a.name === b.name &&
+    a.region === b.region &&
+    a.state === b.state &&
+    a.crowdLevel === b.crowdLevel &&
+    a.confidence === b.confidence &&
+    a.updatedAt === b.updatedAt &&
+    a.reportsCount === b.reportsCount &&
+    a.lat === b.lat &&
+    a.lng === b.lng &&
+    a.address === b.address &&
+    a.hours === b.hours &&
+    a.phone === b.phone &&
+    a.website === b.website &&
+    sameServices(a.services, b.services)
+  );
+};
+
+const LidoModalCard = memo(LidoModalCardComponent, lidoModalEqual);
 
 export default LidoModalCard;

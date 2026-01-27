@@ -1,6 +1,11 @@
 import L from "leaflet";
 import beachPin from "../assets/markers/pin_beach.png";
 import clusterPin from "../assets/markers/pin_cluster.png";
+import {
+  isPerfEnabled,
+  recordTiming,
+  setMarkerIconCacheSize,
+} from "../lib/perf";
 
 type BeachPinOptions = {
   selected?: boolean;
@@ -46,6 +51,11 @@ const getClusterDigitScale = (digitCount: number) => {
 const beachPinCache = new Map<string, L.Icon>();
 const clusterPinCache = new Map<string, L.DivIcon>();
 
+const updateCacheSizeStat = () => {
+  if (!isPerfEnabled()) return;
+  setMarkerIconCacheSize(beachPinCache.size + clusterPinCache.size);
+};
+
 const getUmbrellaKey = ({ selected, state, zoom }: BeachPinOptions) => {
   const size = getUmbrellaSizeForZoom(zoom);
   return `${size}|${selected ? "selected" : "normal"}|${state ?? "LIVE"}`;
@@ -56,6 +66,8 @@ export const createBeachPinIcon = (options: BeachPinOptions) => {
   const cached = beachPinCache.get(key);
   if (cached) return cached;
 
+  const perfEnabled = isPerfEnabled();
+  const start = perfEnabled ? performance.now() : 0;
   const isSelected = Boolean(options.selected);
   const isPred = options.state === "PRED";
   const baseSize = getUmbrellaSizeForZoom(options.zoom);
@@ -80,6 +92,10 @@ export const createBeachPinIcon = (options: BeachPinOptions) => {
   });
 
   beachPinCache.set(key, icon);
+  if (perfEnabled) {
+    recordTiming("marker_icon_create", performance.now() - start, perfEnabled);
+  }
+  updateCacheSizeStat();
   return icon;
 };
 
@@ -96,6 +112,8 @@ export const createClusterPinDivIcon = (count: number, zoom: number) => {
   const cached = clusterPinCache.get(key);
   if (cached) return cached;
 
+  const perfEnabled = isPerfEnabled();
+  const start = perfEnabled ? performance.now() : 0;
   const anchorX = Math.round(size * 0.5);
   const anchorY = Math.round(size * 0.92);
   const popupAnchorY = -Math.round(size * 0.75);
@@ -109,5 +127,12 @@ export const createClusterPinDivIcon = (count: number, zoom: number) => {
   });
 
   clusterPinCache.set(key, icon);
+  if (perfEnabled) {
+    recordTiming("cluster_icon_create", performance.now() - start, perfEnabled);
+  }
+  updateCacheSizeStat();
   return icon;
 };
+
+export const getMarkerIconCacheSize = () =>
+  beachPinCache.size + clusterPinCache.size;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Circle,
   MapContainer,
@@ -11,6 +11,7 @@ import L from "leaflet";
 import type { BeachWithStats } from "../lib/types";
 import type { LatLng, UserLocation } from "../lib/geo";
 import { createBeachPinIcon, createClusterPinDivIcon } from "../map/markerIcons";
+import { isPerfEnabled, recordClusterStats, useRenderCounter } from "../lib/perf";
 
 type Cluster = {
   id: string;
@@ -47,6 +48,12 @@ const WORLD_BOUNDS = L.latLngBounds(
   [-85.05112878, -180],
   [85.05112878, 180],
 );
+const USER_LOCATION_PATH_OPTIONS: L.PathOptions = {
+  color: "#60a5fa",
+  fillColor: "#60a5fa",
+  fillOpacity: 0.18,
+  weight: 1,
+};
 
 const isValidCoord = (value: number) => Number.isFinite(value);
 const hasValidCoords = (beach: BeachWithStats) =>
@@ -281,31 +288,90 @@ const ClusteredMarkers = ({
     [expandedClusters],
   );
   const markerRefs = useRef(new Map<string, L.Marker>());
+  const rafRef = useRef<number | null>(null);
+  const timeoutRef = useRef<number | null>(null);
+  const pendingRef = useRef(false);
   const validBeaches = useMemo(
     () => beaches.filter((beach) => hasValidCoords(beach)),
     [beaches],
   );
 
-  const zoom = useMemo(() => getSafeZoom(map), [map, mapTick]);
+  const zoom = useMemo(() => {
+    // mapTick is a signal that the map state (center/bounds) changed.
+    void mapTick;
+    return getSafeZoom(map);
+  }, [map, mapTick]);
+  const selectedIdForClustering = editMode ? selectedBeachId : null;
+  const perfEnabled = isPerfEnabled();
 
-  const { clusters, singles } = useMemo(
-    () =>
-      clusterBeaches(
-        validBeaches,
-        map,
-        editMode ? selectedBeachId : null,
-        !editMode,
-        expandedClusterSet,
-      ),
-    [validBeaches, map, editMode, selectedBeachId, expandedClusterSet, mapTick],
-  );
+  const { clusters, singles } = useMemo(() => {
+    // mapTick is a signal that the map state (center/bounds) changed.
+    void mapTick;
+    // eslint-disable-next-line react-hooks/purity -- dev-only timing instrumentation.
+    const start = perfEnabled ? performance.now() : 0;
+    const result = clusterBeaches(
+      validBeaches,
+      map,
+      selectedIdForClustering,
+      !editMode,
+      expandedClusterSet,
+    );
+    if (perfEnabled) {
+      recordClusterStats({
+        // eslint-disable-next-line react-hooks/purity -- dev-only timing instrumentation.
+        durationMs: performance.now() - start,
+        zoom,
+        clusterCount: result.clusters.length,
+        singleCount: result.singles.length,
+      });
+    }
+    return result;
+  }, [
+    validBeaches,
+    map,
+    selectedIdForClustering,
+    editMode,
+    expandedClusterSet,
+    perfEnabled,
+    zoom,
+    mapTick,
+  ]);
 
-  const handleMapChange = useCallback(() => {
+  const flushMapTick = useCallback(() => {
     setMapTick((prev) => prev + 1);
   }, []);
 
-  useMapEvent("zoomend", handleMapChange);
-  useMapEvent("moveend", handleMapChange);
+  const scheduleMapTick = useCallback(() => {
+    pendingRef.current = true;
+    if (rafRef.current === null) {
+      rafRef.current = window.requestAnimationFrame(() => {
+        rafRef.current = null;
+        if (!pendingRef.current) return;
+        pendingRef.current = false;
+        flushMapTick();
+      });
+    }
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = window.setTimeout(() => {
+      timeoutRef.current = null;
+      if (!pendingRef.current) return;
+      pendingRef.current = false;
+      flushMapTick();
+    }, 80);
+  }, [flushMapTick]);
+
+  useEffect(
+    () => () => {
+      if (rafRef.current !== null) window.cancelAnimationFrame(rafRef.current);
+      if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current);
+    },
+    [],
+  );
+
+  useMapEvent("zoomend", scheduleMapTick);
+  useMapEvent("moveend", scheduleMapTick);
   useMapEvent("zoomend", () => {
     const maxZoom = map.getMaxZoom?.() ?? 18;
     if (map.getZoom() < maxZoom && expandedClusters.length) {
@@ -319,7 +385,7 @@ const ClusteredMarkers = ({
         id === selectedBeachId ? Z_INDEX_SELECTED : Z_INDEX_UMBRELLA,
       );
     });
-  }, [selectedBeachId, singles]);
+  }, [selectedBeachId, singles.length]);
 
   return (
     <>
@@ -499,12 +565,7 @@ const UserLocationLayer = ({ location }: { location: UserLocation }) => {
       <Circle
         center={[location.lat, location.lng]}
         radius={location.accuracy}
-        pathOptions={{
-          color: "#60a5fa",
-          fillColor: "#60a5fa",
-          fillOpacity: 0.18,
-          weight: 1,
-        }}
+        pathOptions={USER_LOCATION_PATH_OPTIONS}
       />
       <Marker
         position={[location.lat, location.lng]}
@@ -545,7 +606,7 @@ const MapReady = ({ onReady }: { onReady?: (map: L.Map) => void }) => {
   return null;
 };
 
-const MapView = ({
+const MapViewComponent = ({
   beaches,
   selectedBeachId,
   onSelectBeach,
@@ -555,43 +616,50 @@ const MapView = ({
   onMapReady,
   userLocation,
   onUserInteract,
-}: MapViewProps) => (
-  <MapContainer
-    center={[center.lat, center.lng]}
-    zoom={12}
-    minZoom={2}
-    maxZoom={18}
-    fadeAnimation={false}
-    maxBounds={WORLD_BOUNDS}
-    maxBoundsViscosity={1}
-    zoomControl={false}
-    bounceAtZoomLimits={false}
-    className="h-full w-full"
-  >
-    <TileLayer
-      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+}: MapViewProps) => {
+  const perfEnabled = isPerfEnabled();
+  useRenderCounter("MapView", perfEnabled);
+
+  return (
+    <MapContainer
+      center={[center.lat, center.lng]}
+      zoom={12}
       minZoom={2}
       maxZoom={18}
-      updateWhenIdle={false}
-      updateWhenZooming
-      updateInterval={30}
-      keepBuffer={8}
-      noWrap
-      bounds={WORLD_BOUNDS}
-    />
-    <MapViewportFix />
-    <MapReady onReady={onMapReady} />
-    <MapInteractionWatcher onUserInteract={onUserInteract} />
-    <ClusteredMarkers
-      beaches={beaches}
-      selectedBeachId={selectedBeachId}
-      onSelectBeach={onSelectBeach}
-      editMode={editMode}
-      onOverride={onOverride}
-    />
-    {userLocation ? <UserLocationLayer location={userLocation} /> : null}
-  </MapContainer>
-);
+      fadeAnimation={false}
+      maxBounds={WORLD_BOUNDS}
+      maxBoundsViscosity={1}
+      zoomControl={false}
+      bounceAtZoomLimits={false}
+      className="h-full w-full"
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        minZoom={2}
+        maxZoom={18}
+        updateWhenIdle={false}
+        updateWhenZooming
+        updateInterval={30}
+        keepBuffer={8}
+        noWrap
+        bounds={WORLD_BOUNDS}
+      />
+      <MapViewportFix />
+      <MapReady onReady={onMapReady} />
+      <MapInteractionWatcher onUserInteract={onUserInteract} />
+      <ClusteredMarkers
+        beaches={beaches}
+        selectedBeachId={selectedBeachId}
+        onSelectBeach={onSelectBeach}
+        editMode={editMode}
+        onOverride={onOverride}
+      />
+      {userLocation ? <UserLocationLayer location={userLocation} /> : null}
+    </MapContainer>
+  );
+};
+
+const MapView = memo(MapViewComponent);
 
 export default MapView;
