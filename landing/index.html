@@ -6,26 +6,40 @@
     <meta name="theme-color" content="#071018" />
     <meta
       name="description"
-      content="Scopri in 5 secondi se la tua spiaggia è piena. Segnalazioni live, stime affidabili e solo spiagge vicino a te."
+      content="Affollamento spiagge in tempo reale. Controlla la tua spiaggia e segnala in pochi secondi."
     />
+    <link rel="canonical" id="canonical-link" href="https://beachradar.it/" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Beach Radar" />
     <meta property="og:title" content="Beach Radar — Affollamento spiagge in tempo reale" />
     <meta
       property="og:description"
-      content="Scopri in 5 secondi se la tua spiaggia è piena. Early access Estate 2026."
+      content="Controlla l'affollamento della tua spiaggia in tempo reale e segnala in pochi secondi."
     />
-    <meta property="og:image" content="./assets/og.png" />
+    <meta property="og:url" id="og-url" content="https://beachradar.it/" />
+    <meta property="og:image" content="https://beachradar.it/assets/og/og-default.jpg" />
     <meta property="og:locale" content="it_IT" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Beach Radar — Affollamento spiagge in tempo reale" />
     <meta
       name="twitter:description"
-      content="Scopri in 5 secondi se la tua spiaggia è piena. Early access Estate 2026."
+      content="Controlla l'affollamento della tua spiaggia in tempo reale e segnala in pochi secondi."
     />
-    <meta name="twitter:image" content="./assets/og.png" />
+    <meta name="twitter:image" content="https://beachradar.it/assets/og/og-default.jpg" />
+    <script>
+      (function () {
+        var canonicalBase = "https://beachradar.it";
+        var path = window.location.pathname || "/";
+        var query = window.location.search || "";
+        var url = canonicalBase + path + query;
+        var canonical = document.getElementById("canonical-link");
+        if (canonical) canonical.setAttribute("href", url);
+        var ogUrl = document.getElementById("og-url");
+        if (ogUrl) ogUrl.setAttribute("content", url);
+      })();
+    </script>
 
     <link rel="icon" type="image/png" href="./assets/logo.png" />
     <link rel="apple-touch-icon" href="./assets/logo.png" />

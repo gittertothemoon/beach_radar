@@ -3,7 +3,7 @@ import path from "node:path";
 import QRCode from "qrcode";
 import sharp from "sharp";
 
-const DEFAULT_BASE_URL = "https://beach-radar.vercel.app";
+const DEFAULT_BASE_URL = "https://beachradar.it";
 
 const normalizeBaseUrl = (value) => value.replace(/\/+$/, "");
 

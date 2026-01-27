@@ -71,3 +71,9 @@ export default defineConfig([
   },
 ])
 ```
+
+## Domain & Share Preview Verification
+1. Open `https://www.beachradar.it` and confirm it returns a 301 redirect to `https://beachradar.it`.
+2. Open `https://beach-radar.vercel.app` and confirm it returns a 301 redirect to `https://beachradar.it`.
+3. Open `http://beachradar.it` and confirm it returns a 301 redirect to `https://beachradar.it`.
+4. Paste `https://beachradar.it` in WhatsApp/Telegram/iMessage and confirm the preview shows the expected title, description, and image.

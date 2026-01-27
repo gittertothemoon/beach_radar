@@ -1,0 +1,42 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.beachradar.it"
+        }
+      ],
+      "destination": "https://beachradar.it/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "beach-radar.vercel.app"
+        }
+      ],
+      "destination": "https://beachradar.it/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "beachradar.it"
+        },
+        {
+          "type": "header",
+          "key": "x-forwarded-proto",
+          "value": "http"
+        }
+      ],
+      "destination": "https://beachradar.it/$1",
+      "permanent": true
+    }
+  ]
+}

@@ -18,18 +18,22 @@
     />
     <meta
       name="description"
-      content="Affollamento spiagge in tempo reale. Segnala e scopri le spiagge in zona."
+      content="Affollamento spiagge in tempo reale. Controlla la tua spiaggia e segnala in pochi secondi."
     />
+    <link rel="canonical" id="canonical-link" href="https://beachradar.it/" />
     <meta property="og:site_name" content="Beach Radar" />
-    <meta property="og:title" content="Beach Radar" />
+    <meta
+      property="og:title"
+      content="Beach Radar — Affollamento spiagge in tempo reale"
+    />
     <meta
       property="og:description"
-      content="Affollamento spiagge in tempo reale. Segnala e scopri le spiagge in zona."
+      content="Controlla l'affollamento della tua spiaggia in tempo reale e segnala in pochi secondi."
     />
-    <meta property="og:url" content="%VITE_PUBLIC_BASE_URL%" />
+    <meta property="og:url" id="og-url" content="https://beachradar.it/" />
     <meta
       property="og:image"
-      content="%VITE_PUBLIC_BASE_URL%/og/og-default.jpg"
+      content="https://beachradar.it/assets/og/og-default.jpg"
     />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
@@ -37,13 +41,28 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:image"
-      content="%VITE_PUBLIC_BASE_URL%/og/og-default.jpg"
+      content="https://beachradar.it/assets/og/og-default.jpg"
     />
-    <meta name="twitter:title" content="Beach Radar" />
+    <meta
+      name="twitter:title"
+      content="Beach Radar — Affollamento spiagge in tempo reale"
+    />
     <meta
       name="twitter:description"
-      content="Affollamento spiagge in tempo reale. Segnala e scopri le spiagge in zona."
+      content="Controlla l'affollamento della tua spiaggia in tempo reale e segnala in pochi secondi."
     />
+    <script>
+      (function () {
+        var canonicalBase = "https://beachradar.it";
+        var path = window.location.pathname || "/";
+        var query = window.location.search || "";
+        var url = canonicalBase + path + query;
+        var canonical = document.getElementById("canonical-link");
+        if (canonical) canonical.setAttribute("href", url);
+        var ogUrl = document.getElementById("og-url");
+        if (ogUrl) ogUrl.setAttribute("content", url);
+      })();
+    </script>
     <title>Beach Radar</title>
   </head>
   <body>

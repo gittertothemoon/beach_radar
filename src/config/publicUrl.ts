@@ -1,4 +1,4 @@
-const DEFAULT_PUBLIC_BASE_URL = "https://beach-radar.vercel.app";
+const DEFAULT_PUBLIC_BASE_URL = "https://beachradar.it";
 
 const normalizeBaseUrl = (value: string) => value.replace(/\/+$/, "");
 
@@ -17,4 +17,3 @@ export const PUBLIC_HOSTNAME = (() => {
     return new URL(DEFAULT_PUBLIC_BASE_URL).hostname;
   }
 })();
-
