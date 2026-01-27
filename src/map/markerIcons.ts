@@ -72,10 +72,16 @@ export const createBeachPinIcon = (options: BeachPinOptions) => {
 export const createClusterPinDivIcon = (count: number, zoom: number) => {
   const safeCount = Math.max(1, Math.round(count));
   const countText = `\u00d7${safeCount}`;
+  const digitCount = String(safeCount).length;
   const base = 34 + 8 * Math.log10(safeCount + 1);
   const scaledBase = clamp(34, 56, base);
   const size = Math.round(scaledBase * getClusterZoomFactor(zoom));
-  const key = `${size}|${countText}`;
+  const digitScale = digitCount === 1 ? 1 : digitCount === 2 ? 0.9 : 0.78;
+  const safeTop = Math.round(size * 0.12);
+  const safeLeft = Math.round(size * 0.18);
+  const safeBottom = Math.round(size * 0.26);
+  const fontBase = Math.round(size * 0.34);
+  const key = `${size}|${countText}|${digitScale}`;
   const cached = clusterPinCache.get(key);
   if (cached) return cached;
 
@@ -84,7 +90,7 @@ export const createClusterPinDivIcon = (count: number, zoom: number) => {
 
   const icon = L.divIcon({
     className: "",
-    html: `<div class="br-cluster" style="--s:${size}px"><img class="br-cluster__img" src="${clusterPin}" alt="" loading="eager" decoding="async" /><div class="br-cluster__count">${countText}</div></div>`,
+    html: `<div class="br-cluster" style="--s:${size}px;--safe-top:${safeTop}px;--safe-left:${safeLeft}px;--safe-bottom:${safeBottom}px;--digit-scale:${digitScale};--fs-base:${fontBase}px"><img class="br-cluster__img" src="${clusterPin}" alt="" loading="eager" decoding="async" /><div class="br-cluster__safe"><div class="br-cluster__count">${countText}</div></div></div>`,
     iconSize: [size, size],
     iconAnchor: [anchorX, anchorY],
   });

@@ -189,16 +189,32 @@ body {
   image-rendering: auto;
 }
 
-.br-cluster__count {
+.br-cluster__safe {
   position: absolute;
-  inset: 0;
+  top: var(--safe-top);
+  left: var(--safe-left);
+  width: calc(var(--s) - (var(--safe-left) * 2));
+  height: calc(var(--s) - var(--safe-top) - var(--safe-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.br-cluster__count {
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: clamp(12px, calc(var(--s) * 0.34), 22px);
+  font-size: clamp(
+    11px,
+    calc(var(--fs-base) * var(--digit-scale)),
+    calc(var(--s) * 0.4)
+  );
   font-weight: 800;
   letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
   pointer-events: none;
 }
