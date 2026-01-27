@@ -20,7 +20,9 @@ const VIEWBOX = {
 };
 const NOMINATIM_LIMIT = 5;
 
-const SEED_PATH = path.resolve("BeachRadar_Rimini_100_seed_schema.json");
+const SEED_PATH = path.resolve(
+  "data/raw/BeachRadar_Rimini_100_seed_schema.json",
+);
 const OUTPUT_JSON = path.resolve("seed/BeachRadar_Rimini_100_geocoded.json");
 const OUTPUT_CSV = path.resolve("seed/BeachRadar_Rimini_100_geocoded.csv");
 const CACHE_PATH = path.resolve(".cache/nominatim-cache.json");
