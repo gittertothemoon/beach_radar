@@ -35,11 +35,13 @@ type SingleMarker = {
   state: Cluster["state"];
 };
 
-const CLUSTER_RADIUS_PX = 44;
-const DUPLICATE_SPREAD_MIN_ZOOM = 16;
+const CLUSTER_RADIUS_PX = 18;
+const DUPLICATE_SPREAD_MIN_ZOOM = 8;
 const DUPLICATE_SPREAD_PX = 54;
 const DUPLICATE_COORD_DP = 6;
 const CLUSTER_SPIDERFY_PX = 64;
+const CLUSTER_STACK_MAX_PX = 28;
+const MAX_ZOOM_EPS = 0.05;
 const Z_INDEX_CLUSTER = 2000;
 const Z_INDEX_SELECTED = 1500;
 const Z_INDEX_UMBRELLA = 1000;
@@ -68,14 +70,29 @@ const getSafeZoom = (map: L.Map) => {
   return Math.max(rawZoom, minZoom);
 };
 
+const getClusterPixelSpan = (points: L.Point[]) => {
+  if (points.length === 0) return 0;
+  let minX = points[0].x;
+  let maxX = points[0].x;
+  let minY = points[0].y;
+  let maxY = points[0].y;
+  for (let i = 1; i < points.length; i += 1) {
+    const point = points[i];
+    if (point.x < minX) minX = point.x;
+    if (point.x > maxX) maxX = point.x;
+    if (point.y < minY) minY = point.y;
+    if (point.y > maxY) maxY = point.y;
+  }
+  return Math.max(maxX - minX, maxY - minY);
+};
+
 const createMarkerIcon = (
   crowdLevel: number,
   state: "LIVE" | "RECENT" | "PRED",
   selected: boolean,
   zoom: number,
 ) => {
-  void crowdLevel;
-  return createBeachPinIcon({ selected, state, zoom });
+  return createBeachPinIcon({ selected, state, zoom, crowdLevel });
 };
 
 const getClusterState = (beaches: BeachWithStats[]): Cluster["state"] => {
@@ -209,21 +226,24 @@ const clusterBeaches = (
             .sort()
             .join("|")}`;
 
-    if (members.length > 1 && zoom >= maxZoom && expandedClusters?.has(clusterId)) {
-      const center = members
-        .reduce((acc, item) => acc.add(item.point), L.point(0, 0))
-        .divideBy(members.length);
-      members.forEach((item, index) => {
-        const angle = (index / members.length) * Math.PI * 2;
-        const offset = L.point(
-          Math.cos(angle) * CLUSTER_SPIDERFY_PX,
-          Math.sin(angle) * CLUSTER_SPIDERFY_PX,
-        );
-        const point = center.add(offset);
-        const latlng = map.unproject(point, zoom);
-        pushSingle(item.beach, latlng.lat, latlng.lng);
-      });
-      continue;
+    if (members.length > 1 && expandedClusters?.has(clusterId)) {
+      const span = getClusterPixelSpan(members.map((item) => item.point));
+      if (zoom >= maxZoom - MAX_ZOOM_EPS || span <= CLUSTER_STACK_MAX_PX) {
+        const center = members
+          .reduce((acc, item) => acc.add(item.point), L.point(0, 0))
+          .divideBy(members.length);
+        members.forEach((item, index) => {
+          const angle = (index / members.length) * Math.PI * 2;
+          const offset = L.point(
+            Math.cos(angle) * CLUSTER_SPIDERFY_PX,
+            Math.sin(angle) * CLUSTER_SPIDERFY_PX,
+          );
+          const point = center.add(offset);
+          const latlng = map.unproject(point, zoom);
+          pushSingle(item.beach, latlng.lat, latlng.lng);
+        });
+        continue;
+      }
     }
 
     if (members.length === 1) {
@@ -291,6 +311,7 @@ const ClusteredMarkers = ({
   const rafRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const pendingRef = useRef(false);
+  const lastClusterActionRef = useRef(0);
   const validBeaches = useMemo(
     () => beaches.filter((beach) => hasValidCoords(beach)),
     [beaches],
@@ -341,6 +362,76 @@ const ClusteredMarkers = ({
     setMapTick((prev) => prev + 1);
   }, []);
 
+  const getOriginalEvent = (event?: L.LeafletEvent) =>
+    (event as L.LeafletEvent & { originalEvent?: Event }).originalEvent;
+
+  const handleClusterActivate = useCallback(
+    (cluster: Cluster, event?: L.LeafletEvent) => {
+      const originalEvent = getOriginalEvent(event);
+      if (originalEvent && "preventDefault" in originalEvent) {
+        originalEvent.preventDefault();
+      }
+      if (originalEvent && "stopPropagation" in originalEvent) {
+        originalEvent.stopPropagation();
+      }
+      const now = Date.now();
+      if (now - lastClusterActionRef.current < 320) return;
+      lastClusterActionRef.current = now;
+
+      map.stop();
+      const padding = L.point(48, 48);
+      const bounds = L.latLngBounds(
+        cluster.members.map((member) => [member.lat, member.lng]),
+      );
+      const maxZoom = map.getMaxZoom?.() ?? 18;
+      const currentZoom = map.getZoom();
+      const isAtMax =
+        Number.isFinite(currentZoom) && currentZoom >= maxZoom - MAX_ZOOM_EPS;
+      const getZoomDuration = (targetZoom: number) => {
+        const safeCurrent = Number.isFinite(currentZoom)
+          ? currentZoom
+          : targetZoom;
+        const zoomDelta = Math.max(0, targetZoom - safeCurrent);
+        return Math.min(3.2, Math.max(1.4, 0.8 + zoomDelta * 0.15));
+      };
+      const nextZoom = map.getBoundsZoom(bounds, false, padding);
+      if (!Number.isFinite(nextZoom) || nextZoom <= currentZoom + 0.05) {
+        if (isAtMax) {
+          setExpandedClusters((prev) =>
+            prev.includes(cluster.id) ? prev : [...prev, cluster.id],
+          );
+          return;
+        }
+        const targetZoom = Math.min(currentZoom + 2, maxZoom);
+        if (targetZoom >= maxZoom - MAX_ZOOM_EPS) {
+          setExpandedClusters((prev) =>
+            prev.includes(cluster.id) ? prev : [...prev, cluster.id],
+          );
+        }
+        map.flyTo([cluster.lat, cluster.lng], targetZoom, {
+          animate: true,
+          duration: getZoomDuration(targetZoom),
+          easeLinearity: 0.25,
+        });
+        return;
+      }
+      const targetZoom = Math.min(nextZoom, maxZoom);
+      if (targetZoom >= maxZoom - MAX_ZOOM_EPS) {
+        setExpandedClusters((prev) =>
+          prev.includes(cluster.id) ? prev : [...prev, cluster.id],
+        );
+      }
+      map.fitBounds(bounds, {
+        padding,
+        maxZoom,
+        animate: true,
+        duration: getZoomDuration(targetZoom),
+        easeLinearity: 0.25,
+      });
+    },
+    [map],
+  );
+
   const scheduleMapTick = useCallback(() => {
     pendingRef.current = true;
     if (rafRef.current === null) {
@@ -374,7 +465,10 @@ const ClusteredMarkers = ({
   useMapEvent("moveend", scheduleMapTick);
   useMapEvent("zoomend", () => {
     const maxZoom = map.getMaxZoom?.() ?? 18;
-    if (map.getZoom() < maxZoom && expandedClusters.length) {
+    const currentZoom = map.getZoom();
+    const atMax =
+      Number.isFinite(currentZoom) && currentZoom >= maxZoom - MAX_ZOOM_EPS;
+    if (!atMax && expandedClusters.length) {
       setExpandedClusters([]);
     }
   });
@@ -396,45 +490,7 @@ const ClusteredMarkers = ({
           icon={createClusterIcon(cluster, zoom)}
           zIndexOffset={Z_INDEX_CLUSTER}
           eventHandlers={{
-            click: () => {
-              const padding = L.point(48, 48);
-              const bounds = L.latLngBounds(
-                cluster.members.map((member) => [member.lat, member.lng]),
-              );
-              const maxZoom = map.getMaxZoom?.() ?? 18;
-              const currentZoom = map.getZoom();
-              const getZoomDuration = (targetZoom: number) => {
-                const safeCurrent = Number.isFinite(currentZoom)
-                  ? currentZoom
-                  : targetZoom;
-                const zoomDelta = Math.max(0, targetZoom - safeCurrent);
-                return Math.min(3.2, Math.max(1.4, 0.8 + zoomDelta * 0.15));
-              };
-              const nextZoom = map.getBoundsZoom(bounds, false, padding);
-              if (!Number.isFinite(nextZoom) || nextZoom <= currentZoom) {
-                if (currentZoom >= maxZoom) {
-                  setExpandedClusters((prev) =>
-                    prev.includes(cluster.id) ? prev : [...prev, cluster.id],
-                  );
-                  return;
-                }
-                const targetZoom = Math.min(currentZoom + 2, maxZoom);
-                map.flyTo([cluster.lat, cluster.lng], targetZoom, {
-                  animate: true,
-                  duration: getZoomDuration(targetZoom),
-                  easeLinearity: 0.25,
-                });
-                return;
-              }
-              const targetZoom = Math.min(nextZoom, maxZoom);
-              map.fitBounds(bounds, {
-                padding,
-                maxZoom,
-                animate: true,
-                duration: getZoomDuration(targetZoom),
-                easeLinearity: 0.25,
-              });
-            },
+            click: (event) => handleClusterActivate(cluster, event),
           }}
         />
       ))}

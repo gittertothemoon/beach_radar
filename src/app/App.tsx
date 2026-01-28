@@ -5,6 +5,7 @@ import TopSearch from "../components/TopSearch";
 import BottomSheet from "../components/BottomSheet";
 import LidoModalCard from "../components/LidoModalCard";
 import ReportModal from "../components/ReportModal";
+import ReportThanksModal from "../components/ReportThanksModal";
 import PerformanceOverlay from "../components/PerformanceOverlay";
 import { shareBeachCard } from "../components/ShareCard";
 import logo from "../assets/logo.png";
@@ -59,6 +60,10 @@ import type { BeachOverrides } from "../lib/overrides";
 const DEFAULT_CENTER: LatLng = { lat: 44.0678, lng: 12.5695 };
 const BEACH_FOCUS_ZOOM = 17;
 const REPORT_RADIUS_M = 700;
+const REMOTE_REPORT_SESSION_KEY = "br_report_anywhere_v1";
+const USE_MOCK_CROWD = true;
+const MOCK_CROWD_LEVELS: CrowdLevel[] = [1, 2, 3, 4];
+const FORCE_REMOTE_REPORTS = true;
 
 type GeoStatus = "idle" | "loading" | "ready" | "denied" | "error";
 
@@ -96,6 +101,7 @@ function App() {
   const [followMode, setFollowMode] = useState(false);
   const [locationToast, setLocationToast] = useState<string | null>(null);
   const [shareToast, setShareToast] = useState<string | null>(null);
+  const [reportThanksOpen, setReportThanksOpen] = useState(false);
   const [debugToast, setDebugToast] = useState<string | null>(null);
   const [debugRefreshKey, setDebugRefreshKey] = useState(0);
   const [perfSnapshot, setPerfSnapshot] = useState(() => getPerfSnapshot());
@@ -120,6 +126,22 @@ function App() {
       window.location.pathname.startsWith("/debug") ||
       window.localStorage.getItem("br_debug_v1") === "1"
     );
+  }, []);
+
+  const allowRemoteReports = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    if (FORCE_REMOTE_REPORTS) return true;
+    if (window.sessionStorage.getItem(REMOTE_REPORT_SESSION_KEY) === "1") {
+      return true;
+    }
+    const params = new URLSearchParams(window.location.search);
+    const enabled =
+      params.get("reportAnywhere") === "1" ||
+      params.get("report_anywhere") === "1";
+    if (enabled) {
+      window.sessionStorage.setItem(REMOTE_REPORT_SESSION_KEY, "1");
+    }
+    return enabled;
   }, []);
 
   const effectiveEditMode = isDebug && editPositions;
@@ -402,12 +424,25 @@ function App() {
 
   const beachViewsBase = useMemo<BeachWithStats[]>(() => {
     return visibleSpots
-      .map((beach) => {
+      .map((beach, index) => {
         const override = overrides[beach.id];
         const lat = override?.lat ?? beach.lat;
         const lng = override?.lng ?? beach.lng;
         const stats = aggregateBeachStatsFromIndex(beach, reportsIndex, now);
-        return { ...beach, lat, lng, ...stats, distanceM: null };
+        const mockLevel =
+          MOCK_CROWD_LEVELS[index % MOCK_CROWD_LEVELS.length] ?? 1;
+        const isPred = stats.state === "PRED";
+        const effectiveStats = USE_MOCK_CROWD
+          ? {
+              ...stats,
+              crowdLevel: mockLevel,
+              state: isPred ? "LIVE" : stats.state,
+              updatedAt: isPred ? now : stats.updatedAt,
+              reportsCount: isPred ? Math.max(1, stats.reportsCount) : stats.reportsCount,
+              confidence: isPred ? Math.max(0.7, stats.confidence) : stats.confidence,
+            }
+          : stats;
+        return { ...beach, lat, lng, ...effectiveStats, distanceM: null };
       })
       .filter((beach) => hasFiniteCoords(beach));
   }, [visibleSpots, overrides, reportsIndex, now]);
@@ -656,6 +691,7 @@ function App() {
   const handleSubmitReport = useCallback((level: CrowdLevel) => {
     if (!selectedBeach) return;
     if (
+      !allowRemoteReports &&
       reportDistanceM !== null &&
       reportDistanceM > REPORT_RADIUS_M
     ) {
@@ -675,6 +711,7 @@ function App() {
       setNow(Date.now);
       setReportError(null);
       setReportOpen(false);
+      setReportThanksOpen(true);
       track("report_submit_success", {
         beachId: selectedBeach.id,
         level,
@@ -687,7 +724,7 @@ function App() {
         });
       }
     }
-  }, [reportDistanceM, selectedBeach]);
+  }, [allowRemoteReports, reportDistanceM, selectedBeach]);
 
   const handleShare = useCallback(async () => {
     if (!selectedBeach) return;
@@ -708,6 +745,11 @@ function App() {
       setShareToast(null);
     }
   }, [now, selectedBeach]);
+
+  const handleShareFromThanks = useCallback(() => {
+    setReportThanksOpen(false);
+    void handleShare();
+  }, [handleShare]);
 
   const handleCopyDebugExport = async () => {
     const payload = {
@@ -815,6 +857,11 @@ function App() {
           {shareToast}
         </div>
       ) : null}
+      <ReportThanksModal
+        isOpen={reportThanksOpen}
+        onClose={() => setReportThanksOpen(false)}
+        onShare={handleShareFromThanks}
+      />
       {isDebug && overrideCount > 0 ? (
         <div className="fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+84px)] z-40 w-[min(92vw,360px)] -translate-x-1/2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-[11px] text-amber-100 shadow-lg backdrop-blur">
           <div className="text-amber-100">
@@ -1017,6 +1064,7 @@ function App() {
           beachName={selectedBeach.name}
           userLocation={userLocation}
           distanceM={reportDistanceM}
+          allowRemoteReports={allowRemoteReports}
           geoStatus={geoStatus}
           geoError={geoError}
           onRequestLocation={requestLocation}

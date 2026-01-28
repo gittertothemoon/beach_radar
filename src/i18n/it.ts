@@ -88,8 +88,12 @@ export const STRINGS = {
     locationUnavailable: "Posizione non disponibile.",
     locationRequired: "Attiva la posizione per segnalare.",
     tooFar: "Sei troppo lontano per segnalare qui. Avvicinati alla spiaggia.",
+    remoteAllowed:
+      "Segnalazione da remoto attiva. Puoi segnalare anche se lontano.",
     nearEnough: "Sei vicino alla spiaggia. Puoi segnalare.",
     tooSoon: "Hai già segnalato da poco. Riprova tra qualche minuto.",
+    thanksPrompt: "✅ Grazie. Vuoi aiutare anche gli altri?",
+    thanksSubtitle: "Condividi la segnalazione per aggiornare chi sta arrivando.",
   },
   location: {
     permissionDenied: "Permesso posizione negato.",

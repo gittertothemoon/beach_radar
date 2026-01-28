@@ -17,6 +17,7 @@ type ReportModalProps = {
   beachName: string;
   userLocation: LatLng | null;
   distanceM: number | null;
+  allowRemoteReports: boolean;
   geoStatus: "idle" | "loading" | "ready" | "denied" | "error";
   geoError: string | null;
   onRequestLocation: () => void;
@@ -30,6 +31,7 @@ const ReportModal = ({
   beachName,
   userLocation,
   distanceM,
+  allowRemoteReports,
   geoStatus,
   geoError,
   onRequestLocation,
@@ -78,19 +80,29 @@ const ReportModal = ({
   }, [isOpen, onClose]);
 
   const canReport = useMemo(() => {
+    if (allowRemoteReports) return true;
     if (!userLocation || distanceM === null) return false;
     return distanceM <= RADIUS_M;
-  }, [distanceM, userLocation]);
+  }, [allowRemoteReports, distanceM, userLocation]);
 
   if (!isOpen) return null;
 
   const locationMessage = () => {
     if (geoStatus === "loading") return STRINGS.report.locationSearching;
+    if (
+      allowRemoteReports &&
+      (geoStatus === "denied" || geoStatus === "error" || !userLocation)
+    ) {
+      return STRINGS.report.remoteAllowed;
+    }
     if (geoStatus === "denied") return STRINGS.report.locationDenied;
     if (geoStatus === "error")
       return geoError ?? STRINGS.report.locationUnavailable;
     if (!userLocation) return STRINGS.report.locationRequired;
-    if (distanceM !== null && distanceM > RADIUS_M) return STRINGS.report.tooFar;
+    if (distanceM !== null && distanceM > RADIUS_M)
+      return allowRemoteReports
+        ? STRINGS.report.remoteAllowed
+        : STRINGS.report.tooFar;
     if (distanceM !== null) return STRINGS.report.nearEnough;
     return "";
   };

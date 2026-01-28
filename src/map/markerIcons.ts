@@ -1,5 +1,8 @@
 import L from "leaflet";
-import beachPin from "../assets/markers/pin_beach.png";
+import beachPinEmpty from "../assets/markers/pin_beach.png";
+import beachPinLow from "../assets/markers/pin_beach_poco_affollata.png";
+import beachPinCrowded from "../assets/markers/pin_beach_affollata.png";
+import beachPinFull from "../assets/markers/pin_beach_piena.png";
 import clusterPin from "../assets/markers/pin_cluster.png";
 import {
   isPerfEnabled,
@@ -10,6 +13,7 @@ import {
 type BeachPinOptions = {
   selected?: boolean;
   state?: "LIVE" | "RECENT" | "PRED";
+  crowdLevel?: number;
   zoom: number;
 };
 
@@ -21,8 +25,8 @@ const getRoundedZoom = (zoom: number) =>
 
 const UMBRELLA_MIN_SIZE = 20;
 const UMBRELLA_MAX_SIZE = 40;
-const CLUSTER_MIN_SIZE = 32;
-const CLUSTER_MAX_SIZE = 48;
+const CLUSTER_MIN_SIZE = 36;
+const CLUSTER_MAX_SIZE = 56;
 const CLUSTER_LABEL_TOP_PERCENT = 42;
 
 const getUmbrellaSizeForZoom = (zoom: number) => {
@@ -35,10 +39,10 @@ const getUmbrellaSizeForZoom = (zoom: number) => {
 
 const getClusterSizeForZoom = (zoom: number) => {
   const z = getRoundedZoom(zoom);
-  if (z <= 10) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 44);
-  if (z <= 13) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 40);
-  if (z <= 16) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 36);
-  return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 34);
+  if (z <= 10) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 52);
+  if (z <= 13) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 48);
+  if (z <= 16) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 44);
+  return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 40);
 };
 
 const getClusterDigitScale = (digitCount: number) => {
@@ -56,9 +60,33 @@ const updateCacheSizeStat = () => {
   setMarkerIconCacheSize(beachPinCache.size + clusterPinCache.size);
 };
 
-const getUmbrellaKey = ({ selected, state, zoom }: BeachPinOptions) => {
+const normalizeCrowdLevel = (level?: number) => {
+  const rounded = Math.round(Number(level));
+  if (rounded === 1 || rounded === 2 || rounded === 3 || rounded === 4) {
+    return rounded;
+  }
+  return 1;
+};
+
+const getUmbrellaKey = ({ selected, state, zoom, crowdLevel }: BeachPinOptions) => {
   const size = getUmbrellaSizeForZoom(zoom);
-  return `${size}|${selected ? "selected" : "normal"}|${state ?? "LIVE"}`;
+  const safeCrowd = normalizeCrowdLevel(crowdLevel);
+  return `${size}|${selected ? "selected" : "normal"}|${state ?? "LIVE"}|${safeCrowd}`;
+};
+
+const getBeachPinAsset = (crowdLevel?: number) => {
+  const safeCrowd = normalizeCrowdLevel(crowdLevel);
+  switch (safeCrowd) {
+    case 1:
+      return beachPinEmpty;
+    case 2:
+      return beachPinLow;
+    case 3:
+      return beachPinCrowded;
+    case 4:
+    default:
+      return beachPinFull;
+  }
 };
 
 export const createBeachPinIcon = (options: BeachPinOptions) => {
@@ -84,7 +112,7 @@ export const createBeachPinIcon = (options: BeachPinOptions) => {
     .join(" ");
 
   const icon = L.icon({
-    iconUrl: beachPin,
+    iconUrl: getBeachPinAsset(options.crowdLevel),
     iconSize: [size, size],
     iconAnchor: [anchorX, anchorY],
     popupAnchor: [0, popupAnchorY],
@@ -120,7 +148,7 @@ export const createClusterPinDivIcon = (count: number, zoom: number) => {
 
   const icon = L.divIcon({
     className: "",
-    html: `<div class="br-cluster" style="--s:${size}px"><img class="br-cluster__img" src="${clusterPin}" alt="" loading="eager" decoding="async" /><span class="br-cluster__label" style="--label-top:${CLUSTER_LABEL_TOP_PERCENT}%;--fs:${fontSize}px"><span class="br-cluster__x">x</span><span class="br-cluster__n">${safeCount}</span></span></div>`,
+    html: `<div class="br-cluster" style="--s:${size}px"><img class="br-cluster__img" src="${clusterPin}" alt="" loading="eager" decoding="async" /><span class="br-cluster__label" style="--fs:${fontSize}px"><span class="br-cluster__x">x</span><span class="br-cluster__n">${safeCount}</span></span></div>`,
     iconSize: [size, size],
     iconAnchor: [anchorX, anchorY],
     popupAnchor: [0, popupAnchorY],

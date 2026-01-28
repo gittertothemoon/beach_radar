@@ -50,7 +50,7 @@ const aggregateFromReports = (
 
   if (activeCount === 0) {
     return {
-      crowdLevel: beach.baselineLevel ?? 2,
+      crowdLevel: 1,
       state: "PRED",
       confidence: 0.15,
       updatedAt: null,
@@ -100,7 +100,7 @@ export const aggregateBeachStatsFromIndex = (
   const reports = reportsIndex.get(beach.id);
   if (!reports || reports.length === 0) {
     return {
-      crowdLevel: beach.baselineLevel ?? 2,
+      crowdLevel: 1,
       state: "PRED" as const,
       confidence: 0.15,
       updatedAt: null,
