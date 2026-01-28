@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
 
+if (process.env.CI === "true" && !process.env.BASE_URL) {
+  throw new Error("BASE_URL is required in CI for waitlist smoke tests.");
+}
+
 const BASE_URL = (process.env.BASE_URL || "http://127.0.0.1:3000").replace(/\/$/, "");
 const WAITLIST_PATH = process.env.WAITLIST_PATH || "/waitlist/index.html";
 

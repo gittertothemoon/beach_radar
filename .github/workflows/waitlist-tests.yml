@@ -98,7 +98,7 @@ jobs:
           exit 1
 
       - name: Run waitlist tests
-        run: npm run test:waitlist
+        run: npx playwright test tests/waitlist.api.spec.ts tests/waitlist.e2e.spec.ts --workers=1 --retries=1
 
       - name: Stop server
         if: always()

@@ -28,10 +28,13 @@ function normalizePath(urlPath) {
   return urlPath;
 }
 
-const server = http.createServer((req, res) => {
-  const requestUrl = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
-  const normalizedPath = normalizePath(decodeURIComponent(requestUrl.pathname));
-  const filePath = path.resolve(root, `.${normalizedPath}`);
+if (process.env.SMOKE_TEST_NO_READY === "1") {
+  setInterval(() => {}, 1000);
+} else {
+  const server = http.createServer((req, res) => {
+    const requestUrl = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+    const normalizedPath = normalizePath(decodeURIComponent(requestUrl.pathname));
+    const filePath = path.resolve(root, `.${normalizedPath}`);
 
   if (!filePath.startsWith(root)) {
     res.statusCode = 403;
@@ -51,10 +54,11 @@ const server = http.createServer((req, res) => {
     res.statusCode = 200;
     res.end(data);
   });
-});
+  });
 
-server.listen(port, host, () => {
-  const address = server.address();
-  const resolvedPort = address && typeof address === "object" ? address.port : port;
-  console.log(`SMOKE_READY http://${host}:${resolvedPort}`);
-});
+  server.listen(port, host, () => {
+    const address = server.address();
+    const resolvedPort = address && typeof address === "object" ? address.port : port;
+    console.log(`SMOKE_READY http://${host}:${resolvedPort}`);
+  });
+}
