@@ -247,6 +247,14 @@
  position: relative;
  margin-bottom: 0.6rem;
  }
+
+ .hp-field {
+ position: absolute;
+ left: -9999px;
+ width: 1px;
+ height: 1px;
+ overflow: hidden;
+ }
  
  input {
  width: 100%;
@@ -314,6 +322,22 @@
  .status-msg.visible { opacity: 1; transform: translateY(0); }
  .status-msg.error { color: var(--danger); }
  .status-msg.success { color: var(--success); }
+
+ .retry-btn {
+ margin-left: 8px;
+ background: transparent;
+ border: none;
+ color: var(--accent-cyan);
+ font-weight: 600;
+ cursor: pointer;
+ text-decoration: underline;
+ text-underline-offset: 3px;
+ padding: 0;
+ }
+ .retry-btn:focus-visible {
+ outline: 2px solid rgba(6, 182, 212, 0.5);
+ outline-offset: 3px;
+ }
  
  .privacy {
  font-size: 0.8rem;
@@ -386,6 +410,10 @@
  <div class="input-group">
  <input type="email" id="emailInput" placeholder="La tua email" autocomplete="email" inputmode="email" required />
  <button type="submit" class="cta" id="t-btn">OTTIENI ACCESSO ANTICIPATO</button>
+ </div>
+ <div class="hp-field" aria-hidden="true">
+ <label for="company">Company</label>
+ <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
  </div>
  </form>
  

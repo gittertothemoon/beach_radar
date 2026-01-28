@@ -30,7 +30,8 @@
       privacyText: "Solo aggiornamenti importanti. No spam.",
       privacyLabel: "Privacy",
       success: "Sei dentro! Ti avviseremo al lancio. \u{1F4E1}",
-      alreadyJoined: "Sei gi\u00e0 nella lista! Ti avviseremo al lancio. \u{1F4E1}",
+      alreadyJoined: "Sei gia dentro \u2705",
+      retry: "Riprova",
       error: "Inserisci un'email valida.",
       errorServer: "Qualcosa \u00e8 andato storto. Riprova.",
       errorRateLimit: "Troppi tentativi. Riprova pi\u00f9 tardi."
@@ -51,7 +52,8 @@
       privacyText: "Important updates only. No spam.",
       privacyLabel: "Privacy",
       success: "You're in! We'll notify you at launch. \u{1F4E1}",
-      alreadyJoined: "You're already on the list. We'll notify you at launch. \u{1F4E1}",
+      alreadyJoined: "You're already in \u2705",
+      retry: "Retry",
       error: "Please enter a valid email.",
       errorServer: "Something went wrong. Please try again.",
       errorRateLimit: "Too many attempts. Please try again later."
@@ -68,10 +70,12 @@
   }
 
   const utm = extractUtm(params);
+  // Example custom params: ?poster=BR_01&city=Rome (both flow into attribution).
   const attribution = params;
 
   let currentLang = resolveInitialLang(params);
   let joined = readStorage(CONFIG.STORAGE.joined) === "1";
+  let retryBtn = null;
 
   function setFading(el, on) {
     if (!el) return;
@@ -126,17 +130,83 @@
 
     const msg = document.getElementById("statusMsg");
     if (msg.classList.contains("visible")) {
-      if (msg.classList.contains("success")) {
-        msg.innerText = joined ? t.alreadyJoined : t.success;
+      const status = msg.dataset.status;
+      if (status === "success") {
+        const successType = msg.dataset.successType === "already" ? "already" : "success";
+        const message = successType === "already" ? t.alreadyJoined : t.success;
+        setStatusMessage(message, { kind: "success", successType });
       }
-      if (msg.classList.contains("error")) {
-        msg.innerText = msg.dataset.errorType === "rate"
+      if (status === "error") {
+        const errorType = msg.dataset.errorType === "rate"
+          ? "rate"
+          : msg.dataset.errorType === "invalid"
+            ? "invalid"
+            : msg.dataset.errorType === "timeout"
+              ? "timeout"
+              : msg.dataset.errorType === "network"
+                ? "network"
+                : "server";
+        const message = errorType === "rate"
           ? t.errorRateLimit
-          : msg.dataset.errorType === "server"
-            ? t.errorServer
-            : t.error;
+          : errorType === "invalid"
+            ? t.error
+            : t.errorServer;
+        const retryable = msg.dataset.retryable === "1";
+        setStatusMessage(message, { kind: "error", errorType, retryable });
       }
     }
+  }
+
+  function getRetryButton() {
+    if (retryBtn) return retryBtn;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "retry-btn";
+    button.id = "retryBtn";
+    button.addEventListener("click", () => {
+      const form = document.getElementById("waitlistForm");
+      if (!form) return;
+      if (typeof form.requestSubmit === "function") {
+        form.requestSubmit();
+      } else {
+        form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+      }
+    });
+    retryBtn = button;
+    return button;
+  }
+
+  function setStatusMessage(message, { kind, successType = "", errorType = "", retryable = false } = {}) {
+    const msg = document.getElementById("statusMsg");
+    if (!msg) return;
+    msg.dataset.status = kind || "";
+    msg.dataset.successType = successType;
+    msg.dataset.errorType = errorType;
+    msg.dataset.retryable = retryable ? "1" : "0";
+    msg.className = `status-msg visible ${kind || ""}`.trim();
+    msg.textContent = message || "";
+
+    const button = getRetryButton();
+    if (retryable) {
+      button.innerText = content[currentLang].retry;
+      msg.appendChild(document.createTextNode(" "));
+      msg.appendChild(button);
+    } else if (button.parentNode === msg) {
+      button.remove();
+    }
+  }
+
+  function clearStatusMessage() {
+    const msg = document.getElementById("statusMsg");
+    if (!msg) return;
+    msg.className = "status-msg";
+    msg.textContent = "";
+    msg.dataset.status = "";
+    msg.dataset.successType = "";
+    msg.dataset.errorType = "";
+    msg.dataset.retryable = "0";
+    const button = getRetryButton();
+    if (button.parentNode === msg) button.remove();
   }
 
   function setLang(nextLang, options = {}) {
@@ -174,7 +244,6 @@
     event.preventDefault();
 
     const btn = document.getElementById("t-btn");
-    const msg = document.getElementById("statusMsg");
     const input = document.getElementById("emailInput");
 
     if (joined) {
@@ -184,14 +253,10 @@
 
     const email = input.value.trim();
 
-    msg.className = "status-msg";
-    msg.innerText = "";
-    msg.dataset.errorType = "";
+    clearStatusMessage();
 
     if (!isValidEmail(email)) {
-      msg.innerText = content[currentLang].error;
-      msg.dataset.errorType = "invalid";
-      msg.className = "status-msg visible error";
+      setStatusMessage(content[currentLang].error, { kind: "error", errorType: "invalid" });
       input.focus();
       track("wl_submit_error", { reason: "invalid_email" });
       return;
@@ -218,20 +283,25 @@
       responseData = await postWaitlist(payload);
     } catch (error) {
       debugLog("submit error", error);
-      const message = error && error.code === "invalid_email"
-        ? content[currentLang].error
-        : error && error.code === "rate_limited"
-          ? content[currentLang].errorRateLimit
-          : content[currentLang].errorServer;
-
-      msg.innerText = message;
-      msg.dataset.errorType = error && error.code === "rate_limited"
+      const errorCode = error && error.code ? error.code : "network";
+      const errorType = errorCode === "rate_limited"
         ? "rate"
-        : error && error.code === "invalid_email"
+        : errorCode === "invalid_email"
           ? "invalid"
-          : "server";
-      msg.className = "status-msg visible error";
-      track("wl_submit_error", { reason: error && error.code ? error.code : "network" });
+          : errorCode === "timeout"
+            ? "timeout"
+            : errorCode === "network"
+              ? "network"
+              : "server";
+      const message = errorType === "rate"
+        ? content[currentLang].errorRateLimit
+        : errorType === "invalid"
+          ? content[currentLang].error
+          : content[currentLang].errorServer;
+      const retryable = errorType === "network" || errorType === "timeout";
+
+      setStatusMessage(message, { kind: "error", errorType, retryable });
+      track("wl_submit_error", { reason: errorCode });
 
       btn.disabled = false;
       input.disabled = false;
@@ -240,9 +310,7 @@
     }
 
     if (!responseData || !responseData.ok) {
-      msg.innerText = content[currentLang].errorServer;
-      msg.dataset.errorType = "server";
-      msg.className = "status-msg visible error";
+      setStatusMessage(content[currentLang].errorServer, { kind: "error", errorType: "server" });
       track("wl_submit_error", { reason: "server" });
 
       btn.disabled = false;
@@ -251,13 +319,14 @@
       return;
     }
 
+    const successType = responseData.already ? "already" : "success";
     joined = true;
     persistJoinedMeta(payload);
 
-    msg.innerText = responseData.already
-      ? content[currentLang].alreadyJoined
-      : content[currentLang].success;
-    msg.className = "status-msg visible success";
+    setStatusMessage(
+      successType === "already" ? content[currentLang].alreadyJoined : content[currentLang].success,
+      { kind: "success", successType }
+    );
     track("wl_submit_success", { already: !!responseData.already });
 
     btn.innerText = original;
@@ -282,9 +351,16 @@
         dpr: window.devicePixelRatio || 1,
         ua: navigator.userAgent
       },
+      hp: getHoneypotValue(),
       utm,
       attribution
     };
+  }
+
+  function getHoneypotValue() {
+    const input = document.getElementById("company");
+    if (!input) return "";
+    return String(input.value || "").trim();
   }
 
   async function postWaitlist(payload) {
@@ -365,12 +441,13 @@
   }
 
   function showJoinedState() {
-    const msg = document.getElementById("statusMsg");
     const btn = document.getElementById("t-btn");
     const input = document.getElementById("emailInput");
 
-    msg.innerText = content[currentLang].alreadyJoined;
-    msg.className = "status-msg visible success";
+    setStatusMessage(content[currentLang].alreadyJoined, {
+      kind: "success",
+      successType: "already"
+    });
 
     btn.disabled = true;
     input.disabled = true;
