@@ -20,11 +20,11 @@
       langTitle: "Switch to English",
       title: "Il radar per le tue spiagge.",
       descHTML:
-        "Evita la folla. Scopri dove c'&egrave; posto grazie alle segnalazioni della community, in tempo quasi reale. Iscriviti per <b>Early Access</b> e badge <b>Founding Member</b>.",
+        "Evita la folla. Scopri dove c'&egrave; posto grazie alle segnalazioni della community, in tempo reale.<br>Iscriviti <b>gratuitamente</b> per <b>Early Access</b>.",
       pill1: "Early Access",
       pill2: "Badge Founding Member",
       pill3: "Priorit\u00e0 sulla tua zona",
-      scarcity: "Prima ondata <b>limitata</b>: i Founding Member entrano per primi.",
+      scarcity: "Prima ondata <b>limitata</b>.<br>Posti rimanenti x/1000",
       btn: "OTTIENI ACCESSO ANTICIPATO",
       ctaJoined: "SEI DENTRO \u2705",
       loading: "Invio...",
@@ -43,7 +43,7 @@
       langTitle: "Switch to Italian",
       title: "The radar for your beaches.",
       descHTML:
-        "Skip the crowd. Find where there\u2019s space thanks to community reports\u2014near real time. Join for <b>Early Access</b> and a <b>Founding Member</b> badge.",
+        "Skip the crowd. Find where there\u2019s space thanks to community reports\u2014in real time.<br>Join <b>for free</b> for <b>Early Access</b>.",
       pill1: "Early Access",
       pill2: "Founding Member badge",
       pill3: "Priority for your area",
