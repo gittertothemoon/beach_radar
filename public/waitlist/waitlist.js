@@ -4,8 +4,10 @@
   function init() {
   const CONFIG = {
     ENDPOINT: "/api/waitlist",
+    COUNT_ENDPOINT: "/api/waitlist/count",
     PROJECT: "beach_radar",
     VERSION: "waitlist_v1",
+    CAP: 1000,
     STORAGE: {
       lang: "br_lang_v1",
       joined: "br_waitlist_joined_v1",
@@ -24,7 +26,7 @@
       pill1: "Early Access",
       pill2: "Badge Founding Member",
       pill3: "Priorit\u00e0 sulla tua zona",
-      scarcity: "Prima ondata <b>limitata</b>.<br>Posti rimanenti x/1000",
+      scarcity: "Prima ondata <b>limitata</b>.<br>Posti rimanenti <b>{remaining}</b>/{cap}",
       btn: "OTTIENI ACCESSO ANTICIPATO",
       ctaJoined: "SEI DENTRO \u2705",
       loading: "Invio...",
@@ -47,7 +49,7 @@
       pill1: "Early Access",
       pill2: "Founding Member badge",
       pill3: "Priority for your area",
-      scarcity: "First wave is <b>limited</b>: Founding Members get in first.",
+      scarcity: "First wave is <b>limited</b>.<br>Spots remaining <b>{remaining}</b>/{cap}",
       btn: "GET EARLY ACCESS",
       ctaJoined: "YOU'RE IN \u2705",
       loading: "Submitting...",
@@ -78,6 +80,7 @@
 
   let currentLang = resolveInitialLang(params);
   let joined = readStorage(CONFIG.STORAGE.joined) === "1";
+  let remainingCount = null;
   let retryBtn = null;
 
   const companyInput = document.getElementById("company");
@@ -129,7 +132,12 @@
     if (pill2) pill2.innerText = t.pill2;
     if (pill3) pill3.innerText = t.pill3;
 
-    if (scarcityEl) scarcityEl.innerHTML = "<span>" + t.scarcity + "</span>";
+    if (scarcityEl) {
+      const remaining = typeof remainingCount === "number" ? remainingCount : "x";
+      const cap = CONFIG.CAP;
+      const html = t.scarcity.replace("{remaining}", remaining).replace("{cap}", cap);
+      scarcityEl.innerHTML = "<span>" + html + "</span>";
+    }
 
     if (input) input.placeholder = t.placeholder;
 
@@ -242,6 +250,7 @@
   setLang(currentLang, { silent: true });
   track("wl_open", { lang: currentLang, page: window.location.href });
   hydrateJoinedState();
+  fetchRemainingCount();
 
   function isValidEmail(value) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
@@ -435,6 +444,35 @@
         throw timeoutError;
       }
       throw error;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  }
+
+  async function fetchRemainingCount() {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 4000);
+
+    try {
+      const response = await fetch(CONFIG.COUNT_ENDPOINT, {
+        method: "GET",
+        headers: { "Accept": "application/json" },
+        signal: controller.signal
+      });
+
+      if (!response.ok) return;
+      const data = await response.json().catch(() => null);
+      if (!data || data.ok !== true) return;
+
+      if (typeof data.remaining === "number") {
+        remainingCount = Math.max(0, data.remaining);
+      } else if (typeof data.count === "number") {
+        remainingCount = Math.max(0, CONFIG.CAP - data.count);
+      }
+
+      updateUI();
+    } catch (_) {
+      // keep placeholder
     } finally {
       window.clearTimeout(timeoutId);
     }
