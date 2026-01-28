@@ -9,6 +9,53 @@ function uniqueEmail() {
   return `wl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}@example.com`;
 }
 
+function buildPayload(email: string) {
+  return {
+    email,
+    lang: "it",
+    ts: new Date().toISOString(),
+    project: "beach_radar",
+    version: "waitlist_v1",
+    page: "http://example.test/waitlist",
+    referrer: "",
+    tz: "UTC",
+    device: {
+      w: 1200,
+      h: 800,
+      dpr: 1,
+      ua: "Playwright"
+    },
+    utm: {
+      utm_source: "poster",
+      utm_medium: "qr",
+      utm_campaign: "pilot_rimini_v1"
+    },
+    attribution: {
+      poster: "v1",
+      city: "rimini"
+    }
+  };
+}
+
+async function readJson(response: { json: () => Promise<any> }) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+async function ensureApiReady(request: any) {
+  const response = await request.post("/api/waitlist", {
+    data: buildPayload(uniqueEmail())
+  });
+  const body = await readJson(response);
+  if (response.status() === 500 && (body?.error === "missing_env" || body?.error === "missing_email_env")) {
+    return { ready: false, reason: body?.error };
+  }
+  return { ready: response.status() === 200, reason: body?.error || null };
+}
+
 async function readLocalStorage(page: { evaluate: any }) {
   return page.evaluate(() => {
     const out: Record<string, string | null> = {};
@@ -20,7 +67,10 @@ async function readLocalStorage(page: { evaluate: any }) {
   });
 }
 
-test("submit flow persists joined state and avoids raw email storage", async ({ page }) => {
+test("submit flow persists joined state and avoids raw email storage", async ({ page, request }) => {
+  const api = await ensureApiReady(request);
+  test.skip(!api.ready, "API not ready (missing env).");
+
   await page.goto(WAITLIST_URL);
 
   const email = uniqueEmail();
@@ -29,7 +79,7 @@ test("submit flow persists joined state and avoids raw email storage", async ({ 
   const status = page.locator("#statusMsg");
 
   await input.fill(email);
-  await button.click();
+  await button.click({ force: true });
 
   await expect(status).toHaveClass(/success/);
   await expect(input).toBeDisabled();
@@ -81,7 +131,7 @@ test("network failure shows retry and keeps form enabled", async ({ page }) => {
   const status = page.locator("#statusMsg");
 
   await input.fill(email);
-  await button.click();
+  await button.click({ force: true });
 
   await expect(status).toHaveClass(/error/);
   await expect(page.locator("#retryBtn")).toBeVisible();

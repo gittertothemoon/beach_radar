@@ -36,6 +36,19 @@ const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 25;
 const DOUBLE_OPT_IN_ENABLED = process.env.ENABLE_DOUBLE_OPTIN === "1";
 
+function readEnv(name: string): string | null {
+  const raw = process.env[name];
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (
+    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
 const rateLimiter = new Map<string, RateEntry>();
 
 function getClientIp(req: VercelRequest): string | null {
@@ -155,6 +168,16 @@ function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
+function withDebug(error: { message?: string; code?: string | null; details?: string | null; hint?: string | null }) {
+  if (process.env.WAITLIST_DEBUG !== "1") return undefined;
+  return {
+    message: error.message,
+    code: error.code,
+    details: error.details,
+    hint: error.hint
+  };
+}
+
 function buildConfirmUrl(baseUrl: string, token: string): string {
   const url = new URL(baseUrl);
   url.searchParams.set("token", token);
@@ -223,8 +246,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const emailValue = email || "";
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = readEnv("SUPABASE_URL");
+  const supabaseKey = readEnv("SUPABASE_SERVICE_ROLE_KEY");
   if (!supabaseUrl || !supabaseKey) {
     return res.status(500).json({ ok: false, error: "missing_env" });
   }
@@ -275,7 +298,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .maybeSingle();
 
   if (selectError) {
-    return res.status(500).json({ ok: false, error: "db_select_failed" });
+    return res.status(500).json({
+      ok: false,
+      error: "db_select_failed",
+      debug: withDebug(selectError)
+    });
   }
 
   if (honeypot) {
@@ -319,7 +346,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .eq("email_norm", normalizedEmail);
 
     if (updateError) {
-      return res.status(500).json({ ok: false, error: "db_update_failed" });
+      return res.status(500).json({
+        ok: false,
+        error: "db_update_failed",
+        debug: withDebug(updateError)
+      });
     }
 
     return res.status(200).json({ ok: true, already: true });
@@ -353,13 +384,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { error: insertError } = await supabase.from("waitlist_signups").insert(insertPayload);
 
   if (insertError) {
-    return res.status(500).json({ ok: false, error: "db_insert_failed" });
+    return res.status(500).json({
+      ok: false,
+      error: "db_insert_failed",
+      debug: withDebug(insertError)
+    });
   }
 
   if (DOUBLE_OPT_IN_ENABLED && confirmToken) {
-    const resendApiKey = process.env.RESEND_API_KEY;
-    const waitlistFrom = process.env.WAITLIST_FROM;
-    const confirmUrl = process.env.WAITLIST_CONFIRM_URL;
+    const resendApiKey = readEnv("RESEND_API_KEY");
+    const waitlistFrom = readEnv("WAITLIST_FROM");
+    const confirmUrl = readEnv("WAITLIST_CONFIRM_URL");
     if (!resendApiKey || !waitlistFrom || !confirmUrl) {
       return res.status(500).json({ ok: false, error: "missing_email_env" });
     }
