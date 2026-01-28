@@ -27,8 +27,6 @@ const UMBRELLA_MIN_SIZE = 20;
 const UMBRELLA_MAX_SIZE = 40;
 const CLUSTER_MIN_SIZE = 36;
 const CLUSTER_MAX_SIZE = 56;
-const CLUSTER_LABEL_TOP_PERCENT = 42;
-
 const getUmbrellaSizeForZoom = (zoom: number) => {
   const z = getRoundedZoom(zoom);
   if (z <= 12) return clamp(UMBRELLA_MIN_SIZE, UMBRELLA_MAX_SIZE, 22);

@@ -26,7 +26,7 @@ export const buildReportsIndex = (reports: Report[]): ReportsIndex => {
 };
 
 const aggregateFromReports = (
-  beach: Beach,
+  _beach: Beach,
   reports: Report[],
   now: number,
 ): BeachStats => {
@@ -50,7 +50,7 @@ const aggregateFromReports = (
 
   if (activeCount === 0) {
     return {
-      crowdLevel: 1,
+      crowdLevel: 1 as CrowdLevel,
       state: "PRED",
       confidence: 0.15,
       updatedAt: null,
@@ -100,7 +100,7 @@ export const aggregateBeachStatsFromIndex = (
   const reports = reportsIndex.get(beach.id);
   if (!reports || reports.length === 0) {
     return {
-      crowdLevel: 1,
+      crowdLevel: 1 as CrowdLevel,
       state: "PRED" as const,
       confidence: 0.15,
       updatedAt: null,

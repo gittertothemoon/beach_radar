@@ -430,7 +430,8 @@ function App() {
         const lng = override?.lng ?? beach.lng;
         const stats = aggregateBeachStatsFromIndex(beach, reportsIndex, now);
         const mockLevel =
-          MOCK_CROWD_LEVELS[index % MOCK_CROWD_LEVELS.length] ?? 1;
+          MOCK_CROWD_LEVELS[index % MOCK_CROWD_LEVELS.length] ??
+          (1 as CrowdLevel);
         const isPred = stats.state === "PRED";
         const effectiveStats = USE_MOCK_CROWD
           ? {
