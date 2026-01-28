@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Beach Radar privacy information" />
+  <title>Beach Radar - Privacy</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-deep: #020617;
+      --accent-cyan: #06b6d4;
+      --accent-blue: #3b82f6;
+      --text-white: #f8fafc;
+      --text-gray: #94a3b8;
+      --glass-surface: rgba(15, 23, 42, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --glass-highlight: rgba(255, 255, 255, 0.05);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: radial-gradient(circle at top, #0f172a 0%, #020617 55%);
+      color: var(--text-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+    }
+
+    .privacy-card {
+      position: relative;
+      z-index: 1;
+      width: min(720px, 100%);
+      background: linear-gradient(135deg, var(--glass-surface), rgba(15, 23, 42, 0.45));
+      border: 1px solid var(--glass-border);
+      border-radius: 22px;
+      padding: 32px 28px;
+      box-shadow: 0 20px 60px rgba(2, 6, 23, 0.6);
+      backdrop-filter: blur(14px);
+    }
+
+    h1 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+    }
+
+    .lead {
+      color: var(--text-gray);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section h2 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: var(--accent-cyan);
+    }
+
+    .section p,
+    .section li {
+      color: var(--text-gray);
+      line-height: 1.6;
+      font-size: 0.98rem;
+    }
+
+    .section ul {
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .meta {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .meta a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .meta a:hover {
+      text-decoration: underline;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      color: var(--text-white);
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .back-link span {
+      color: var(--accent-cyan);
+    }
+
+    @media (max-width: 600px) {
+      .privacy-card { padding: 24px 20px; }
+      h1 { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <main class="privacy-card">
+    <h1>Privacy</h1>
+    <p class="lead">
+      This page explains what data we collect for the Beach Radar waitlist, why we collect it, and how
+      you can contact us.
+    </p>
+
+    <section class="section">
+      <h2>Data collected</h2>
+      <ul>
+        <li>Email address and signup timestamps (first/last seen).</li>
+        <li>Attribution parameters (UTM, poster, city, and similar tracking fields).</li>
+        <li>Technical metadata (device info, browser user agent, timezone, referrer/page URL).</li>
+        <li>Network data such as IP address, used for security and abuse prevention.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Purpose</h2>
+      <p>We use this data to manage the waitlist and send launch-related communications.</p>
+    </section>
+
+    <section class="section">
+      <h2>Legal basis</h2>
+      <p>We process your data based on consent provided when you join the waitlist.</p>
+    </section>
+
+    <section class="section">
+      <h2>Retention</h2>
+      <p>We keep waitlist data until launch plus up to 12 months, or until you request deletion.</p>
+    </section>
+
+    <section class="section">
+      <h2>Contact</h2>
+      <p>
+        For any request (access, deletion, or questions), email
+        <a id="privacyContact" href="mailto:privacy@beachradar.it">privacy@beachradar.it</a>.
+      </p>
+    </section>
+
+    <div class="meta">
+      <a class="back-link" href="/waitlist/"><span>&larr;</span> Back to waitlist</a>
+      <span>Last updated: January 28, 2026</span>
+    </div>
+  </main>
+
+  <script>
+    const contactEl = document.getElementById("privacyContact");
+    const contactEmail = window.PRIVACY_CONTACT_EMAIL || "privacy@beachradar.it";
+    if (contactEl) {
+      contactEl.textContent = contactEmail;
+      contactEl.setAttribute("href", `mailto:${contactEmail}`);
+    }
+  </script>
+</body>
+</html>

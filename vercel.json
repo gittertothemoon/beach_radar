@@ -38,5 +38,9 @@
       "destination": "https://beachradar.it/$1",
       "permanent": true
     }
+  ],
+  "rewrites": [
+    { "source": "/privacy", "destination": "/privacy/index.html" },
+    { "source": "/privacy/", "destination": "/privacy/index.html" }
   ]
 }

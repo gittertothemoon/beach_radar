@@ -42,6 +42,12 @@ async function readJson(response: { json: () => Promise<any> }) {
   }
 }
 
+function getRateLimitMax(): number {
+  const fromEnv = Number(process.env.TEST_RATE_LIMIT || process.env.WAITLIST_RATE_LIMIT_MAX);
+  if (Number.isFinite(fromEnv) && fromEnv > 0) return fromEnv;
+  return 10;
+}
+
 test("GET /api/waitlist returns method_not_allowed", async ({ request }) => {
   const response = await request.get(WAITLIST_ENDPOINT);
   expect(response.status()).toBe(405);
@@ -109,4 +115,34 @@ test("POST with honeypot returns spam true", async ({ request }) => {
   }
   expect(response.status()).toBe(200);
   expect(body).toMatchObject({ ok: true, spam: true });
+});
+
+test("rate limit returns 429 after threshold", async ({ request }) => {
+  const limit = getRateLimitMax();
+  const attempts = Math.max(2, limit + 1);
+  const userAgent = `rate-limit-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  const ip = `203.0.113.${Math.floor(Math.random() * 200) + 1}`;
+  let lastResponse = null;
+
+  for (let i = 0; i < attempts; i += 1) {
+    lastResponse = await request.post(WAITLIST_ENDPOINT, {
+      data: {
+        ...buildPayload(uniqueEmail()),
+        hp: "bot"
+      },
+      headers: {
+        "User-Agent": userAgent,
+        "x-forwarded-for": ip
+      }
+    });
+  }
+
+  const body = lastResponse ? await readJson(lastResponse) : null;
+  if (lastResponse && lastResponse.status() === 500 && (body?.error === "missing_env" || body?.error === "missing_email_env")) {
+    test.skip(true, "SUPABASE env missing in local dev.");
+    return;
+  }
+
+  expect(lastResponse?.status()).toBe(429);
+  expect(body).toMatchObject({ ok: false, error: "rate_limited" });
 });

@@ -31,9 +31,15 @@ type RateResult = {
   retryAfter?: number;
 };
 
+type RateLimitConfig = {
+  windowMs: number;
+  max: number;
+};
+
 const MAX_BODY_BYTES = 10 * 1024;
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX = 25;
+const DEFAULT_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const DEFAULT_RATE_LIMIT_MAX = 10;
+const TEST_MODE = process.env.WAITLIST_TEST_MODE === "1";
 const DOUBLE_OPT_IN_ENABLED = process.env.ENABLE_DOUBLE_OPTIN === "1";
 
 function readEnv(name: string): string | null {
@@ -49,7 +55,8 @@ function readEnv(name: string): string | null {
   return trimmed;
 }
 
-const rateLimiter = new Map<string, RateEntry>();
+const testRateLimits = new Map<string, RateEntry>();
+const testSignups = new Map<string, { count: number }>();
 
 function getClientIp(req: VercelRequest): string | null {
   const forwarded = req.headers["x-forwarded-for"];
@@ -65,21 +72,77 @@ function getClientIp(req: VercelRequest): string | null {
   return typeof remote === "string" ? remote : null;
 }
 
-function checkRateLimit(ip: string): RateResult {
+function getRateLimitConfig(): RateLimitConfig {
+  const max = Number(readEnv("TEST_RATE_LIMIT") || readEnv("WAITLIST_RATE_LIMIT_MAX") || DEFAULT_RATE_LIMIT_MAX);
+  const windowSec = Number(readEnv("WAITLIST_RATE_LIMIT_WINDOW_SEC"));
+  const windowMs = Number.isFinite(windowSec) && windowSec > 0
+    ? windowSec * 1000
+    : DEFAULT_RATE_LIMIT_WINDOW_MS;
+  return { max, windowMs };
+}
+
+function hashValue(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function getWindowStartMs(nowMs: number, windowMs: number): number {
+  return Math.floor(nowMs / windowMs) * windowMs;
+}
+
+function getRateLimitKey(ipHash: string, uaHash: string, windowStartMs: number): string {
+  return `${ipHash}:${uaHash}:${windowStartMs}`;
+}
+
+function checkRateLimitMemory(ip: string | null, userAgent: string | null, config: RateLimitConfig): RateResult {
   const now = Date.now();
-  const entry = rateLimiter.get(ip);
+  const ipHash = hashValue(ip || "unknown");
+  const uaHash = hashValue(userAgent || "unknown");
+  const windowStartMs = getWindowStartMs(now, config.windowMs);
+  const key = getRateLimitKey(ipHash, uaHash, windowStartMs);
+  const entry = testRateLimits.get(key);
 
   if (!entry || entry.resetAt <= now) {
-    rateLimiter.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    testRateLimits.set(key, { count: 1, resetAt: windowStartMs + config.windowMs });
     return { ok: true };
   }
 
-  if (entry.count >= RATE_LIMIT_MAX) {
+  if (entry.count >= config.max) {
     const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
     return { ok: false, retryAfter };
   }
 
   entry.count += 1;
+  return { ok: true };
+}
+
+async function checkRateLimitDb(
+  supabase: ReturnType<typeof createClient>,
+  ip: string | null,
+  userAgent: string | null,
+  config: RateLimitConfig
+): Promise<RateResult> {
+  const nowMs = Date.now();
+  const ipHash = hashValue(ip || "unknown");
+  const uaHash = hashValue(userAgent || "unknown");
+  const windowStartMs = getWindowStartMs(nowMs, config.windowMs);
+  const windowStartIso = new Date(windowStartMs).toISOString();
+
+  const { data, error } = await supabase.rpc("waitlist_rate_limit_touch", {
+    ip_hash: ipHash,
+    ua_hash: uaHash,
+    window_start: windowStartIso
+  });
+
+  if (error) {
+    return { ok: true };
+  }
+
+  const count = Array.isArray(data) ? data[0]?.count : data?.count;
+  if (typeof count === "number" && count > config.max) {
+    const retryAfter = Math.ceil((windowStartMs + config.windowMs - nowMs) / 1000);
+    return { ok: false, retryAfter };
+  }
+
   return { ok: true };
 }
 
@@ -245,6 +308,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const emailValue = email || "";
+  const ip = getClientIp(req);
+  const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : null;
+  const rateConfig = getRateLimitConfig();
+
+  if (TEST_MODE) {
+    const rateResult = checkRateLimitMemory(ip, userAgent, rateConfig);
+    if (!rateResult.ok) {
+      return res.status(429).json({
+        ok: false,
+        error: "rate_limited",
+        retry_after: rateResult.retryAfter
+      });
+    }
+
+    if (honeypot) {
+      return res.status(200).json({ ok: true, spam: true });
+    }
+
+    const normalizedEmail = emailValue.trim().toLowerCase();
+    const existing = testSignups.get(normalizedEmail);
+    if (existing) {
+      existing.count += 1;
+      return res.status(200).json({ ok: true, already: true });
+    }
+    testSignups.set(normalizedEmail, { count: 1 });
+    return res.status(200).json({ ok: true, already: false });
+  }
 
   const supabaseUrl = readEnv("SUPABASE_URL");
   const supabaseKey = readEnv("SUPABASE_SERVICE_ROLE_KEY");
@@ -252,9 +342,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ ok: false, error: "missing_env" });
   }
 
-  const ip = getClientIp(req);
-  if (ip) {
-    const rateResult = checkRateLimit(ip);
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false }
+  });
+
+  if (ip || userAgent) {
+    const rateResult = await checkRateLimitDb(supabase, ip, userAgent, rateConfig);
     if (!rateResult.ok) {
       return res.status(429).json({
         ok: false,
@@ -264,9 +357,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  const supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: { persistSession: false }
-  });
+  if (honeypot) {
+    return res.status(200).json({ ok: true, spam: true });
+  }
 
   const normalizedEmail = emailValue.trim().toLowerCase();
   const nowIso = new Date().toISOString();
@@ -289,8 +382,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     version: safeString(body.version)
   };
 
-  const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : null;
-
   const { data: existing, error: selectError } = await supabase
     .from("waitlist_signups")
     .select("id, count, status, confirm_token_hash")
@@ -303,28 +394,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       error: "db_select_failed",
       debug: withDebug(selectError)
     });
-  }
-
-  if (honeypot) {
-    if (!existing) {
-      const spamPayload = {
-        email: emailValue,
-        lang,
-        utm,
-        attribution,
-        meta,
-        user_agent: userAgent,
-        source_ip: ip,
-        source_quality: sourceQuality,
-        status: "spam",
-        count: 1,
-        first_seen_at: nowIso,
-        last_seen_at: nowIso,
-        honeypot
-      };
-      await supabase.from("waitlist_signups").insert(spamPayload);
-    }
-    return res.status(200).json({ ok: true, spam: true });
   }
 
   if (existing) {
