@@ -8,6 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test:waitlist": "playwright test tests/waitlist.api.spec.ts tests/waitlist.e2e.spec.ts",
+    "test:waitlist:api": "playwright test tests/waitlist.api.spec.ts",
+    "test:waitlist:e2e": "playwright test tests/waitlist.e2e.spec.ts",
     "seed:geocode": "node scripts/geocode-seed.mjs",
     "seed:sync": "node scripts/sync-seed.mjs",
     "posters:csv": "node tools/posters/make-csv.mjs",
@@ -22,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.58.0",
     "@types/leaflet": "^1.9.18",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",

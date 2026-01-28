@@ -89,3 +89,20 @@ export default defineConfig([
 6. Open DevTools → React Profiler.
 7. Record while repeating the same actions and confirm render counts align with the overlay:
    MapView should not re-cluster on selection changes in normal mode, and search renders should feel throttled while typing.
+
+## Waitlist Tests
+These tests target the static waitlist page at `/public/waitlist/index.html` (served as `/waitlist/index.html`) and the Vercel API at `/api/waitlist`.
+
+Prereqs:
+- Install Playwright browsers once: `npx playwright install`
+- Run the API locally with Vercel so `/api/*` is available: `vercel dev` (default port 3000)
+- Ensure env vars are present (at least `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`)
+
+Run locally (defaults to `http://localhost:3000` and `/waitlist/index.html`):
+```\nBASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist\n```
+
+API-only or E2E-only:
+```\nBASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist:api\nBASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist:e2e\n```
+
+Run against production (set the deployed waitlist path explicitly if different):
+```\nBASE_URL=https://beachradar.it WAITLIST_PATH=/waitlist/index.html npm run test:waitlist\n```
