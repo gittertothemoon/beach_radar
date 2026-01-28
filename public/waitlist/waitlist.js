@@ -1,6 +1,7 @@
 (() => {
   "use strict";
 
+  function init() {
   const CONFIG = {
     ENDPOINT: "/api/waitlist",
     PROJECT: "beach_radar",
@@ -25,6 +26,7 @@
       pill3: "Priorit\u00e0 sulla tua zona",
       scarcity: "Prima ondata <b>limitata</b>: i Founding Member entrano per primi.",
       btn: "OTTIENI ACCESSO ANTICIPATO",
+      ctaJoined: "SEI DENTRO \u2705",
       loading: "Invio...",
       placeholder: "La tua email",
       privacyText: "Solo aggiornamenti importanti. No spam.",
@@ -47,6 +49,7 @@
       pill3: "Priority for your area",
       scarcity: "First wave is <b>limited</b>: Founding Members get in first.",
       btn: "GET EARLY ACCESS",
+      ctaJoined: "YOU'RE IN \u2705",
       loading: "Submitting...",
       placeholder: "Your email",
       privacyText: "Important updates only. No spam.",
@@ -71,11 +74,14 @@
 
   const utm = extractUtm(params);
   // Example custom params: ?poster=BR_01&city=Rome (both flow into attribution).
-  const attribution = params;
+  const attribution = buildAttribution(params);
 
   let currentLang = resolveInitialLang(params);
   let joined = readStorage(CONFIG.STORAGE.joined) === "1";
   let retryBtn = null;
+
+  const companyInput = document.getElementById("company");
+  if (companyInput) companyInput.value = "";
 
   function setFading(el, on) {
     if (!el) return;
@@ -100,36 +106,40 @@
     const privacyText = document.getElementById("privacyText");
     const privacyLink = document.getElementById("privacyLink");
 
-    setFading(titleEl, true);
-    setFading(descEl, true);
+    if (titleEl && descEl) {
+      setFading(titleEl, true);
+      setFading(descEl, true);
+    }
 
     window.setTimeout(() => {
-      titleEl.innerText = t.title;
-      descEl.innerHTML = t.descHTML;
+      if (titleEl) titleEl.innerText = t.title;
+      if (descEl) descEl.innerHTML = t.descHTML;
       setFading(titleEl, false);
       setFading(descEl, false);
     }, 160);
 
-    btnEl.innerText = t.btn;
+    if (btnEl) btnEl.innerText = joined ? t.ctaJoined : t.btn;
 
-    langBtn.innerText = t.langBtn;
-    langBtn.title = t.langTitle;
+    if (langBtn) {
+      langBtn.innerText = t.langBtn;
+      langBtn.title = t.langTitle;
+    }
 
-    pill1.innerText = t.pill1;
-    pill2.innerText = t.pill2;
-    pill3.innerText = t.pill3;
+    if (pill1) pill1.innerText = t.pill1;
+    if (pill2) pill2.innerText = t.pill2;
+    if (pill3) pill3.innerText = t.pill3;
 
-    scarcityEl.innerHTML = "<span>" + t.scarcity + "</span>";
+    if (scarcityEl) scarcityEl.innerHTML = "<span>" + t.scarcity + "</span>";
 
-    input.placeholder = t.placeholder;
+    if (input) input.placeholder = t.placeholder;
 
-    privacyText.innerText = t.privacyText;
-    privacyLink.innerText = t.privacyLabel;
+    if (privacyText) privacyText.innerText = t.privacyText;
+    if (privacyLink) privacyLink.innerText = t.privacyLabel;
 
     document.documentElement.lang = currentLang;
 
     const msg = document.getElementById("statusMsg");
-    if (msg.classList.contains("visible")) {
+    if (msg && msg.classList.contains("visible")) {
       const status = msg.dataset.status;
       if (status === "success") {
         const successType = msg.dataset.successType === "already" ? "already" : "success";
@@ -238,6 +248,9 @@
   }
 
   const formEl = document.getElementById("waitlistForm");
+  const emailInput = document.getElementById("emailInput");
+  const ctaButton = document.getElementById("t-btn");
+  if (!formEl || !emailInput || !ctaButton) return;
   formEl.addEventListener("submit", handleSubmit);
 
   async function handleSubmit(event) {
@@ -245,6 +258,7 @@
 
     const btn = document.getElementById("t-btn");
     const input = document.getElementById("emailInput");
+    if (!btn || !input) return;
 
     if (joined) {
       showJoinedState();
@@ -319,6 +333,15 @@
       return;
     }
 
+    if (responseData && responseData.ok && responseData.spam) {
+      setStatusMessage(content[currentLang].errorServer, { kind: "error", errorType: "server" });
+      track("wl_submit_error", { reason: "spam" });
+      btn.disabled = false;
+      input.disabled = false;
+      btn.innerText = content[currentLang].btn;
+      return;
+    }
+
     const successType = responseData.already ? "already" : "success";
     joined = true;
     persistJoinedMeta(payload);
@@ -329,7 +352,7 @@
     );
     track("wl_submit_success", { already: !!responseData.already });
 
-    btn.innerText = original;
+    btn.innerText = content[currentLang].ctaJoined;
     btn.disabled = true;
     input.disabled = true;
     input.value = "";
@@ -443,12 +466,14 @@
   function showJoinedState() {
     const btn = document.getElementById("t-btn");
     const input = document.getElementById("emailInput");
+    if (!btn || !input) return;
 
     setStatusMessage(content[currentLang].alreadyJoined, {
       kind: "success",
       successType: "already"
     });
 
+    btn.innerText = content[currentLang].ctaJoined;
     btn.disabled = true;
     input.disabled = true;
   }
@@ -548,6 +573,29 @@
     return paramsObj;
   }
 
+  function buildAttribution(paramsObj) {
+    const allowedKeys = [
+      "poster",
+      "city",
+      "fbclid",
+      "gclid",
+      "msclkid",
+      "ttclid",
+      "igshid",
+      "twclid",
+      "gbraid",
+      "wbraid"
+    ];
+    const out = {};
+
+    allowedKeys.forEach((key) => {
+      if (Object.prototype.hasOwnProperty.call(paramsObj, key)) {
+        out[key] = paramsObj[key];
+      }
+    });
+
+    return out;
+  }
   function getParamValue(paramsObj, key) {
     const value = paramsObj[key];
     if (Array.isArray(value)) return value[0];
@@ -587,6 +635,7 @@
   - Mobile: gyro if allowed + drag fallback
   ------------------------------ */
   const card = document.getElementById("tiltCard");
+  if (card) {
 
   let tiltRaf = null;
   let targetX = 0;
@@ -715,12 +764,17 @@
   });
 
   setInteracting(false);
+  }
 
   /* -----------------------------
   4) CANVAS RADAR (animato)
   ------------------------------ */
   const canvas = document.getElementById("radarCanvas");
+  if (canvas) {
   const ctx = canvas.getContext("2d", { alpha: false });
+  if (!ctx) {
+    return;
+  }
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -837,4 +891,11 @@
   resizeCanvas();
   render();
   startCanvas();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 })();

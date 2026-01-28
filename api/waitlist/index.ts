@@ -210,14 +210,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const honeypot = safeString(body.hp ?? body.company);
-  if (honeypot) {
+  const email = safeString(body.email);
+  const emailValid = !!email && emailLooksValid(email);
+
+  if (!honeypot && !emailValid) {
+    return res.status(400).json({ ok: false, error: "invalid_email" });
+  }
+
+  if (honeypot && !emailValid) {
     return res.status(200).json({ ok: true, spam: true });
   }
 
-  const email = safeString(body.email);
-  if (!email || !emailLooksValid(email)) {
-    return res.status(400).json({ ok: false, error: "invalid_email" });
-  }
+  const emailValue = email || "";
 
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -241,7 +245,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     auth: { persistSession: false }
   });
 
-  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedEmail = emailValue.trim().toLowerCase();
   const nowIso = new Date().toISOString();
 
   const lang = safeString(body.lang);
@@ -272,6 +276,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (selectError) {
     return res.status(500).json({ ok: false, error: "db_select_failed" });
+  }
+
+  if (honeypot) {
+    if (!existing) {
+      const spamPayload = {
+        email: emailValue,
+        lang,
+        utm,
+        attribution,
+        meta,
+        user_agent: userAgent,
+        source_ip: ip,
+        source_quality: sourceQuality,
+        status: "spam",
+        count: 1,
+        first_seen_at: nowIso,
+        last_seen_at: nowIso,
+        honeypot
+      };
+      await supabase.from("waitlist_signups").insert(spamPayload);
+    }
+    return res.status(200).json({ ok: true, spam: true });
   }
 
   if (existing) {
@@ -308,7 +334,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const insertPayload = {
-    email,
+    email: emailValue,
     lang,
     utm,
     attribution,
@@ -339,7 +365,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const emailResult = await sendConfirmEmail({
-      to: email,
+      to: emailValue,
       token: confirmToken,
       apiKey: resendApiKey,
       from: waitlistFrom,
