@@ -56,6 +56,11 @@ CI behavior:
 - Pull requests run the static smoke suite only (UI guardrail, no `/api/*`).
 - Push to `main` runs the full suite with `vercel dev` (end-to-end guardrail).
 
+Smoke runner env flags:
+- `SMOKE_READY_TIMEOUT_MS` (override wait for SMOKE_READY; default 12000)
+- `SMOKE_VERIFY_CLEANUP=1` (fail if the static server port stays open after cleanup)
+- `SMOKE_TEST_NO_READY=1` (test-only flag to simulate no SMOKE_READY)
+
 ## Required env vars
 
 Production API:
