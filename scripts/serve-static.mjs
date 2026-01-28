@@ -54,5 +54,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(port, host, () => {
-  console.log(`static server listening on http://${host}:${port}`);
+  const address = server.address();
+  const resolvedPort = address && typeof address === "object" ? address.port : port;
+  console.log(`SMOKE_READY http://${host}:${resolvedPort}`);
 });

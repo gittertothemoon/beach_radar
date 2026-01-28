@@ -40,6 +40,8 @@
     }
   ],
   "rewrites": [
+    { "source": "/waitlist", "destination": "/waitlist/index.html" },
+    { "source": "/waitlist/", "destination": "/waitlist/index.html" },
     { "source": "/privacy", "destination": "/privacy/index.html" },
     { "source": "/privacy/", "destination": "/privacy/index.html" }
   ]

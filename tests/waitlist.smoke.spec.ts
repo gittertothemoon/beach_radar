@@ -1,10 +1,11 @@
 import { test, expect } from "@playwright/test";
 
+const BASE_URL = (process.env.BASE_URL || "http://127.0.0.1:3000").replace(/\/$/, "");
 const WAITLIST_PATH = process.env.WAITLIST_PATH || "/waitlist/index.html";
 
 function buildUrl(path: string) {
-  if (path.startsWith("/")) return path;
-  return `/${path}`;
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return `${BASE_URL}${normalized}`;
 }
 
 test("waitlist page loads and shows core UI", async ({ page }) => {
@@ -21,7 +22,7 @@ test("waitlist page loads and shows core UI", async ({ page }) => {
 });
 
 test("privacy page reachable", async ({ page }) => {
-  const response = await page.goto("/privacy/");
+  const response = await page.goto(buildUrl("/privacy/"));
   expect(response?.status()).toBe(200);
   await expect(page.locator("h1")).toHaveText(/privacy/i);
 });
