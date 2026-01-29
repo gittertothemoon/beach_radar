@@ -90,7 +90,7 @@ function getQueryParam(url: URL, name: string): string | null {
       }
     }
   }
-  return url.searchParams.get(name);
+  return null;
 }
 
 function isStaticAsset(pathname: string) {
@@ -103,52 +103,56 @@ function isAppPath(pathname: string) {
 }
 
 export default function middleware(request: Request) {
-  const url = new URL(request.url);
-  const { pathname, searchParams } = url;
+  try {
+    const url = new URL(request.url);
+    const { pathname } = url;
 
-  if (pathname === "/waitlist") {
-    return redirectResponse(new URL(`${WAITLIST_PATH}`, request.url));
-  }
+    if (pathname === "/waitlist") {
+      return redirectResponse(new URL(`${WAITLIST_PATH}`, request.url));
+    }
 
-  if (pathname === "/privacy") {
-    return redirectResponse(new URL(`${PRIVACY_PATH_PREFIX}/`, request.url));
-  }
+    if (pathname === "/privacy") {
+      return redirectResponse(new URL(`${PRIVACY_PATH_PREFIX}/`, request.url));
+    }
 
-  if (isStaticAsset(pathname) || pathname.startsWith(API_PATH_PREFIX)) {
-    return nextResponse();
-  }
+    if (isStaticAsset(pathname) || pathname.startsWith(API_PATH_PREFIX)) {
+      return nextResponse();
+    }
 
-  if (pathname === "/") {
-    return redirectResponse(new URL(WAITLIST_PATH, request.url));
-  }
-
-  if (pathname.startsWith("/waitlist") || pathname.startsWith(PRIVACY_PATH_PREFIX)) {
-    return nextResponse();
-  }
-
-  if (isAppPath(pathname)) {
-    const accessKey = readEnv("APP_ACCESS_KEY") ?? "";
-    const cookieValue = readCookie(request.headers.get("cookie"), ACCESS_COOKIE);
-    const queryKey = getQueryParam(url, ACCESS_KEY_PARAM);
-    const hasCookie = cookieValue === ACCESS_COOKIE_VALUE;
-    const hasValidKey = accessKey.length > 0 && queryKey === accessKey;
-
-    if (!hasCookie && !hasValidKey) {
+    if (pathname === "/") {
       return redirectResponse(new URL(WAITLIST_PATH, request.url));
     }
 
-    if (hasValidKey && !hasCookie) {
-      const cleanUrl = new URL(request.url);
-      cleanUrl.searchParams.delete(ACCESS_KEY_PARAM);
-      const response = redirectResponse(cleanUrl);
-      response.headers.append("Set-Cookie", buildCookie(ACCESS_COOKIE_VALUE));
-      return response;
+    if (pathname.startsWith("/waitlist") || pathname.startsWith(PRIVACY_PATH_PREFIX)) {
+      return nextResponse();
     }
 
-    return rewriteResponse(new URL("/index.html", request.url));
-  }
+    if (isAppPath(pathname)) {
+      const accessKey = readEnv("APP_ACCESS_KEY") ?? "";
+      const cookieValue = readCookie(request.headers.get("cookie"), ACCESS_COOKIE);
+      const queryKey = getQueryParam(url, ACCESS_KEY_PARAM);
+      const hasCookie = cookieValue === ACCESS_COOKIE_VALUE;
+      const hasValidKey = accessKey.length > 0 && queryKey === accessKey;
 
-  return redirectResponse(new URL(WAITLIST_PATH, request.url));
+      if (!hasCookie && !hasValidKey) {
+        return redirectResponse(new URL(WAITLIST_PATH, request.url));
+      }
+
+      if (hasValidKey && !hasCookie) {
+        const cleanUrl = new URL(request.url);
+        cleanUrl.searchParams.delete(ACCESS_KEY_PARAM);
+        const response = redirectResponse(cleanUrl);
+        response.headers.append("Set-Cookie", buildCookie(ACCESS_COOKIE_VALUE));
+        return response;
+      }
+
+      return rewriteResponse(new URL("/index.html", request.url));
+    }
+
+    return redirectResponse(new URL(WAITLIST_PATH, request.url));
+  } catch (_) {
+    return redirectResponse(new URL(WAITLIST_PATH, request.url));
+  }
 }
 
 export const config = {
