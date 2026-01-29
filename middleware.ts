@@ -75,6 +75,14 @@ export default function middleware(request: Request) {
   const url = new URL(request.url);
   const { pathname, searchParams } = url;
 
+  if (pathname === "/waitlist") {
+    return redirectResponse(new URL(`${WAITLIST_PATH}`, request.url));
+  }
+
+  if (pathname === "/privacy") {
+    return redirectResponse(new URL(`${PRIVACY_PATH_PREFIX}/`, request.url));
+  }
+
   if (isStaticAsset(pathname) || pathname.startsWith(API_PATH_PREFIX)) {
     return nextResponse();
   }
