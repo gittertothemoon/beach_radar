@@ -67,6 +67,9 @@ Production API:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
+App access gate:
+- `APP_ACCESS_KEY` (required to access `/app/`)
+
 Rate limit tuning:
 - `WAITLIST_RATE_LIMIT_MAX` (default: 10)
 - `WAITLIST_RATE_LIMIT_WINDOW_SEC` (default: 600)
@@ -80,6 +83,14 @@ Double opt-in (optional):
 
 Privacy contact (optional front-end override):
 - `PRIVACY_CONTACT_EMAIL` (set `window.PRIVACY_CONTACT_EMAIL` in `public/privacy/index.html` or edit the file directly)
+
+## App access
+
+The app is gated behind `/app/`. Provide the access key once via:
+```
+https://beachradar.it/app/?key=YOUR_KEY
+```
+After a valid key is used, a 30-day cookie is set so `/app/` works without the query parameter.
 
 ## Rate limit behavior
 
