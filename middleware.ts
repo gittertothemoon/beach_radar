@@ -62,6 +62,37 @@ function buildCookie(value: string) {
   ].join("; ");
 }
 
+function readEnv(name: string): string | null {
+  const raw = process.env[name];
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (
+    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
+function getQueryParam(url: URL, name: string): string | null {
+  const search = url.search;
+  if (!search || search.length < 2) return null;
+  const encodedName = encodeURIComponent(name);
+  for (const part of search.slice(1).split("&")) {
+    if (part === encodedName) return "";
+    if (part.startsWith(`${encodedName}=`)) {
+      const rawValue = part.slice(encodedName.length + 1);
+      try {
+        return decodeURIComponent(rawValue);
+      } catch (_) {
+        return rawValue;
+      }
+    }
+  }
+  return url.searchParams.get(name);
+}
+
 function isStaticAsset(pathname: string) {
   if (STATIC_FILES.has(pathname)) return true;
   return STATIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
@@ -96,9 +127,9 @@ export default function middleware(request: Request) {
   }
 
   if (isAppPath(pathname)) {
-    const accessKey = process.env.APP_ACCESS_KEY ?? "";
+    const accessKey = readEnv("APP_ACCESS_KEY") ?? "";
     const cookieValue = readCookie(request.headers.get("cookie"), ACCESS_COOKIE);
-    const queryKey = searchParams.get(ACCESS_KEY_PARAM);
+    const queryKey = getQueryParam(url, ACCESS_KEY_PARAM);
     const hasCookie = cookieValue === ACCESS_COOKIE_VALUE;
     const hasValidKey = accessKey.length > 0 && queryKey === accessKey;
 
