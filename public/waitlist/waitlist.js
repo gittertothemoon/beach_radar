@@ -30,11 +30,23 @@
       btn: "OTTIENI ACCESSO ANTICIPATO",
       ctaJoined: "SEI DENTRO \u2705",
       loading: "Invio...",
+      loadingHint: "Stiamo riservando il tuo posto...",
       placeholder: "La tua email",
       privacyText: "Solo aggiornamenti importanti. No spam.",
       privacyLabel: "Privacy",
       success: "Sei dentro! Ti avviseremo al lancio. \u{1F4E1}",
+      successTitle: "Posto riservato!",
+      successBody: "Ti avviseremo appena apriamo l'accesso. Condividi la pagina con chi vuole entrare.",
       alreadyJoined: "Sei gia dentro \u2705",
+      alreadyTitle: "Sei gia in lista.",
+      alreadyBody: "La tua iscrizione \u00e8 attiva. Condividi il link se vuoi aiutare i tuoi amici.",
+      shareLabel: "Condividi",
+      copyLabel: "Copia link",
+      shareTitle: "Beach Radar",
+      shareText: "Sto entrando nella waitlist di Beach Radar. Unisciti anche tu!",
+      shareSuccess: "Link pronto \u2705",
+      copySuccess: "Link copiato.",
+      shareError: "Non riesco a condividere qui.",
       retry: "Riprova",
       error: "Inserisci un'email valida.",
       errorServer: "Qualcosa \u00e8 andato storto. Riprova.",
@@ -53,11 +65,23 @@
       btn: "GET EARLY ACCESS",
       ctaJoined: "YOU'RE IN \u2705",
       loading: "Submitting...",
+      loadingHint: "Reserving your spot...",
       placeholder: "Your email",
       privacyText: "Important updates only. No spam.",
       privacyLabel: "Privacy",
       success: "You're in! We'll notify you at launch. \u{1F4E1}",
+      successTitle: "Spot reserved!",
+      successBody: "We'll reach out when access opens. Share the page with friends who want in.",
       alreadyJoined: "You're already in \u2705",
+      alreadyTitle: "You're already on the list.",
+      alreadyBody: "Your spot is confirmed. Share the link if you'd like to invite friends.",
+      shareLabel: "Share",
+      copyLabel: "Copy link",
+      shareTitle: "Beach Radar",
+      shareText: "I'm joining the Beach Radar waitlist. Come with me!",
+      shareSuccess: "Link ready \u2705",
+      copySuccess: "Link copied.",
+      shareError: "Unable to share here.",
       retry: "Retry",
       error: "Please enter a valid email.",
       errorServer: "Something went wrong. Please try again.",
@@ -67,6 +91,11 @@
 
   const params = parseQueryParams(window.location.search);
   const debugEnabled = getParamValue(params, "debug") === "1";
+  const devMode = getParamValue(params, "dev") === "1";
+  const mockParam = getParamValue(params, "mock").toLowerCase();
+  const mockMode = mockParam === "1" || mockParam === "true";
+  const mockAlready = mockParam === "already" || getParamValue(params, "mockAlready") === "1";
+  const mockEnabled = mockMode || mockAlready;
 
   function debugLog(...args) {
     if (debugEnabled) {
@@ -77,6 +106,22 @@
   const utm = extractUtm(params);
   // Example custom params: ?poster=BR_01&city=Rome (both flow into attribution).
   const attribution = buildAttribution(params);
+
+  const devStorageBlock = new Set([
+    CONFIG.STORAGE.joined,
+    CONFIG.STORAGE.meta,
+    CONFIG.STORAGE.events
+  ]);
+
+  if (devMode) {
+    devStorageBlock.forEach((key) => {
+      try {
+        window.localStorage.removeItem(key);
+      } catch (_) {
+        // ignore storage errors
+      }
+    });
+  }
 
   let currentLang = resolveInitialLang(params);
   let joined = readStorage(CONFIG.STORAGE.joined) === "1";
@@ -108,6 +153,11 @@
     const input = document.getElementById("emailInput");
     const privacyText = document.getElementById("privacyText");
     const privacyLink = document.getElementById("privacyLink");
+    const postJoin = document.getElementById("postJoin");
+    const postJoinTitle = document.getElementById("postJoinTitle");
+    const postJoinDesc = document.getElementById("postJoinDesc");
+    const shareBtn = document.getElementById("shareBtn");
+    const copyBtn = document.getElementById("copyBtn");
 
     if (titleEl && descEl) {
       setFading(titleEl, true);
@@ -143,6 +193,14 @@
 
     if (privacyText) privacyText.innerText = t.privacyText;
     if (privacyLink) privacyLink.innerText = t.privacyLabel;
+    if (shareBtn) shareBtn.innerText = t.shareLabel;
+    if (copyBtn) copyBtn.innerText = t.copyLabel;
+
+    if (postJoin && postJoin.dataset.state) {
+      const isAlready = postJoin.dataset.state === "already";
+      if (postJoinTitle) postJoinTitle.innerText = isAlready ? t.alreadyTitle : t.successTitle;
+      if (postJoinDesc) postJoinDesc.innerText = isAlready ? t.alreadyBody : t.successBody;
+    }
 
     document.documentElement.lang = currentLang;
 
@@ -153,6 +211,9 @@
         const successType = msg.dataset.successType === "already" ? "already" : "success";
         const message = successType === "already" ? t.alreadyJoined : t.success;
         setStatusMessage(message, { kind: "success", successType });
+      }
+      if (status === "loading") {
+        setStatusMessage(t.loadingHint, { kind: "loading" });
       }
       if (status === "error") {
         const errorType = msg.dataset.errorType === "rate"
@@ -227,6 +288,122 @@
     if (button.parentNode === msg) button.remove();
   }
 
+  function setLoadingState(isLoading) {
+    const form = document.getElementById("waitlistForm");
+    const btn = document.getElementById("t-btn");
+    if (form) {
+      form.classList.toggle("is-loading", !!isLoading);
+      form.setAttribute("aria-busy", isLoading ? "true" : "false");
+    }
+    if (btn) btn.classList.toggle("is-loading", !!isLoading);
+  }
+
+  function setPostJoinContent(state) {
+    const postJoin = document.getElementById("postJoin");
+    const title = document.getElementById("postJoinTitle");
+    const desc = document.getElementById("postJoinDesc");
+    if (!postJoin || !title || !desc) return;
+    const t = content[currentLang];
+    const isAlready = state === "already";
+    postJoin.dataset.state = isAlready ? "already" : "success";
+    title.innerText = isAlready ? t.alreadyTitle : t.successTitle;
+    desc.innerText = isAlready ? t.alreadyBody : t.successBody;
+  }
+
+  function setPostJoinVisible(isVisible) {
+    const postJoin = document.getElementById("postJoin");
+    if (!postJoin) return;
+    postJoin.classList.toggle("is-visible", !!isVisible);
+    postJoin.setAttribute("aria-hidden", isVisible ? "false" : "true");
+    document.body.classList.toggle("has-post-join", !!isVisible);
+    if (!isVisible) {
+      postJoin.dataset.state = "";
+    }
+    if (!isVisible) setShareStatus("");
+  }
+
+  function pulseSuccess() {
+    const panel = document.querySelector(".glass-panel");
+    if (!panel) return;
+    panel.classList.remove("is-success");
+    void panel.offsetWidth;
+    panel.classList.add("is-success");
+    window.setTimeout(() => panel.classList.remove("is-success"), 750);
+  }
+
+  function setShareStatus(message, kind = "") {
+    const shareStatus = document.getElementById("shareStatus");
+    if (!shareStatus) return;
+    shareStatus.textContent = message || "";
+    shareStatus.className = `share-status${kind ? " " + kind : ""}`;
+  }
+
+  function getShareUrl() {
+    const url = window.location.href.split("#")[0];
+    return url;
+  }
+
+  function buildShareData() {
+    const t = content[currentLang];
+    return {
+      title: t.shareTitle,
+      text: t.shareText,
+      url: getShareUrl()
+    };
+  }
+
+  async function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "true");
+    textarea.style.position = "absolute";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand("copy");
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  }
+
+  async function handleShare() {
+    const data = buildShareData();
+    setShareStatus("");
+    try {
+      if (navigator.share) {
+        await navigator.share(data);
+        setShareStatus(content[currentLang].shareSuccess, "success");
+        track("wl_share", { method: "webshare" });
+        return;
+      }
+      await copyToClipboard(data.url);
+      setShareStatus(content[currentLang].copySuccess, "success");
+      track("wl_share", { method: "copy_fallback" });
+    } catch (error) {
+      if (error && error.name === "AbortError") return;
+      setShareStatus(content[currentLang].shareError, "error");
+      track("wl_share_error", { reason: "share_failed" });
+    }
+  }
+
+  async function handleCopy() {
+    const url = getShareUrl();
+    setShareStatus("");
+    try {
+      await copyToClipboard(url);
+      setShareStatus(content[currentLang].copySuccess, "success");
+      track("wl_share", { method: "copy" });
+    } catch (_) {
+      setShareStatus(content[currentLang].shareError, "error");
+      track("wl_share_error", { reason: "copy_failed" });
+    }
+  }
+
   function setLang(nextLang, options = {}) {
     if (!content[nextLang]) return;
     const isSame = currentLang === nextLang;
@@ -262,6 +439,18 @@
   if (!formEl || !emailInput || !ctaButton) return;
   formEl.addEventListener("submit", handleSubmit);
 
+  const shareBtn = document.getElementById("shareBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  if (shareBtn) shareBtn.addEventListener("click", handleShare);
+  if (copyBtn) copyBtn.addEventListener("click", handleCopy);
+
+  emailInput.addEventListener("input", () => {
+    if (!joined) {
+      clearStatusMessage();
+      setPostJoinVisible(false);
+    }
+  });
+
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -277,6 +466,8 @@
     const email = input.value.trim();
 
     clearStatusMessage();
+    setPostJoinVisible(false);
+    setShareStatus("");
 
     if (!isValidEmail(email)) {
       setStatusMessage(content[currentLang].error, { kind: "error", errorType: "invalid" });
@@ -289,6 +480,8 @@
     input.disabled = true;
     const original = btn.innerText;
     btn.innerText = content[currentLang].loading;
+    setLoadingState(true);
+    setStatusMessage(content[currentLang].loadingHint, { kind: "loading" });
 
     getEmailFingerprint(email).then((fingerprint) => {
       track("wl_submit_attempt", {
@@ -303,7 +496,7 @@
     let responseData = null;
 
     try {
-      responseData = await postWaitlist(payload);
+      responseData = mockEnabled ? await postWaitlistMock() : await postWaitlist(payload);
     } catch (error) {
       debugLog("submit error", error);
       const errorCode = error && error.code ? error.code : "network";
@@ -326,6 +519,7 @@
       setStatusMessage(message, { kind: "error", errorType, retryable });
       track("wl_submit_error", { reason: errorCode });
 
+      setLoadingState(false);
       btn.disabled = false;
       input.disabled = false;
       btn.innerText = original;
@@ -336,6 +530,7 @@
       setStatusMessage(content[currentLang].errorServer, { kind: "error", errorType: "server" });
       track("wl_submit_error", { reason: "server" });
 
+      setLoadingState(false);
       btn.disabled = false;
       input.disabled = false;
       btn.innerText = original;
@@ -345,6 +540,7 @@
     if (responseData && responseData.ok && responseData.spam) {
       setStatusMessage(content[currentLang].errorServer, { kind: "error", errorType: "server" });
       track("wl_submit_error", { reason: "spam" });
+      setLoadingState(false);
       btn.disabled = false;
       input.disabled = false;
       btn.innerText = content[currentLang].btn;
@@ -355,6 +551,7 @@
     joined = true;
     persistJoinedMeta(payload);
 
+    setLoadingState(false);
     setStatusMessage(
       successType === "already" ? content[currentLang].alreadyJoined : content[currentLang].success,
       { kind: "success", successType }
@@ -365,6 +562,15 @@
     btn.disabled = true;
     input.disabled = true;
     input.value = "";
+
+    if (!responseData.already && typeof remainingCount === "number") {
+      remainingCount = Math.max(0, remainingCount - 1);
+      updateUI();
+    }
+
+    setPostJoinContent(successType);
+    setPostJoinVisible(true);
+    pulseSuccess();
   }
 
   function buildPayload(email) {
@@ -449,7 +655,17 @@
     }
   }
 
+  async function postWaitlistMock() {
+    await new Promise((resolve) => window.setTimeout(resolve, 550));
+    return { ok: true, already: mockAlready };
+  }
+
   async function fetchRemainingCount() {
+    if (mockEnabled) {
+      remainingCount = CONFIG.CAP - (joined ? 1 : 0);
+      updateUI();
+      return;
+    }
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 4000);
 
@@ -506,10 +722,13 @@
     const input = document.getElementById("emailInput");
     if (!btn || !input) return;
 
+    setLoadingState(false);
     setStatusMessage(content[currentLang].alreadyJoined, {
       kind: "success",
       successType: "already"
     });
+    setPostJoinContent("already");
+    setPostJoinVisible(true);
 
     btn.innerText = content[currentLang].ctaJoined;
     btn.disabled = true;
@@ -552,6 +771,7 @@
   }
 
   function readStorage(key) {
+    if (devMode && devStorageBlock.has(key)) return null;
     try {
       return window.localStorage.getItem(key);
     } catch (_) {
@@ -560,6 +780,7 @@
   }
 
   function writeStorage(key, value) {
+    if (devMode && devStorageBlock.has(key)) return null;
     try {
       window.localStorage.setItem(key, value);
     } catch (_) {
