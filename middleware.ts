@@ -1,6 +1,3 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-
 const ACCESS_COOKIE = "br_app_access";
 const ACCESS_COOKIE_VALUE = "1";
 const ACCESS_KEY_PARAM = "key";
@@ -30,6 +27,41 @@ const STATIC_FILES = new Set([
   "/vite.svg",
 ]);
 
+function nextResponse() {
+  return new Response(null, { headers: { "x-middleware-next": "1" } });
+}
+
+function rewriteResponse(url: URL) {
+  return new Response(null, { headers: { "x-middleware-rewrite": url.toString() } });
+}
+
+function redirectResponse(url: URL) {
+  return Response.redirect(url.toString(), 302);
+}
+
+function readCookie(header: string | null, name: string): string | null {
+  if (!header) return null;
+  const parts = header.split(";");
+  for (const part of parts) {
+    const [key, ...rest] = part.trim().split("=");
+    if (key === name) {
+      return decodeURIComponent(rest.join("="));
+    }
+  }
+  return null;
+}
+
+function buildCookie(value: string) {
+  return [
+    `${ACCESS_COOKIE}=${encodeURIComponent(value)}`,
+    "Max-Age=2592000",
+    `Path=${APP_PATH_PREFIX}`,
+    "HttpOnly",
+    "SameSite=Lax",
+    "Secure",
+  ].join("; ");
+}
+
 function isStaticAsset(pathname: string) {
   if (STATIC_FILES.has(pathname)) return true;
   return STATIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
@@ -39,52 +71,45 @@ function isAppPath(pathname: string) {
   return pathname === APP_PATH_PREFIX || pathname.startsWith(`${APP_PATH_PREFIX}/`);
 }
 
-export function middleware(request: NextRequest) {
-  const { pathname, searchParams } = request.nextUrl;
+export default function middleware(request: Request) {
+  const url = new URL(request.url);
+  const { pathname, searchParams } = url;
 
   if (isStaticAsset(pathname) || pathname.startsWith(API_PATH_PREFIX)) {
-    return NextResponse.next();
+    return nextResponse();
   }
 
   if (pathname === "/") {
-    return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+    return redirectResponse(new URL(WAITLIST_PATH, request.url));
   }
 
   if (pathname.startsWith("/waitlist") || pathname.startsWith(PRIVACY_PATH_PREFIX)) {
-    return NextResponse.next();
+    return nextResponse();
   }
 
   if (isAppPath(pathname)) {
     const accessKey = process.env.APP_ACCESS_KEY ?? "";
-    const cookieValue = request.cookies.get(ACCESS_COOKIE)?.value;
+    const cookieValue = readCookie(request.headers.get("cookie"), ACCESS_COOKIE);
     const queryKey = searchParams.get(ACCESS_KEY_PARAM);
     const hasCookie = cookieValue === ACCESS_COOKIE_VALUE;
     const hasValidKey = accessKey.length > 0 && queryKey === accessKey;
 
     if (!hasCookie && !hasValidKey) {
-      return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+      return redirectResponse(new URL(WAITLIST_PATH, request.url));
     }
 
     if (hasValidKey && !hasCookie) {
-      const cleanUrl = request.nextUrl.clone();
+      const cleanUrl = new URL(request.url);
       cleanUrl.searchParams.delete(ACCESS_KEY_PARAM);
-      const response = NextResponse.redirect(cleanUrl);
-      response.cookies.set({
-        name: ACCESS_COOKIE,
-        value: ACCESS_COOKIE_VALUE,
-        maxAge: 60 * 60 * 24 * 30,
-        path: APP_PATH_PREFIX,
-        httpOnly: true,
-        sameSite: "lax",
-        secure: true,
-      });
+      const response = redirectResponse(cleanUrl);
+      response.headers.append("Set-Cookie", buildCookie(ACCESS_COOKIE_VALUE));
       return response;
     }
 
-    return NextResponse.rewrite(new URL("/index.html", request.url));
+    return rewriteResponse(new URL("/index.html", request.url));
   }
 
-  return NextResponse.redirect(new URL(WAITLIST_PATH, request.url));
+  return redirectResponse(new URL(WAITLIST_PATH, request.url));
 }
 
 export const config = {

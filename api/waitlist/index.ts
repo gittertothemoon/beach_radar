@@ -36,6 +36,8 @@ type RateLimitConfig = {
   max: number;
 };
 
+type SupabaseClientAny = ReturnType<typeof createClient<any>>;
+
 const MAX_BODY_BYTES = 10 * 1024;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const DEFAULT_RATE_LIMIT_MAX = 10;
@@ -116,7 +118,7 @@ function checkRateLimitMemory(ip: string | null, userAgent: string | null, confi
 }
 
 async function checkRateLimitDb(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClientAny,
   ip: string | null,
   userAgent: string | null,
   config: RateLimitConfig
@@ -342,7 +344,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ ok: false, error: "missing_env" });
   }
 
-  const supabase = createClient(supabaseUrl, supabaseKey, {
+  const supabase = createClient<any>(supabaseUrl, supabaseKey, {
     auth: { persistSession: false }
   });
 
