@@ -92,6 +92,11 @@ https://beachradar.it/app/?key=YOUR_KEY
 ```
 After a valid key is used, a 30-day cookie is set so `/app/` works without the query parameter.
 
+Notes:
+- If the key contains special characters, URL-encode it in the browser URL (encode once).
+- `APP_ACCESS_KEY` in Vercel must be the raw key (not URL-encoded).
+- After changing `APP_ACCESS_KEY`, redeploy to apply it.
+
 ## Rate limit behavior
 
 The API uses a Supabase-backed rate limiter keyed by hashed IP + hashed user agent and a time window.
