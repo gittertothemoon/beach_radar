@@ -135,6 +135,11 @@ export default function middleware(request: Request) {
       const hasValidKey = accessKey.length > 0 && queryKey === accessKey;
 
       if (!hasCookie && !hasValidKey) {
+        if (queryKey && accessKey.length === 0) {
+          const apiUrl = new URL("/api/app-access", request.url);
+          apiUrl.searchParams.set(ACCESS_KEY_PARAM, queryKey);
+          return redirectResponse(apiUrl);
+        }
         return redirectResponse(new URL(WAITLIST_PATH, request.url));
       }
 
