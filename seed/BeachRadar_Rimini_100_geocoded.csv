@@ -218,3 +218,113 @@ BR-SI-CTTAO-037,Lido Spisone,"Via Nazionale 167, 98039 Taormina ME, Italia",Taor
 BR-SI-CTTAO-038,Spiaggia di Mazzarò,Italia,,,Sicilia,37.8555727,15.3012438,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
 BR-SI-CTTAO-039,Spiaggia di Isola Bella,"Via Nazionale 109, 98039 Taormina ME, Italia",Taormina,ME,Sicilia,37.8510772,15.2995841,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
 BR-SI-CTTAO-040,Lorenzina Beach Club Taormina,"Via Nazionale 35, 98039 Villagonia ME, Italia",Villagonia,ME,Sicilia,37.8476606,15.285912,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-001,Le Dune Beach,"Piazzale S.Allende, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0229275,12.6338879,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-002,Hyper Beach Riccione,"Viale D'Annunzio Spiaggia 138, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0210534,12.6362829,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-003,Mojito Spiaggia,"Passeggiata Goethe 52, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0200339,12.6376743,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-004,Opèra Beach Club,"Passeggiata Johann Wolfgang Von Goethe 46, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.019452,12.6386869,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-005,Samsara Beach Riccione,"Viale Gabriele D'Annunzio 150, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0189821,12.6391231,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-006,Spiaggia129 BeachClub,"Passeggiata Goethe, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0186895,12.6399049,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-007,Spiaggia 130 131 Riccione,"Viale Edmondo de Amicis, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0183398,12.6401528,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-008,Spiaggia 128 Riccione,"Via Massimo d'Azeglio, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0177834,12.6408818,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-009,Bagno Nello 125,"Viale D'Annunzio 125, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0171323,12.6419638,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-010,Le Oasi 123 124 Riccione,"Piazzale Aldo Moro, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0165583,12.6420992,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-011,Bagni Nettuno 122A,"Passeggiata Goethe zona 122A, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0159641,12.6431923,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-012,Bagni 122 Bluemarine,"Viale Gabriele D'Annunzio 112, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0156922,12.6434874,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-013,Spiaggia 121,"Viale Gabriele D'Annunzio 106, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0152305,12.6442403,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-014,Bagni 120 Riccione,"Via G. Verga, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0151014,12.6445235,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-015,Bagni Luciano 119,"Viale Petrarca, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0147399,12.6449813,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-016,118 La Dolce Vita,"Via U. Foscolo, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0145036,12.6452281,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-017,Bagno 117 Alba D'Oro,"Viale V. Alfieri, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.01424,12.645617,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-018,Bagni Elio zona 116,"Viale Enza 5, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0139692,12.645982,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-019,Bagni Oreste zona 115,"Viale G. Mameli, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.013658,12.6464509,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-020,𝑩𝒂𝒈𝒏𝒊 𝑵𝒐𝒗𝒆𝒍𝒍𝒂 𝟏𝟏𝟒 𝑹𝒊𝒄𝒄𝒊𝒐𝒏𝒆,"Viale Claudio Monteverdi, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0134597,12.6468895,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-021,Bagni Azzurra 113,"Viale Claudio Monteverdi 130, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.013051,12.6470923,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-022,Unounodue Beach Bagni 112,"Lungomare Costituzione 112, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0129248,12.6474386,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-023,Bagni Alfredo 111,"Piazzale Azzarita 111, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0127429,12.6478152,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-024,Bagni Giorgio 110 La Spiaggia Del Cuore,"Piazzale Azzarita 110, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0122173,12.6485012,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-025,Playa del Sol 108-109 | Riccione,"Lungomare Costituzione 58, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0119288,12.6490999,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-026,Spiaggia 107,"Lungomare Costituzione, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0112739,12.6498273,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-027,Bagno 106 Paola,"Lungomare Costituzione, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0111141,12.6500566,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-028,Spiaggia Del Benessere 105,"Lungomare Costituzione, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0109107,12.6504425,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-029,Bagno 104 - Rino E Ivo,"Lungomare Costituzione, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.010646,12.650726,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-030,Lido delle Sirene 101-102,"Lungomare Costituzione 21, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0101203,12.6515188,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-031,Original Beach 100 3x3beachcaffè,"Lungomare Costituzione 100, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0096671,12.6521377,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-032,Bagni Rina 99,"Lungomare Costituzione 2, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0094363,12.6526591,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-033,Bagni Carla 98 S.a.s. Di Mazzotti Fabrizio E C.,"Lungomare Costituzione 98, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0092832,12.6527965,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-034,Spiaggia Riccione Pet Friendly Beach - La Spiaggia delle Donne,"Lungomare Costituzione 97, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0089554,12.6532121,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-035,Spiaggia 95 Marco - Riccione,"Lungomare Costituzione 95, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.008554,12.6538523,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-036,Spiaggia Battarra & Settimio - 94,"Lungomare Costituzione, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0078415,12.6548275,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-037,Bagni 92 Luigi e Karin,"Lungomare Costituzione, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0075944,12.6552377,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-038,Spiaggia 91 Con Piscina,"Lungomare Costituzione, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0073452,12.6555166,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-039,Spiaggia 90,"Piazzale Del Porto 3, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0064891,12.6575679,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-040,Spiaggia Le Palme,"Lungomare della Libertà, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0063475,12.6578165,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-041,Spiaggia del sole 86-87,"Lungomare della Libertà, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0057234,12.6587219,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-042,Bagno Giulia 85,"Lungomare della Libertà, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0053102,12.6590443,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-043,Bagno Fabio N. 84,"Lungomare della Libertà 84, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0052005,12.6594534,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-044,Bagno Aldo Zona 83,"Lungomare della Libertà, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0047454,12.6599006,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-045,Spiaggia 82,"Lungomare della Libertà 82, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0043662,12.6598845,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-046,Bagno b.80/b.81 Riccione,"Lungomare della Libertà, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.004323,12.6605287,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-047,Green Beach 79 Riccione,"Lungomare della Libertà 79, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0038844,12.6609606,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-048,Bagni Mauro 78 Riccione Spiaggia,"Lungomare della Libertà, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0037572,12.6612462,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-049,Spiaggia libera Columbus,"Lungomare della Repubblica 7, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0036926,12.6621951,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-050,Spiaggia 76,"Lungomare della Repubblica 76, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0029088,12.6629281,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-051,Golden Beach 75,"Lungomare della Repubblica 75, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0026061,12.6629098,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-052,Bagno 74 Zanarini,"Lungomare della Repubblica, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0024441,12.6633397,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-053,Beach 74 Piccioni Carlo Alberto,"Lungomare della Repubblica, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0023445,12.6632789,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-054,Spiaggia 73 Riccione,"Lungomare della Repubblica, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0022666,12.6636335,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-055,Bagni Ivano 72,"Lungomare della Repubblica 72, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0018817,12.6639438,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-056,Bagno 71,"Lungomare della Repubblica, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0018002,12.6641714,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-057,Bagno 70,"Lungomare della Repubblica 70, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0014964,12.6644756,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-058,Bagno 69,"Lungomare della Repubblica 72, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0013498,12.6647168,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-059,Bagni Ettore 68,"Lungomare della Repubblica 68, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0011103,12.6649198,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-060,Bagno 67 Vittorio Riccione,"Lungomare della Repubblica 66, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.00101,12.6654433,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-061,Bagno Cesare 66,"Lungomare della Repubblica 66, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0006068,12.6657221,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-062,Bagni Mario 65,"Lungomare della Repubblica 65, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0005079,12.6660754,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-063,Bagni Gianni 64 Riccione,"Lungomare della Repubblica 64, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0001721,12.6666239,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-064,Bagni Speranzino 63,"Lungomare della Repubblica 63, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,44.0000118,12.6670066,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-065,Spiaggia 62 Sandrino,"Lungomare della Repubblica, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.999544,12.6673652,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-066,Spiaggia 61 Della Rosa,"Lungomare della Repubblica 61, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9993676,12.6676782,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-067,Spiaggia 60 Bagni Giorgio,"Lungomare della Repubblica 60, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.999001,12.6680785,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-068,Spiaggia 59 - Bagni Cicca,"Lungomare della Repubblica, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9989392,12.6683645,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-069,Spiaggia 58 - Bagni Leo,"Lungomare della Repubblica 58, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9987169,12.6686612,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-070,Bagni Massimo Bagno 57 Tonini Massimo,"Lungomare della Repubblica 57, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9985854,12.6691079,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-071,Spiaggia 56 Riccione,"Lungomare della Repubblica 56, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9984214,12.6692458,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-072,Bagno 55 Mulazzani - Riccione,"Lungomare della Repubblica, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9983049,12.6695985,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-073,Spiaggia 54 Riccione - Bagni Nino e Nando,"Lungomare della Repubblica, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9979452,12.6697904,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-074,Spiaggia 53 Bagni Luciano E Renzo,"Lungomare della Repubblica 53, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9976875,12.6702197,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-075,Area 52 Papaya Beach Village Riccione,"Lungomare della Repubblica, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9975339,12.670665,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-076,Spiaggia Libera Piazzale San Martino,"Piazzale S. Martino 1, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9972528,12.6712864,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-077,Spiaggia 51,"47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9967711,12.6716292,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-078,Spiaggia 50 Cesare,"Lungomare della Repubblica 50, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9965751,12.6720486,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-079,Bagni 48 Bice Riccione,"47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9962196,12.6728172,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-080,Spiaggia 46/47,"Piazzale Marinai d'Italia, 47838 Riccione RN",Riccione,RN,Emilia-Romagna,43.9957733,12.6730508,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-081,Flamingo Beach,"Via Torino 7, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9954468,12.6739463,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-082,Lab Beach 44,"Via Torino, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9951636,12.6741822,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-083,Spiaggia libera,"Via Michelangelo 13, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9948343,12.6744015,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-084,Spiaggia 42,"Via Michelangelo 13, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9947183,12.6747562,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-085,Bagno N. 41 Di Severino E Silvia,"Via Torino 16, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9945333,12.6750839,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-086,Spiaggia libera,"Via Torino 22A, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9942899,12.6755522,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-087,Spiaggia 39 Maci beach riccione,"Via Torino 22A, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9940586,12.6757795,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-088,Bagno 38 - Anna & Marcello,"Via Torino, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9939155,12.6761589,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-089,Spiaggia 38 Riccione Playa Denis,"Via Torino, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.993967,12.6764432,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-090,Bagno N 36,"Via Torino 16, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9936489,12.6765081,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-091,Nona Beach 35,"Via Torino, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9933305,12.6773149,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-092,Bagni Mario 34 Riccione,"Via Torino 34, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9928855,12.6776809,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-093,Spiaggia 32 Riccione,"Via Torino 32, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9926458,12.6782192,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-094,Kiki Beach,"Viale Benvenuto Cellini 29, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9923964,12.6787968,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-095,Spiaggia 28 Riccione,"Via Torino 28, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9916795,12.6791634,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-096,Spiaggia 27 Riccione,"Via Torino 51, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9914357,12.6795718,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-097,Bagni 26 Giancarlo,"Via Torino 43, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9914046,12.6798089,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-098,Bagno 25 - La Spiaggia 25- Coop.Adriatica,"Via Torino, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9911132,12.6802362,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-099,Spiaggia 23 Riccione - Bagni Tonino,"Via Torino 48, 47838 Bagni 23 RN, Italia",Bagni 23,RN,Emilia-Romagna,43.9908599,12.6811523,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-100,Bahia Antigua Spiaggia 20,"Via Torino, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9903125,12.6819447,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-101,Fontanelle Beach Bagno 19,"Via Torino 5, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9900506,12.6822008,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-102,Pedra del Sol Bagno 18,"Via Torino 55, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9897244,12.6825938,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-103,Mario's bagno 17,"Via Torino 61, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.989574,12.6833212,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-104,Bagno Guerrino n.16,"Via Torino, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9893646,12.6839075,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-105,Bagni 12 Luca Riccione,"Via Torino, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9878773,12.6851504,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-106,Spiaggia Libera,"Via Torino 81, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9869621,12.6866291,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-107,Zona Spiaggia 2 Riccione Cesare & Beach Bar DUE,"Via Torino 91, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9861588,12.6881847,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-108,Spiaggia Zona 3 Riccione,"Via Torino, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9863501,12.6877799,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-109,Zona 4 Riccione,"Via Torino, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9865735,12.6874308,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
+BR-RN-RIC-110,Bagni Mario Z.5,"Via Torino 81, 47838 Riccione RN, Italia",Riccione,RN,Emilia-Romagna,43.9867222,12.686985,2,PRED,lat/lng to be filled via overrides/geocoding pipeline.
