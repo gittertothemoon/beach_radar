@@ -54,7 +54,7 @@ const PerformanceOverlay = () => {
   const clusterLine = `cluster ${formatMs(cluster.lastMs)} (avg ${formatMs(cluster.avgMs)})`;
 
   return (
-    <div className="pointer-events-none fixed right-3 top-[calc(env(safe-area-inset-top)+8px)] z-[1200] rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-[10px] font-medium text-slate-100 shadow-lg backdrop-blur">
+    <div className="pointer-events-none fixed right-3 top-[calc(env(safe-area-inset-top)+8px)] z-[1200] rounded-xl border border-white/10 bg-slate-950/50 px-3 py-2 text-[10px] font-medium text-slate-100 shadow-lg backdrop-blur">
       <div className="text-slate-300">{formatFps(fps)}</div>
       <div className="mt-0.5 text-slate-400">{clusterLine}</div>
       <div className="mt-0.5 text-slate-400">

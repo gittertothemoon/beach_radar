@@ -37,8 +37,8 @@ const BeachDrawer = ({
   const reportCount = isPred ? 0 : beach.reportsCount;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 px-4 pb-4 pt-12">
-      <div className="w-full max-w-screen-sm rounded-3xl border border-slate-800/80 bg-slate-950/95 px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-6 shadow-2xl">
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/25 px-4 pb-4 pt-12">
+      <div className="w-full max-w-screen-sm rounded-3xl border border-white/10 bg-black/50 px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-6 shadow-2xl backdrop-blur-xl">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -63,13 +63,13 @@ const BeachDrawer = ({
           <button
             onClick={onClose}
             aria-label={STRINGS.aria.closeBeachDetails}
-            className="rounded-full border border-slate-800/80 bg-slate-900/70 px-3 py-1 text-xs text-slate-400"
+            className="rounded-full border border-white/15 bg-black/30 px-3 py-1 text-xs text-slate-300 backdrop-blur-sm"
           >
             {STRINGS.actions.close}
           </button>
         </div>
 
-        <div className="mt-6 grid gap-3 rounded-2xl border border-slate-800/70 bg-slate-900/50 p-4 text-sm text-slate-200">
+        <div className="mt-6 grid gap-3 rounded-2xl border border-white/12 bg-black/30 p-4 text-sm text-slate-200 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <span className="text-slate-400">{STRINGS.labels.crowd}</span>
             <span className="font-semibold">{crowdLabel(beach.crowdLevel)}</span>
@@ -99,13 +99,13 @@ const BeachDrawer = ({
         <div className="mt-6 grid grid-cols-2 gap-3">
           <button
             onClick={onReport}
-            className="rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-emerald-950"
+            className="br-press rounded-2xl border border-white/25 bg-black/50 px-4 py-3 text-sm font-semibold text-slate-50 shadow-[0_10px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm"
           >
             {STRINGS.actions.report}
           </button>
           <button
             onClick={onShare}
-            className="rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-slate-100"
+            className="br-press rounded-2xl border border-white/18 bg-black/40 px-4 py-3 text-sm font-semibold text-slate-100 backdrop-blur-sm"
           >
             {STRINGS.actions.share}
           </button>

@@ -77,6 +77,7 @@ function App() {
     typeof window === "undefined" ? {} : loadOverrides(),
   );
   const [selectedBeachId, setSelectedBeachId] = useState<string | null>(null);
+  const [soloBeachId, setSoloBeachId] = useState<string | null>(null);
   const [pendingDeepLinkBeachId, setPendingDeepLinkBeachId] = useState<
     string | null
   >(null);
@@ -487,6 +488,12 @@ function App() {
     return beachViews.filter((beach) => matchedBeachIds.has(beach.id));
   }, [beachViews, matchedBeachIds]);
 
+  const mapBeaches = useMemo(() => {
+    if (!soloBeachId) return filteredBeachesBase;
+    const focused = beachViewsBase.find((beach) => beach.id === soloBeachId);
+    return focused ? [focused] : filteredBeachesBase;
+  }, [beachViewsBase, filteredBeachesBase, soloBeachId]);
+
   const liveDataNotice = useMemo(() => {
     const total = beachViewsBase.length;
     if (total === 0) return null;
@@ -542,10 +549,39 @@ function App() {
     }
   }, [selectedBeach, selectedBeachId]);
 
+  useEffect(() => {
+    if (!soloBeachId) return;
+    if (!selectedBeachId || selectedBeachId !== soloBeachId) {
+      setSoloBeachId(null);
+    }
+  }, [selectedBeachId, soloBeachId]);
+
+  useEffect(() => {
+    if (!soloBeachId || !mapReady) return;
+    const beach = beachViewsBase.find((item) => item.id === soloBeachId);
+    const map = mapRef.current;
+    if (
+      !beach ||
+      !map ||
+      !Number.isFinite(beach.lat) ||
+      !Number.isFinite(beach.lng)
+    ) {
+      return;
+    }
+    const targetZoom = map.getMaxZoom?.() ?? BEACH_FOCUS_ZOOM;
+    map.stop();
+    map.setView([beach.lat, beach.lng], targetZoom, { animate: true });
+  }, [beachViewsBase, mapReady, soloBeachId]);
+
   const focusBeach = useCallback(
     (
       beachId: string,
-      options?: { updateSearch?: boolean; moveMap?: boolean },
+      options?: {
+        updateSearch?: boolean;
+        moveMap?: boolean;
+        maxZoom?: boolean;
+        centerMap?: boolean;
+      },
     ) => {
       const beach = beachViewsBase.find((item) => item.id === beachId);
       if (!beach) return;
@@ -562,18 +598,23 @@ function App() {
         Number.isFinite(beach.lat) &&
         Number.isFinite(beach.lng)
       ) {
-        const offsetY = Math.round(map.getSize().y * 0.25);
+        const targetZoom = options?.maxZoom
+          ? map.getMaxZoom?.() ?? BEACH_FOCUS_ZOOM
+          : BEACH_FOCUS_ZOOM;
         const currentZoom = map.getZoom();
         const zoomDelta = Number.isFinite(currentZoom)
-          ? Math.max(0, BEACH_FOCUS_ZOOM - currentZoom)
+          ? Math.max(0, targetZoom - currentZoom)
           : 0;
         const flyDuration = Math.min(3.2, Math.max(1.4, 0.8 + zoomDelta * 0.15));
-        map.once("moveend", () => {
-          if (offsetY) {
-            map.panBy([0, -offsetY], { animate: true });
-          }
-        });
-        map.flyTo([beach.lat, beach.lng], BEACH_FOCUS_ZOOM, {
+        if (!options?.centerMap) {
+          const offsetY = Math.round(map.getSize().y * 0.25);
+          map.once("moveend", () => {
+            if (offsetY) {
+              map.panBy([0, -offsetY], { animate: true });
+            }
+          });
+        }
+        map.flyTo([beach.lat, beach.lng], targetZoom, {
           animate: true,
           duration: flyDuration,
           easeLinearity: 0.25,
@@ -622,6 +663,7 @@ function App() {
 
   const handleSelectBeach = useCallback(
     (beachId: string) => {
+      setSoloBeachId(null);
       focusBeach(beachId);
     },
     [focusBeach],
@@ -630,6 +672,7 @@ function App() {
   const handleSelectBeachFromMarker = useCallback(
     (beachId: string) => {
       selectionSourceRef.current = "marker";
+      setSoloBeachId(null);
       focusBeach(beachId, { moveMap: false });
     },
     [focusBeach],
@@ -638,7 +681,12 @@ function App() {
   const handleSelectSuggestion = useCallback(
     (beachId: string) => {
       selectionSourceRef.current = "search";
-      focusBeach(beachId, { updateSearch: true });
+      setSoloBeachId(beachId);
+      focusBeach(beachId, {
+        updateSearch: true,
+        maxZoom: true,
+        centerMap: true,
+      });
     },
     [focusBeach],
   );
@@ -807,8 +855,9 @@ function App() {
   return (
     <div className="relative h-full w-full">
       <MapView
-        beaches={filteredBeachesBase}
+        beaches={mapBeaches}
         selectedBeachId={selectedBeachId}
+        soloBeachId={soloBeachId}
         onSelectBeach={handleSelectBeachFromMarker}
         center={mapCenter}
         editMode={effectiveEditMode}
@@ -832,8 +881,8 @@ function App() {
         aria-label={STRINGS.aria.myLocation}
         className={`br-press fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+72px)] z-60 flex h-12 w-12 items-center justify-center rounded-full border backdrop-blur transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 sm:bottom-[calc(env(safe-area-inset-bottom)+120px)] ${
           followMode
-            ? "border-sky-200/60 bg-sky-300/85 text-slate-950"
-            : "border-white/12 bg-slate-950/60 text-slate-100"
+            ? "border-white/30 bg-black/50 text-slate-50 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_14px_30px_rgba(0,0,0,0.45)]"
+            : "border-white/18 bg-black/30 text-slate-100"
         }`}
       >
         <svg
@@ -849,12 +898,12 @@ function App() {
         </svg>
       </button>
       {locationToast ? (
-        <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+130px)] z-40 -translate-x-1/2 rounded-full border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-[11px] text-amber-100 shadow-lg backdrop-blur">
+        <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+130px)] z-40 -translate-x-1/2 rounded-full border border-amber-400/30 bg-amber-500/5 px-4 py-2 text-[11px] text-amber-100 shadow-lg backdrop-blur">
           {locationToast}
         </div>
       ) : null}
       {shareToast ? (
-        <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+168px)] z-40 -translate-x-1/2 rounded-full border border-sky-400/40 bg-sky-500/10 px-4 py-2 text-[11px] text-sky-100 shadow-lg backdrop-blur">
+        <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+168px)] z-40 -translate-x-1/2 rounded-full border border-sky-400/30 bg-sky-500/5 px-4 py-2 text-[11px] text-sky-100 shadow-lg backdrop-blur">
           {shareToast}
         </div>
       ) : null}
@@ -871,19 +920,19 @@ function App() {
         </div>
       ) : null}
       {isDebug && debugToast ? (
-        <div className="fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+18px)] z-40 -translate-x-1/2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 py-2 text-[11px] text-emerald-100 shadow-lg backdrop-blur">
+        <div className="fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+18px)] z-40 -translate-x-1/2 rounded-full border border-emerald-400/30 bg-emerald-500/5 px-4 py-2 text-[11px] text-emerald-100 shadow-lg backdrop-blur">
           {debugToast}
         </div>
       ) : null}
       {isDebug ? (
-        <div className="fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+18px)] z-40 w-[min(92vw,320px)] rounded-2xl border border-slate-800/80 bg-slate-950/90 p-4 shadow-2xl backdrop-blur">
+        <div className="fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+18px)] z-40 w-[min(92vw,320px)] rounded-2xl border border-slate-800/60 bg-slate-950/60 p-4 shadow-2xl backdrop-blur">
           <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-slate-400">
             <span>{STRINGS.debug.title}</span>
             <span className="text-[10px] text-slate-500">
               {STRINGS.debug.version}
             </span>
           </div>
-          <label className="mt-3 flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100">
+          <label className="mt-3 flex items-center justify-between rounded-xl border border-slate-800/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-100">
             <span>{STRINGS.debug.editPositions}</span>
             <input
               type="checkbox"
@@ -892,7 +941,7 @@ function App() {
               className="h-4 w-4 accent-sky-400"
             />
           </label>
-          <div className="mt-3 rounded-xl border border-slate-800/70 bg-slate-900/40 px-3 py-2 text-xs text-slate-400">
+          <div className="mt-3 rounded-xl border border-slate-800/60 bg-slate-900/25 px-3 py-2 text-xs text-slate-400">
             <div className="text-slate-500">{STRINGS.debug.selectedBeach}</div>
             <div className="mt-1 text-slate-100">
               {selectedBeach ? selectedBeach.id : STRINGS.debug.none}
@@ -904,7 +953,7 @@ function App() {
               </div>
             ) : null}
           </div>
-          <div className="mt-3 rounded-xl border border-slate-800/70 bg-slate-900/40 px-3 py-2 text-xs text-slate-400">
+          <div className="mt-3 rounded-xl border border-slate-800/60 bg-slate-900/25 px-3 py-2 text-xs text-slate-400">
             <div className="text-slate-500">{STRINGS.debug.deeplink}</div>
             <div className="mt-1 text-slate-100">
               {deepLinkInfo.id ?? STRINGS.debug.none}
@@ -942,7 +991,7 @@ function App() {
               handleResetOverride(selectedBeachId);
             }}
             disabled={!selectedBeachId || !selectedOverride}
-            className="mt-3 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-40"
+            className="mt-3 w-full rounded-xl border border-slate-800/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-40"
           >
             {STRINGS.debug.resetOverride}
           </button>
@@ -950,11 +999,11 @@ function App() {
             type="button"
             onClick={handleResetAllOverrides}
             disabled={overrideCount === 0}
-            className="mt-2 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-40"
+            className="mt-2 w-full rounded-xl border border-slate-800/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-40"
           >
             {STRINGS.debug.resetOverrides}
           </button>
-          <div className="mt-3 rounded-xl border border-slate-800/70 bg-slate-900/40 px-3 py-2 text-xs text-slate-400">
+          <div className="mt-3 rounded-xl border border-slate-800/60 bg-slate-900/25 px-3 py-2 text-xs text-slate-400">
             <div className="text-slate-500">{STRINGS.debug.attribution}</div>
             <div className="mt-1 whitespace-pre-wrap break-words text-[11px] text-slate-100">
               {debugAttribution
@@ -962,11 +1011,11 @@ function App() {
                 : STRINGS.debug.none}
             </div>
           </div>
-          <div className="mt-3 rounded-xl border border-slate-800/70 bg-slate-900/40 px-3 py-2 text-xs text-slate-400">
+          <div className="mt-3 rounded-xl border border-slate-800/60 bg-slate-900/25 px-3 py-2 text-xs text-slate-400">
             <div className="text-slate-500">{STRINGS.debug.eventsCount}</div>
             <div className="mt-1 text-slate-100">{debugEvents.length}</div>
           </div>
-          <div className="mt-3 rounded-xl border border-slate-800/70 bg-slate-900/40 px-3 py-2 text-xs text-slate-400">
+          <div className="mt-3 rounded-xl border border-slate-800/60 bg-slate-900/25 px-3 py-2 text-xs text-slate-400">
             <div className="flex items-center justify-between">
               <div className="text-slate-500">{STRINGS.debug.perfTitle}</div>
               <button
@@ -1021,21 +1070,21 @@ function App() {
           <button
             type="button"
             onClick={handleCopyDebugExport}
-            className="mt-3 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition"
+            className="mt-3 w-full rounded-xl border border-slate-800/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-100 transition"
           >
             {STRINGS.debug.copyExport}
           </button>
           <button
             type="button"
             onClick={handleClearEvents}
-            className="mt-2 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition"
+            className="mt-2 w-full rounded-xl border border-slate-800/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-100 transition"
           >
             {STRINGS.debug.clearEvents}
           </button>
           <button
             type="button"
             onClick={handleClearAttribution}
-            className="mt-2 w-full rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 transition"
+            className="mt-2 w-full rounded-xl border border-slate-800/60 bg-slate-900/40 px-3 py-2 text-sm text-slate-100 transition"
           >
             {STRINGS.debug.clearAttribution}
           </button>

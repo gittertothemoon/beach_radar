@@ -108,7 +108,7 @@ const ReportModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 px-4 pb-6 pt-10">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-6 pt-10">
       <div
         ref={containerRef}
         role="dialog"
@@ -126,13 +126,13 @@ const ReportModal = ({
           <button
             onClick={onClose}
             aria-label={STRINGS.aria.closeReport}
-            className="br-press rounded-full border border-white/20 bg-slate-900/70 px-3 py-1.5 text-xs font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+            className="br-press rounded-full border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
           >
             {STRINGS.actions.close}
           </button>
         </div>
 
-        <div className="mt-4 rounded-[12px] border border-white/15 bg-slate-900/45 px-4 py-3 text-xs br-text-secondary backdrop-blur-sm">
+        <div className="mt-4 rounded-[12px] border border-white/15 bg-black/30 px-4 py-3 text-xs br-text-secondary backdrop-blur-sm">
           {locationMessage()}
         </div>
 
@@ -148,7 +148,7 @@ const ReportModal = ({
               key={option.level}
               onClick={() => onSubmit(option.level)}
               disabled={!canReport}
-              className="br-press rounded-[12px] border border-white/20 bg-slate-900/70 px-3 py-4 text-sm font-semibold br-text-primary transition disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+              className="br-press rounded-[12px] border border-white/20 bg-black/40 px-3 py-4 text-sm font-semibold br-text-primary transition disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
             >
               {option.level} • {option.label}
             </button>

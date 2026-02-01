@@ -111,7 +111,7 @@ const LidoModalCardComponent = ({
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4 py-[calc(env(safe-area-inset-top)+16px)]"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4 py-[calc(env(safe-area-inset-top)+16px)]"
       onClick={onClose}
     >
       <div
@@ -147,14 +147,14 @@ const LidoModalCardComponent = ({
             ref={closeButtonRef}
             onClick={onClose}
             aria-label={STRINGS.aria.closeBeachDetails}
-            className="br-press rounded-full border border-white/15 bg-slate-900/55 px-3 py-1.5 text-[11px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+            className="br-press rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-[11px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
           >
             {STRINGS.actions.close}
           </button>
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-6 pb-6 pt-4">
-          <div className="rounded-[12px] border border-white/15 bg-slate-900/45 p-4 text-sm br-text-primary backdrop-blur-sm">
+          <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 text-sm br-text-primary backdrop-blur-sm">
             <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
               <span>{STRINGS.labels.crowdStatus}</span>
               <span className="text-[11px] font-semibold br-text-primary">
@@ -181,7 +181,7 @@ const LidoModalCardComponent = ({
             </div>
           </div>
 
-          <div className="rounded-[12px] border border-white/15 bg-slate-900/42 p-4 backdrop-blur-sm">
+          <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 backdrop-blur-sm">
             <div className="text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
               {STRINGS.labels.address}
             </div>
@@ -193,14 +193,14 @@ const LidoModalCardComponent = ({
                 href={mapsLink}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 inline-flex text-[12px] font-semibold text-sky-100"
+                className="mt-2 inline-flex text-[12px] font-semibold br-text-primary"
               >
                 {STRINGS.actions.openInMaps}
               </a>
             ) : null}
           </div>
 
-          <div className="rounded-[12px] border border-white/15 bg-slate-900/42 p-4 backdrop-blur-sm">
+          <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 backdrop-blur-sm">
             <div className="text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
               {STRINGS.labels.hours}
             </div>
@@ -209,7 +209,7 @@ const LidoModalCardComponent = ({
             </p>
           </div>
 
-          <div className="rounded-[12px] border border-white/15 bg-slate-900/42 p-4 backdrop-blur-sm">
+          <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 backdrop-blur-sm">
             <div className="text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
               {STRINGS.labels.usefulInfo}
             </div>
@@ -253,7 +253,7 @@ const LidoModalCardComponent = ({
                   {services.map((service) => (
                     <span
                       key={service}
-                      className="rounded-full border border-white/20 bg-slate-900/70 px-3 py-1 text-[11px] font-semibold br-text-primary"
+                      className="rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[11px] font-semibold br-text-primary"
                     >
                       {service}
                     </span>
@@ -268,17 +268,17 @@ const LidoModalCardComponent = ({
           </div>
         </div>
 
-        <div className="br-hairline border-t bg-slate-950/70 px-6 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4">
+        <div className="br-hairline border-t bg-black/40 px-6 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4">
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={onReport}
-              className="br-press rounded-[12px] bg-emerald-400 px-4 py-3 text-[14px] font-semibold text-emerald-950 focus-visible:outline focus-visible:outline-1 focus-visible:outline-emerald-200/50 focus-visible:outline-offset-1"
+              className="br-press rounded-[12px] border border-white/25 bg-black/50 px-4 py-3 text-[14px] font-semibold text-slate-50 shadow-[0_10px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
             >
               {STRINGS.actions.report}
             </button>
             <button
               onClick={onShare}
-              className="br-press rounded-[12px] border border-white/15 bg-slate-900/55 px-4 py-3 text-[14px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+              className="br-press rounded-[12px] border border-white/18 bg-black/40 px-4 py-3 text-[14px] font-semibold br-text-primary backdrop-blur-sm focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
             >
               {STRINGS.actions.share}
             </button>

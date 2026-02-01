@@ -56,7 +56,7 @@ const BeachRowComponent = ({ beach, isSelected, now, onSelectBeach }: BeachRowPr
     <button
       onClick={handleClick}
       className={`br-press w-full px-4 py-3 text-left transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
-        isSelected ? "bg-white/10" : "bg-transparent"
+        isSelected ? "bg-white/5" : "bg-transparent"
       }`}
     >
       <div className="flex items-center justify-between">
@@ -247,7 +247,7 @@ const BottomSheetComponent = ({
               {STRINGS.search.resultsCount(beaches.length)}
             </div>
           </div>
-          <div className="h-1 w-10 rounded-full bg-white/25" />
+          <div className="h-1 w-10 rounded-full bg-white/20" />
         </button>
         <div className="max-h-[62vh] overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+16px)]">
           <div className="divide-y divide-[color:var(--hairline)] pb-6">

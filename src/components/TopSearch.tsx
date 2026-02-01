@@ -168,7 +168,7 @@ const TopSearchComponent = ({
                   inputRef.current?.focus();
                 }}
                 aria-label={STRINGS.aria.clearSearch}
-                className="br-press inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/15 bg-slate-900/65 text-[12px] font-semibold text-[color:var(--text-primary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                className="br-press inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/40 text-[12px] font-semibold text-[color:var(--text-primary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
               >
                 {STRINGS.actions.clearSymbol}
               </button>
@@ -185,12 +185,12 @@ const TopSearchComponent = ({
                     key={beach.id}
                     type="button"
                     onClick={() => handleSelect(beach.id)}
-                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[15px] text-[color:var(--text-primary)] transition-colors hover:bg-slate-900/55 focus-visible:bg-slate-900/60 focus-visible:outline-none"
+                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[15px] text-[color:var(--text-primary)] transition-colors hover:bg-black/25 focus-visible:bg-black/30 focus-visible:outline-none"
                   >
                     <span className="truncate font-semibold tracking-[-0.01em]">
                       {beach.name}
                     </span>
-                    <span className="shrink-0 rounded-full border border-white/20 bg-slate-900/75 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.02em] text-[color:var(--text-secondary)]">
+                    <span className="shrink-0 rounded-full border border-white/20 bg-black/40 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.02em] text-[color:var(--text-secondary)]">
                       {beach.region}
                     </span>
                   </button>

@@ -281,6 +281,7 @@ const clusterBeaches = (
 type MapViewProps = {
   beaches: BeachWithStats[];
   selectedBeachId: string | null;
+  soloBeachId?: string | null;
   onSelectBeach: (beachId: string) => void;
   center: LatLng;
   editMode?: boolean;
@@ -293,12 +294,18 @@ type MapViewProps = {
 const ClusteredMarkers = ({
   beaches,
   selectedBeachId,
+  soloBeachId,
   onSelectBeach,
   editMode,
   onOverride,
 }: Pick<
   MapViewProps,
-  "beaches" | "selectedBeachId" | "onSelectBeach" | "editMode" | "onOverride"
+  | "beaches"
+  | "selectedBeachId"
+  | "soloBeachId"
+  | "onSelectBeach"
+  | "editMode"
+  | "onOverride"
 >) => {
   const map = useMap();
   const [mapTick, setMapTick] = useState(0);
@@ -312,9 +319,13 @@ const ClusteredMarkers = ({
   const timeoutRef = useRef<number | null>(null);
   const pendingRef = useRef(false);
   const lastClusterActionRef = useRef(0);
+  const focusBeaches = useMemo(() => {
+    if (!soloBeachId) return beaches;
+    return beaches.filter((beach) => beach.id === soloBeachId);
+  }, [beaches, soloBeachId]);
   const validBeaches = useMemo(
-    () => beaches.filter((beach) => hasValidCoords(beach)),
-    [beaches],
+    () => focusBeaches.filter((beach) => hasValidCoords(beach)),
+    [focusBeaches],
   );
 
   const zoom = useMemo(() => {
@@ -665,6 +676,7 @@ const MapReady = ({ onReady }: { onReady?: (map: L.Map) => void }) => {
 const MapViewComponent = ({
   beaches,
   selectedBeachId,
+  soloBeachId,
   onSelectBeach,
   center,
   editMode,
@@ -707,6 +719,7 @@ const MapViewComponent = ({
       <ClusteredMarkers
         beaches={beaches}
         selectedBeachId={selectedBeachId}
+        soloBeachId={soloBeachId}
         onSelectBeach={onSelectBeach}
         editMode={editMode}
         onOverride={onOverride}
