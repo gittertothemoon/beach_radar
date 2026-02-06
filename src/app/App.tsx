@@ -53,6 +53,10 @@ import {
   subscribePerf,
   useRenderCounter,
 } from "../lib/perf";
+import {
+  fetchBeachWeather,
+  type BeachWeatherSnapshot,
+} from "../lib/weather";
 import type { BeachWithStats, CrowdLevel, Report } from "../lib/types";
 import type { LatLng, UserLocation } from "../lib/geo";
 import type { BeachOverrides } from "../lib/overrides";
@@ -66,6 +70,16 @@ const MOCK_CROWD_LEVELS: CrowdLevel[] = [1, 2, 3, 4];
 const FORCE_REMOTE_REPORTS = true;
 
 type GeoStatus = "idle" | "loading" | "ready" | "denied" | "error";
+type WeatherStatus = "loading" | "ready" | "error";
+
+type WeatherCacheEntry = {
+  status: WeatherStatus;
+  data: BeachWeatherSnapshot | null;
+  expiresAt: number;
+};
+
+const weatherCacheKey = (lat: number, lng: number) =>
+  `${lat.toFixed(2)},${lng.toFixed(2)}`;
 
 function App() {
   const [search, setSearch] = useState("");
@@ -78,6 +92,7 @@ function App() {
   );
   const [selectedBeachId, setSelectedBeachId] = useState<string | null>(null);
   const [soloBeachId, setSoloBeachId] = useState<string | null>(null);
+  const [isLidoModalOpen, setIsLidoModalOpen] = useState(false);
   const [pendingDeepLinkBeachId, setPendingDeepLinkBeachId] = useState<
     string | null
   >(null);
@@ -110,6 +125,9 @@ function App() {
     "visible" | "fading" | "hidden"
   >("visible");
   const [mapReady, setMapReady] = useState(false);
+  const [weatherByKey, setWeatherByKey] = useState<
+    Record<string, WeatherCacheEntry>
+  >({});
   const mapRef = useRef<LeafletMap | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const followInitializedRef = useRef(false);
@@ -391,6 +409,10 @@ function App() {
     }
   }, []);
 
+  const handleShowAllPins = useCallback(() => {
+    setSoloBeachId(null);
+  }, []);
+
   const visibleSpots = useMemo(
     () =>
       isDebug
@@ -487,7 +509,6 @@ function App() {
     if (!matchedBeachIds) return beachViews;
     return beachViews.filter((beach) => matchedBeachIds.has(beach.id));
   }, [beachViews, matchedBeachIds]);
-
   const mapBeaches = useMemo(() => {
     if (!soloBeachId) return filteredBeachesBase;
     const focused = beachViewsBase.find((beach) => beach.id === soloBeachId);
@@ -518,6 +539,8 @@ function App() {
   const selectedBeach = beachViewsBase.find(
     (beach) => beach.id === selectedBeachId,
   );
+  const selectedBeachLat = selectedBeach?.lat ?? null;
+  const selectedBeachLng = selectedBeach?.lng ?? null;
   const reportDistanceM =
     selectedBeach &&
     userLocation &&
@@ -529,6 +552,23 @@ function App() {
         })
       : null;
   const selectedOverride = selectedBeachId ? overrides[selectedBeachId] : null;
+  const selectedWeatherKey =
+    selectedBeachLat !== null &&
+    selectedBeachLng !== null &&
+    Number.isFinite(selectedBeachLat) &&
+    Number.isFinite(selectedBeachLng)
+      ? weatherCacheKey(selectedBeachLat, selectedBeachLng)
+      : null;
+  const selectedWeatherEntry = selectedWeatherKey
+    ? weatherByKey[selectedWeatherKey]
+    : undefined;
+  const selectedWeather = selectedWeatherEntry?.data ?? null;
+  const selectedWeatherLoading =
+    selectedWeatherEntry?.status === "loading" &&
+    selectedWeatherEntry.data === null;
+  const selectedWeatherUnavailable =
+    selectedWeatherEntry?.status === "error" &&
+    selectedWeatherEntry.data === null;
   const beachIdSet = useMemo(
     () => new Set(beachViewsBase.map((beach) => beach.id)),
     [beachViewsBase],
@@ -543,9 +583,79 @@ function App() {
   );
 
   useEffect(() => {
+    if (!isLidoModalOpen || !selectedWeatherKey) return;
+    if (
+      selectedBeachLat === null ||
+      selectedBeachLng === null ||
+      !Number.isFinite(selectedBeachLat) ||
+      !Number.isFinite(selectedBeachLng)
+    ) {
+      return;
+    }
+
+    const nowTs = Date.now();
+    if (selectedWeatherEntry?.status === "loading") return;
+    if (
+      selectedWeatherEntry?.status === "ready" &&
+      selectedWeatherEntry.expiresAt > nowTs
+    ) {
+      return;
+    }
+
+    const controller = new AbortController();
+    setWeatherByKey((prev) => {
+      const current = prev[selectedWeatherKey];
+      return {
+        ...prev,
+        [selectedWeatherKey]: {
+          status: "loading",
+          data: current?.data ?? null,
+          expiresAt: current?.expiresAt ?? 0,
+        },
+      };
+    });
+
+    void fetchBeachWeather(selectedBeachLat, selectedBeachLng, controller.signal)
+      .then((snapshot) => {
+        setWeatherByKey((prev) => ({
+          ...prev,
+          [selectedWeatherKey]: {
+            status: "ready",
+            data: snapshot,
+            expiresAt: snapshot.expiresAt,
+          },
+        }));
+      })
+      .catch(() => {
+        if (controller.signal.aborted) return;
+        setWeatherByKey((prev) => {
+          const current = prev[selectedWeatherKey];
+          return {
+            ...prev,
+            [selectedWeatherKey]: {
+              status: "error",
+              data: current?.data ?? null,
+              expiresAt: current?.expiresAt ?? 0,
+            },
+          };
+        });
+      });
+
+    return () => controller.abort();
+  }, [
+    isLidoModalOpen,
+    selectedBeachLat,
+    selectedBeachLng,
+    selectedWeatherEntry,
+    selectedWeatherKey,
+  ]);
+
+  useEffect(() => {
     if (selectedBeachId && !selectedBeach) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedBeachId(null);
+      setSoloBeachId(null);
+      setIsLidoModalOpen(false);
     }
   }, [selectedBeach, selectedBeachId]);
 
@@ -556,32 +666,10 @@ function App() {
     }
   }, [selectedBeachId, soloBeachId]);
 
-  useEffect(() => {
-    if (!soloBeachId || !mapReady) return;
-    const beach = beachViewsBase.find((item) => item.id === soloBeachId);
-    const map = mapRef.current;
-    if (
-      !beach ||
-      !map ||
-      !Number.isFinite(beach.lat) ||
-      !Number.isFinite(beach.lng)
-    ) {
-      return;
-    }
-    const targetZoom = map.getMaxZoom?.() ?? BEACH_FOCUS_ZOOM;
-    map.stop();
-    map.setView([beach.lat, beach.lng], targetZoom, { animate: true });
-  }, [beachViewsBase, mapReady, soloBeachId]);
-
   const focusBeach = useCallback(
     (
       beachId: string,
-      options?: {
-        updateSearch?: boolean;
-        moveMap?: boolean;
-        maxZoom?: boolean;
-        centerMap?: boolean;
-      },
+      options?: { updateSearch?: boolean; moveMap?: boolean; solo?: boolean },
     ) => {
       const beach = beachViewsBase.find((item) => item.id === beachId);
       if (!beach) return;
@@ -589,6 +677,8 @@ function App() {
         setSearch(beach.name);
       }
       setSelectedBeachId(beach.id);
+      setSoloBeachId(options?.solo ? beach.id : null);
+      setIsLidoModalOpen(true);
       setSheetOpen(false);
       const shouldMoveMap = options?.moveMap ?? true;
       const map = mapRef.current;
@@ -598,23 +688,18 @@ function App() {
         Number.isFinite(beach.lat) &&
         Number.isFinite(beach.lng)
       ) {
-        const targetZoom = options?.maxZoom
-          ? map.getMaxZoom?.() ?? BEACH_FOCUS_ZOOM
-          : BEACH_FOCUS_ZOOM;
+        const offsetY = Math.round(map.getSize().y * 0.25);
         const currentZoom = map.getZoom();
         const zoomDelta = Number.isFinite(currentZoom)
-          ? Math.max(0, targetZoom - currentZoom)
+          ? Math.max(0, BEACH_FOCUS_ZOOM - currentZoom)
           : 0;
         const flyDuration = Math.min(3.2, Math.max(1.4, 0.8 + zoomDelta * 0.15));
-        if (!options?.centerMap) {
-          const offsetY = Math.round(map.getSize().y * 0.25);
-          map.once("moveend", () => {
-            if (offsetY) {
-              map.panBy([0, -offsetY], { animate: true });
-            }
-          });
-        }
-        map.flyTo([beach.lat, beach.lng], targetZoom, {
+        map.once("moveend", () => {
+          if (offsetY) {
+            map.panBy([0, -offsetY], { animate: true });
+          }
+        });
+        map.flyTo([beach.lat, beach.lng], BEACH_FOCUS_ZOOM, {
           animate: true,
           duration: flyDuration,
           easeLinearity: 0.25,
@@ -647,6 +732,8 @@ function App() {
 
     selectionSourceRef.current = "deeplink";
     setSelectedBeachId(pendingDeepLinkBeachId);
+    setSoloBeachId(pendingDeepLinkBeachId);
+    setIsLidoModalOpen(true);
     setSheetOpen(false);
     deepLinkProcessedRef.current = true;
   }, [beachIdSet, beachViewsBase, pendingDeepLinkBeachId]);
@@ -657,14 +744,13 @@ function App() {
     if (deepLinkInfo.matched === false) return;
     selectionSourceRef.current = "deeplink";
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    focusBeach(pendingDeepLinkBeachId, { updateSearch: false });
+    focusBeach(pendingDeepLinkBeachId, { updateSearch: false, solo: true });
     setPendingDeepLinkBeachId(null);
   }, [deepLinkInfo.matched, focusBeach, mapReady, pendingDeepLinkBeachId]);
 
   const handleSelectBeach = useCallback(
     (beachId: string) => {
-      setSoloBeachId(null);
-      focusBeach(beachId);
+      focusBeach(beachId, { solo: true });
     },
     [focusBeach],
   );
@@ -672,8 +758,7 @@ function App() {
   const handleSelectBeachFromMarker = useCallback(
     (beachId: string) => {
       selectionSourceRef.current = "marker";
-      setSoloBeachId(null);
-      focusBeach(beachId, { moveMap: false });
+      focusBeach(beachId, { solo: true });
     },
     [focusBeach],
   );
@@ -681,12 +766,7 @@ function App() {
   const handleSelectSuggestion = useCallback(
     (beachId: string) => {
       selectionSourceRef.current = "search";
-      setSoloBeachId(beachId);
-      focusBeach(beachId, {
-        updateSearch: true,
-        maxZoom: true,
-        centerMap: true,
-      });
+      focusBeach(beachId, { updateSearch: true, solo: true });
     },
     [focusBeach],
   );
@@ -734,7 +814,7 @@ function App() {
 
   const handleCloseDrawer = useCallback(() => {
     if (reportOpen) return;
-    setSelectedBeachId(null);
+    setIsLidoModalOpen(false);
   }, [reportOpen]);
 
   const handleSubmitReport = useCallback((level: CrowdLevel) => {
@@ -857,7 +937,6 @@ function App() {
       <MapView
         beaches={mapBeaches}
         selectedBeachId={selectedBeachId}
-        soloBeachId={soloBeachId}
         onSelectBeach={handleSelectBeachFromMarker}
         center={mapCenter}
         editMode={effectiveEditMode}
@@ -875,6 +954,15 @@ function App() {
         beaches={searchBeaches}
         onSelectSuggestion={handleSelectSuggestion}
       />
+      {soloBeachId ? (
+        <button
+          type="button"
+          onClick={handleShowAllPins}
+          className="br-press fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+72px)] z-60 rounded-full border border-white/18 bg-black/35 px-4 py-2 text-[12px] font-semibold text-slate-100 backdrop-blur transition hover:border-white/28 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 sm:bottom-[calc(env(safe-area-inset-bottom)+120px)]"
+        >
+          {STRINGS.actions.showAllPins}
+        </button>
+      ) : null}
       <button
         type="button"
         onClick={handleLocateClick}
@@ -1101,8 +1189,11 @@ function App() {
       {selectedBeach ? (
         <LidoModalCard
           beach={selectedBeach}
-          isOpen={Boolean(selectedBeach)}
+          isOpen={isLidoModalOpen}
           now={now}
+          weather={selectedWeather}
+          weatherLoading={selectedWeatherLoading}
+          weatherUnavailable={selectedWeatherUnavailable}
           onClose={handleCloseDrawer}
           onReport={handleOpenReport}
           onShare={handleShare}

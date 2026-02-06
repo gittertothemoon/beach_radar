@@ -10,7 +10,10 @@ import {
 import L from "leaflet";
 import type { BeachWithStats } from "../lib/types";
 import type { LatLng, UserLocation } from "../lib/geo";
-import { createBeachPinIcon, createClusterPinDivIcon } from "../map/markerIcons";
+import {
+  createBeachPinIcon,
+  createClusterPinDivIcon,
+} from "../map/markerIcons";
 import { isPerfEnabled, recordClusterStats, useRenderCounter } from "../lib/perf";
 
 type Cluster = {
@@ -36,12 +39,16 @@ type SingleMarker = {
 };
 
 const CLUSTER_RADIUS_PX = 18;
-const DUPLICATE_SPREAD_MIN_ZOOM = 8;
-const DUPLICATE_SPREAD_PX = 54;
-const DUPLICATE_COORD_DP = 6;
-const CLUSTER_SPIDERFY_PX = 64;
-const CLUSTER_STACK_MAX_PX = 28;
-const MAX_ZOOM_EPS = 0.05;
+const CLUSTER_CLICK_DEBOUNCE_MS = 240;
+const CLUSTER_FORCE_EXPAND_MS = 4000;
+const CLUSTER_FORCE_EXPAND_DISTANCE_PX = 56;
+const CLUSTER_FORCE_ZOOM_STEP = 3;
+const CLUSTER_FIRST_TAP_MIN_ZOOM_STEP = 3;
+const CLUSTER_FLY_MIN_DURATION_S = 1.8;
+const CLUSTER_FLY_MAX_DURATION_S = 3.4;
+const CLUSTER_FLY_BASE_DURATION_S = 1.0;
+const CLUSTER_FLY_STEP_DURATION_S = 0.2;
+const CLUSTER_FLY_EASE_LINEARITY = 0.2;
 const Z_INDEX_CLUSTER = 2000;
 const Z_INDEX_SELECTED = 1500;
 const Z_INDEX_UMBRELLA = 1000;
@@ -70,22 +77,6 @@ const getSafeZoom = (map: L.Map) => {
   return Math.max(rawZoom, minZoom);
 };
 
-const getClusterPixelSpan = (points: L.Point[]) => {
-  if (points.length === 0) return 0;
-  let minX = points[0].x;
-  let maxX = points[0].x;
-  let minY = points[0].y;
-  let maxY = points[0].y;
-  for (let i = 1; i < points.length; i += 1) {
-    const point = points[i];
-    if (point.x < minX) minX = point.x;
-    if (point.x > maxX) maxX = point.x;
-    if (point.y < minY) minY = point.y;
-    if (point.y > maxY) maxY = point.y;
-  }
-  return Math.max(maxX - minX, maxY - minY);
-};
-
 const createMarkerIcon = (
   crowdLevel: number,
   state: "LIVE" | "RECENT" | "PRED",
@@ -104,58 +95,14 @@ const getClusterState = (beaches: BeachWithStats[]): Cluster["state"] => {
   return "mixed";
 };
 
-const createClusterIcon = (cluster: Cluster, zoom: number) => {
-  return createClusterPinDivIcon(cluster.count, zoom);
-};
-
-const buildDuplicateDisplayPositions = (
-  beaches: BeachWithStats[],
-  map: L.Map,
-) => {
-  const zoom = getSafeZoom(map);
-  if (zoom < DUPLICATE_SPREAD_MIN_ZOOM) {
-    return new Map<string, { lat: number; lng: number; point: L.Point }>();
-  }
-
-  const groups = new Map<string, BeachWithStats[]>();
-  beaches.forEach((beach) => {
-    const key = `${beach.lat.toFixed(DUPLICATE_COORD_DP)},${beach.lng.toFixed(
-      DUPLICATE_COORD_DP,
-    )}`;
-    const group = groups.get(key);
-    if (group) {
-      group.push(beach);
-    } else {
-      groups.set(key, [beach]);
-    }
-  });
-
-  const positions = new Map<string, { lat: number; lng: number; point: L.Point }>();
-  groups.forEach((group) => {
-    if (group.length < 2) return;
-    const ordered = [...group].sort((a, b) => a.id.localeCompare(b.id));
-    const base = map.project([ordered[0].lat, ordered[0].lng], zoom);
-    ordered.forEach((beach, index) => {
-      const angle = (index / ordered.length) * Math.PI * 2;
-      const offset = L.point(
-        Math.cos(angle) * DUPLICATE_SPREAD_PX,
-        Math.sin(angle) * DUPLICATE_SPREAD_PX,
-      );
-      const point = base.add(offset);
-      const latlng = map.unproject(point, zoom);
-      positions.set(beach.id, { lat: latlng.lat, lng: latlng.lng, point });
-    });
-  });
-
-  return positions;
+const createClusterIcon = (_cluster: Cluster, zoom: number) => {
+  return createClusterPinDivIcon(_cluster.count, zoom);
 };
 
 const clusterBeaches = (
   beaches: BeachWithStats[],
   map: L.Map,
   selectedBeachId?: string | null,
-  allowDuplicateSpread = true,
-  expandedClusters?: Set<string>,
 ) => {
   const selected =
     selectedBeachId && beaches.find((beach) => beach.id === selectedBeachId);
@@ -163,19 +110,12 @@ const clusterBeaches = (
     ? beaches.filter((beach) => beach.id !== selectedBeachId)
     : beaches;
   const zoom = getSafeZoom(map);
-  const maxZoom = map.getMaxZoom?.() ?? 18;
-  const duplicatePositions = allowDuplicateSpread
-    ? buildDuplicateDisplayPositions(beaches, map)
-    : new Map<string, { lat: number; lng: number; point: L.Point }>();
   const projected = rest.map((beach) => {
-    const display = duplicatePositions.get(beach.id);
-    const lat = display?.lat ?? beach.lat;
-    const lng = display?.lng ?? beach.lng;
     return {
       beach,
-      lat,
-      lng,
-      point: display?.point ?? map.project([lat, lng], zoom),
+      lat: beach.lat,
+      lng: beach.lng,
+      point: map.project([beach.lat, beach.lng], zoom),
     };
   });
   const visited = new Set<number>();
@@ -226,26 +166,6 @@ const clusterBeaches = (
             .sort()
             .join("|")}`;
 
-    if (members.length > 1 && expandedClusters?.has(clusterId)) {
-      const span = getClusterPixelSpan(members.map((item) => item.point));
-      if (zoom >= maxZoom - MAX_ZOOM_EPS || span <= CLUSTER_STACK_MAX_PX) {
-        const center = members
-          .reduce((acc, item) => acc.add(item.point), L.point(0, 0))
-          .divideBy(members.length);
-        members.forEach((item, index) => {
-          const angle = (index / members.length) * Math.PI * 2;
-          const offset = L.point(
-            Math.cos(angle) * CLUSTER_SPIDERFY_PX,
-            Math.sin(angle) * CLUSTER_SPIDERFY_PX,
-          );
-          const point = center.add(offset);
-          const latlng = map.unproject(point, zoom);
-          pushSingle(item.beach, latlng.lat, latlng.lng);
-        });
-        continue;
-      }
-    }
-
     if (members.length === 1) {
       const only = members[0];
       pushSingle(only.beach, only.lat, only.lng);
@@ -269,10 +189,7 @@ const clusterBeaches = (
   }
 
   if (selected) {
-    const display = duplicatePositions.get(selected.id);
-    const lat = display?.lat ?? selected.lat;
-    const lng = display?.lng ?? selected.lng;
-    pushSingle(selected, lat, lng);
+    pushSingle(selected, selected.lat, selected.lng);
   }
 
   return { clusters, singles };
@@ -281,7 +198,6 @@ const clusterBeaches = (
 type MapViewProps = {
   beaches: BeachWithStats[];
   selectedBeachId: string | null;
-  soloBeachId?: string | null;
   onSelectBeach: (beachId: string) => void;
   center: LatLng;
   editMode?: boolean;
@@ -294,38 +210,35 @@ type MapViewProps = {
 const ClusteredMarkers = ({
   beaches,
   selectedBeachId,
-  soloBeachId,
   onSelectBeach,
   editMode,
   onOverride,
 }: Pick<
   MapViewProps,
-  | "beaches"
-  | "selectedBeachId"
-  | "soloBeachId"
-  | "onSelectBeach"
-  | "editMode"
-  | "onOverride"
+  "beaches" | "selectedBeachId" | "onSelectBeach" | "editMode" | "onOverride"
 >) => {
   const map = useMap();
   const [mapTick, setMapTick] = useState(0);
-  const [expandedClusters, setExpandedClusters] = useState<string[]>([]);
-  const expandedClusterSet = useMemo(
-    () => new Set(expandedClusters),
-    [expandedClusters],
-  );
   const markerRefs = useRef(new Map<string, L.Marker>());
   const rafRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const pendingRef = useRef(false);
-  const lastClusterActionRef = useRef(0);
-  const focusBeaches = useMemo(() => {
-    if (!soloBeachId) return beaches;
-    return beaches.filter((beach) => beach.id === soloBeachId);
-  }, [beaches, soloBeachId]);
+  const lastClusterActionRef = useRef<{
+    id: string;
+    at: number;
+    lat: number;
+    lng: number;
+    count: number;
+  }>({
+    id: "",
+    at: 0,
+    lat: 0,
+    lng: 0,
+    count: 0,
+  });
   const validBeaches = useMemo(
-    () => focusBeaches.filter((beach) => hasValidCoords(beach)),
-    [focusBeaches],
+    () => beaches.filter((beach) => hasValidCoords(beach)),
+    [beaches],
   );
 
   const zoom = useMemo(() => {
@@ -333,7 +246,7 @@ const ClusteredMarkers = ({
     void mapTick;
     return getSafeZoom(map);
   }, [map, mapTick]);
-  const selectedIdForClustering = editMode ? selectedBeachId : null;
+  const selectedIdForClustering = selectedBeachId;
   const perfEnabled = isPerfEnabled();
 
   const { clusters, singles } = useMemo(() => {
@@ -345,8 +258,6 @@ const ClusteredMarkers = ({
       validBeaches,
       map,
       selectedIdForClustering,
-      !editMode,
-      expandedClusterSet,
     );
     if (perfEnabled) {
       recordClusterStats({
@@ -362,8 +273,6 @@ const ClusteredMarkers = ({
     validBeaches,
     map,
     selectedIdForClustering,
-    editMode,
-    expandedClusterSet,
     perfEnabled,
     zoom,
     mapTick,
@@ -386,8 +295,47 @@ const ClusteredMarkers = ({
         originalEvent.stopPropagation();
       }
       const now = Date.now();
-      if (now - lastClusterActionRef.current < 320) return;
-      lastClusterActionRef.current = now;
+      const last = lastClusterActionRef.current;
+      const hasLast = last.at > 0;
+      const currentPoint = map.latLngToContainerPoint([cluster.lat, cluster.lng]);
+      const lastPoint = map.latLngToContainerPoint([last.lat, last.lng]);
+      const sameClusterIntent =
+        hasLast &&
+        (last.id === cluster.id ||
+          (last.count === cluster.count &&
+            currentPoint.distanceTo(lastPoint) <= CLUSTER_FORCE_EXPAND_DISTANCE_PX));
+
+      if (sameClusterIntent && now - last.at < CLUSTER_CLICK_DEBOUNCE_MS) return;
+
+      lastClusterActionRef.current = {
+        id: cluster.id,
+        at: now,
+        lat: cluster.lat,
+        lng: cluster.lng,
+        count: cluster.count,
+      };
+
+      if (sameClusterIntent && now - last.at < CLUSTER_FORCE_EXPAND_MS) {
+        map.stop();
+        const maxZoom = map.getMaxZoom?.() ?? 18;
+        const currentZoom = map.getZoom();
+        const targetZoom = Math.min(currentZoom + CLUSTER_FORCE_ZOOM_STEP, maxZoom);
+        const safeCurrent = Number.isFinite(currentZoom) ? currentZoom : targetZoom;
+        const zoomDelta = Math.max(0, targetZoom - safeCurrent);
+        const duration = Math.min(
+          CLUSTER_FLY_MAX_DURATION_S,
+          Math.max(
+            CLUSTER_FLY_MIN_DURATION_S,
+            CLUSTER_FLY_BASE_DURATION_S + zoomDelta * CLUSTER_FLY_STEP_DURATION_S,
+          ),
+        );
+        map.flyTo([cluster.lat, cluster.lng], targetZoom, {
+          animate: true,
+          duration,
+          easeLinearity: CLUSTER_FLY_EASE_LINEARITY,
+        });
+        return;
+      }
 
       map.stop();
       const padding = L.point(48, 48);
@@ -396,48 +344,33 @@ const ClusteredMarkers = ({
       );
       const maxZoom = map.getMaxZoom?.() ?? 18;
       const currentZoom = map.getZoom();
-      const isAtMax =
-        Number.isFinite(currentZoom) && currentZoom >= maxZoom - MAX_ZOOM_EPS;
       const getZoomDuration = (targetZoom: number) => {
         const safeCurrent = Number.isFinite(currentZoom)
           ? currentZoom
           : targetZoom;
         const zoomDelta = Math.max(0, targetZoom - safeCurrent);
-        return Math.min(3.2, Math.max(1.4, 0.8 + zoomDelta * 0.15));
+        return Math.min(
+          CLUSTER_FLY_MAX_DURATION_S,
+          Math.max(
+            CLUSTER_FLY_MIN_DURATION_S,
+            CLUSTER_FLY_BASE_DURATION_S + zoomDelta * CLUSTER_FLY_STEP_DURATION_S,
+          ),
+        );
       };
       const nextZoom = map.getBoundsZoom(bounds, false, padding);
-      if (!Number.isFinite(nextZoom) || nextZoom <= currentZoom + 0.05) {
-        if (isAtMax) {
-          setExpandedClusters((prev) =>
-            prev.includes(cluster.id) ? prev : [...prev, cluster.id],
-          );
-          return;
-        }
-        const targetZoom = Math.min(currentZoom + 2, maxZoom);
-        if (targetZoom >= maxZoom - MAX_ZOOM_EPS) {
-          setExpandedClusters((prev) =>
-            prev.includes(cluster.id) ? prev : [...prev, cluster.id],
-          );
-        }
-        map.flyTo([cluster.lat, cluster.lng], targetZoom, {
-          animate: true,
-          duration: getZoomDuration(targetZoom),
-          easeLinearity: 0.25,
-        });
-        return;
-      }
-      const targetZoom = Math.min(nextZoom, maxZoom);
-      if (targetZoom >= maxZoom - MAX_ZOOM_EPS) {
-        setExpandedClusters((prev) =>
-          prev.includes(cluster.id) ? prev : [...prev, cluster.id],
-        );
-      }
-      map.fitBounds(bounds, {
-        padding,
+      const safeNextZoom = Number.isFinite(nextZoom) ? nextZoom : currentZoom;
+      const firstTapStep =
+        cluster.count >= 80
+          ? CLUSTER_FIRST_TAP_MIN_ZOOM_STEP + 1
+          : CLUSTER_FIRST_TAP_MIN_ZOOM_STEP;
+      const targetZoom = Math.min(
         maxZoom,
+        Math.max(safeNextZoom, currentZoom + firstTapStep),
+      );
+      map.flyTo([cluster.lat, cluster.lng], targetZoom, {
         animate: true,
         duration: getZoomDuration(targetZoom),
-        easeLinearity: 0.25,
+        easeLinearity: CLUSTER_FLY_EASE_LINEARITY,
       });
     },
     [map],
@@ -474,15 +407,6 @@ const ClusteredMarkers = ({
 
   useMapEvent("zoomend", scheduleMapTick);
   useMapEvent("moveend", scheduleMapTick);
-  useMapEvent("zoomend", () => {
-    const maxZoom = map.getMaxZoom?.() ?? 18;
-    const currentZoom = map.getZoom();
-    const atMax =
-      Number.isFinite(currentZoom) && currentZoom >= maxZoom - MAX_ZOOM_EPS;
-    if (!atMax && expandedClusters.length) {
-      setExpandedClusters([]);
-    }
-  });
 
   useEffect(() => {
     markerRefs.current.forEach((marker, id) => {
@@ -676,7 +600,6 @@ const MapReady = ({ onReady }: { onReady?: (map: L.Map) => void }) => {
 const MapViewComponent = ({
   beaches,
   selectedBeachId,
-  soloBeachId,
   onSelectBeach,
   center,
   editMode,
@@ -719,7 +642,6 @@ const MapViewComponent = ({
       <ClusteredMarkers
         beaches={beaches}
         selectedBeachId={selectedBeachId}
-        soloBeachId={soloBeachId}
         onSelectBeach={onSelectBeach}
         editMode={editMode}
         onOverride={onOverride}

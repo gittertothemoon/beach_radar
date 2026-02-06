@@ -140,14 +140,17 @@ export const createClusterPinDivIcon = (count: number, zoom: number) => {
 
   const perfEnabled = isPerfEnabled();
   const start = perfEnabled ? performance.now() : 0;
+  const labelHitArea = Math.round(size * (digitCount >= 3 ? 1 : 0.8));
+  const iconWidth = size + labelHitArea;
+  const iconHeight = Math.round(size * 1.2);
   const anchorX = Math.round(size * 0.5);
   const anchorY = Math.round(size * 0.92);
   const popupAnchorY = -Math.round(size * 0.75);
 
   const icon = L.divIcon({
-    className: "",
+    className: "br-cluster-icon",
     html: `<div class="br-cluster" style="--s:${size}px"><img class="br-cluster__img" src="${clusterPin}" alt="" loading="eager" decoding="async" /><span class="br-cluster__label" style="--fs:${fontSize}px"><span class="br-cluster__x">x</span><span class="br-cluster__n">${safeCount}</span></span></div>`,
-    iconSize: [size, size],
+    iconSize: [iconWidth, iconHeight],
     iconAnchor: [anchorX, anchorY],
     popupAnchor: [0, popupAnchorY],
   });

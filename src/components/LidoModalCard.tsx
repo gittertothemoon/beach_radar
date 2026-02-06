@@ -7,12 +7,16 @@ import {
   formatMinutesAgo,
   formatStateLabel,
 } from "../lib/format";
+import { formatWeatherHour, type BeachWeatherSnapshot } from "../lib/weather";
 import { isPerfEnabled, useRenderCounter } from "../lib/perf";
 
 type LidoModalCardProps = {
   beach: BeachWithStats;
   isOpen: boolean;
   now: number;
+  weather: BeachWeatherSnapshot | null;
+  weatherLoading: boolean;
+  weatherUnavailable: boolean;
   onClose: () => void;
   onReport: () => void;
   onShare: () => void;
@@ -39,10 +43,57 @@ const sameServices = (a?: string[], b?: string[]) => {
   return true;
 };
 
+const formatRainProbability = (value: number | null) =>
+  value === null ? STRINGS.weather.noRainData : `${Math.round(value)}%`;
+
+const sameNextHours = (
+  a: BeachWeatherSnapshot["nextHours"],
+  b: BeachWeatherSnapshot["nextHours"],
+) => {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (
+      a[i].ts !== b[i].ts ||
+      a[i].temperatureC !== b[i].temperatureC ||
+      a[i].rainProbability !== b[i].rainProbability ||
+      a[i].weatherCode !== b[i].weatherCode ||
+      a[i].conditionLabel !== b[i].conditionLabel
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
+const sameWeather = (
+  a: BeachWeatherSnapshot | null,
+  b: BeachWeatherSnapshot | null,
+) => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return (
+    a.fetchedAt === b.fetchedAt &&
+    a.expiresAt === b.expiresAt &&
+    a.timezone === b.timezone &&
+    a.current.ts === b.current.ts &&
+    a.current.temperatureC === b.current.temperatureC &&
+    a.current.windKmh === b.current.windKmh &&
+    a.current.rainProbability === b.current.rainProbability &&
+    a.current.weatherCode === b.current.weatherCode &&
+    a.current.isDay === b.current.isDay &&
+    a.current.conditionLabel === b.current.conditionLabel &&
+    sameNextHours(a.nextHours, b.nextHours)
+  );
+};
+
 const LidoModalCardComponent = ({
   beach,
   isOpen,
   now,
+  weather,
+  weatherLoading,
+  weatherUnavailable,
   onClose,
   onReport,
   onShare,
@@ -182,6 +233,83 @@ const LidoModalCardComponent = ({
           </div>
 
           <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 backdrop-blur-sm">
+            <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
+              <span>{STRINGS.labels.weather}</span>
+              {weather ? (
+                <span className="font-semibold br-text-primary">
+                  {STRINGS.weather.updated}{" "}
+                  {formatWeatherHour(weather.current.ts, weather.timezone)}
+                </span>
+              ) : null}
+            </div>
+            {weather ? (
+              <div className="mt-3 grid gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-[13px] br-text-primary">
+                    {weather.current.conditionLabel}
+                  </div>
+                  <div className="text-[18px] font-semibold br-text-primary">
+                    {Math.round(weather.current.temperatureC)}°C
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-[12px]">
+                  <span className="br-text-tertiary">{STRINGS.weather.wind}</span>
+                  <span className="font-semibold br-text-primary">
+                    {Math.round(weather.current.windKmh)} km/h
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[12px]">
+                  <span className="br-text-tertiary">
+                    {STRINGS.weather.rainProbability}
+                  </span>
+                  <span className="font-semibold br-text-primary">
+                    {formatRainProbability(weather.current.rainProbability)}
+                  </span>
+                </div>
+                {weather.nextHours.length > 0 ? (
+                  <div className="mt-1">
+                    <div className="text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
+                      {STRINGS.weather.nextHours}
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      {weather.nextHours.map((hour) => (
+                        <div
+                          key={hour.ts}
+                          className="rounded-lg border border-white/10 bg-black/20 px-2 py-2"
+                        >
+                          <div className="flex items-center justify-between text-[11px] br-text-primary">
+                            <span>{formatWeatherHour(hour.ts, weather.timezone)}</span>
+                            <span>{Math.round(hour.temperatureC)}°C</span>
+                          </div>
+                          <div className="mt-1 text-[10px] br-text-secondary">
+                            {hour.conditionLabel}
+                          </div>
+                          <div className="mt-1 text-[10px] br-text-tertiary">
+                            {STRINGS.weather.rainProbability}:{" "}
+                            {formatRainProbability(hour.rainProbability)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : weatherLoading ? (
+              <p className="mt-3 text-[13px] br-text-secondary">
+                {STRINGS.weather.loading}
+              </p>
+            ) : weatherUnavailable ? (
+              <p className="mt-3 text-[13px] br-text-tertiary">
+                {STRINGS.weather.unavailable}
+              </p>
+            ) : (
+              <p className="mt-3 text-[13px] br-text-secondary">
+                {STRINGS.weather.loading}
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 backdrop-blur-sm">
             <div className="text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
               {STRINGS.labels.address}
             </div>
@@ -292,6 +420,9 @@ const LidoModalCardComponent = ({
 const lidoModalEqual = (prev: LidoModalCardProps, next: LidoModalCardProps) => {
   if (prev.isOpen !== next.isOpen) return false;
   if (prev.now !== next.now) return false;
+  if (prev.weatherLoading !== next.weatherLoading) return false;
+  if (prev.weatherUnavailable !== next.weatherUnavailable) return false;
+  if (!sameWeather(prev.weather, next.weather)) return false;
   if (prev.onClose !== next.onClose) return false;
   if (prev.onReport !== next.onReport) return false;
   if (prev.onShare !== next.onShare) return false;
