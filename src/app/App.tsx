@@ -642,11 +642,13 @@ function App() {
       });
 
     return () => controller.abort();
+  // Intentionally exclude selectedWeatherEntry to avoid aborting in-flight
+  // requests when we flip cache status to "loading".
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isLidoModalOpen,
     selectedBeachLat,
     selectedBeachLng,
-    selectedWeatherEntry,
     selectedWeatherKey,
   ]);
 
