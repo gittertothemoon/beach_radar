@@ -7,6 +7,7 @@ import LidoModalCard from "../components/LidoModalCard";
 import ReportModal from "../components/ReportModal";
 import ReportThanksModal from "../components/ReportThanksModal";
 import PerformanceOverlay from "../components/PerformanceOverlay";
+import WeatherWidget from "../components/WeatherWidget";
 import { shareBeachCard } from "../components/ShareCard";
 import logo from "../assets/logo.png";
 import logoText from "../assets/beach-radar-scritta.png";
@@ -63,6 +64,9 @@ import type { BeachOverrides } from "../lib/overrides";
 
 const DEFAULT_CENTER: LatLng = { lat: 44.0678, lng: 12.5695 };
 const BEACH_FOCUS_ZOOM = 17;
+const SHOW_ALL_PINS_ZOOM_TRIGGER = BEACH_FOCUS_ZOOM - 1;
+const SHOW_ALL_PINS_ZOOM_OUT_DELTA = 2;
+const SHOW_ALL_PINS_FLY_DURATION_S = 1.1;
 const REPORT_RADIUS_M = 700;
 const REMOTE_REPORT_SESSION_KEY = "br_report_anywhere_v1";
 const USE_MOCK_CROWD = true;
@@ -411,6 +415,23 @@ function App() {
 
   const handleShowAllPins = useCallback(() => {
     setSoloBeachId(null);
+    const map = mapRef.current;
+    if (!map) return;
+    const currentZoom = map.getZoom();
+    if (!Number.isFinite(currentZoom) || currentZoom < SHOW_ALL_PINS_ZOOM_TRIGGER) {
+      return;
+    }
+    const minZoom = map.getMinZoom?.() ?? 0;
+    const targetZoom = Math.max(
+      minZoom,
+      currentZoom - SHOW_ALL_PINS_ZOOM_OUT_DELTA,
+    );
+    if (targetZoom >= currentZoom) return;
+    map.flyTo(map.getCenter(), targetZoom, {
+      animate: true,
+      duration: SHOW_ALL_PINS_FLY_DURATION_S,
+      easeLinearity: 0.25,
+    });
   }, []);
 
   const visibleSpots = useMemo(
@@ -583,7 +604,7 @@ function App() {
   );
 
   useEffect(() => {
-    if (!isLidoModalOpen || !selectedWeatherKey) return;
+    if (!selectedWeatherKey) return;
     if (
       selectedBeachLat === null ||
       selectedBeachLng === null ||
@@ -646,7 +667,6 @@ function App() {
   // requests when we flip cache status to "loading".
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    isLidoModalOpen,
     selectedBeachLat,
     selectedBeachLng,
     selectedWeatherKey,
@@ -818,6 +838,12 @@ function App() {
     if (reportOpen) return;
     setIsLidoModalOpen(false);
   }, [reportOpen]);
+
+  const handleOpenWeatherDetails = useCallback(() => {
+    if (reportOpen || !selectedBeach) return;
+    setSheetOpen(false);
+    setIsLidoModalOpen(true);
+  }, [reportOpen, selectedBeach]);
 
   const handleSubmitReport = useCallback((level: CrowdLevel) => {
     if (!selectedBeach) return;
@@ -996,6 +1022,15 @@ function App() {
         <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+168px)] z-40 -translate-x-1/2 rounded-full border border-sky-400/30 bg-sky-500/5 px-4 py-2 text-[11px] text-sky-100 shadow-lg backdrop-blur">
           {shareToast}
         </div>
+      ) : null}
+      {selectedBeach && soloBeachId && !isLidoModalOpen && !reportOpen ? (
+        <WeatherWidget
+          beachName={selectedBeach.name}
+          weather={selectedWeather}
+          weatherLoading={selectedWeatherLoading}
+          weatherUnavailable={selectedWeatherUnavailable}
+          onOpenDetails={handleOpenWeatherDetails}
+        />
       ) : null}
       <ReportThanksModal
         isOpen={reportThanksOpen}
