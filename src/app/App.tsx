@@ -87,6 +87,7 @@ const FORCE_REMOTE_REPORTS = true;
 
 type GeoStatus = "idle" | "loading" | "ready" | "denied" | "error";
 type WeatherStatus = "loading" | "ready" | "error";
+type ToastTone = "info" | "success" | "error";
 
 type WeatherCacheEntry = {
   status: WeatherStatus;
@@ -210,6 +211,7 @@ function App() {
   const [editPositions, setEditPositions] = useState(false);
   const [followMode, setFollowMode] = useState(false);
   const [locationToast, setLocationToast] = useState<string | null>(null);
+  const [locationToastTone, setLocationToastTone] = useState<ToastTone>("info");
   const [shareToast, setShareToast] = useState<string | null>(null);
   const [accountRequiredOpen, setAccountRequiredOpen] = useState(false);
   const [accountRequiredBeachName, setAccountRequiredBeachName] = useState<
@@ -363,6 +365,14 @@ function App() {
     return () => window.clearTimeout(timeout);
   }, [locationToast]);
 
+  const showLocationToast = useCallback(
+    (message: string, tone: ToastTone = "info") => {
+      setLocationToastTone(tone);
+      setLocationToast(message);
+    },
+    [],
+  );
+
   useEffect(() => {
     if (!debugToast) return;
     const timeout = window.setTimeout(() => {
@@ -441,7 +451,7 @@ function App() {
         setGeoStatus("error");
         setGeoError(STRINGS.location.notSupported);
         if (options?.showToast) {
-          setLocationToast(STRINGS.location.toastUnavailable);
+          showLocationToast(STRINGS.location.toastUnavailable, "info");
         }
         return;
       }
@@ -458,13 +468,13 @@ function App() {
         (error) => {
           handleGeoError(error);
           if (options?.showToast) {
-            setLocationToast(STRINGS.location.toastUnavailable);
+            showLocationToast(STRINGS.location.toastUnavailable, "info");
           }
         },
         { enableHighAccuracy: true, maximumAge: 15000, timeout: 8000 },
       );
     },
-    [handleGeoError, updateLocation],
+    [handleGeoError, showLocationToast, updateLocation],
   );
 
   useEffect(() => {
@@ -485,7 +495,7 @@ function App() {
     if (!navigator.geolocation) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       handleGeoError(null);
-      setLocationToast(STRINGS.location.toastUnavailable);
+      showLocationToast(STRINGS.location.toastUnavailable, "info");
       setFollowMode(false);
       return;
     }
@@ -507,7 +517,7 @@ function App() {
       },
       (error) => {
         handleGeoError(error);
-        setLocationToast(STRINGS.location.toastUnavailable);
+        showLocationToast(STRINGS.location.toastUnavailable, "info");
         setFollowMode(false);
       },
       { enableHighAccuracy: true, maximumAge: 15000, timeout: 8000 },
@@ -519,7 +529,7 @@ function App() {
         watchIdRef.current = null;
       }
     };
-  }, [followMode, handleGeoError, updateLocation]);
+  }, [followMode, handleGeoError, showLocationToast, updateLocation]);
 
   const handleOverride = useCallback(
     (beachId: string, lat: number, lng: number) => {
@@ -1040,9 +1050,9 @@ function App() {
         return;
       }
 
-      setLocationToast(STRINGS.account.favoriteSyncFailed);
+      showLocationToast(STRINGS.account.favoriteSyncFailed, "error");
     });
-  }, [account, beachViewsBase, favoriteBeachIds]);
+  }, [account, beachViewsBase, favoriteBeachIds, showLocationToast]);
 
   const handleToggleSelectedFavorite = useCallback(() => {
     if (!selectedBeachId) return;
@@ -1058,7 +1068,7 @@ function App() {
   const handleSignOut = useCallback(() => {
     void signOutAccount().then((result) => {
       if (!result.ok) {
-        setLocationToast(STRINGS.account.signOutFailed);
+        showLocationToast(STRINGS.account.signOutFailed, "error");
         return;
       }
       setAccount(null);
@@ -1068,7 +1078,7 @@ function App() {
       setAccountRequiredBeachName(null);
       setPendingFavoriteBeachId(null);
     });
-  }, []);
+  }, [showLocationToast]);
 
   const handleDeleteAccount = useCallback(() => {
     if (deletingAccount) return;
@@ -1077,17 +1087,17 @@ function App() {
     void deleteCurrentAccount()
       .then(async (result) => {
         if (!result.ok) {
-          setLocationToast(STRINGS.account.deleteAccountFailed);
+          showLocationToast(STRINGS.account.deleteAccountFailed, "error");
           return;
         }
         await signOutAccount();
         setAccount(null);
         setFavoriteBeachIds(new Set());
         setProfileOpen(false);
-        setLocationToast(STRINGS.account.deleteAccountSuccess);
+        showLocationToast(STRINGS.account.deleteAccountSuccess, "success");
       })
       .finally(() => setDeletingAccount(false));
-  }, [deletingAccount]);
+  }, [deletingAccount, showLocationToast]);
 
   const accountDisplayName = useMemo(() => {
     if (!account) return null;
@@ -1332,12 +1342,20 @@ function App() {
         </svg>
       </button>
       {locationToast ? (
-        <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+130px)] z-40 -translate-x-1/2 rounded-full border border-amber-400/30 bg-amber-500/5 px-4 py-2 text-[11px] text-amber-100 shadow-lg backdrop-blur">
+        <div
+          className={`fixed left-1/2 top-[calc(env(safe-area-inset-top)+130px)] z-40 -translate-x-1/2 rounded-xl border px-4 py-2 text-[12px] font-medium shadow-[0_14px_30px_rgba(0,0,0,0.45)] backdrop-blur-md ${
+            locationToastTone === "error"
+              ? "border-rose-300/70 bg-rose-700/45 text-rose-50"
+              : locationToastTone === "success"
+                ? "border-emerald-300/70 bg-emerald-700/40 text-emerald-50"
+                : "border-sky-300/65 bg-sky-800/45 text-sky-50"
+          }`}
+        >
           {locationToast}
         </div>
       ) : null}
       {shareToast ? (
-        <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+168px)] z-40 -translate-x-1/2 rounded-full border border-sky-400/30 bg-sky-500/5 px-4 py-2 text-[11px] text-sky-100 shadow-lg backdrop-blur">
+        <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+168px)] z-40 -translate-x-1/2 rounded-xl border border-sky-300/65 bg-sky-800/45 px-4 py-2 text-[12px] font-medium text-sky-50 shadow-[0_14px_30px_rgba(0,0,0,0.45)] backdrop-blur-md">
           {shareToast}
         </div>
       ) : null}
@@ -1380,7 +1398,7 @@ function App() {
         </div>
       ) : null}
       {isDebug && debugToast ? (
-        <div className="fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+18px)] z-40 -translate-x-1/2 rounded-full border border-emerald-400/30 bg-emerald-500/5 px-4 py-2 text-[11px] text-emerald-100 shadow-lg backdrop-blur">
+        <div className="fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+18px)] z-40 -translate-x-1/2 rounded-xl border border-emerald-300/70 bg-emerald-800/40 px-4 py-2 text-[12px] font-medium text-emerald-50 shadow-[0_14px_30px_rgba(0,0,0,0.45)] backdrop-blur-md">
           {debugToast}
         </div>
       ) : null}
