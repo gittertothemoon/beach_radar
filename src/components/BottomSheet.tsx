@@ -20,8 +20,10 @@ import { isPerfEnabled, useRenderCounter } from "../lib/perf";
 
 type BottomSheetProps = {
   beaches: BeachWithStats[];
+  favoriteBeachIds: Set<string>;
   selectedBeachId: string | null;
   onSelectBeach: (beachId: string) => void;
+  onToggleFavorite: (beachId: string) => void;
   isOpen: boolean;
   onToggle: () => void;
   now: number;
@@ -45,53 +47,91 @@ const stateBadge = (state: string) => {
 type BeachRowProps = {
   beach: BeachWithStats;
   isSelected: boolean;
+  isFavorite: boolean;
   now: number;
   onSelectBeach: (beachId: string) => void;
+  onToggleFavorite: (beachId: string) => void;
 };
 
-const BeachRowComponent = ({ beach, isSelected, now, onSelectBeach }: BeachRowProps) => {
+const BeachRowComponent = ({
+  beach,
+  isSelected,
+  isFavorite,
+  now,
+  onSelectBeach,
+  onToggleFavorite,
+}: BeachRowProps) => {
   const handleClick = useCallback(() => onSelectBeach(beach.id), [onSelectBeach, beach.id]);
+  const handleToggleFavorite = useCallback(
+    () => onToggleFavorite(beach.id),
+    [beach.id, onToggleFavorite],
+  );
 
   return (
-    <button
-      onClick={handleClick}
-      className={`br-press w-full px-4 py-3 text-left transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
-        isSelected ? "bg-white/5" : "bg-transparent"
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <span
-          className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${stateBadge(
-            beach.state,
-          )}`}
+    <div className="flex items-start gap-2 px-4 py-3">
+      <button
+        onClick={handleClick}
+        className={`br-press min-w-0 flex-1 rounded-xl px-2 py-1 text-left transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
+          isSelected ? "bg-white/5" : "bg-transparent"
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <span
+            className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${stateBadge(
+              beach.state,
+            )}`}
+          >
+            {formatStateLabel(beach.state)}
+          </span>
+          <span className="text-[11px] br-text-tertiary">
+            {formatDistanceLabel(beach.distanceM)}
+          </span>
+        </div>
+        <div className="mt-1.5 text-[15px] font-semibold br-text-primary">
+          {beach.name}
+        </div>
+        <div className="text-[12px] br-text-secondary">{beach.region}</div>
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] br-text-tertiary">
+          <span>{formatConfidenceInline(beach.confidence)}</span>
+          <span>{formatMinutesAgo(beach.updatedAt, now)}</span>
+          <span>
+            {beach.state === "PRED"
+              ? STRINGS.reports.noneRecent
+              : formatReportCount(beach.reportsCount)}
+          </span>
+        </div>
+      </button>
+      <button
+        type="button"
+        onClick={handleToggleFavorite}
+        aria-label={STRINGS.aria.toggleFavoriteBeach(beach.name, isFavorite)}
+        className={`br-press mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
+          isFavorite
+            ? "border-amber-300/55 bg-amber-400/20 text-amber-100"
+            : "border-white/16 bg-black/30 br-text-tertiary"
+        }`}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          className="h-4 w-4"
+          fill={isFavorite ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth="1.8"
         >
-          {formatStateLabel(beach.state)}
-        </span>
-        <span className="text-[11px] br-text-tertiary">
-          {formatDistanceLabel(beach.distanceM)}
-        </span>
-      </div>
-      <div className="mt-1.5 text-[15px] font-semibold br-text-primary">
-        {beach.name}
-      </div>
-      <div className="text-[12px] br-text-secondary">{beach.region}</div>
-      <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] br-text-tertiary">
-        <span>{formatConfidenceInline(beach.confidence)}</span>
-        <span>{formatMinutesAgo(beach.updatedAt, now)}</span>
-        <span>
-          {beach.state === "PRED"
-            ? STRINGS.reports.noneRecent
-            : formatReportCount(beach.reportsCount)}
-        </span>
-      </div>
-    </button>
+          <path d="M12 2.7l2.8 5.67 6.25.91-4.53 4.42 1.07 6.24L12 17.06 6.4 19.94l1.07-6.24-4.53-4.42 6.25-.91L12 2.7z" />
+        </svg>
+      </button>
+    </div>
   );
 };
 
 const beachRowEqual = (prev: BeachRowProps, next: BeachRowProps) => {
   if (prev.isSelected !== next.isSelected) return false;
+  if (prev.isFavorite !== next.isFavorite) return false;
   if (prev.now !== next.now) return false;
   if (prev.onSelectBeach !== next.onSelectBeach) return false;
+  if (prev.onToggleFavorite !== next.onToggleFavorite) return false;
   const a = prev.beach;
   const b = next.beach;
   return (
@@ -110,8 +150,10 @@ const BeachRow = memo(BeachRowComponent, beachRowEqual);
 
 const BottomSheetComponent = ({
   beaches,
+  favoriteBeachIds,
   selectedBeachId,
   onSelectBeach,
+  onToggleFavorite,
   isOpen,
   onToggle,
   now,
@@ -126,6 +168,15 @@ const BottomSheetComponent = ({
   const startYRef = useRef(0);
   const startOffsetRef = useRef(0);
   const lastMoveRef = useRef({ y: 0, t: 0 });
+
+  const favoriteBeaches = useMemo(
+    () => beaches.filter((beach) => favoriteBeachIds.has(beach.id)),
+    [beaches, favoriteBeachIds],
+  );
+  const otherBeaches = useMemo(
+    () => beaches.filter((beach) => !favoriteBeachIds.has(beach.id)),
+    [beaches, favoriteBeachIds],
+  );
 
   const translateY = useMemo(() => {
     if (dragOffset !== null) return dragOffset;
@@ -250,16 +301,47 @@ const BottomSheetComponent = ({
           <div className="h-1 w-10 rounded-full bg-white/20" />
         </button>
         <div className="max-h-[62vh] overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-          <div className="divide-y divide-[color:var(--hairline)] pb-6">
-            {beaches.map((beach) => (
-              <BeachRow
-                key={beach.id}
-                beach={beach}
-                isSelected={beach.id === selectedBeachId}
-                now={now}
-                onSelectBeach={onSelectBeach}
-              />
-            ))}
+          <div className="space-y-4 pb-6">
+            {favoriteBeaches.length > 0 ? (
+              <section>
+                <div className="px-4 text-[10px] font-semibold uppercase tracking-[0.11em] text-amber-100/85">
+                  {STRINGS.labels.favorites}
+                </div>
+                <div className="mt-2 divide-y divide-[color:var(--hairline)]">
+                  {favoriteBeaches.map((beach) => (
+                    <BeachRow
+                      key={beach.id}
+                      beach={beach}
+                      isSelected={beach.id === selectedBeachId}
+                      isFavorite={true}
+                      now={now}
+                      onSelectBeach={onSelectBeach}
+                      onToggleFavorite={onToggleFavorite}
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : null}
+            <section>
+              {favoriteBeaches.length > 0 ? (
+                <div className="px-4 text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
+                  {STRINGS.labels.nearbyBeaches}
+                </div>
+              ) : null}
+              <div className={`${favoriteBeaches.length > 0 ? "mt-2 " : ""}divide-y divide-[color:var(--hairline)]`}>
+                {otherBeaches.map((beach) => (
+                  <BeachRow
+                    key={beach.id}
+                    beach={beach}
+                    isSelected={beach.id === selectedBeachId}
+                    isFavorite={false}
+                    now={now}
+                    onSelectBeach={onSelectBeach}
+                    onToggleFavorite={onToggleFavorite}
+                  />
+                ))}
+              </div>
+            </section>
           </div>
         </div>
       </div>
@@ -269,8 +351,10 @@ const BottomSheetComponent = ({
 
 const bottomSheetEqual = (prev: BottomSheetProps, next: BottomSheetProps) =>
   prev.beaches === next.beaches &&
+  prev.favoriteBeachIds === next.favoriteBeachIds &&
   prev.selectedBeachId === next.selectedBeachId &&
   prev.onSelectBeach === next.onSelectBeach &&
+  prev.onToggleFavorite === next.onToggleFavorite &&
   prev.isOpen === next.isOpen &&
   prev.onToggle === next.onToggle &&
   prev.now === next.now;

@@ -70,6 +70,10 @@ Production API:
 App access gate:
 - `APP_ACCESS_KEY` (required to access `/app/`)
 
+App auth (frontend):
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
 Rate limit tuning:
 - `WAITLIST_RATE_LIMIT_MAX` (default: 10)
 - `WAITLIST_RATE_LIMIT_WINDOW_SEC` (default: 600)
@@ -114,6 +118,7 @@ Tuning:
 Run these in the Supabase SQL editor (in order):
 - `scripts/sql/waitlist_phase1.sql`
 - `scripts/sql/waitlist_rate_limits.sql`
+- `scripts/sql/app_auth_favorites.sql`
 
 ## Data retention and cleanup
 

@@ -7,6 +7,7 @@ import LidoModalCard from "../components/LidoModalCard";
 import ReportModal from "../components/ReportModal";
 import ReportThanksModal from "../components/ReportThanksModal";
 import PerformanceOverlay from "../components/PerformanceOverlay";
+import AccountRequiredModal from "../components/AccountRequiredModal";
 import WeatherWidget from "../components/WeatherWidget";
 import { shareBeachCard } from "../components/ShareCard";
 import logo from "../assets/logo.png";
@@ -29,6 +30,14 @@ import {
   formatConfidence,
   formatMinutesAgo,
 } from "../lib/format";
+import {
+  loadFavoriteBeachIds,
+  setFavoriteBeach,
+  signOutAccount,
+  subscribeAccountChanges,
+  getCurrentAccount,
+  type AppAccount,
+} from "../lib/account";
 import {
   getReporterHash,
   loadReports,
@@ -69,6 +78,7 @@ const SHOW_ALL_PINS_ZOOM_OUT_DELTA = 2;
 const SHOW_ALL_PINS_FLY_DURATION_S = 1.1;
 const REPORT_RADIUS_M = 700;
 const REMOTE_REPORT_SESSION_KEY = "br_report_anywhere_v1";
+const REGISTER_RESUME_KEY = "beach-radar-register-resume-v1";
 const USE_MOCK_CROWD = true;
 const MOCK_CROWD_LEVELS: CrowdLevel[] = [1, 2, 3, 4];
 const FORCE_REMOTE_REPORTS = true;
@@ -82,21 +92,95 @@ type WeatherCacheEntry = {
   expiresAt: number;
 };
 
+type RegisterResumeMapView = {
+  lat: number;
+  lng: number;
+  zoom: number;
+};
+
+type RegisterResumeSnapshot = {
+  search: string;
+  selectedBeachId: string | null;
+  soloBeachId: string | null;
+  isLidoModalOpen: boolean;
+  sheetOpen: boolean;
+  reportOpen: boolean;
+  mapView: RegisterResumeMapView | null;
+};
+
 const weatherCacheKey = (lat: number, lng: number) =>
   `${lat.toFixed(2)},${lng.toFixed(2)}`;
 
+const consumeRegisterResumeSnapshot = (): RegisterResumeSnapshot | null => {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("resume") !== "1") return null;
+
+  const raw = window.sessionStorage.getItem(REGISTER_RESUME_KEY);
+  window.sessionStorage.removeItem(REGISTER_RESUME_KEY);
+
+  params.delete("resume");
+  const nextSearch = params.toString();
+  const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
+  window.history.replaceState({}, "", nextUrl);
+
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<RegisterResumeSnapshot>;
+    const mapView =
+      parsed.mapView &&
+      typeof parsed.mapView === "object" &&
+      typeof parsed.mapView.lat === "number" &&
+      Number.isFinite(parsed.mapView.lat) &&
+      typeof parsed.mapView.lng === "number" &&
+      Number.isFinite(parsed.mapView.lng) &&
+      typeof parsed.mapView.zoom === "number" &&
+      Number.isFinite(parsed.mapView.zoom)
+        ? {
+            lat: parsed.mapView.lat,
+            lng: parsed.mapView.lng,
+            zoom: parsed.mapView.zoom,
+          }
+        : null;
+
+    return {
+      search: typeof parsed.search === "string" ? parsed.search : "",
+      selectedBeachId:
+        typeof parsed.selectedBeachId === "string" ? parsed.selectedBeachId : null,
+      soloBeachId: typeof parsed.soloBeachId === "string" ? parsed.soloBeachId : null,
+      isLidoModalOpen: parsed.isLidoModalOpen === true,
+      sheetOpen: parsed.sheetOpen === true,
+      reportOpen: parsed.reportOpen === true,
+      mapView,
+    };
+  } catch {
+    return null;
+  }
+};
+
 function App() {
-  const [search, setSearch] = useState("");
+  const registerResumeSnapshot = useMemo(() => consumeRegisterResumeSnapshot(), []);
+  const [search, setSearch] = useState(() => registerResumeSnapshot?.search ?? "");
   const [reports, setReports] = useState<Report[]>(() =>
     typeof window === "undefined" ? [] : loadReports(),
+  );
+  const [account, setAccount] = useState<AppAccount | null>(null);
+  const [favoriteBeachIds, setFavoriteBeachIds] = useState<Set<string>>(() =>
+    typeof window === "undefined" ? new Set<string>() : new Set(),
   );
   const [now, setNow] = useState(Date.now);
   const [overrides, setOverrides] = useState<BeachOverrides>(() =>
     typeof window === "undefined" ? {} : loadOverrides(),
   );
-  const [selectedBeachId, setSelectedBeachId] = useState<string | null>(null);
-  const [soloBeachId, setSoloBeachId] = useState<string | null>(null);
-  const [isLidoModalOpen, setIsLidoModalOpen] = useState(false);
+  const [selectedBeachId, setSelectedBeachId] = useState<string | null>(
+    () => registerResumeSnapshot?.selectedBeachId ?? null,
+  );
+  const [soloBeachId, setSoloBeachId] = useState<string | null>(
+    () => registerResumeSnapshot?.soloBeachId ?? null,
+  );
+  const [isLidoModalOpen, setIsLidoModalOpen] = useState(
+    () => registerResumeSnapshot?.isLidoModalOpen ?? false,
+  );
   const [pendingDeepLinkBeachId, setPendingDeepLinkBeachId] = useState<
     string | null
   >(null);
@@ -111,8 +195,12 @@ function App() {
     };
   }>({ id: null, matched: null, params: {} });
   const [deepLinkWarning, setDeepLinkWarning] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [reportOpen, setReportOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(
+    () => registerResumeSnapshot?.sheetOpen ?? false,
+  );
+  const [reportOpen, setReportOpen] = useState(
+    () => registerResumeSnapshot?.reportOpen ?? false,
+  );
   const [reportError, setReportError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [geoStatus, setGeoStatus] = useState<GeoStatus>("idle");
@@ -121,6 +209,13 @@ function App() {
   const [followMode, setFollowMode] = useState(false);
   const [locationToast, setLocationToast] = useState<string | null>(null);
   const [shareToast, setShareToast] = useState<string | null>(null);
+  const [accountRequiredOpen, setAccountRequiredOpen] = useState(false);
+  const [accountRequiredBeachName, setAccountRequiredBeachName] = useState<
+    string | null
+  >(null);
+  const [pendingFavoriteBeachId, setPendingFavoriteBeachId] = useState<
+    string | null
+  >(null);
   const [reportThanksOpen, setReportThanksOpen] = useState(false);
   const [debugToast, setDebugToast] = useState<string | null>(null);
   const [debugRefreshKey, setDebugRefreshKey] = useState(0);
@@ -133,6 +228,9 @@ function App() {
     Record<string, WeatherCacheEntry>
   >({});
   const mapRef = useRef<LeafletMap | null>(null);
+  const resumeMapViewRef = useRef<RegisterResumeMapView | null>(
+    registerResumeSnapshot?.mapView ?? null,
+  );
   const watchIdRef = useRef<number | null>(null);
   const followInitializedRef = useRef(false);
   const followModeRef = useRef(false);
@@ -221,8 +319,9 @@ function App() {
     const searchParams = new URLSearchParams(window.location.search);
     const beachParam = searchParams.get("beach");
     const beachIdParam = searchParams.get("beachId");
-    const deepLinkId = beachParam ?? beachIdParam;
-    if (deepLinkId) {
+    const deepLinkId =
+      registerResumeSnapshot === null ? beachParam ?? beachIdParam : null;
+    if (registerResumeSnapshot === null && deepLinkId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setPendingDeepLinkBeachId(deepLinkId);
     }
@@ -246,7 +345,7 @@ function App() {
     if (isQrOpen) {
       track("qr_open", { src: srcParam, utm_campaign: utmCampaign });
     }
-  }, []);
+  }, [registerResumeSnapshot]);
 
   useEffect(() => {
     followModeRef.current = followMode;
@@ -267,6 +366,41 @@ function App() {
     }, 2000);
     return () => window.clearTimeout(timeout);
   }, [debugToast]);
+
+  useEffect(() => {
+    let active = true;
+    void getCurrentAccount().then((nextAccount) => {
+      if (!active) return;
+      setAccount(nextAccount);
+    });
+
+    const unsubscribe = subscribeAccountChanges((nextAccount) => {
+      if (!active) return;
+      setAccount(nextAccount);
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    if (!account) {
+      setFavoriteBeachIds(new Set());
+      return () => {
+        active = false;
+      };
+    }
+    void loadFavoriteBeachIds(account.id).then((favoriteIds) => {
+      if (!active) return;
+      setFavoriteBeachIds(new Set(favoriteIds));
+    });
+    return () => {
+      active = false;
+    };
+  }, [account]);
 
   const handleGeoError = useCallback((error: GeolocationPositionError | null) => {
     if (error && error.code === error.PERMISSION_DENIED) {
@@ -560,6 +694,8 @@ function App() {
   const selectedBeach = beachViewsBase.find(
     (beach) => beach.id === selectedBeachId,
   );
+  const selectedBeachIsFavorite =
+    !!selectedBeachId && favoriteBeachIds.has(selectedBeachId);
   const selectedBeachLat = selectedBeach?.lat ?? null;
   const selectedBeachLng = selectedBeach?.lng ?? null;
   const reportDistanceM =
@@ -795,6 +931,13 @@ function App() {
 
   const handleMapReady = useCallback((map: LeafletMap) => {
     mapRef.current = map;
+    const resumeView = resumeMapViewRef.current;
+    if (resumeView) {
+      map.setView([resumeView.lat, resumeView.lng], resumeView.zoom, {
+        animate: false,
+      });
+      resumeMapViewRef.current = null;
+    }
     setMapReady(true);
   }, []);
 
@@ -844,6 +987,127 @@ function App() {
     setSheetOpen(false);
     setIsLidoModalOpen(true);
   }, [reportOpen, selectedBeach]);
+
+  const handleToggleFavorite = useCallback((beachId: string) => {
+    if (!account) {
+      const beach = beachViewsBase.find((item) => item.id === beachId);
+      setAccountRequiredBeachName(beach?.name ?? null);
+      setPendingFavoriteBeachId(beachId);
+      setAccountRequiredOpen(true);
+      return;
+    }
+    const shouldFavorite = !favoriteBeachIds.has(beachId);
+
+    setFavoriteBeachIds((prev) => {
+      const next = new Set(prev);
+      if (shouldFavorite) {
+        next.add(beachId);
+      } else {
+        next.delete(beachId);
+      }
+      return next;
+    });
+
+    void setFavoriteBeach(account.id, beachId, shouldFavorite).then((result) => {
+      if (result.ok) return;
+
+      setFavoriteBeachIds((prev) => {
+        const reverted = new Set(prev);
+        if (shouldFavorite) {
+          reverted.delete(beachId);
+        } else {
+          reverted.add(beachId);
+        }
+        return reverted;
+      });
+
+      if (result.code === "unauthorized") {
+        setAccount(null);
+        const beach = beachViewsBase.find((item) => item.id === beachId);
+        setAccountRequiredBeachName(beach?.name ?? null);
+        setPendingFavoriteBeachId(beachId);
+        setAccountRequiredOpen(true);
+        return;
+      }
+
+      setLocationToast(STRINGS.account.favoriteSyncFailed);
+    });
+  }, [account, beachViewsBase, favoriteBeachIds]);
+
+  const handleToggleSelectedFavorite = useCallback(() => {
+    if (!selectedBeachId) return;
+    handleToggleFavorite(selectedBeachId);
+  }, [handleToggleFavorite, selectedBeachId]);
+
+  const handleCloseAccountRequired = useCallback(() => {
+    setAccountRequiredOpen(false);
+    setAccountRequiredBeachName(null);
+    setPendingFavoriteBeachId(null);
+  }, []);
+
+  const handleSignOut = useCallback(() => {
+    void signOutAccount().then((result) => {
+      if (!result.ok) {
+        setLocationToast(STRINGS.account.signOutFailed);
+        return;
+      }
+      setAccount(null);
+      setFavoriteBeachIds(new Set());
+      setAccountRequiredOpen(false);
+      setAccountRequiredBeachName(null);
+      setPendingFavoriteBeachId(null);
+    });
+  }, []);
+
+  const accountDisplayName = useMemo(() => {
+    if (!account) return null;
+    const fullName = `${account.firstName} ${account.lastName}`.trim();
+    return fullName.length > 0 ? fullName : null;
+  }, [account]);
+
+  const handleContinueToRegister = useCallback(() => {
+    const map = mapRef.current;
+    const center = map?.getCenter();
+    const zoom = map?.getZoom();
+    const mapView =
+      center && typeof zoom === "number" && Number.isFinite(zoom)
+        ? { lat: center.lat, lng: center.lng, zoom }
+        : null;
+
+    const resumeSnapshot: RegisterResumeSnapshot = {
+      search,
+      selectedBeachId,
+      soloBeachId,
+      isLidoModalOpen,
+      sheetOpen,
+      reportOpen,
+      mapView,
+    };
+
+    window.sessionStorage.setItem(
+      REGISTER_RESUME_KEY,
+      JSON.stringify(resumeSnapshot),
+    );
+
+    const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const params = new URLSearchParams({ returnTo });
+    if (pendingFavoriteBeachId) params.set("fav", pendingFavoriteBeachId);
+    if (accountRequiredBeachName) params.set("beachName", accountRequiredBeachName);
+    const registerPath = window.location.pathname.startsWith("/app")
+      ? "/app/register"
+      : "/register";
+
+    window.location.assign(`${registerPath}?${params.toString()}`);
+  }, [
+    accountRequiredBeachName,
+    isLidoModalOpen,
+    pendingFavoriteBeachId,
+    reportOpen,
+    search,
+    selectedBeachId,
+    sheetOpen,
+    soloBeachId,
+  ]);
 
   const handleSubmitReport = useCallback((level: CrowdLevel) => {
     if (!selectedBeach) return;
@@ -981,6 +1245,9 @@ function App() {
         notice={liveDataNotice}
         beaches={searchBeaches}
         onSelectSuggestion={handleSelectSuggestion}
+        accountEmail={account?.email ?? null}
+        accountName={accountDisplayName}
+        onSignOut={handleSignOut}
       />
       {soloBeachId ? (
         <button
@@ -1032,6 +1299,12 @@ function App() {
           onOpenDetails={handleOpenWeatherDetails}
         />
       ) : null}
+      <AccountRequiredModal
+        isOpen={accountRequiredOpen}
+        beachName={accountRequiredBeachName}
+        onClose={handleCloseAccountRequired}
+        onContinue={handleContinueToRegister}
+      />
       <ReportThanksModal
         isOpen={reportThanksOpen}
         onClose={() => setReportThanksOpen(false)}
@@ -1217,8 +1490,10 @@ function App() {
       ) : null}
       <BottomSheet
         beaches={sortedBeaches}
+        favoriteBeachIds={favoriteBeachIds}
         selectedBeachId={selectedBeachId}
         onSelectBeach={handleSelectBeach}
+        onToggleFavorite={handleToggleFavorite}
         isOpen={sheetOpen}
         onToggle={handleToggleSheet}
         now={now}
@@ -1228,10 +1503,12 @@ function App() {
           beach={selectedBeach}
           isOpen={isLidoModalOpen}
           now={now}
+          isFavorite={selectedBeachIsFavorite}
           weather={selectedWeather}
           weatherLoading={selectedWeatherLoading}
           weatherUnavailable={selectedWeatherUnavailable}
           onClose={handleCloseDrawer}
+          onToggleFavorite={handleToggleSelectedFavorite}
           onReport={handleOpenReport}
           onShare={handleShare}
         />

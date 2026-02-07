@@ -4,6 +4,9 @@ export const STRINGS = {
     close: "Chiudi",
     share: "Condividi",
     report: "Segnala",
+    createAccount: "Crea account",
+    addFavorite: "Aggiungi ai preferiti",
+    removeFavorite: "Rimuovi preferito",
     reportCrowd: "Segnala affollamento",
     showAllPins: "Mostra tutti i pin",
     openInMaps: "Apri su Mappe",
@@ -19,6 +22,10 @@ export const STRINGS = {
     closeReport: "Chiudi segnalazione",
     reportBeach: (beachName: string) => `Segnala ${beachName}`,
     beachDetails: (beachName: string) => `Dettagli ${beachName}`,
+    toggleFavoriteBeach: (beachName: string, isFavorite: boolean) =>
+      isFavorite
+        ? `Rimuovi ${beachName} dai preferiti`
+        : `Aggiungi ${beachName} ai preferiti`,
   },
   banners: {
     limitedData: "Pochi dati recenti. Aiutaci con una segnalazione.",
@@ -45,6 +52,7 @@ export const STRINGS = {
     website: "Sito",
     services: "Servizi",
     weather: "Meteo",
+    favorites: "Preferiti",
   },
   status: {
     live: "Aggiornato ora",
@@ -120,6 +128,55 @@ export const STRINGS = {
     tooSoon: "Hai già segnalato da poco. Riprova tra qualche minuto.",
     thanksPrompt: "✅ Grazie. Vuoi aiutare anche gli altri?",
     thanksSubtitle: "Condividi la segnalazione per aggiornare chi sta arrivando.",
+  },
+  account: {
+    requiredForFavorites:
+      "Per salvare i preferiti devi creare un account. La navigazione dell'app resta libera.",
+    title: "Account richiesto",
+    subtitle: "Crea un account per salvare e ritrovare i tuoi lidi preferiti.",
+    continueToRegister: "Crea e continua",
+    registerTitle: "Registrazione",
+    registerSubtitle: "Completa la registrazione e torni subito in app.",
+    personalInfoTitle: "Dati personali",
+    credentialsTitle: "Credenziali",
+    firstNameLabel: "Nome",
+    lastNameLabel: "Cognome",
+    emailLabel: "Email",
+    passwordLabel: "Password",
+    confirmPasswordLabel: "Conferma password",
+    emailPlaceholder: "nome@email.com",
+    firstNamePlaceholder: "Nome",
+    lastNamePlaceholder: "Cognome",
+    passwordPlaceholder: "Almeno 10 caratteri",
+    confirmPasswordPlaceholder: "Ripeti la password",
+    passwordHint:
+      "Minimo 10 caratteri, con maiuscola, minuscola, numero e simbolo.",
+    consentLabel: "Accetto termini, privacy e condizioni d'uso.",
+    createAction: "Completa registrazione",
+    creatingAction: "Creazione account...",
+    createFailed: "Non riesco a completare la registrazione, riprova.",
+    createMissingConfig:
+      "Registrazione non disponibile: configurazione account mancante.",
+    emailAlreadyRegistered: "Questa email risulta già registrata.",
+    loginFailed:
+      "Account già esistente, ma non riesco ad accedere con la password inserita.",
+    emailConfirmationRequired:
+      "Account creato ma non ancora attivo. Conferma la mail e poi rientra in app.",
+    favoriteSyncFailed:
+      "Non riesco a sincronizzare i preferiti ora. Riprova tra poco.",
+    profileTitle: "Profilo",
+    signedInAs: "Accesso attivo",
+    signOutAction: "Esci",
+    signOutFailed: "Non riesco a uscire ora. Riprova tra poco.",
+    cancelAndBack: "Torna all'app",
+    requiredField: "Compila tutti i campi obbligatori.",
+    invalidName: "Inserisci nome e cognome validi.",
+    invalidEmail: "Inserisci un'email valida.",
+    weakPassword:
+      "Password troppo debole. Segui i requisiti indicati sotto il campo.",
+    passwordMismatch: "Le password non coincidono.",
+    consentRequired: "Devi accettare termini e privacy per continuare.",
+    created: "Account creato. Ora puoi salvare i preferiti.",
   },
   location: {
     permissionDenied: "Permesso posizione negato.",

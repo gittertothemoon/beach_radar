@@ -23,6 +23,9 @@ type TopSearchProps = {
   notice?: string | null;
   beaches: SearchBeach[];
   onSelectSuggestion: (beachId: string) => void;
+  accountEmail?: string | null;
+  accountName?: string | null;
+  onSignOut?: () => void;
 };
 
 const MAX_SUGGESTIONS = 12;
@@ -41,12 +44,16 @@ const TopSearchComponent = ({
   notice,
   beaches,
   onSelectSuggestion,
+  accountEmail = null,
+  accountName = null,
+  onSignOut,
 }: TopSearchProps) => {
   const perfEnabled = isPerfEnabled();
   useRenderCounter("TopSearch", perfEnabled);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [open, setOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const normalized = useMemo(() => normalizeSearchText(value), [value]);
   const debouncedNormalized = useDebouncedValue(normalized, DEBOUNCE_MS);
   const effectiveOpen = open && debouncedNormalized.length > 0;
@@ -103,6 +110,7 @@ const TopSearchComponent = ({
       if (!containerRef.current) return;
       if (!containerRef.current.contains(event.target as Node)) {
         setOpen(false);
+        setProfileOpen(false);
       }
     };
     document.addEventListener("mousedown", handleOutside);
@@ -117,6 +125,7 @@ const TopSearchComponent = ({
     (beachId: string) => {
       onSelectSuggestion(beachId);
       setOpen(false);
+      setProfileOpen(false);
     },
     [onSelectSuggestion],
   );
@@ -138,11 +147,13 @@ const TopSearchComponent = ({
                 if (nextValue.trim()) setOpen(true);
               }}
               onFocus={() => {
+                setProfileOpen(false);
                 if (normalized && suggestions.length > 0) setOpen(true);
               }}
               onKeyDown={(event) => {
                 if (event.key === "Escape") {
                   setOpen(false);
+                  setProfileOpen(false);
                   return;
                 }
                 if (
@@ -173,10 +184,53 @@ const TopSearchComponent = ({
                 {STRINGS.actions.clearSymbol}
               </button>
             ) : null}
-            <span className="text-[11px] br-text-tertiary">
+            {accountEmail ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setProfileOpen((prev) => !prev);
+                }}
+                aria-label={STRINGS.account.profileTitle}
+                aria-expanded={profileOpen}
+                className="br-press inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-white/22 bg-black/40 px-2 text-[11px] font-semibold text-[color:var(--text-primary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+              >
+                {(accountName?.trim() || accountEmail).slice(0, 1).toUpperCase()}
+              </button>
+            ) : null}
+            <span className="hidden text-[11px] br-text-tertiary min-[420px]:inline">
               {STRINGS.search.resultsCount(resultCount)}
             </span>
           </div>
+          {profileOpen && accountEmail ? (
+            <div className="br-radius-m br-surface absolute right-0 z-50 mt-2 w-[min(88vw,280px)] overflow-hidden">
+              <div className="border-b border-[color:var(--hairline)] px-4 py-3">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.08em] br-text-tertiary">
+                  {STRINGS.account.signedInAs}
+                </div>
+                {accountName ? (
+                  <div className="mt-1 truncate text-[13px] font-semibold br-text-primary">
+                    {accountName}
+                  </div>
+                ) : null}
+                <div className="truncate text-[12px] br-text-secondary">
+                  {accountEmail}
+                </div>
+              </div>
+              <div className="p-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    onSignOut?.();
+                  }}
+                  className="br-press flex w-full items-center justify-center rounded-[10px] border border-white/20 bg-black/35 px-3 py-2.5 text-[13px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                >
+                  {STRINGS.account.signOutAction}
+                </button>
+              </div>
+            </div>
+          ) : null}
           {effectiveOpen && suggestions.length > 0 ? (
             <div className="br-radius-m br-surface absolute left-0 right-0 z-50 mt-2 overflow-hidden">
               <div className="max-h-56 divide-y divide-[color:var(--hairline)] overflow-y-auto py-1">
@@ -217,7 +271,10 @@ const areEqual = (prev: TopSearchProps, next: TopSearchProps) =>
   prev.notice === next.notice &&
   prev.beaches === next.beaches &&
   prev.onChange === next.onChange &&
-  prev.onSelectSuggestion === next.onSelectSuggestion;
+  prev.onSelectSuggestion === next.onSelectSuggestion &&
+  prev.accountEmail === next.accountEmail &&
+  prev.accountName === next.accountName &&
+  prev.onSignOut === next.onSignOut;
 
 const TopSearch = memo(TopSearchComponent, areEqual);
 

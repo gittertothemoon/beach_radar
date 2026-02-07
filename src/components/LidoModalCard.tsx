@@ -14,10 +14,12 @@ type LidoModalCardProps = {
   beach: BeachWithStats;
   isOpen: boolean;
   now: number;
+  isFavorite: boolean;
   weather: BeachWeatherSnapshot | null;
   weatherLoading: boolean;
   weatherUnavailable: boolean;
   onClose: () => void;
+  onToggleFavorite: () => void;
   onReport: () => void;
   onShare: () => void;
 };
@@ -91,10 +93,12 @@ const LidoModalCardComponent = ({
   beach,
   isOpen,
   now,
+  isFavorite,
   weather,
   weatherLoading,
   weatherUnavailable,
   onClose,
+  onToggleFavorite,
   onReport,
   onShare,
 }: LidoModalCardProps) => {
@@ -190,7 +194,30 @@ const LidoModalCardComponent = ({
               ) : null}
             </div>
             <h2 className="mt-3 text-[22px] font-semibold tracking-[-0.01em] br-text-primary">
-              {beach.name}
+              <span className="inline-flex items-center gap-2">
+                <span>{beach.name}</span>
+                <button
+                  type="button"
+                  onClick={onToggleFavorite}
+                  aria-label={STRINGS.aria.toggleFavoriteBeach(beach.name, isFavorite)}
+                  className={`br-press inline-flex h-8 w-8 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
+                    isFavorite
+                      ? "border-amber-300/55 bg-amber-400/20 text-amber-100"
+                      : "border-white/18 bg-black/40 br-text-tertiary"
+                  }`}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    className="h-4 w-4"
+                    fill={isFavorite ? "currentColor" : "none"}
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path d="M12 2.7l2.8 5.67 6.25.91-4.53 4.42 1.07 6.24L12 17.06 6.4 19.94l1.07-6.24-4.53-4.42 6.25-.91L12 2.7z" />
+                  </svg>
+                </button>
+              </span>
             </h2>
             <p className="text-[13px] br-text-secondary">{beach.region}</p>
           </div>
@@ -420,10 +447,12 @@ const LidoModalCardComponent = ({
 const lidoModalEqual = (prev: LidoModalCardProps, next: LidoModalCardProps) => {
   if (prev.isOpen !== next.isOpen) return false;
   if (prev.now !== next.now) return false;
+  if (prev.isFavorite !== next.isFavorite) return false;
   if (prev.weatherLoading !== next.weatherLoading) return false;
   if (prev.weatherUnavailable !== next.weatherUnavailable) return false;
   if (!sameWeather(prev.weather, next.weather)) return false;
   if (prev.onClose !== next.onClose) return false;
+  if (prev.onToggleFavorite !== next.onToggleFavorite) return false;
   if (prev.onReport !== next.onReport) return false;
   if (prev.onShare !== next.onShare) return false;
   const a = prev.beach;
