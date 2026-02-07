@@ -164,6 +164,7 @@ const BottomSheetComponent = ({
   const [maxTranslate, setMaxTranslate] = useState(0);
   const [dragOffset, setDragOffset] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
   const suppressClickRef = useRef(false);
   const startYRef = useRef(0);
   const startOffsetRef = useRef(0);
@@ -173,10 +174,8 @@ const BottomSheetComponent = ({
     () => beaches.filter((beach) => favoriteBeachIds.has(beach.id)),
     [beaches, favoriteBeachIds],
   );
-  const otherBeaches = useMemo(
-    () => beaches.filter((beach) => !favoriteBeachIds.has(beach.id)),
-    [beaches, favoriteBeachIds],
-  );
+  const otherBeaches = beaches;
+  const favoritesSectionId = "br-favorites-panel";
 
   const translateY = useMemo(() => {
     if (dragOffset !== null) return dragOffset;
@@ -203,6 +202,11 @@ const BottomSheetComponent = ({
       observer?.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (favoriteBeaches.length > 0) return;
+    setFavoritesOpen(false);
+  }, [favoriteBeaches.length]);
 
   const handlePointerDown = (
     event: ReactPointerEvent<HTMLButtonElement>,
@@ -259,6 +263,11 @@ const BottomSheetComponent = ({
     }, 150);
   };
 
+  const handleToggleFavorites = useCallback(() => {
+    if (favoriteBeaches.length === 0) return;
+    setFavoritesOpen((prev) => !prev);
+  }, [favoriteBeaches.length]);
+
   return (
     <div
       className={`fixed bottom-0 left-0 right-0 z-20 ${
@@ -302,39 +311,62 @@ const BottomSheetComponent = ({
         </button>
         <div className="max-h-[62vh] overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+16px)]">
           <div className="space-y-4 pb-6">
-            {favoriteBeaches.length > 0 ? (
-              <section>
-                <div className="px-4 text-[10px] font-semibold uppercase tracking-[0.11em] text-amber-100/85">
-                  {STRINGS.labels.favorites}
-                </div>
-                <div className="mt-2 divide-y divide-[color:var(--hairline)]">
-                  {favoriteBeaches.map((beach) => (
-                    <BeachRow
-                      key={beach.id}
-                      beach={beach}
-                      isSelected={beach.id === selectedBeachId}
-                      isFavorite={true}
-                      now={now}
-                      onSelectBeach={onSelectBeach}
-                      onToggleFavorite={onToggleFavorite}
-                    />
-                  ))}
-                </div>
-              </section>
-            ) : null}
             <section>
-              {favoriteBeaches.length > 0 ? (
-                <div className="px-4 text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
-                  {STRINGS.labels.nearbyBeaches}
-                </div>
-              ) : null}
-              <div className={`${favoriteBeaches.length > 0 ? "mt-2 " : ""}divide-y divide-[color:var(--hairline)]`}>
+              <button
+                type="button"
+                onClick={handleToggleFavorites}
+                aria-expanded={favoritesOpen}
+                aria-controls={favoritesSectionId}
+                disabled={favoriteBeaches.length === 0}
+                className={`br-press flex w-full items-center justify-between rounded-xl px-4 py-2 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
+                  favoriteBeaches.length === 0 ? "cursor-default opacity-75" : ""
+                }`}
+              >
+                <span className="text-[10px] font-semibold uppercase tracking-[0.11em] text-amber-100/85">
+                  {STRINGS.labels.favorites}
+                </span>
+                <span className="inline-flex items-center gap-2 text-[11px] text-amber-100/80">
+                  <span>{favoriteBeaches.length}</span>
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    className={`h-4 w-4 transition-transform ${favoritesOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </span>
+              </button>
+              <div
+                id={favoritesSectionId}
+                className={`${favoritesOpen && favoriteBeaches.length > 0 ? "mt-2 divide-y divide-[color:var(--hairline)]" : "hidden"}`}
+              >
+                {favoriteBeaches.map((beach) => (
+                  <BeachRow
+                    key={beach.id}
+                    beach={beach}
+                    isSelected={beach.id === selectedBeachId}
+                    isFavorite={true}
+                    now={now}
+                    onSelectBeach={onSelectBeach}
+                    onToggleFavorite={onToggleFavorite}
+                  />
+                ))}
+              </div>
+            </section>
+            <section>
+              <div className="px-4 text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
+                {STRINGS.labels.nearbyBeaches}
+              </div>
+              <div className="mt-2 divide-y divide-[color:var(--hairline)]">
                 {otherBeaches.map((beach) => (
                   <BeachRow
                     key={beach.id}
                     beach={beach}
                     isSelected={beach.id === selectedBeachId}
-                    isFavorite={false}
+                    isFavorite={favoriteBeachIds.has(beach.id)}
                     now={now}
                     onSelectBeach={onSelectBeach}
                     onToggleFavorite={onToggleFavorite}

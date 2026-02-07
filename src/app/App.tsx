@@ -774,6 +774,18 @@ function App() {
       return a.name.localeCompare(b.name);
     });
   }, [filteredBeaches]);
+  const profileFavoriteBeaches = useMemo(() => {
+    const byId = new Map(beachViewsBase.map((beach) => [beach.id, beach] as const));
+    return Array.from(favoriteBeachIds)
+      .map((id) => byId.get(id))
+      .filter((beach): beach is BeachWithStats => Boolean(beach))
+      .map((beach) => ({
+        id: beach.id,
+        name: beach.name,
+        region: beach.region,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [beachViewsBase, favoriteBeachIds]);
 
   const selectedBeach = beachViewsBase.find(
     (beach) => beach.id === selectedBeachId,
@@ -1234,6 +1246,14 @@ function App() {
     setProfileOpen(true);
   }, [account]);
 
+  const handleSelectProfileFavorite = useCallback(
+    (beachId: string) => {
+      setProfileOpen(false);
+      focusBeach(beachId, { solo: true });
+    },
+    [focusBeach],
+  );
+
   const handleSubmitReport = useCallback((level: CrowdLevel) => {
     if (!selectedBeach || submittingReport) return;
     if (
@@ -1368,6 +1388,7 @@ function App() {
     <div className="relative h-full w-full">
       <MapView
         beaches={mapBeaches}
+        favoriteBeachIds={favoriteBeachIds}
         selectedBeachId={selectedBeachId}
         onSelectBeach={handleSelectBeachFromMarker}
         center={mapCenter}
@@ -1460,8 +1481,10 @@ function App() {
           isOpen={profileOpen}
           name={accountDisplayName}
           email={account.email}
+          favoriteBeaches={profileFavoriteBeaches}
           deleting={deletingAccount}
           onClose={() => setProfileOpen(false)}
+          onSelectFavorite={handleSelectProfileFavorite}
           onSignOut={handleSignOut}
           onDeleteAccount={handleDeleteAccount}
         />

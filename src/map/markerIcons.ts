@@ -12,6 +12,7 @@ import {
 
 type BeachPinOptions = {
   selected?: boolean;
+  favorite?: boolean;
   state?: "LIVE" | "RECENT" | "PRED";
   crowdLevel?: number;
   zoom: number;
@@ -50,7 +51,7 @@ const getClusterDigitScale = (digitCount: number) => {
   return 0.82;
 };
 
-const beachPinCache = new Map<string, L.Icon>();
+const beachPinCache = new Map<string, L.DivIcon>();
 const clusterPinCache = new Map<string, L.DivIcon>();
 
 const updateCacheSizeStat = () => {
@@ -66,10 +67,16 @@ const normalizeCrowdLevel = (level?: number) => {
   return 1;
 };
 
-const getUmbrellaKey = ({ selected, state, zoom, crowdLevel }: BeachPinOptions) => {
+const getUmbrellaKey = ({
+  selected,
+  favorite,
+  state,
+  zoom,
+  crowdLevel,
+}: BeachPinOptions) => {
   const size = getUmbrellaSizeForZoom(zoom);
   const safeCrowd = normalizeCrowdLevel(crowdLevel);
-  return `${size}|${selected ? "selected" : "normal"}|${state ?? "LIVE"}|${safeCrowd}`;
+  return `${size}|${selected ? "selected" : "normal"}|${favorite ? "favorite" : "normal"}|${state ?? "LIVE"}|${safeCrowd}`;
 };
 
 const getBeachPinAsset = (crowdLevel?: number) => {
@@ -95,6 +102,7 @@ export const createBeachPinIcon = (options: BeachPinOptions) => {
   const perfEnabled = isPerfEnabled();
   const start = perfEnabled ? performance.now() : 0;
   const isSelected = Boolean(options.selected);
+  const isFavorite = Boolean(options.favorite);
   const isPred = options.state === "PRED";
   const baseSize = getUmbrellaSizeForZoom(options.zoom);
   const size = isSelected ? Math.round(baseSize * 1.08) : baseSize;
@@ -104,17 +112,18 @@ export const createBeachPinIcon = (options: BeachPinOptions) => {
   const className = [
     "br-beach-pin",
     isSelected ? "br-beach-pin--selected" : "",
+    isFavorite ? "br-beach-pin--favorite" : "",
     isPred ? "br-beach-pin--pred" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
-  const icon = L.icon({
-    iconUrl: getBeachPinAsset(options.crowdLevel),
+  const icon = L.divIcon({
+    className: "br-beach-pin-icon",
+    html: `<div class="${className}" style="--pin-size:${size}px"><img class="br-beach-pin__img" src="${getBeachPinAsset(options.crowdLevel)}" alt="" loading="eager" decoding="async" />${isFavorite ? '<span class="br-beach-pin__favorite" aria-hidden="true">&#9733;</span>' : ""}</div>`,
     iconSize: [size, size],
     iconAnchor: [anchorX, anchorY],
     popupAnchor: [0, popupAnchorY],
-    className,
   });
 
   beachPinCache.set(key, icon);

@@ -80,10 +80,11 @@ const getSafeZoom = (map: L.Map) => {
 const createMarkerIcon = (
   crowdLevel: number,
   state: "LIVE" | "RECENT" | "PRED",
+  favorite: boolean,
   selected: boolean,
   zoom: number,
 ) => {
-  return createBeachPinIcon({ selected, state, zoom, crowdLevel });
+  return createBeachPinIcon({ selected, state, zoom, crowdLevel, favorite });
 };
 
 const getClusterState = (beaches: BeachWithStats[]): Cluster["state"] => {
@@ -197,6 +198,7 @@ const clusterBeaches = (
 
 type MapViewProps = {
   beaches: BeachWithStats[];
+  favoriteBeachIds: Set<string>;
   selectedBeachId: string | null;
   onSelectBeach: (beachId: string) => void;
   center: LatLng;
@@ -209,13 +211,19 @@ type MapViewProps = {
 
 const ClusteredMarkers = ({
   beaches,
+  favoriteBeachIds,
   selectedBeachId,
   onSelectBeach,
   editMode,
   onOverride,
 }: Pick<
   MapViewProps,
-  "beaches" | "selectedBeachId" | "onSelectBeach" | "editMode" | "onOverride"
+  | "beaches"
+  | "favoriteBeachIds"
+  | "selectedBeachId"
+  | "onSelectBeach"
+  | "editMode"
+  | "onOverride"
 >) => {
   const map = useMap();
   const [mapTick, setMapTick] = useState(0);
@@ -440,6 +448,7 @@ const ClusteredMarkers = ({
             icon={createMarkerIcon(
               beach.crowdLevel,
               beach.state,
+              favoriteBeachIds.has(beach.id),
               isSelected,
               zoom,
             )}
@@ -599,6 +608,7 @@ const MapReady = ({ onReady }: { onReady?: (map: L.Map) => void }) => {
 
 const MapViewComponent = ({
   beaches,
+  favoriteBeachIds,
   selectedBeachId,
   onSelectBeach,
   center,
@@ -641,6 +651,7 @@ const MapViewComponent = ({
       <MapInteractionWatcher onUserInteract={onUserInteract} />
       <ClusteredMarkers
         beaches={beaches}
+        favoriteBeachIds={favoriteBeachIds}
         selectedBeachId={selectedBeachId}
         onSelectBeach={onSelectBeach}
         editMode={editMode}
