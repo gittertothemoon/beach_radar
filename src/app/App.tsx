@@ -8,6 +8,7 @@ import ReportModal from "../components/ReportModal";
 import ReportThanksModal from "../components/ReportThanksModal";
 import PerformanceOverlay from "../components/PerformanceOverlay";
 import AccountRequiredModal from "../components/AccountRequiredModal";
+import ProfileModal from "../components/ProfileModal";
 import WeatherWidget from "../components/WeatherWidget";
 import { shareBeachCard } from "../components/ShareCard";
 import logo from "../assets/logo.png";
@@ -31,6 +32,7 @@ import {
   formatMinutesAgo,
 } from "../lib/format";
 import {
+  deleteCurrentAccount,
   loadFavoriteBeachIds,
   setFavoriteBeach,
   signOutAccount,
@@ -216,6 +218,8 @@ function App() {
   const [pendingFavoriteBeachId, setPendingFavoriteBeachId] = useState<
     string | null
   >(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [reportThanksOpen, setReportThanksOpen] = useState(false);
   const [debugToast, setDebugToast] = useState<string | null>(null);
   const [debugRefreshKey, setDebugRefreshKey] = useState(0);
@@ -400,6 +404,12 @@ function App() {
     return () => {
       active = false;
     };
+  }, [account]);
+
+  useEffect(() => {
+    if (account) return;
+    setProfileOpen(false);
+    setDeletingAccount(false);
   }, [account]);
 
   const handleGeoError = useCallback((error: GeolocationPositionError | null) => {
@@ -1053,11 +1063,31 @@ function App() {
       }
       setAccount(null);
       setFavoriteBeachIds(new Set());
+      setProfileOpen(false);
       setAccountRequiredOpen(false);
       setAccountRequiredBeachName(null);
       setPendingFavoriteBeachId(null);
     });
   }, []);
+
+  const handleDeleteAccount = useCallback(() => {
+    if (deletingAccount) return;
+    if (!window.confirm(STRINGS.account.deleteAccountConfirm)) return;
+    setDeletingAccount(true);
+    void deleteCurrentAccount()
+      .then(async (result) => {
+        if (!result.ok) {
+          setLocationToast(STRINGS.account.deleteAccountFailed);
+          return;
+        }
+        await signOutAccount();
+        setAccount(null);
+        setFavoriteBeachIds(new Set());
+        setProfileOpen(false);
+        setLocationToast(STRINGS.account.deleteAccountSuccess);
+      })
+      .finally(() => setDeletingAccount(false));
+  }, [deletingAccount]);
 
   const accountDisplayName = useMemo(() => {
     if (!account) return null;
@@ -1065,7 +1095,11 @@ function App() {
     return fullName.length > 0 ? fullName : null;
   }, [account]);
 
-  const handleContinueToRegister = useCallback(() => {
+  const navigateToRegister = useCallback((options?: {
+    favoriteBeachId?: string | null;
+    beachName?: string | null;
+    authMode?: "login" | "register";
+  }) => {
     const map = mapRef.current;
     const center = map?.getCenter();
     const zoom = map?.getZoom();
@@ -1091,23 +1125,38 @@ function App() {
 
     const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
     const params = new URLSearchParams({ returnTo });
-    if (pendingFavoriteBeachId) params.set("fav", pendingFavoriteBeachId);
-    if (accountRequiredBeachName) params.set("beachName", accountRequiredBeachName);
+    if (options?.favoriteBeachId) params.set("fav", options.favoriteBeachId);
+    if (options?.beachName) params.set("beachName", options.beachName);
+    if (options?.authMode === "login") params.set("mode", "login");
     const registerPath = window.location.pathname.startsWith("/app")
       ? "/app/register"
       : "/register";
 
     window.location.assign(`${registerPath}?${params.toString()}`);
   }, [
-    accountRequiredBeachName,
     isLidoModalOpen,
-    pendingFavoriteBeachId,
     reportOpen,
     search,
     selectedBeachId,
     sheetOpen,
     soloBeachId,
   ]);
+
+  const handleContinueToRegister = useCallback(() => {
+    navigateToRegister({
+      favoriteBeachId: pendingFavoriteBeachId,
+      beachName: accountRequiredBeachName,
+    });
+  }, [accountRequiredBeachName, navigateToRegister, pendingFavoriteBeachId]);
+
+  const handleOpenSignIn = useCallback(() => {
+    navigateToRegister({ authMode: "login" });
+  }, [navigateToRegister]);
+
+  const handleOpenProfile = useCallback(() => {
+    if (!account) return;
+    setProfileOpen(true);
+  }, [account]);
 
   const handleSubmitReport = useCallback((level: CrowdLevel) => {
     if (!selectedBeach) return;
@@ -1247,6 +1296,8 @@ function App() {
         onSelectSuggestion={handleSelectSuggestion}
         accountEmail={account?.email ?? null}
         accountName={accountDisplayName}
+        onSignIn={handleOpenSignIn}
+        onOpenProfile={handleOpenProfile}
         onSignOut={handleSignOut}
       />
       {soloBeachId ? (
@@ -1305,6 +1356,17 @@ function App() {
         onClose={handleCloseAccountRequired}
         onContinue={handleContinueToRegister}
       />
+      {account?.email ? (
+        <ProfileModal
+          isOpen={profileOpen}
+          name={accountDisplayName}
+          email={account.email}
+          deleting={deletingAccount}
+          onClose={() => setProfileOpen(false)}
+          onSignOut={handleSignOut}
+          onDeleteAccount={handleDeleteAccount}
+        />
+      ) : null}
       <ReportThanksModal
         isOpen={reportThanksOpen}
         onClose={() => setReportThanksOpen(false)}

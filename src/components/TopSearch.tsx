@@ -25,6 +25,8 @@ type TopSearchProps = {
   onSelectSuggestion: (beachId: string) => void;
   accountEmail?: string | null;
   accountName?: string | null;
+  onSignIn?: () => void;
+  onOpenProfile?: () => void;
   onSignOut?: () => void;
 };
 
@@ -46,6 +48,8 @@ const TopSearchComponent = ({
   onSelectSuggestion,
   accountEmail = null,
   accountName = null,
+  onSignIn,
+  onOpenProfile,
   onSignOut,
 }: TopSearchProps) => {
   const perfEnabled = isPerfEnabled();
@@ -184,6 +188,15 @@ const TopSearchComponent = ({
                 {STRINGS.actions.clearSymbol}
               </button>
             ) : null}
+            {!accountEmail ? (
+              <button
+                type="button"
+                onClick={() => onSignIn?.()}
+                className="br-press rounded-full border border-white/20 bg-black/35 px-2.5 py-1 text-[11px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+              >
+                {STRINGS.account.signInAction}
+              </button>
+            ) : null}
             {accountEmail ? (
               <button
                 type="button"
@@ -218,6 +231,16 @@ const TopSearchComponent = ({
                 </div>
               </div>
               <div className="p-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    onOpenProfile?.();
+                  }}
+                  className="br-press mb-2 flex w-full items-center justify-center rounded-[10px] border border-white/20 bg-black/35 px-3 py-2.5 text-[13px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                >
+                  {STRINGS.account.profileAction}
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -274,6 +297,8 @@ const areEqual = (prev: TopSearchProps, next: TopSearchProps) =>
   prev.onSelectSuggestion === next.onSelectSuggestion &&
   prev.accountEmail === next.accountEmail &&
   prev.accountName === next.accountName &&
+  prev.onSignIn === next.onSignIn &&
+  prev.onOpenProfile === next.onOpenProfile &&
   prev.onSignOut === next.onSignOut;
 
 const TopSearch = memo(TopSearchComponent, areEqual);

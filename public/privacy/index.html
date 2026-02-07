@@ -22,16 +22,14 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; }
+    html, body { width: 100%; min-height: 100%; }
 
     body {
       font-family: "Inter", sans-serif;
       background: radial-gradient(circle at top, #0f172a 0%, #020617 55%);
       color: var(--text-white);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 16px;
+      padding: 20px 14px 28px;
+      overflow-y: auto;
     }
 
     .noise-overlay {
@@ -43,10 +41,44 @@
       opacity: 0.35;
     }
 
-    .privacy-card {
+    .page-shell {
       position: relative;
       z-index: 1;
-      width: min(720px, 100%);
+      width: min(760px, 100%);
+      margin: 0 auto;
+    }
+
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .top-nav a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text-white);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(8px);
+    }
+
+    .top-nav a:hover {
+      border-color: rgba(6, 182, 212, 0.42);
+    }
+
+    .top-nav a span {
+      color: var(--accent-cyan);
+    }
+
+    .privacy-card {
       background: linear-gradient(135deg, var(--glass-surface), rgba(15, 23, 42, 0.45));
       border: 1px solid var(--glass-border);
       border-radius: 22px;
@@ -97,90 +129,97 @@
       padding-top: 16px;
       border-top: 1px solid var(--glass-border);
       display: flex;
-      flex-wrap: wrap;
-      gap: 12px 20px;
+      justify-content: flex-end;
       align-items: center;
-      justify-content: space-between;
-    }
-
-    .meta a {
-      color: var(--accent-cyan);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .meta a:hover {
-      text-decoration: underline;
-    }
-
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 8px;
-      color: var(--text-white);
-      font-weight: 500;
-      text-decoration: none;
-    }
-
-    .back-link span {
-      color: var(--accent-cyan);
+      color: var(--text-gray);
+      font-size: 0.85rem;
     }
 
     @media (max-width: 600px) {
-      .privacy-card { padding: 24px 20px; }
+      body {
+        padding: 12px 10px 18px;
+      }
+      .top-nav {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        padding: 6px 0 10px;
+        margin-bottom: 8px;
+        background: linear-gradient(180deg, rgba(2, 6, 23, 0.92), rgba(2, 6, 23, 0.5), transparent);
+      }
+      .top-nav a {
+        font-size: 0.84rem;
+        padding: 9px 11px;
+      }
+      .privacy-card {
+        border-radius: 16px;
+        padding: 22px 16px;
+      }
       h1 { font-size: 1.6rem; }
+      .lead,
+      .section p,
+      .section li {
+        font-size: 0.94rem;
+      }
+      .meta {
+        justify-content: flex-start;
+      }
     }
   </style>
 </head>
 <body>
   <div class="noise-overlay" aria-hidden="true"></div>
 
-  <main class="privacy-card">
-    <h1>Privacy</h1>
-    <p class="lead">
-      This page explains what data we collect for the Beach Radar waitlist, why we collect it, and how
-      you can contact us.
-    </p>
+  <div class="page-shell">
+    <nav class="top-nav" aria-label="Back navigation">
+      <a id="backLink" href="/waitlist/"><span>&larr;</span><span id="backLabel">Back to waitlist</span></a>
+    </nav>
 
-    <section class="section">
-      <h2>Data collected</h2>
-      <ul>
-        <li>Email address and signup timestamps (first/last seen).</li>
-        <li>Attribution parameters (UTM, poster, city, and similar tracking fields).</li>
-        <li>Technical metadata (device info, browser user agent, timezone, referrer/page URL).</li>
-        <li>Network data such as IP address, used for security and abuse prevention.</li>
-      </ul>
-    </section>
-
-    <section class="section">
-      <h2>Purpose</h2>
-      <p>We use this data to manage the waitlist and send launch-related communications.</p>
-    </section>
-
-    <section class="section">
-      <h2>Legal basis</h2>
-      <p>We process your data based on consent provided when you join the waitlist.</p>
-    </section>
-
-    <section class="section">
-      <h2>Retention</h2>
-      <p>We keep waitlist data until launch plus up to 12 months, or until you request deletion.</p>
-    </section>
-
-    <section class="section">
-      <h2>Contact</h2>
-      <p>
-        For any request (access, deletion, or questions), email
-        <a id="privacyContact" href="mailto:privacy@beachradar.it">privacy@beachradar.it</a>.
+    <main class="privacy-card">
+      <h1>Privacy</h1>
+      <p class="lead">
+        This page explains what data we collect for the Beach Radar waitlist, why we collect it, and how
+        you can contact us.
       </p>
-    </section>
 
-    <div class="meta">
-      <a class="back-link" href="/waitlist/"><span>&larr;</span> Back to waitlist</a>
-      <span>Last updated: January 28, 2026</span>
-    </div>
-  </main>
+      <section class="section">
+        <h2>Data collected</h2>
+        <ul>
+          <li>Email address and signup timestamps (first/last seen).</li>
+          <li>Attribution parameters (UTM, poster, city, and similar tracking fields).</li>
+          <li>Technical metadata (device info, browser user agent, timezone, referrer/page URL).</li>
+          <li>Network data such as IP address, used for security and abuse prevention.</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>Purpose</h2>
+        <p>We use this data to manage the waitlist and send launch-related communications.</p>
+      </section>
+
+      <section class="section">
+        <h2>Legal basis</h2>
+        <p>We process your data based on consent provided when you join the waitlist.</p>
+      </section>
+
+      <section class="section">
+        <h2>Retention</h2>
+        <p>We keep waitlist data until launch plus up to 12 months, or until you request deletion.</p>
+      </section>
+
+      <section class="section">
+        <h2>Contact</h2>
+        <p>
+          For any request (access, deletion, or questions), email
+          <a id="privacyContact" href="mailto:privacy@beachradar.it">privacy@beachradar.it</a>.
+        </p>
+      </section>
+
+      <div class="meta">
+        <span>Last updated: January 28, 2026</span>
+      </div>
+    </main>
+  </div>
 
   <script>
     const contactEl = document.getElementById("privacyContact");
@@ -189,6 +228,49 @@
       contactEl.textContent = contactEmail;
       contactEl.setAttribute("href", `mailto:${contactEmail}`);
     }
+
+    const backLinkEl = document.getElementById("backLink");
+    const backLabelEl = document.getElementById("backLabel");
+    const params = new URLSearchParams(window.location.search);
+    const fromParam = params.get("from");
+    const backParam = params.get("back");
+
+    let fallbackHref = "/waitlist/";
+    let fallbackLabel = "Back to waitlist";
+
+    const referrerPath = (() => {
+      if (!document.referrer) return "";
+      try {
+        return new URL(document.referrer).pathname || "";
+      } catch {
+        return "";
+      }
+    })();
+
+    if (
+      fromParam === "app" ||
+      referrerPath.startsWith("/app") ||
+      referrerPath === "/register" ||
+      referrerPath === "/app/register"
+    ) {
+      fallbackHref = "/app/";
+      fallbackLabel = "Back to app";
+    }
+
+    if (backParam) {
+      try {
+        const backUrl = new URL(backParam, window.location.origin);
+        if (backUrl.origin === window.location.origin) {
+          fallbackHref = `${backUrl.pathname}${backUrl.search}${backUrl.hash}`;
+          fallbackLabel = "Back to app";
+        }
+      } catch {
+        // Ignore invalid back param and keep fallback values.
+      }
+    }
+
+    if (backLinkEl) backLinkEl.setAttribute("href", fallbackHref);
+    if (backLabelEl) backLabelEl.textContent = fallbackLabel;
   </script>
 </body>
 </html>

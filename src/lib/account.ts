@@ -32,6 +32,27 @@ export type LoginResult =
   | { ok: true; account: AppAccount; sessionReady: boolean }
   | { ok: false; code: LoginErrorCode };
 
+type PasswordResetRequestErrorCode =
+  | "missing_config"
+  | "invalid_email"
+  | "network"
+  | "unknown";
+
+export type PasswordResetRequestResult =
+  | { ok: true }
+  | { ok: false; code: PasswordResetRequestErrorCode };
+
+type PasswordUpdateErrorCode =
+  | "missing_config"
+  | "unauthorized"
+  | "weak_password"
+  | "network"
+  | "unknown";
+
+export type PasswordUpdateResult =
+  | { ok: true; account: AppAccount }
+  | { ok: false; code: PasswordUpdateErrorCode };
+
 type FavoriteSyncErrorCode =
   | "missing_config"
   | "unauthorized"
@@ -47,6 +68,16 @@ type SignOutErrorCode = "missing_config" | "network" | "unknown";
 export type SignOutResult =
   | { ok: true }
   | { ok: false; code: SignOutErrorCode };
+
+type DeleteAccountErrorCode =
+  | "missing_config"
+  | "unauthorized"
+  | "network"
+  | "unknown";
+
+export type DeleteAccountResult =
+  | { ok: true }
+  | { ok: false; code: DeleteAccountErrorCode };
 
 const readUserMetadataString = (
   user: User,
@@ -110,6 +141,32 @@ const mapLoginError = (message: string | undefined): LoginErrorCode => {
   if (normalized.includes("invalid login credentials")) {
     return "invalid_credentials";
   }
+  if (normalized.includes("network")) return "network";
+  return "unknown";
+};
+
+const mapPasswordResetRequestError = (
+  message: string | undefined,
+): PasswordResetRequestErrorCode => {
+  const normalized = (message ?? "").toLowerCase();
+  if (normalized.includes("email")) return "invalid_email";
+  if (normalized.includes("network")) return "network";
+  return "unknown";
+};
+
+const mapPasswordUpdateError = (
+  message: string | undefined,
+): PasswordUpdateErrorCode => {
+  const normalized = (message ?? "").toLowerCase();
+  if (
+    normalized.includes("auth session missing") ||
+    normalized.includes("invalid token") ||
+    normalized.includes("jwt") ||
+    normalized.includes("token has expired")
+  ) {
+    return "unauthorized";
+  }
+  if (normalized.includes("password")) return "weak_password";
   if (normalized.includes("network")) return "network";
   return "unknown";
 };
@@ -204,6 +261,47 @@ export const loginAccount = async (input: {
   };
 };
 
+export const requestPasswordReset = async (input: {
+  email: string;
+  redirectTo: string;
+}): Promise<PasswordResetRequestResult> => {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { ok: false, code: "missing_config" };
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    input.email.trim().toLowerCase(),
+    { redirectTo: input.redirectTo },
+  );
+  if (!error) return { ok: true };
+
+  return { ok: false, code: mapPasswordResetRequestError(error.message) };
+};
+
+export const updateAccountPassword = async (
+  nextPassword: string,
+): Promise<PasswordUpdateResult> => {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { ok: false, code: "missing_config" };
+  }
+
+  const { data, error } = await supabase.auth.updateUser({
+    password: nextPassword,
+  });
+  if (error) {
+    return { ok: false, code: mapPasswordUpdateError(error.message) };
+  }
+
+  const account = toAccount(data.user);
+  if (!account) {
+    return { ok: false, code: "unknown" };
+  }
+
+  return { ok: true, account };
+};
+
 export const loadFavoriteBeachIds = async (
   accountId: string | null,
 ): Promise<string[]> => {
@@ -271,4 +369,35 @@ export const signOutAccount = async (): Promise<SignOutResult> => {
     return { ok: false, code: "network" };
   }
   return { ok: false, code: "unknown" };
+};
+
+export const deleteCurrentAccount = async (): Promise<DeleteAccountResult> => {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { ok: false, code: "missing_config" };
+  }
+
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session?.access_token) {
+    return { ok: false, code: "unauthorized" };
+  }
+
+  try {
+    const response = await fetch("/api/account/delete", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${data.session.access_token}`,
+      },
+    });
+
+    if (response.ok) {
+      return { ok: true };
+    }
+    if (response.status === 401) {
+      return { ok: false, code: "unauthorized" };
+    }
+    return { ok: false, code: "unknown" };
+  } catch {
+    return { ok: false, code: "network" };
+  }
 };

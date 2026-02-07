@@ -137,6 +137,25 @@ export const STRINGS = {
     continueToRegister: "Crea e continua",
     registerTitle: "Registrazione",
     registerSubtitle: "Completa la registrazione e torni subito in app.",
+    signInTitle: "Accedi",
+    signInSubtitle: "Accedi al tuo account e torni subito in app.",
+    forgotPasswordTitle: "Recupera password",
+    forgotPasswordSubtitle:
+      "Inserisci la tua email e ti inviamo il link per impostare una nuova password.",
+    resetPasswordTitle: "Nuova password",
+    resetPasswordSubtitle:
+      "Imposta una nuova password sicura per il tuo account.",
+    signInNoAccountPrompt: "Non sei ancora registrato?",
+    signInNoAccountAction: "Registrati",
+    forgotPasswordPrompt: "Password dimenticata?",
+    forgotPasswordAction: "Recuperala",
+    forgotPasswordSubmitAction: "Invia link di reset",
+    forgotPasswordSubmittingAction: "Invio in corso...",
+    forgotPasswordSent:
+      "Ti abbiamo inviato una mail con il link per reimpostare la password.",
+    backToLoginAction: "Torna al login",
+    registerHasAccountPrompt: "Hai già un account?",
+    registerHasAccountAction: "Accedi",
     personalInfoTitle: "Dati personali",
     credentialsTitle: "Credenziali",
     firstNameLabel: "Nome",
@@ -154,20 +173,46 @@ export const STRINGS = {
     consentLabel: "Accetto termini, privacy e condizioni d'uso.",
     createAction: "Completa registrazione",
     creatingAction: "Creazione account...",
+    signInSubmitAction: "Accedi",
+    signingInAction: "Accesso in corso...",
+    resetPasswordSubmitAction: "Aggiorna password",
+    resettingPasswordAction: "Aggiornamento in corso...",
+    resetPasswordRequestAgainPrompt: "Link non valido o scaduto?",
+    resetPasswordRequestAgainAction: "Richiedi un nuovo link",
     createFailed: "Non riesco a completare la registrazione, riprova.",
+    resetPasswordRequestFailed:
+      "Non riesco a inviare il link di reset ora. Riprova tra poco.",
+    resetPasswordInvalidLink:
+      "Il link di recupero non è valido o è scaduto. Richiedine uno nuovo.",
+    resetPasswordFailed:
+      "Non riesco ad aggiornare la password ora. Riprova tra poco.",
+    resetPasswordSuccess:
+      "Password aggiornata con successo. Rientro in app in corso...",
     createMissingConfig:
       "Registrazione non disponibile: configurazione account mancante.",
     emailAlreadyRegistered: "Questa email risulta già registrata.",
     loginFailed:
       "Account già esistente, ma non riesco ad accedere con la password inserita.",
+    invalidCredentials: "Email o password non corretti.",
     emailConfirmationRequired:
       "Account creato ma non ancora attivo. Conferma la mail e poi rientra in app.",
     favoriteSyncFailed:
       "Non riesco a sincronizzare i preferiti ora. Riprova tra poco.",
     profileTitle: "Profilo",
+    profileAction: "Apri profilo",
+    signInAction: "Accedi",
     signedInAs: "Accesso attivo",
     signOutAction: "Esci",
     signOutFailed: "Non riesco a uscire ora. Riprova tra poco.",
+    deleteAccountAction: "Elimina account",
+    deletingAccountAction: "Eliminazione account...",
+    deleteAccountHint:
+      "L'eliminazione account è definitiva e rimuove anche i preferiti salvati.",
+    deleteAccountFailed:
+      "Non riesco a eliminare l'account ora. Riprova tra poco.",
+    deleteAccountConfirm:
+      "Vuoi eliminare definitivamente il tuo account e tutti i preferiti?",
+    deleteAccountSuccess: "Account eliminato con successo.",
     cancelAndBack: "Torna all'app",
     requiredField: "Compila tutti i campi obbligatori.",
     invalidName: "Inserisci nome e cognome validi.",
