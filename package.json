@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
     "lint": "eslint .",
+    "check": "npm run lint && npm run typecheck",
     "preview": "vite preview",
     "test:waitlist": "playwright test tests/waitlist.api.spec.ts tests/waitlist.e2e.spec.ts",
     "test:waitlist:api": "playwright test tests/waitlist.api.spec.ts",

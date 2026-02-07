@@ -1,108 +1,103 @@
-# React + TypeScript + Vite
+# Beach Radar
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Beach Radar is a Vite + React + TypeScript app with Vercel serverless APIs.
+The project currently includes:
 
-Currently, two official plugins are available:
+- public waitlist flow (`/waitlist/`)
+- gated app flow (`/app/`) with map, reports, weather, account/favorites
+- Supabase-backed APIs (`/api/*`)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
 
-## React Compiler
+- Frontend: React 19, Vite 7, TypeScript
+- Map: Leaflet + react-leaflet
+- Backend/API: Vercel Functions (`api/`)
+- Data/Auth: Supabase
+- Tests: Playwright (API + E2E + smoke)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Quick Start
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Use Node 20:
+```bash
+nvm use
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2. Install dependencies:
+```bash
+npm ci
 ```
 
-## Domain & Share Preview Verification
-1. Open `https://www.beachradar.it` and confirm it returns a 301 redirect to `https://beachradar.it`.
-2. Open `https://beach-radar.vercel.app` and confirm it returns a 301 redirect to `https://beachradar.it`.
-3. Open `http://beachradar.it` and confirm it returns a 301 redirect to `https://beachradar.it`.
-4. Paste `https://beachradar.it` in WhatsApp/Telegram/iMessage and confirm the preview shows the expected title, description, and image.
+3. Copy env template:
+```bash
+cp .env.example .env.local
+```
 
-## Performance Profiling (Chrome)
-1. Start the app with `npm run dev`.
-2. Enable the dev performance overlay by visiting `/debug` or running `localStorage.setItem(\"br_debug_v1\", \"1\")` in the console, then refresh.
-3. Open Chrome DevTools → Performance.
-4. Click Record, then exercise the hotspots for 10–20 seconds:
-   Pan/zoom the map, open/close the Lido modal, type quickly in search, and generate a share card.
-5. Stop recording and check:
-   Look for long main-thread tasks, repeated layout/paint work, and clustering spikes.
-6. Open DevTools → React Profiler.
-7. Record while repeating the same actions and confirm render counts align with the overlay:
-   MapView should not re-cluster on selection changes in normal mode, and search renders should feel throttled while typing.
+4. Start frontend-only dev server:
+```bash
+npm run dev
+```
 
-## Waitlist Tests
-These tests target the static waitlist page at `/public/waitlist/index.html` (served as `/waitlist/index.html`) and the Vercel API at `/api/waitlist`.
+5. If you need `/api/*` locally, run Vercel dev:
+```bash
+vercel dev --listen 3000 --yes
+```
 
-Prereqs:
-- Install Playwright browsers once: `npx playwright install`
-- Run the API locally with Vercel so `/api/*` is available: `vercel dev` (default port 3000)
-- Ensure env vars are present (at least `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`)
+## Core Scripts
 
-Run locally (defaults to `http://localhost:3000` and `/waitlist/index.html`):
-```\nBASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist\n```
+```bash
+npm run dev                 # Vite app
+npm run lint                # ESLint
+npm run typecheck           # TypeScript project refs check
+npm run check               # lint + typecheck
+npm run build               # production build
+npm run preview             # preview dist
+```
 
-API-only or E2E-only:
-```\nBASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist:api\nBASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist:e2e\n```
+Waitlist tests:
 
-Run against production (set the deployed waitlist path explicitly if different):
-```\nBASE_URL=https://beachradar.it WAITLIST_PATH=/waitlist/index.html npm run test:waitlist\n```
+```bash
+npm run test:waitlist
+npm run test:waitlist:api
+npm run test:waitlist:e2e
+npm run test:waitlist:smoke
+npm run test:waitlist:smoke:static
+```
+
+Seed & tooling:
+
+```bash
+npm run seed:geocode
+npm run seed:sync
+npm run posters:csv
+npm run posters:gen
+```
+
+## Environment Variables
+
+See `.env.example` for the full list.
+
+Most important:
+
+- frontend: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_PUBLIC_BASE_URL`
+- APIs: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `APP_ACCESS_KEY`
+
+Optional feature flags:
+
+- `VITE_USE_MOCK_CROWD`
+- `VITE_FORCE_REMOTE_REPORTS`
+- `VITE_REPORTS_POLL_MS`
+
+## Repo Docs
+
+- `docs/README.md`: documentation index
+- `docs/repo_map.md`: directory map and ownership boundaries
+- `docs/waitlist_ops.md`: waitlist runbook (local, CI, envs, SQL, retention)
+- `tools/posters/README.md`: poster generation workflow
+- `CONTRIBUTING.md`: contribution and quality workflow
+
+## Domain & Share Preview Checks
+
+1. `https://www.beachradar.it` must 301 to `https://beachradar.it`
+2. `https://beach-radar.vercel.app` must 301 to `https://beachradar.it`
+3. `http://beachradar.it` must 301 to `https://beachradar.it`
+4. Sharing `https://beachradar.it` in messaging apps should show correct preview
