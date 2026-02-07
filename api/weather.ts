@@ -114,7 +114,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     latitude: lat.toFixed(5),
     longitude: lng.toFixed(5),
     current:
-      "temperature_2m,wind_speed_10m,precipitation_probability,weather_code,is_day,time",
+      "temperature_2m,wind_speed_10m,precipitation_probability,weather_code,is_day",
     hourly: "temperature_2m,precipitation_probability,weather_code",
     forecast_days: "2",
     timezone: "auto",
