@@ -74,6 +74,14 @@ App auth (frontend):
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 
+App feature flags (frontend, optional):
+- `VITE_USE_MOCK_CROWD` (`true/false`, default `false`)
+- `VITE_FORCE_REMOTE_REPORTS` (`true/false`, default `false`)
+- `VITE_REPORTS_POLL_MS` (default `60000`)
+
+Crowd reports API (optional local test mode):
+- `REPORTS_TEST_MODE=1` (uses in-memory reports store, no Supabase writes)
+
 Rate limit tuning:
 - `WAITLIST_RATE_LIMIT_MAX` (default: 10)
 - `WAITLIST_RATE_LIMIT_WINDOW_SEC` (default: 600)
@@ -119,6 +127,7 @@ Run these in the Supabase SQL editor (in order):
 - `scripts/sql/waitlist_phase1.sql`
 - `scripts/sql/waitlist_rate_limits.sql`
 - `scripts/sql/app_auth_favorites.sql`
+- `scripts/sql/app_crowd_reports.sql`
 
 ## Data retention and cleanup
 

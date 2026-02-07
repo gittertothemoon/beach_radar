@@ -40,11 +40,7 @@ import {
   getCurrentAccount,
   type AppAccount,
 } from "../lib/account";
-import {
-  getReporterHash,
-  loadReports,
-  tryAddReport,
-} from "../lib/storage";
+import { getReporterHash } from "../lib/storage";
 import {
   ANALYTICS_UPDATE_EVENT,
   type AnalyticsSource,
@@ -69,9 +65,11 @@ import {
   fetchBeachWeather,
   type BeachWeatherSnapshot,
 } from "../lib/weather";
+import { fetchSharedReports, submitSharedReport } from "../lib/reports";
 import type { BeachWithStats, CrowdLevel, Report } from "../lib/types";
 import type { LatLng, UserLocation } from "../lib/geo";
 import type { BeachOverrides } from "../lib/overrides";
+import { FEATURE_FLAGS } from "../config/features";
 
 const DEFAULT_CENTER: LatLng = { lat: 44.0678, lng: 12.5695 };
 const BEACH_FOCUS_ZOOM = 17;
@@ -81,9 +79,7 @@ const SHOW_ALL_PINS_FLY_DURATION_S = 1.1;
 const REPORT_RADIUS_M = 700;
 const REMOTE_REPORT_SESSION_KEY = "br_report_anywhere_v1";
 const REGISTER_RESUME_KEY = "beach-radar-register-resume-v1";
-const USE_MOCK_CROWD = true;
 const MOCK_CROWD_LEVELS: CrowdLevel[] = [1, 2, 3, 4];
-const FORCE_REMOTE_REPORTS = true;
 
 type GeoStatus = "idle" | "loading" | "ready" | "denied" | "error";
 type WeatherStatus = "loading" | "ready" | "error";
@@ -113,6 +109,25 @@ type RegisterResumeSnapshot = {
 
 const weatherCacheKey = (lat: number, lng: number) =>
   `${lat.toFixed(2)},${lng.toFixed(2)}`;
+
+const parseBooleanFlag = (value: string | null): boolean | null => {
+  if (value === null) return null;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "1" || normalized === "true") return true;
+  if (normalized === "0" || normalized === "false") return false;
+  return null;
+};
+
+const readQueryBooleanFlag = (
+  searchParams: URLSearchParams,
+  ...keys: string[]
+): boolean | null => {
+  for (const key of keys) {
+    const parsed = parseBooleanFlag(searchParams.get(key));
+    if (parsed !== null) return parsed;
+  }
+  return null;
+};
 
 const consumeRegisterResumeSnapshot = (): RegisterResumeSnapshot | null => {
   if (typeof window === "undefined") return null;
@@ -164,9 +179,7 @@ const consumeRegisterResumeSnapshot = (): RegisterResumeSnapshot | null => {
 function App() {
   const registerResumeSnapshot = useMemo(() => consumeRegisterResumeSnapshot(), []);
   const [search, setSearch] = useState(() => registerResumeSnapshot?.search ?? "");
-  const [reports, setReports] = useState<Report[]>(() =>
-    typeof window === "undefined" ? [] : loadReports(),
-  );
+  const [reports, setReports] = useState<Report[]>([]);
   const [account, setAccount] = useState<AppAccount | null>(null);
   const [favoriteBeachIds, setFavoriteBeachIds] = useState<Set<string>>(() =>
     typeof window === "undefined" ? new Set<string>() : new Set(),
@@ -205,6 +218,7 @@ function App() {
     () => registerResumeSnapshot?.reportOpen ?? false,
   );
   const [reportError, setReportError] = useState<string | null>(null);
+  const [submittingReport, setSubmittingReport] = useState(false);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [geoStatus, setGeoStatus] = useState<GeoStatus>("idle");
   const [geoError, setGeoError] = useState<string | null>(null);
@@ -246,6 +260,7 @@ function App() {
   const selectionSourceRef = useRef<AnalyticsSource | null>(null);
   const reportOpenRef = useRef(false);
   const deepLinkProcessedRef = useRef(false);
+  const reportsUnavailableToastShownRef = useRef(false);
 
   const isDebug = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -255,9 +270,21 @@ function App() {
     );
   }, []);
 
+  const useMockCrowd = useMemo(() => {
+    if (typeof window === "undefined") return FEATURE_FLAGS.useMockCrowd;
+    const params = new URLSearchParams(window.location.search);
+    const queryOverride = readQueryBooleanFlag(
+      params,
+      "mockCrowd",
+      "mock_crowd",
+    );
+    if (queryOverride !== null) return queryOverride;
+    return FEATURE_FLAGS.useMockCrowd;
+  }, []);
+
   const allowRemoteReports = useMemo(() => {
     if (typeof window === "undefined") return false;
-    if (FORCE_REMOTE_REPORTS) return true;
+    if (FEATURE_FLAGS.forceRemoteReports) return true;
     if (window.sessionStorage.getItem(REMOTE_REPORT_SESSION_KEY) === "1") {
       return true;
     }
@@ -398,6 +425,36 @@ function App() {
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const syncReports = async (initialLoad: boolean) => {
+      const result = await fetchSharedReports();
+      if (!active) return;
+
+      if (result.ok) {
+        setReports(result.reports);
+        reportsUnavailableToastShownRef.current = false;
+        return;
+      }
+
+      if (initialLoad && !reportsUnavailableToastShownRef.current) {
+        reportsUnavailableToastShownRef.current = true;
+        showLocationToast(STRINGS.report.feedUnavailable, "error");
+      }
+    };
+
+    void syncReports(true);
+    const intervalId = window.setInterval(() => {
+      void syncReports(false);
+    }, FEATURE_FLAGS.reportsPollMs);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, [showLocationToast]);
 
   useEffect(() => {
     let active = true;
@@ -631,7 +688,7 @@ function App() {
           MOCK_CROWD_LEVELS[index % MOCK_CROWD_LEVELS.length] ??
           (1 as CrowdLevel);
         const isPred = stats.state === "PRED";
-        const effectiveStats = USE_MOCK_CROWD
+        const effectiveStats = useMockCrowd
           ? {
               ...stats,
               crowdLevel: mockLevel,
@@ -644,7 +701,7 @@ function App() {
         return { ...beach, lat, lng, ...effectiveStats, distanceM: null };
       })
       .filter((beach) => hasFiniteCoords(beach));
-  }, [visibleSpots, overrides, reportsIndex, now]);
+  }, [visibleSpots, overrides, reportsIndex, now, useMockCrowd]);
 
   const beachViews = useMemo<BeachWithStats[]>(() => {
     if (!userLocation) return beachViewsBase;
@@ -1169,7 +1226,7 @@ function App() {
   }, [account]);
 
   const handleSubmitReport = useCallback((level: CrowdLevel) => {
-    if (!selectedBeach) return;
+    if (!selectedBeach || submittingReport) return;
     if (
       !allowRemoteReports &&
       reportDistanceM !== null &&
@@ -1178,33 +1235,48 @@ function App() {
       track("report_submit_blocked_geofence", { beachId: selectedBeach.id });
       return;
     }
+
     const reporterHash = getReporterHash();
     const attribution = loadAttribution() ?? undefined;
-    const result = tryAddReport({
+    setSubmittingReport(true);
+
+    void submitSharedReport({
       beachId: selectedBeach.id,
       crowdLevel: level,
       reporterHash,
       attribution,
-    });
-    if (result.ok) {
-      setReports(result.reports);
-      setNow(Date.now);
-      setReportError(null);
-      setReportOpen(false);
-      setReportThanksOpen(true);
-      track("report_submit_success", {
-        beachId: selectedBeach.id,
-        level,
+    })
+      .then((result) => {
+        if (result.ok) {
+          setReports((prev) => {
+            const deduped = prev.filter((report) => report.id !== result.report.id);
+            return [result.report, ...deduped];
+          });
+          setNow(Date.now);
+          setReportError(null);
+          setReportOpen(false);
+          setReportThanksOpen(true);
+          track("report_submit_success", {
+            beachId: selectedBeach.id,
+            level,
+          });
+          return;
+        }
+
+        if (result.code === "too_soon") {
+          setReportError(STRINGS.report.tooSoon);
+          track("report_submit_blocked_rate_limit", {
+            beachId: selectedBeach.id,
+          });
+          return;
+        }
+
+        setReportError(STRINGS.report.submitFailed);
+      })
+      .finally(() => {
+        setSubmittingReport(false);
       });
-    } else {
-      setReportError(result.reason);
-      if (result.reason === STRINGS.report.tooSoon) {
-        track("report_submit_blocked_rate_limit", {
-          beachId: selectedBeach.id,
-        });
-      }
-    }
-  }, [allowRemoteReports, reportDistanceM, selectedBeach]);
+  }, [allowRemoteReports, reportDistanceM, selectedBeach, submittingReport]);
 
   const handleShare = useCallback(async () => {
     if (!selectedBeach) return;
@@ -1606,6 +1678,7 @@ function App() {
           onClose={handleCloseReport}
           onSubmit={handleSubmitReport}
           submitError={reportError}
+          submitting={submittingReport}
         />
       ) : null}
     </div>

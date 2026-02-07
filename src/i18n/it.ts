@@ -117,6 +117,7 @@ export const STRINGS = {
   },
   report: {
     title: "Segnala affollamento",
+    submitting: "Invio segnalazione...",
     locationSearching: "Sto cercando la tua posizione...",
     locationDenied: "Posizione negata. Attivala per segnalare.",
     locationUnavailable: "Posizione non disponibile.",
@@ -126,6 +127,10 @@ export const STRINGS = {
       "Segnalazione da remoto attiva. Puoi segnalare anche se lontano.",
     nearEnough: "Sei vicino alla spiaggia. Puoi segnalare.",
     tooSoon: "Hai già segnalato da poco. Riprova tra qualche minuto.",
+    submitFailed:
+      "Non riesco a salvare la segnalazione ora. Riprova tra poco.",
+    feedUnavailable:
+      "Dati segnalazioni non disponibili al momento. Riprova tra poco.",
     thanksPrompt: "✅ Grazie. Vuoi aiutare anche gli altri?",
     thanksSubtitle: "Condividi la segnalazione per aggiornare chi sta arrivando.",
   },

@@ -24,6 +24,7 @@ type ReportModalProps = {
   onClose: () => void;
   onSubmit: (level: CrowdLevel) => void;
   submitError: string | null;
+  submitting?: boolean;
 };
 
 const ReportModal = ({
@@ -38,6 +39,7 @@ const ReportModal = ({
   onClose,
   onSubmit,
   submitError,
+  submitting = false,
 }: ReportModalProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -142,12 +144,18 @@ const ReportModal = ({
           </div>
         ) : null}
 
+        {submitting ? (
+          <div className="mt-3 rounded-[12px] border border-sky-300/60 bg-sky-500/20 px-4 py-2 text-xs text-sky-50">
+            {STRINGS.report.submitting}
+          </div>
+        ) : null}
+
         <div className="mt-4 grid grid-cols-2 gap-3">
           {levelOptions.map((option) => (
             <button
               key={option.level}
               onClick={() => onSubmit(option.level)}
-              disabled={!canReport}
+              disabled={!canReport || submitting}
               className="br-press rounded-[12px] border border-white/20 bg-black/40 px-3 py-4 text-sm font-semibold br-text-primary transition disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
             >
               {option.level} • {option.label}

@@ -29,7 +29,7 @@ export type Report = {
   beachId: string;
   createdAt: number;
   crowdLevel: CrowdLevel;
-  reporterHash: string;
+  reporterHash?: string;
   attribution?: AttributionSnapshot;
 };
 
