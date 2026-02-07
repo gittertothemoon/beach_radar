@@ -77,6 +77,7 @@ const SHOW_ALL_PINS_ZOOM_TRIGGER = BEACH_FOCUS_ZOOM - 1;
 const SHOW_ALL_PINS_ZOOM_OUT_DELTA = 2;
 const SHOW_ALL_PINS_FLY_DURATION_S = 1.1;
 const REPORT_RADIUS_M = 700;
+const REPORTS_FEED_ERROR_TOAST_GRACE_MS = 10_000;
 const REMOTE_REPORT_SESSION_KEY = "br_report_anywhere_v1";
 const REGISTER_RESUME_KEY = "beach-radar-register-resume-v1";
 const MOCK_CROWD_LEVELS: CrowdLevel[] = [1, 2, 3, 4];
@@ -261,6 +262,8 @@ function App() {
   const reportOpenRef = useRef(false);
   const deepLinkProcessedRef = useRef(false);
   const reportsUnavailableToastShownRef = useRef(false);
+  const reportsFeedReadyRef = useRef(false);
+  const reportsFeedGraceElapsedRef = useRef(false);
 
   const isDebug = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -338,7 +341,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line no-console
     console.info(`Loaded spots: ${SPOTS.length}`);
   }, []);
 
@@ -355,7 +357,6 @@ function App() {
     const deepLinkId =
       registerResumeSnapshot === null ? beachParam ?? beachIdParam : null;
     if (registerResumeSnapshot === null && deepLinkId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPendingDeepLinkBeachId(deepLinkId);
     }
 
@@ -428,30 +429,39 @@ function App() {
 
   useEffect(() => {
     let active = true;
+    const graceTimeoutId = window.setTimeout(() => {
+      reportsFeedGraceElapsedRef.current = true;
+    }, REPORTS_FEED_ERROR_TOAST_GRACE_MS);
 
-    const syncReports = async (initialLoad: boolean) => {
+    const syncReports = async () => {
       const result = await fetchSharedReports();
       if (!active) return;
 
       if (result.ok) {
         setReports(result.reports);
+        reportsFeedReadyRef.current = true;
         reportsUnavailableToastShownRef.current = false;
         return;
       }
 
-      if (initialLoad && !reportsUnavailableToastShownRef.current) {
+      const canShowUnavailableToast =
+        reportsFeedReadyRef.current || reportsFeedGraceElapsedRef.current;
+      if (!canShowUnavailableToast) return;
+
+      if (!reportsUnavailableToastShownRef.current) {
         reportsUnavailableToastShownRef.current = true;
         showLocationToast(STRINGS.report.feedUnavailable, "error");
       }
     };
 
-    void syncReports(true);
+    void syncReports();
     const intervalId = window.setInterval(() => {
-      void syncReports(false);
+      void syncReports();
     }, FEATURE_FLAGS.reportsPollMs);
 
     return () => {
       active = false;
+      window.clearTimeout(graceTimeoutId);
       window.clearInterval(intervalId);
     };
   }, [showLocationToast]);
@@ -535,7 +545,6 @@ function App() {
   );
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     requestLocation();
   }, [requestLocation]);
 
@@ -550,7 +559,6 @@ function App() {
     }
 
     if (!navigator.geolocation) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       handleGeoError(null);
       showLocationToast(STRINGS.location.toastUnavailable, "info");
       setFollowMode(false);
@@ -671,7 +679,6 @@ function App() {
 
   useEffect(() => {
     if (!isDebug) return;
-    // eslint-disable-next-line no-console
     console.info(
       `Debug coords: total=${coordStats.total} valid=${coordStats.valid} missing=${coordStats.missing}`,
     );
@@ -808,11 +815,17 @@ function App() {
     [beachViewsBase],
   );
   const debugAttribution = useMemo(
-    () => (isDebug ? loadAttribution() : null),
+    () => {
+      void debugRefreshKey;
+      return isDebug ? loadAttribution() : null;
+    },
     [debugRefreshKey, isDebug],
   );
   const debugEvents = useMemo(
-    () => (isDebug ? loadEvents() : []),
+    () => {
+      void debugRefreshKey;
+      return isDebug ? loadEvents() : [];
+    },
     [debugRefreshKey, isDebug],
   );
 
@@ -887,7 +900,6 @@ function App() {
 
   useEffect(() => {
     if (selectedBeachId && !selectedBeach) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedBeachId(null);
       setSoloBeachId(null);
       setIsLidoModalOpen(false);
@@ -949,7 +961,6 @@ function App() {
     if (deepLinkProcessedRef.current) return;
     if (beachViewsBase.length === 0) return;
     const beachExists = beachIdSet.has(pendingDeepLinkBeachId);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDeepLinkInfo((prev) => ({
       ...prev,
       matched: beachExists,
@@ -960,7 +971,6 @@ function App() {
       const warning = `Deep link beach id not found in SPOTS: ${pendingDeepLinkBeachId}`;
       setDeepLinkWarning(warning);
       const sampleIds = beachViewsBase.slice(0, 5).map((beach) => beach.id);
-      // eslint-disable-next-line no-console
       console.warn(warning, "Sample ids:", sampleIds);
       return;
     }
@@ -978,7 +988,6 @@ function App() {
     if (!mapReady || !mapRef.current) return;
     if (deepLinkInfo.matched === false) return;
     selectionSourceRef.current = "deeplink";
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     focusBeach(pendingDeepLinkBeachId, { updateSearch: false, solo: true });
     setPendingDeepLinkBeachId(null);
   }, [deepLinkInfo.matched, focusBeach, mapReady, pendingDeepLinkBeachId]);

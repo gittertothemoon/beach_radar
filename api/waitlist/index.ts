@@ -36,7 +36,7 @@ type RateLimitConfig = {
   max: number;
 };
 
-type SupabaseClientAny = ReturnType<typeof createClient<any>>;
+type SupabaseClientAny = ReturnType<typeof createClient>;
 
 const MAX_BODY_BYTES = 10 * 1024;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -173,7 +173,7 @@ function readBody(req: VercelRequest): { body: Record<string, unknown> | null; e
         body: isPlainObject(parsed) ? parsed : null,
         error: isPlainObject(parsed) ? undefined : "invalid_body"
       };
-    } catch (_) {
+    } catch {
       return { body: null, error: "invalid_json" };
     }
   }
@@ -184,7 +184,7 @@ function readBody(req: VercelRequest): { body: Record<string, unknown> | null; e
       if (size > MAX_BODY_BYTES) {
         return { body: null, error: "payload_too_large" };
       }
-    } catch (_) {
+    } catch {
       return { body: null, error: "invalid_body" };
     }
 
@@ -344,7 +344,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ ok: false, error: "missing_env" });
   }
 
-  const supabase = createClient<any>(supabaseUrl, supabaseKey, {
+  const supabase = createClient(supabaseUrl, supabaseKey, {
     auth: { persistSession: false }
   });
 

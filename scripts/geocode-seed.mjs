@@ -586,25 +586,20 @@ const main = async () => {
   await saveJson(OUTPUT_JSON, enriched);
   await writeCsv(OUTPUT_CSV, enriched);
 
-  // eslint-disable-next-line no-console
   console.log(
     `Geocode summary: total=${stats.total} ok=${stats.ok} failed=${stats.failed} from_cache=${stats.from_cache} override_entries=${stats.override_entries} overrides_used=${stats.overrides_used} nominatim_calls=${stats.nominatim_calls}`,
   );
-  // eslint-disable-next-line no-console
   console.log(
     `Geocode sources: overrides_used=${stats.overrides_used} override_entries=${stats.override_entries} nominatim_calls=${stats.nominatim_calls} nominatim_results=${stats.nominatim_results} cache_hits=${stats.from_cache}`,
   );
   if (failedIds.length > 0) {
-    // eslint-disable-next-line no-console
     console.log(`Failed IDs (${failedIds.length}): ${failedIds.join(", ")}`);
   } else {
-    // eslint-disable-next-line no-console
     console.log("Failed IDs (0): none");
   }
 };
 
 main().catch((error) => {
-  // eslint-disable-next-line no-console
   console.error(error);
   process.exitCode = 1;
 });

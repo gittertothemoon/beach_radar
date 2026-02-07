@@ -1,4 +1,10 @@
-import { test, expect } from "@playwright/test";
+import {
+  test,
+  expect,
+  type APIRequestContext,
+  type APIResponse,
+  type Page
+} from "@playwright/test";
 
 const WAITLIST_PATH = process.env.WAITLIST_PATH || "/waitlist/index.html";
 const QUERY =
@@ -37,15 +43,20 @@ function buildPayload(email: string) {
   };
 }
 
-async function readJson(response: { json: () => Promise<any> }) {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+async function readJson(response: APIResponse): Promise<Record<string, unknown> | null> {
   try {
-    return await response.json();
+    const payload: unknown = await response.json();
+    return isRecord(payload) ? payload : null;
   } catch {
     return null;
   }
 }
 
-async function ensureApiReady(request: any) {
+async function ensureApiReady(request: APIRequestContext) {
   const response = await request.post("/api/waitlist", {
     data: buildPayload(uniqueEmail())
   });
@@ -56,8 +67,8 @@ async function ensureApiReady(request: any) {
   return { ready: response.status() === 200, reason: body?.error || null };
 }
 
-async function readLocalStorage(page: { evaluate: any }) {
-  return page.evaluate(() => {
+async function readLocalStorage(page: Page): Promise<Record<string, string | null>> {
+  return page.evaluate<Record<string, string | null>>(() => {
     const out: Record<string, string | null> = {};
     for (let i = 0; i < localStorage.length; i += 1) {
       const key = localStorage.key(i);

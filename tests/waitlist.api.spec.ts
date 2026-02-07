@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type APIResponse } from "@playwright/test";
 
 const WAITLIST_ENDPOINT = "/api/waitlist";
 
@@ -34,9 +34,14 @@ function buildPayload(email: string) {
   };
 }
 
-async function readJson(response: { json: () => Promise<any> }) {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+async function readJson(response: APIResponse): Promise<Record<string, unknown> | null> {
   try {
-    return await response.json();
+    const payload: unknown = await response.json();
+    return isRecord(payload) ? payload : null;
   } catch {
     return null;
   }

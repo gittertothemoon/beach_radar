@@ -116,10 +116,8 @@ const main = async () => {
 
   await fs.mkdir(path.dirname(OUTPUT_PATH), { recursive: true });
   await saveJson(OUTPUT_PATH, merged);
-  // eslint-disable-next-line no-console
   console.log(`Synced seed data to ${OUTPUT_PATH}`);
   if (missingIds.length > 0) {
-    // eslint-disable-next-line no-console
     console.error(
       `Seed sync failed: missing coords for ${missingIds.length} beaches: ${missingIds.join(", ")}`,
     );
@@ -128,7 +126,6 @@ const main = async () => {
 };
 
 main().catch((error) => {
-  // eslint-disable-next-line no-console
   console.error(error);
   process.exitCode = 1;
 });
