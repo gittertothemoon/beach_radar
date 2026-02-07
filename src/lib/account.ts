@@ -1,4 +1,5 @@
 import type { User } from "@supabase/supabase-js";
+import { PUBLIC_BASE_URL } from "../config/publicUrl";
 import { getSupabaseClient } from "./supabase";
 
 const FAVORITES_TABLE = "user_favorites";
@@ -78,6 +79,18 @@ type DeleteAccountErrorCode =
 export type DeleteAccountResult =
   | { ok: true }
   | { ok: false; code: DeleteAccountErrorCode };
+
+const buildDeleteAccountEndpoints = (): string[] => {
+  const endpoints = ["/api/account/delete"];
+  if (typeof window === "undefined") return endpoints;
+
+  const normalizedCurrentOrigin = window.location.origin.replace(/\/+$/, "");
+  const normalizedPublicBase = PUBLIC_BASE_URL.replace(/\/+$/, "");
+  if (normalizedCurrentOrigin !== normalizedPublicBase) {
+    endpoints.push(`${normalizedPublicBase}/api/account/delete`);
+  }
+  return endpoints;
+};
 
 const readUserMetadataString = (
   user: User,
@@ -382,22 +395,35 @@ export const deleteCurrentAccount = async (): Promise<DeleteAccountResult> => {
     return { ok: false, code: "unauthorized" };
   }
 
-  try {
-    const response = await fetch("/api/account/delete", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${data.session.access_token}`,
-      },
-    });
+  const endpoints = buildDeleteAccountEndpoints();
+  let sawNetworkFailure = false;
 
-    if (response.ok) {
-      return { ok: true };
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${data.session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        return { ok: true };
+      }
+      if (response.status === 401) {
+        return { ok: false, code: "unauthorized" };
+      }
+      if (response.status === 404 || response.status === 405) {
+        continue;
+      }
+      return { ok: false, code: "unknown" };
+    } catch {
+      sawNetworkFailure = true;
     }
-    if (response.status === 401) {
-      return { ok: false, code: "unauthorized" };
-    }
-    return { ok: false, code: "unknown" };
-  } catch {
+  }
+
+  if (sawNetworkFailure) {
     return { ok: false, code: "network" };
   }
+  return { ok: false, code: "unknown" };
 };

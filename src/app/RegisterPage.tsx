@@ -91,11 +91,14 @@ const RegisterPage = () => {
 
   const privacyUrl = useMemo(() => {
     const url = new URL("/privacy/", PUBLIC_BASE_URL);
+    const queryLang = searchParams.get("lang");
+    const lang = queryLang === "en" ? "en" : "it";
+    url.searchParams.set("lang", lang);
     url.searchParams.set("from", "app");
     const backPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
     url.searchParams.set("back", backPath);
     return url.toString();
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     const root = document.getElementById("root");

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Beach Radar privacy information" />
+  <meta name="description" content="Informativa privacy Beach Radar" />
   <title>Beach Radar - Privacy</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -176,67 +176,144 @@
     </nav>
 
     <main class="privacy-card">
-      <h1>Privacy</h1>
-      <p class="lead">
-        This page explains what data we collect for the Beach Radar waitlist, why we collect it, and how
-        you can contact us.
-      </p>
+      <h1 id="titleText">Privacy</h1>
+      <p class="lead" id="leadText"></p>
 
       <section class="section">
-        <h2>Data collected</h2>
-        <ul>
-          <li>Email address and signup timestamps (first/last seen).</li>
-          <li>Attribution parameters (UTM, poster, city, and similar tracking fields).</li>
-          <li>Technical metadata (device info, browser user agent, timezone, referrer/page URL).</li>
-          <li>Network data such as IP address, used for security and abuse prevention.</li>
-        </ul>
+        <h2 id="dataCollectedTitle"></h2>
+        <ul id="dataCollectedList"></ul>
       </section>
 
       <section class="section">
-        <h2>Purpose</h2>
-        <p>We use this data to manage the waitlist and send launch-related communications.</p>
+        <h2 id="purposeTitle"></h2>
+        <p id="purposeText"></p>
       </section>
 
       <section class="section">
-        <h2>Legal basis</h2>
-        <p>We process your data based on consent provided when you join the waitlist.</p>
+        <h2 id="legalBasisTitle"></h2>
+        <p id="legalBasisText"></p>
       </section>
 
       <section class="section">
-        <h2>Retention</h2>
-        <p>We keep waitlist data until launch plus up to 12 months, or until you request deletion.</p>
+        <h2 id="retentionTitle"></h2>
+        <p id="retentionText"></p>
       </section>
 
       <section class="section">
-        <h2>Contact</h2>
-        <p>
-          For any request (access, deletion, or questions), email
-          <a id="privacyContact" href="mailto:privacy@beachradar.it">privacy@beachradar.it</a>.
-        </p>
+        <h2 id="contactTitle"></h2>
+        <p id="contactText"></p>
       </section>
 
       <div class="meta">
-        <span>Last updated: January 28, 2026</span>
+        <span id="lastUpdatedText"></span>
       </div>
     </main>
   </div>
 
   <script>
-    const contactEl = document.getElementById("privacyContact");
-    const contactEmail = window.PRIVACY_CONTACT_EMAIL || "privacy@beachradar.it";
-    if (contactEl) {
-      contactEl.textContent = contactEmail;
-      contactEl.setAttribute("href", `mailto:${contactEmail}`);
-    }
+    const I18N = {
+      it: {
+        title: "Privacy",
+        pageTitle: "Beach Radar - Privacy",
+        pageDescription: "Informativa privacy Beach Radar",
+        lead:
+          "Questa pagina spiega quali dati raccogliamo per la waitlist di Beach Radar, perché li raccogliamo e come contattarci.",
+        dataCollectedTitle: "Dati raccolti",
+        dataCollectedItems: [
+          "Indirizzo email e timestamp di iscrizione (prima/ultima registrazione).",
+          "Parametri di attribuzione (UTM, poster, città e campi simili di tracking).",
+          "Metadati tecnici (dispositivo, browser user agent, timezone, referrer/pagina).",
+          "Dati di rete come indirizzo IP, usati per sicurezza e prevenzione abusi.",
+        ],
+        purposeTitle: "Finalità",
+        purposeText:
+          "Usiamo questi dati per gestire la waitlist e inviare comunicazioni legate al lancio.",
+        legalBasisTitle: "Base giuridica",
+        legalBasisText:
+          "Trattiamo i dati sulla base del consenso fornito quando ti iscrivi alla waitlist.",
+        retentionTitle: "Conservazione",
+        retentionText:
+          "Conserviamo i dati della waitlist fino al lancio e fino a 12 mesi successivi, oppure fino alla richiesta di cancellazione.",
+        contactTitle: "Contatti",
+        contactPrefix:
+          "Per qualsiasi richiesta (accesso, cancellazione o chiarimenti), scrivi a",
+        contactSuffix: ".",
+        lastUpdated: "Ultimo aggiornamento: 28 gennaio 2026",
+        backToWaitlist: "Torna alla waitlist",
+        backToApp: "Torna all'app",
+      },
+      en: {
+        title: "Privacy",
+        pageTitle: "Beach Radar - Privacy",
+        pageDescription: "Beach Radar privacy information",
+        lead:
+          "This page explains what data we collect for the Beach Radar waitlist, why we collect it, and how you can contact us.",
+        dataCollectedTitle: "Data collected",
+        dataCollectedItems: [
+          "Email address and signup timestamps (first/last seen).",
+          "Attribution parameters (UTM, poster, city, and similar tracking fields).",
+          "Technical metadata (device info, browser user agent, timezone, referrer/page URL).",
+          "Network data such as IP address, used for security and abuse prevention.",
+        ],
+        purposeTitle: "Purpose",
+        purposeText:
+          "We use this data to manage the waitlist and send launch-related communications.",
+        legalBasisTitle: "Legal basis",
+        legalBasisText:
+          "We process your data based on consent provided when you join the waitlist.",
+        retentionTitle: "Retention",
+        retentionText:
+          "We keep waitlist data until launch plus up to 12 months, or until you request deletion.",
+        contactTitle: "Contact",
+        contactPrefix:
+          "For any request (access, deletion, or questions), email",
+        contactSuffix: ".",
+        lastUpdated: "Last updated: January 28, 2026",
+        backToWaitlist: "Back to waitlist",
+        backToApp: "Back to app",
+      },
+    };
+
+    const isSupportedLang = (value) => value === "it" || value === "en";
+    const tryReadLocalStorageLang = () => {
+      try {
+        const value = window.localStorage.getItem("br_lang_v1");
+        return typeof value === "string" ? value.toLowerCase() : "";
+      } catch {
+        return "";
+      }
+    };
+    const tryReadReferrerLang = () => {
+      try {
+        if (!document.referrer) return "";
+        const refUrl = new URL(document.referrer);
+        const lang = refUrl.searchParams.get("lang");
+        return typeof lang === "string" ? lang.toLowerCase() : "";
+      } catch {
+        return "";
+      }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const queryLang = (params.get("lang") || "").toLowerCase();
+    const storedLang = tryReadLocalStorageLang();
+    const referrerLang = tryReadReferrerLang();
+    const browserLang = (navigator.language || "").toLowerCase().startsWith("it")
+      ? "it"
+      : "en";
+
+    const resolvedLang = [queryLang, storedLang, referrerLang, browserLang].find(
+      (value) => isSupportedLang(value),
+    ) || "it";
+    const t = I18N[resolvedLang];
 
     const backLinkEl = document.getElementById("backLink");
     const backLabelEl = document.getElementById("backLabel");
-    const params = new URLSearchParams(window.location.search);
     const fromParam = params.get("from");
     const backParam = params.get("back");
 
     let fallbackHref = "/waitlist/";
-    let fallbackLabel = "Back to waitlist";
+    let fallbackLabel = t.backToWaitlist;
 
     const referrerPath = (() => {
       if (!document.referrer) return "";
@@ -254,7 +331,7 @@
       referrerPath === "/app/register"
     ) {
       fallbackHref = "/app/";
-      fallbackLabel = "Back to app";
+      fallbackLabel = t.backToApp;
     }
 
     if (backParam) {
@@ -262,11 +339,61 @@
         const backUrl = new URL(backParam, window.location.origin);
         if (backUrl.origin === window.location.origin) {
           fallbackHref = `${backUrl.pathname}${backUrl.search}${backUrl.hash}`;
-          fallbackLabel = "Back to app";
+          fallbackLabel =
+            backUrl.pathname.startsWith("/app") ||
+            backUrl.pathname === "/register" ||
+            backUrl.pathname === "/app/register"
+              ? t.backToApp
+              : t.backToWaitlist;
         }
       } catch {
         // Ignore invalid back param and keep fallback values.
       }
+    }
+
+    const titleEl = document.getElementById("titleText");
+    const leadEl = document.getElementById("leadText");
+    const dataCollectedTitleEl = document.getElementById("dataCollectedTitle");
+    const dataCollectedListEl = document.getElementById("dataCollectedList");
+    const purposeTitleEl = document.getElementById("purposeTitle");
+    const purposeTextEl = document.getElementById("purposeText");
+    const legalBasisTitleEl = document.getElementById("legalBasisTitle");
+    const legalBasisTextEl = document.getElementById("legalBasisText");
+    const retentionTitleEl = document.getElementById("retentionTitle");
+    const retentionTextEl = document.getElementById("retentionText");
+    const contactTitleEl = document.getElementById("contactTitle");
+    const contactTextEl = document.getElementById("contactText");
+    const lastUpdatedTextEl = document.getElementById("lastUpdatedText");
+
+    document.documentElement.lang = resolvedLang;
+    document.title = t.pageTitle;
+    const descriptionMeta = document.querySelector("meta[name='description']");
+    if (descriptionMeta) descriptionMeta.setAttribute("content", t.pageDescription);
+
+    if (titleEl) titleEl.textContent = t.title;
+    if (leadEl) leadEl.textContent = t.lead;
+    if (dataCollectedTitleEl) dataCollectedTitleEl.textContent = t.dataCollectedTitle;
+    if (purposeTitleEl) purposeTitleEl.textContent = t.purposeTitle;
+    if (purposeTextEl) purposeTextEl.textContent = t.purposeText;
+    if (legalBasisTitleEl) legalBasisTitleEl.textContent = t.legalBasisTitle;
+    if (legalBasisTextEl) legalBasisTextEl.textContent = t.legalBasisText;
+    if (retentionTitleEl) retentionTitleEl.textContent = t.retentionTitle;
+    if (retentionTextEl) retentionTextEl.textContent = t.retentionText;
+    if (contactTitleEl) contactTitleEl.textContent = t.contactTitle;
+    if (lastUpdatedTextEl) lastUpdatedTextEl.textContent = t.lastUpdated;
+
+    if (dataCollectedListEl) {
+      dataCollectedListEl.innerHTML = "";
+      t.dataCollectedItems.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        dataCollectedListEl.appendChild(li);
+      });
+    }
+
+    const contactEmail = window.PRIVACY_CONTACT_EMAIL || "privacy@beachradar.it";
+    if (contactTextEl) {
+      contactTextEl.innerHTML = `${t.contactPrefix} <a id=\"privacyContact\" href=\"mailto:${contactEmail}\">${contactEmail}</a>${t.contactSuffix}`;
     }
 
     if (backLinkEl) backLinkEl.setAttribute("href", fallbackHref);

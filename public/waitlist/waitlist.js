@@ -192,7 +192,13 @@
     if (input) input.placeholder = t.placeholder;
 
     if (privacyText) privacyText.innerText = t.privacyText;
-    if (privacyLink) privacyLink.innerText = t.privacyLabel;
+    if (privacyLink) {
+      privacyLink.innerText = t.privacyLabel;
+      privacyLink.setAttribute(
+        "href",
+        `/privacy/?lang=${encodeURIComponent(currentLang)}&from=waitlist&back=${encodeURIComponent("/waitlist/")}`,
+      );
+    }
     if (shareBtn) shareBtn.innerText = t.shareLabel;
     if (copyBtn) copyBtn.innerText = t.copyLabel;
 

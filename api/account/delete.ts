@@ -22,7 +22,44 @@ function readBearerToken(req: VercelRequest): string | null {
   return token.length > 0 ? token : null;
 }
 
+function normalizeOrigin(value: string | null): string | null {
+  if (!value) return null;
+  return value.replace(/\/+$/, "");
+}
+
+function applyCors(req: VercelRequest, res: VercelResponse): void {
+  const configuredBase = normalizeOrigin(readEnv("VITE_PUBLIC_BASE_URL"));
+  const allowedOrigins = new Set<string>([
+    "https://beachradar.it",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ]);
+  if (configuredBase) {
+    allowedOrigins.add(configuredBase);
+  }
+
+  const requestOrigin = normalizeOrigin(
+    typeof req.headers.origin === "string" ? req.headers.origin : null,
+  );
+  if (requestOrigin && allowedOrigins.has(requestOrigin)) {
+    res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+  }
+
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+  res.setHeader("Access-Control-Max-Age", "86400");
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyCors(req, res);
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
