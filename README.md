@@ -63,6 +63,16 @@ npm run test:waitlist:smoke
 npm run test:waitlist:smoke:static
 ```
 
+App tests:
+
+```bash
+npm run test:app
+npm run test:app:gating
+npm run test:app:map
+npm run test:app:reports
+npm run test:app:favorites
+```
+
 Seed & tooling:
 
 ```bash
@@ -91,7 +101,22 @@ Optional feature flags:
 - `REPORTS_GET_LIMIT`
 - `REPORTS_HASH_SALT`
 - `REPORTS_RETENTION_DAYS`
+- `ANALYTICS_RATE_LIMIT`
+- `ANALYTICS_SALT`
 - `CRON_SECRET`
+
+## Server Analytics (Minimal)
+
+- Endpoint: `POST /api/analytics`
+- Storage: `public.analytics_events` (append-only)
+- Payload is anonymous: no emails, no raw IP, no raw user-agent
+- Retention is configurable at DB/ops level (table is append-only by default)
+- Client behavior is fail-silent with short timeout and retry
+- Existing local analytics (`localStorage`) are preserved for debug export compatibility
+
+SQL migration:
+
+- `scripts/sql/app_analytics_events.sql`
 
 ## Repo Docs
 

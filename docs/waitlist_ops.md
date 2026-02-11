@@ -41,6 +41,7 @@ API-only / E2E-only:
 BASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist:api
 BASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist:e2e
 BASE_URL=http://localhost:3000 REPORTS_TEST_MODE=1 npm run test:reports:api
+BASE_URL=http://localhost:3000 APP_ACCESS_KEY=test-app-access-key REPORTS_TEST_MODE=1 npm run test:app
 ```
 
 Smoke test (safe for production, hits API only with invalid/honeypot):
@@ -90,6 +91,17 @@ Crowd reports API (optional local test mode):
 - `REPORTS_PRUNE_TOKEN` (optional fallback auth token for manual prune calls)
 - `CRON_SECRET` (recommended; Vercel Cron sends it as Bearer token)
 
+Server analytics API (`POST /api/analytics`):
+- `ANALYTICS_RATE_LIMIT` (default: 60 req/min per hashed IP+UA tuple)
+- `ANALYTICS_SALT` (optional but recommended; used to salt hashes for rate-limiting fingerprint)
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- Privacy note: analytics events are anonymous (no raw IP, no raw UA, no email) and retention is managed at DB/ops level.
+
+Authenticated favorites E2E (optional):
+- `E2E_TEST_USER_EMAIL`
+- `E2E_TEST_USER_PASSWORD`
+
 Rate limit tuning:
 - `WAITLIST_RATE_LIMIT_MAX` (default: 10)
 - `WAITLIST_RATE_LIMIT_WINDOW_SEC` (default: 600)
@@ -136,9 +148,11 @@ Run these in the Supabase SQL editor (in order):
 - `scripts/sql/waitlist_rate_limits.sql`
 - `scripts/sql/app_auth_favorites.sql`
 - `scripts/sql/app_crowd_reports.sql`
+- `scripts/sql/app_analytics_events.sql`
 
 Note:
 - Crowd reports store salted hashes for `source_ip` and `user_agent` (not raw values) when submitted through `/api/reports`.
+- Analytics events are anonymous and append-only in `public.analytics_events`; no raw IP/UA/email is stored.
 
 ## Data retention and cleanup
 

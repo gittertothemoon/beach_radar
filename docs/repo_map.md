@@ -31,6 +31,7 @@ This document describes where responsibilities live in the codebase.
 - `api/waitlist/`: waitlist endpoints (`index`, `count`, `confirm`)
 - `api/reports/`: crowd reports read/write endpoint
 - `api/account/`: authenticated account actions
+- `api/analytics.ts`: anonymous server-side analytics ingestion
 - `api/weather.ts`: weather proxy endpoint
 - `api/app-access.ts`: app gate access endpoint
 
@@ -40,6 +41,7 @@ This document describes where responsibilities live in the codebase.
 - `waitlist_rate_limits.sql`: waitlist rate limiter schema
 - `app_auth_favorites.sql`: auth/favorites schema
 - `app_crowd_reports.sql`: crowd reports schema
+- `app_analytics_events.sql`: anonymous analytics events schema
 
 ## Conventions
 
