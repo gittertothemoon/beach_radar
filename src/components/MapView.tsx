@@ -103,13 +103,20 @@ const createClusterIcon = (_cluster: Cluster, zoom: number) => {
 const clusterBeaches = (
   beaches: BeachWithStats[],
   map: L.Map,
+  favoriteBeachIds: Set<string>,
   selectedBeachId?: string | null,
 ) => {
   const selected =
     selectedBeachId && beaches.find((beach) => beach.id === selectedBeachId);
+  const favorites = beaches.filter(
+    (beach) => favoriteBeachIds.has(beach.id) && beach.id !== selectedBeachId,
+  );
   const rest = selected
-    ? beaches.filter((beach) => beach.id !== selectedBeachId)
-    : beaches;
+    ? beaches.filter(
+        (beach) =>
+          beach.id !== selectedBeachId && !favoriteBeachIds.has(beach.id),
+      )
+    : beaches.filter((beach) => !favoriteBeachIds.has(beach.id));
   const zoom = getSafeZoom(map);
   const projected = rest.map((beach) => {
     return {
@@ -192,6 +199,9 @@ const clusterBeaches = (
   if (selected) {
     pushSingle(selected, selected.lat, selected.lng);
   }
+  for (const favorite of favorites) {
+    pushSingle(favorite, favorite.lat, favorite.lng);
+  }
 
   return { clusters, singles };
 };
@@ -265,6 +275,7 @@ const ClusteredMarkers = ({
     const result = clusterBeaches(
       validBeaches,
       map,
+      favoriteBeachIds,
       selectedIdForClustering,
     );
     if (perfEnabled) {
@@ -280,6 +291,7 @@ const ClusteredMarkers = ({
   }, [
     validBeaches,
     map,
+    favoriteBeachIds,
     selectedIdForClustering,
     perfEnabled,
     zoom,
