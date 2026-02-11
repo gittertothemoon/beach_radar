@@ -193,31 +193,29 @@ const LidoModalCardComponent = ({
                 </span>
               ) : null}
             </div>
-            <h2 className="mt-3 text-[22px] font-semibold tracking-[-0.01em] br-text-primary">
-              <span className="inline-flex items-center gap-2">
-                <span>{beach.name}</span>
-                <button
-                  type="button"
-                  onClick={onToggleFavorite}
-                  aria-label={STRINGS.aria.toggleFavoriteBeach(beach.name, isFavorite)}
-                  className={`br-press inline-flex h-8 w-8 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
-                    isFavorite
-                      ? "border-amber-300/55 bg-amber-400/20 text-amber-100"
-                      : "border-white/18 bg-black/40 br-text-tertiary"
-                  }`}
+            <h2 className="mt-3 flex items-start gap-2 text-[22px] font-semibold tracking-[-0.01em] br-text-primary">
+              <span className="min-w-0 flex-1 break-words">{beach.name}</span>
+              <button
+                type="button"
+                onClick={onToggleFavorite}
+                aria-label={STRINGS.aria.toggleFavoriteBeach(beach.name, isFavorite)}
+                className={`br-press inline-flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
+                  isFavorite
+                    ? "border-amber-300/55 bg-amber-400/20 text-amber-100"
+                    : "border-white/18 bg-black/40 br-text-tertiary"
+                }`}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  className="h-4 w-4 shrink-0"
+                  fill={isFavorite ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  strokeWidth="1.8"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className="h-4 w-4"
-                    fill={isFavorite ? "currentColor" : "none"}
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
-                    <path d="M12 2.7l2.8 5.67 6.25.91-4.53 4.42 1.07 6.24L12 17.06 6.4 19.94l1.07-6.24-4.53-4.42 6.25-.91L12 2.7z" />
-                  </svg>
-                </button>
-              </span>
+                  <path d="M12 2.7l2.8 5.67 6.25.91-4.53 4.42 1.07 6.24L12 17.06 6.4 19.94l1.07-6.24-4.53-4.42 6.25-.91L12 2.7z" />
+                </svg>
+              </button>
             </h2>
             <p className="text-[13px] br-text-secondary">{beach.region}</p>
           </div>
