@@ -1095,6 +1095,7 @@ function App() {
       return;
     }
     const shouldFavorite = !favoriteBeachIds.has(beachId);
+    track(shouldFavorite ? "favorite_add" : "favorite_remove", { beachId });
 
     setFavoriteBeachIds((prev) => {
       const next = new Set(prev);
@@ -1220,6 +1221,9 @@ function App() {
       ? "/app/register"
       : "/register";
 
+    track("auth_gate_redirect", {
+      beachId: options?.favoriteBeachId ?? selectedBeachId ?? undefined,
+    });
     window.location.assign(`${registerPath}?${params.toString()}`);
   }, [
     isLidoModalOpen,
@@ -1386,7 +1390,7 @@ function App() {
   }
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full" data-testid="app-root">
       <MapView
         beaches={mapBeaches}
         favoriteBeachIds={favoriteBeachIds}
