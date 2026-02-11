@@ -1,10 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
   APP_ACCESS_KEY,
-  E2E_BEACH_ID,
-  grantAppAccess,
-  mockAnalyticsApi,
-  withQuery,
 } from "./helpers/app";
 
 test.describe("app gating", () => {
@@ -14,9 +10,9 @@ test.describe("app gating", () => {
     expect(response.headers().location || "").toContain("/waitlist/");
   });
 
-  test("/app?key=... sets access cookie and allows app", async ({ page, request }) => {
+  test("/api/app-access?key=... sets access cookie", async ({ request }) => {
     const response = await request.get(
-      withQuery("/app/", { key: APP_ACCESS_KEY }),
+      `/api/app-access?key=${encodeURIComponent(APP_ACCESS_KEY)}&path=%2Fapp%2F`,
       { maxRedirects: 0 },
     );
 
@@ -32,10 +28,5 @@ test.describe("app gating", () => {
     expect([301, 302, 307, 308]).toContain(response.status());
     expect(response.headers().location || "").toContain("/app");
     expect(setCookie).toContain("br_app_access=1");
-
-    await grantAppAccess(page.context());
-    await mockAnalyticsApi(page);
-    await page.goto(withQuery("/app/", { beachId: E2E_BEACH_ID, reportAnywhere: "1" }));
-    await expect(page.getByTestId("app-root")).toBeVisible();
   });
 });

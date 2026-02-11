@@ -42,6 +42,9 @@ BASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:w
 BASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist:e2e
 BASE_URL=http://localhost:3000 REPORTS_TEST_MODE=1 npm run test:reports:api
 BASE_URL=http://localhost:3000 APP_ACCESS_KEY=test-app-access-key REPORTS_TEST_MODE=1 npm run test:app
+BASE_URL=http://localhost:5173 E2E_APP_UI_PATH=/app/ npm run test:app:map
+BASE_URL=http://localhost:5173 E2E_APP_UI_PATH=/app/ npm run test:app:reports
+BASE_URL=http://localhost:5173 E2E_APP_UI_PATH=/app/ npm run test:app:favorites
 ```
 
 Smoke test (safe for production, hits API only with invalid/honeypot):
@@ -101,6 +104,7 @@ Server analytics API (`POST /api/analytics`):
 Authenticated favorites E2E (optional):
 - `E2E_TEST_USER_EMAIL`
 - `E2E_TEST_USER_PASSWORD`
+- `E2E_APP_UI_PATH` (default `/index.html`; useful in `vercel dev` where redirect `has/missing` rules are not fully simulated)
 
 Rate limit tuning:
 - `WAITLIST_RATE_LIMIT_MAX` (default: 10)

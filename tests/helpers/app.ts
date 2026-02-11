@@ -4,11 +4,15 @@ const BASE_URL = (process.env.BASE_URL || "http://127.0.0.1:3000").replace(/\/$/
 
 export const APP_ACCESS_KEY = process.env.APP_ACCESS_KEY || "test-app-access-key";
 export const E2E_BEACH_ID = process.env.E2E_APP_BEACH_ID || "BR-RN-001";
+export const APP_UI_PATH = process.env.E2E_APP_UI_PATH || "/app/";
 
 export const withQuery = (path: string, params: Record<string, string>) => {
   const query = new URLSearchParams(params);
   return `${path}?${query.toString()}`;
 };
+
+export const appUiUrl = (params: Record<string, string>) =>
+  withQuery(APP_UI_PATH, params);
 
 export const grantAppAccess = async (context: BrowserContext) => {
   await context.addCookies([
@@ -16,7 +20,6 @@ export const grantAppAccess = async (context: BrowserContext) => {
       name: "br_app_access",
       value: "1",
       url: `${BASE_URL}/app/`,
-      path: "/app",
     },
   ]);
 };

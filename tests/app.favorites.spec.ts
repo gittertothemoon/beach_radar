@@ -1,12 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import {
+  appUiUrl,
   E2E_BEACH_ID,
   grantAppAccess,
   mockAnalyticsApi,
   mockGeolocation,
   mockReportsFeed,
   mockWeatherApi,
-  withQuery,
 } from "./helpers/app";
 
 const TEST_EMAIL = process.env.E2E_TEST_USER_EMAIL || "";
@@ -31,7 +31,7 @@ test("favorite click from anonymous user opens auth-required modal", async ({ pa
   await mockWeatherApi(page);
   await mockReportsFeed(page, []);
 
-  await page.goto(withQuery("/app/", { beachId: E2E_BEACH_ID, reportAnywhere: "1" }));
+  await page.goto(appUiUrl({ beachId: E2E_BEACH_ID, reportAnywhere: "1" }));
   await expect(page.getByTestId("lido-modal")).toBeVisible();
 
   await page.getByTestId("favorite-toggle").click();
@@ -50,7 +50,7 @@ test("logged user can add/remove favorites with remote sync", async ({ page }) =
   await mockWeatherApi(page);
   await mockReportsFeed(page, []);
 
-  const returnTo = withQuery("/app/", { beachId: E2E_BEACH_ID, reportAnywhere: "1" });
+  const returnTo = appUiUrl({ beachId: E2E_BEACH_ID, reportAnywhere: "1" });
   await page.goto(withQuery("/app/register", { mode: "login", returnTo }));
 
   await page.getByTestId("auth-email-input").fill(TEST_EMAIL);

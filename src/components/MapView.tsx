@@ -634,44 +634,45 @@ const MapViewComponent = ({
   useRenderCounter("MapView", perfEnabled);
 
   return (
-    <MapContainer
-      data-testid="map-container"
-      center={[center.lat, center.lng]}
-      zoom={12}
-      minZoom={2}
-      maxZoom={18}
-      fadeAnimation={false}
-      maxBounds={WORLD_BOUNDS}
-      maxBoundsViscosity={1}
-      zoomControl={false}
-      bounceAtZoomLimits={false}
-      className="h-full w-full"
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    <div data-testid="map-container" className="h-full w-full">
+      <MapContainer
+        center={[center.lat, center.lng]}
+        zoom={12}
         minZoom={2}
         maxZoom={18}
-        updateWhenIdle={false}
-        updateWhenZooming
-        updateInterval={30}
-        keepBuffer={8}
-        noWrap
-        bounds={WORLD_BOUNDS}
-      />
-      <MapViewportFix />
-      <MapReady onReady={onMapReady} />
-      <MapInteractionWatcher onUserInteract={onUserInteract} />
-      <ClusteredMarkers
-        beaches={beaches}
-        favoriteBeachIds={favoriteBeachIds}
-        selectedBeachId={selectedBeachId}
-        onSelectBeach={onSelectBeach}
-        editMode={editMode}
-        onOverride={onOverride}
-      />
-      {userLocation ? <UserLocationLayer location={userLocation} /> : null}
-    </MapContainer>
+        fadeAnimation={false}
+        maxBounds={WORLD_BOUNDS}
+        maxBoundsViscosity={1}
+        zoomControl={false}
+        bounceAtZoomLimits={false}
+        className="h-full w-full"
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          minZoom={2}
+          maxZoom={18}
+          updateWhenIdle={false}
+          updateWhenZooming
+          updateInterval={30}
+          keepBuffer={8}
+          noWrap
+          bounds={WORLD_BOUNDS}
+        />
+        <MapViewportFix />
+        <MapReady onReady={onMapReady} />
+        <MapInteractionWatcher onUserInteract={onUserInteract} />
+        <ClusteredMarkers
+          beaches={beaches}
+          favoriteBeachIds={favoriteBeachIds}
+          selectedBeachId={selectedBeachId}
+          onSelectBeach={onSelectBeach}
+          editMode={editMode}
+          onOverride={onOverride}
+        />
+        {userLocation ? <UserLocationLayer location={userLocation} /> : null}
+      </MapContainer>
+    </div>
   );
 };
 

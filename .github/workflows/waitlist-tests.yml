@@ -102,13 +102,38 @@ jobs:
           echo "Server did not become ready" >&2
           exit 1
 
-      - name: Run waitlist + app tests
+      - name: Run waitlist + api tests
         if: env.SKIP_WAITLIST != '1'
-        run: npx playwright test tests/waitlist.api.spec.ts tests/waitlist.e2e.spec.ts tests/reports.api.spec.ts tests/app.gating.spec.ts tests/app.map.spec.ts tests/app.reports.spec.ts tests/app.favorites.spec.ts --workers=1 --retries=1
+        run: npx playwright test tests/waitlist.api.spec.ts tests/waitlist.e2e.spec.ts tests/reports.api.spec.ts tests/app.gating.spec.ts --workers=1 --retries=1
+
+      - name: Start Vite app server
+        if: env.SKIP_WAITLIST != '1'
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 5173 &
+          echo $! > .vite_dev_pid
+
+      - name: Wait for Vite app server
+        if: env.SKIP_WAITLIST != '1'
+        run: |
+          for i in {1..40}; do
+            if curl -fsS "http://127.0.0.1:5173/app/" > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Vite app server did not become ready" >&2
+          exit 1
+
+      - name: Run app UI tests
+        if: env.SKIP_WAITLIST != '1'
+        run: BASE_URL=http://127.0.0.1:5173 E2E_APP_UI_PATH=/app/ npx playwright test tests/app.map.spec.ts tests/app.reports.spec.ts tests/app.favorites.spec.ts --workers=1 --retries=1
 
       - name: Stop server
         if: always() && env.SKIP_WAITLIST != '1'
         run: |
           if [ -f .vercel_dev_pid ]; then
             kill "$(cat .vercel_dev_pid)" || true
+          fi
+          if [ -f .vite_dev_pid ]; then
+            kill "$(cat .vite_dev_pid)" || true
           fi

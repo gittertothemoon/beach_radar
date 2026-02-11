@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 import {
+  appUiUrl,
   E2E_BEACH_ID,
   grantAppAccess,
   mockAnalyticsApi,
   mockGeolocation,
   mockWeatherApi,
-  withQuery,
 } from "./helpers/app";
 
 test("report submit happy path", async ({ page }) => {
@@ -41,7 +41,7 @@ test("report submit happy path", async ({ page }) => {
     });
   });
 
-  await page.goto(withQuery("/app/", { beachId: E2E_BEACH_ID, reportAnywhere: "1" }));
+  await page.goto(appUiUrl({ beachId: E2E_BEACH_ID, reportAnywhere: "1" }));
   await expect(page.getByTestId("lido-modal")).toBeVisible();
 
   await page.getByTestId("report-cta").click();
@@ -79,7 +79,7 @@ test("report submit rate-limited shows error", async ({ page }) => {
     });
   });
 
-  await page.goto(withQuery("/app/", { beachId: E2E_BEACH_ID, reportAnywhere: "1" }));
+  await page.goto(appUiUrl({ beachId: E2E_BEACH_ID, reportAnywhere: "1" }));
   await expect(page.getByTestId("lido-modal")).toBeVisible();
 
   await page.getByTestId("report-cta").click();
