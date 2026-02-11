@@ -175,6 +175,8 @@ const BottomSheetComponent = ({
     [beaches, favoriteBeachIds],
   );
   const otherBeaches = beaches;
+  const hasFavorites = favoriteBeaches.length > 0;
+  const isFavoritesOpen = favoritesOpen && hasFavorites;
   const favoritesSectionId = "br-favorites-panel";
 
   const translateY = useMemo(() => {
@@ -202,11 +204,6 @@ const BottomSheetComponent = ({
       observer?.disconnect();
     };
   }, []);
-
-  useEffect(() => {
-    if (favoriteBeaches.length > 0) return;
-    setFavoritesOpen(false);
-  }, [favoriteBeaches.length]);
 
   const handlePointerDown = (
     event: ReactPointerEvent<HTMLButtonElement>,
@@ -264,9 +261,20 @@ const BottomSheetComponent = ({
   };
 
   const handleToggleFavorites = useCallback(() => {
-    if (favoriteBeaches.length === 0) return;
+    if (!hasFavorites) return;
     setFavoritesOpen((prev) => !prev);
-  }, [favoriteBeaches.length]);
+  }, [hasFavorites]);
+
+  const handleToggleBeachFavorite = useCallback(
+    (beachId: string) => {
+      const isLastFavorite = favoriteBeachIds.has(beachId) && favoriteBeaches.length === 1;
+      if (isLastFavorite) {
+        setFavoritesOpen(false);
+      }
+      onToggleFavorite(beachId);
+    },
+    [favoriteBeachIds, favoriteBeaches.length, onToggleFavorite],
+  );
 
   return (
     <div
@@ -315,11 +323,11 @@ const BottomSheetComponent = ({
               <button
                 type="button"
                 onClick={handleToggleFavorites}
-                aria-expanded={favoritesOpen}
+                aria-expanded={isFavoritesOpen}
                 aria-controls={favoritesSectionId}
-                disabled={favoriteBeaches.length === 0}
+                disabled={!hasFavorites}
                 className={`br-press flex w-full items-center justify-between rounded-xl px-4 py-2 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
-                  favoriteBeaches.length === 0 ? "cursor-default opacity-75" : ""
+                  !hasFavorites ? "cursor-default opacity-75" : ""
                 }`}
               >
                 <span className="text-[10px] font-semibold uppercase tracking-[0.11em] text-amber-100/85">
@@ -330,7 +338,7 @@ const BottomSheetComponent = ({
                   <svg
                     viewBox="0 0 24 24"
                     aria-hidden="true"
-                    className={`h-4 w-4 transition-transform ${favoritesOpen ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 transition-transform ${isFavoritesOpen ? "rotate-180" : ""}`}
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="1.8"
@@ -341,7 +349,7 @@ const BottomSheetComponent = ({
               </button>
               <div
                 id={favoritesSectionId}
-                className={`${favoritesOpen && favoriteBeaches.length > 0 ? "mt-2 divide-y divide-[color:var(--hairline)]" : "hidden"}`}
+                className={`${isFavoritesOpen ? "mt-2 divide-y divide-[color:var(--hairline)]" : "hidden"}`}
               >
                 {favoriteBeaches.map((beach) => (
                   <BeachRow
@@ -351,7 +359,7 @@ const BottomSheetComponent = ({
                     isFavorite={true}
                     now={now}
                     onSelectBeach={onSelectBeach}
-                    onToggleFavorite={onToggleFavorite}
+                    onToggleFavorite={handleToggleBeachFavorite}
                   />
                 ))}
               </div>
@@ -369,7 +377,7 @@ const BottomSheetComponent = ({
                     isFavorite={favoriteBeachIds.has(beach.id)}
                     now={now}
                     onSelectBeach={onSelectBeach}
-                    onToggleFavorite={onToggleFavorite}
+                    onToggleFavorite={handleToggleBeachFavorite}
                   />
                 ))}
               </div>

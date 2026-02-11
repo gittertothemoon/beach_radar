@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "test:waitlist": "playwright test tests/waitlist.api.spec.ts tests/waitlist.e2e.spec.ts",
     "test:waitlist:api": "playwright test tests/waitlist.api.spec.ts",
+    "test:reports:api": "playwright test tests/reports.api.spec.ts",
     "test:waitlist:e2e": "playwright test tests/waitlist.e2e.spec.ts",
     "test:waitlist:smoke": "playwright test tests/waitlist.smoke.spec.ts",
     "seed:geocode": "node scripts/geocode-seed.mjs",

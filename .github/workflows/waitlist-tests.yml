@@ -47,6 +47,7 @@ jobs:
       BASE_URL: http://127.0.0.1:3000
       WAITLIST_PATH: /waitlist/index.html
       WAITLIST_TEST_MODE: "1"
+      REPORTS_TEST_MODE: "1"
       TEST_RATE_LIMIT: "10"
       PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
     steps:
@@ -102,7 +103,7 @@ jobs:
 
       - name: Run waitlist tests
         if: env.SKIP_WAITLIST != '1'
-        run: npx playwright test tests/waitlist.api.spec.ts tests/waitlist.e2e.spec.ts --workers=1 --retries=1
+        run: npx playwright test tests/waitlist.api.spec.ts tests/waitlist.e2e.spec.ts tests/reports.api.spec.ts --workers=1 --retries=1
 
       - name: Stop server
         if: always() && env.SKIP_WAITLIST != '1'

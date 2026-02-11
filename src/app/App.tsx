@@ -1,16 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Map as LeafletMap } from "leaflet";
 import MapView from "../components/MapView";
 import TopSearch from "../components/TopSearch";
 import BottomSheet from "../components/BottomSheet";
-import LidoModalCard from "../components/LidoModalCard";
-import ReportModal from "../components/ReportModal";
-import ReportThanksModal from "../components/ReportThanksModal";
-import PerformanceOverlay from "../components/PerformanceOverlay";
-import AccountRequiredModal from "../components/AccountRequiredModal";
-import ProfileModal from "../components/ProfileModal";
 import WeatherWidget from "../components/WeatherWidget";
-import { shareBeachCard } from "../components/ShareCard";
 import logo from "../assets/logo.png";
 import logoText from "../assets/beach-radar-scritta.png";
 import splashBg from "../assets/initial-bg.png";
@@ -70,6 +63,13 @@ import type { BeachWithStats, CrowdLevel, Report } from "../lib/types";
 import type { LatLng, UserLocation } from "../lib/geo";
 import type { BeachOverrides } from "../lib/overrides";
 import { FEATURE_FLAGS } from "../config/features";
+
+const LidoModalCard = lazy(() => import("../components/LidoModalCard"));
+const ReportModal = lazy(() => import("../components/ReportModal"));
+const ReportThanksModal = lazy(() => import("../components/ReportThanksModal"));
+const PerformanceOverlay = lazy(() => import("../components/PerformanceOverlay"));
+const AccountRequiredModal = lazy(() => import("../components/AccountRequiredModal"));
+const ProfileModal = lazy(() => import("../components/ProfileModal"));
 
 const DEFAULT_CENTER: LatLng = { lat: 44.0678, lng: 12.5695 };
 const BEACH_FOCUS_ZOOM = 17;
@@ -1311,6 +1311,7 @@ function App() {
     if (!selectedBeach) return;
     setShareToast(STRINGS.share.preparing);
     try {
+      const { shareBeachCard } = await import("../components/ShareCard");
       await shareBeachCard({
         name: selectedBeach.name,
         region: selectedBeach.region,
@@ -1398,7 +1399,11 @@ function App() {
         userLocation={userLocation ?? undefined}
         onUserInteract={handleUserInteract}
       />
-      {isDebug ? <PerformanceOverlay /> : null}
+      {isDebug ? (
+        <Suspense fallback={null}>
+          <PerformanceOverlay />
+        </Suspense>
+      ) : null}
       <TopSearch
         value={search}
         onChange={setSearch}
@@ -1470,30 +1475,40 @@ function App() {
           onOpenDetails={handleOpenWeatherDetails}
         />
       ) : null}
-      <AccountRequiredModal
-        isOpen={accountRequiredOpen}
-        beachName={accountRequiredBeachName}
-        onClose={handleCloseAccountRequired}
-        onContinue={handleContinueToRegister}
-      />
-      {account?.email ? (
-        <ProfileModal
-          isOpen={profileOpen}
-          name={accountDisplayName}
-          email={account.email}
-          favoriteBeaches={profileFavoriteBeaches}
-          deleting={deletingAccount}
-          onClose={() => setProfileOpen(false)}
-          onSelectFavorite={handleSelectProfileFavorite}
-          onSignOut={handleSignOut}
-          onDeleteAccount={handleDeleteAccount}
-        />
+      {accountRequiredOpen ? (
+        <Suspense fallback={null}>
+          <AccountRequiredModal
+            isOpen={accountRequiredOpen}
+            beachName={accountRequiredBeachName}
+            onClose={handleCloseAccountRequired}
+            onContinue={handleContinueToRegister}
+          />
+        </Suspense>
       ) : null}
-      <ReportThanksModal
-        isOpen={reportThanksOpen}
-        onClose={() => setReportThanksOpen(false)}
-        onShare={handleShareFromThanks}
-      />
+      {account?.email ? (
+        <Suspense fallback={null}>
+          <ProfileModal
+            isOpen={profileOpen}
+            name={accountDisplayName}
+            email={account.email}
+            favoriteBeaches={profileFavoriteBeaches}
+            deleting={deletingAccount}
+            onClose={() => setProfileOpen(false)}
+            onSelectFavorite={handleSelectProfileFavorite}
+            onSignOut={handleSignOut}
+            onDeleteAccount={handleDeleteAccount}
+          />
+        </Suspense>
+      ) : null}
+      {reportThanksOpen ? (
+        <Suspense fallback={null}>
+          <ReportThanksModal
+            isOpen={reportThanksOpen}
+            onClose={() => setReportThanksOpen(false)}
+            onShare={handleShareFromThanks}
+          />
+        </Suspense>
+      ) : null}
       {isDebug && overrideCount > 0 ? (
         <div className="fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+84px)] z-40 w-[min(92vw,360px)] -translate-x-1/2 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-[11px] text-amber-100 shadow-lg backdrop-blur">
           <div className="text-amber-100">
@@ -1683,35 +1698,39 @@ function App() {
         now={now}
       />
       {selectedBeach ? (
-        <LidoModalCard
-          beach={selectedBeach}
-          isOpen={isLidoModalOpen}
-          now={now}
-          isFavorite={selectedBeachIsFavorite}
-          weather={selectedWeather}
-          weatherLoading={selectedWeatherLoading}
-          weatherUnavailable={selectedWeatherUnavailable}
-          onClose={handleCloseDrawer}
-          onToggleFavorite={handleToggleSelectedFavorite}
-          onReport={handleOpenReport}
-          onShare={handleShare}
-        />
+        <Suspense fallback={null}>
+          <LidoModalCard
+            beach={selectedBeach}
+            isOpen={isLidoModalOpen}
+            now={now}
+            isFavorite={selectedBeachIsFavorite}
+            weather={selectedWeather}
+            weatherLoading={selectedWeatherLoading}
+            weatherUnavailable={selectedWeatherUnavailable}
+            onClose={handleCloseDrawer}
+            onToggleFavorite={handleToggleSelectedFavorite}
+            onReport={handleOpenReport}
+            onShare={handleShare}
+          />
+        </Suspense>
       ) : null}
       {selectedBeach ? (
-        <ReportModal
-          isOpen={reportOpen}
-          beachName={selectedBeach.name}
-          userLocation={userLocation}
-          distanceM={reportDistanceM}
-          allowRemoteReports={allowRemoteReports}
-          geoStatus={geoStatus}
-          geoError={geoError}
-          onRequestLocation={requestLocation}
-          onClose={handleCloseReport}
-          onSubmit={handleSubmitReport}
-          submitError={reportError}
-          submitting={submittingReport}
-        />
+        <Suspense fallback={null}>
+          <ReportModal
+            isOpen={reportOpen}
+            beachName={selectedBeach.name}
+            userLocation={userLocation}
+            distanceM={reportDistanceM}
+            allowRemoteReports={allowRemoteReports}
+            geoStatus={geoStatus}
+            geoError={geoError}
+            onRequestLocation={requestLocation}
+            onClose={handleCloseReport}
+            onSubmit={handleSubmitReport}
+            submitError={reportError}
+            submitting={submittingReport}
+          />
+        </Suspense>
       ) : null}
     </div>
   );

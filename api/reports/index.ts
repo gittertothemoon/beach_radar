@@ -1,13 +1,35 @@
+import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 const REPORTS_TABLE = "beach_reports";
 const MAX_BODY_BYTES = 8 * 1024;
-const REPORT_RATE_LIMIT_MIN = 10;
-const REPORTS_LOOKBACK_HOURS = 6;
+const DEFAULT_REPORT_RATE_LIMIT_MIN = 10;
+const DEFAULT_REPORTS_LOOKBACK_HOURS = 6;
+const DEFAULT_REPORTS_GET_LIMIT = 5000;
 const MAX_BEACH_ID_LENGTH = 96;
 const MAX_REPORTER_HASH_LENGTH = 128;
+const TEST_MODE_MAX_REPORTS = 5000;
 const TEST_MODE = process.env.REPORTS_TEST_MODE === "1";
+const REPORT_RATE_LIMIT_MIN = readIntEnv(
+  "REPORTS_RATE_LIMIT_MIN",
+  DEFAULT_REPORT_RATE_LIMIT_MIN,
+  1,
+  60,
+);
+const REPORTS_LOOKBACK_HOURS = readIntEnv(
+  "REPORTS_LOOKBACK_HOURS",
+  DEFAULT_REPORTS_LOOKBACK_HOURS,
+  1,
+  48,
+);
+const REPORTS_GET_LIMIT = readIntEnv(
+  "REPORTS_GET_LIMIT",
+  DEFAULT_REPORTS_GET_LIMIT,
+  100,
+  10000,
+);
+const REPORTS_HASH_SALT = readEnv("REPORTS_HASH_SALT");
 
 type ReportRow = {
   id: string;
@@ -39,6 +61,20 @@ function readEnv(name: string): string | null {
     return trimmed.slice(1, -1);
   }
   return trimmed;
+}
+
+function readIntEnv(
+  name: string,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  const raw = readEnv(name);
+  if (!raw) return fallback;
+  const value = Number.parseInt(raw, 10);
+  if (!Number.isFinite(value)) return fallback;
+  if (value < min || value > max) return fallback;
+  return value;
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -109,6 +145,23 @@ function getClientIp(req: VercelRequest): string | null {
   }
   const remote = req.socket?.remoteAddress;
   return typeof remote === "string" ? remote : null;
+}
+
+function hashValue(raw: string, namespace: "ip" | "ua"): string {
+  const payload = REPORTS_HASH_SALT
+    ? `${namespace}:${REPORTS_HASH_SALT}:${raw}`
+    : `${namespace}:${raw}`;
+  return `sha256:${createHash("sha256").update(payload).digest("hex")}`;
+}
+
+function anonymizeHeaderValue(
+  value: string | null,
+  namespace: "ip" | "ua",
+): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return null;
+  return hashValue(trimmed, namespace);
 }
 
 function toReportRow(value: unknown): ReportRow | null {
@@ -204,6 +257,16 @@ function getLookbackIso(): string {
   return new Date(Date.now() - lookbackMs).toISOString();
 }
 
+function sendTooSoon(res: VercelResponse) {
+  const retryAfter = getRateRetryAfterSec();
+  res.setHeader("Retry-After", String(retryAfter));
+  return res.status(429).json({
+    ok: false,
+    error: "too_soon",
+    retry_after: retryAfter,
+  });
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === "GET") {
     const lookbackIso = getLookbackIso();
@@ -232,7 +295,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .select("id, beach_id, crowd_level, created_at, attribution")
       .gte("created_at", lookbackIso)
       .order("created_at", { ascending: false })
-      .limit(5000);
+      .limit(REPORTS_GET_LIMIT);
 
     if (error) {
       return res.status(500).json({ ok: false, error: "db_fetch_failed" });
@@ -294,11 +357,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         report.created_at >= rateSinceIso,
     );
     if (duplicate) {
-      return res.status(429).json({
-        ok: false,
-        error: "too_soon",
-        retry_after: getRateRetryAfterSec(),
-      });
+      return sendTooSoon(res);
     }
 
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -311,6 +370,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       reporter_hash: reporterHash,
     };
     testReports.unshift(row);
+    if (testReports.length > TEST_MODE_MAX_REPORTS) {
+      testReports.length = TEST_MODE_MAX_REPORTS;
+    }
     const publicReport = toPublicReport(row);
     if (!publicReport) {
       return res.status(500).json({ ok: false, error: "report_invalid" });
@@ -337,26 +399,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (Array.isArray(recentRows) && recentRows.length > 0) {
-    return res.status(429).json({
-      ok: false,
-      error: "too_soon",
-      retry_after: getRateRetryAfterSec(),
-    });
+    return sendTooSoon(res);
   }
 
-  const ip = getClientIp(req);
-  const userAgent =
-    typeof req.headers["user-agent"] === "string"
-      ? req.headers["user-agent"]
-      : null;
+  const ipHash = anonymizeHeaderValue(getClientIp(req), "ip");
+  const userAgentHash = anonymizeHeaderValue(
+    toSingleString(req.headers["user-agent"]),
+    "ua",
+  );
 
   const insertPayload = {
     beach_id: beachId,
     crowd_level: crowdLevel,
     reporter_hash: reporterHash,
     attribution,
-    source_ip: ip,
-    user_agent: userAgent,
+    source_ip: ipHash,
+    user_agent: userAgentHash,
     created_at: nowIso,
   };
 

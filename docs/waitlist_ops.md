@@ -40,6 +40,7 @@ API-only / E2E-only:
 ```
 BASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist:api
 BASE_URL=http://localhost:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist:e2e
+BASE_URL=http://localhost:3000 REPORTS_TEST_MODE=1 npm run test:reports:api
 ```
 
 Smoke test (safe for production, hits API only with invalid/honeypot):
@@ -81,6 +82,13 @@ App feature flags (frontend, optional):
 
 Crowd reports API (optional local test mode):
 - `REPORTS_TEST_MODE=1` (uses in-memory reports store, no Supabase writes)
+- `REPORTS_RATE_LIMIT_MIN` (default: 10, min 1, max 60)
+- `REPORTS_LOOKBACK_HOURS` (default: 6, min 1, max 48)
+- `REPORTS_GET_LIMIT` (default: 5000, min 100, max 10000)
+- `REPORTS_HASH_SALT` (optional but recommended; used to salt IP/User-Agent hashes before DB write)
+- `REPORTS_RETENTION_DAYS` (default: 30; used by prune job)
+- `REPORTS_PRUNE_TOKEN` (optional fallback auth token for manual prune calls)
+- `CRON_SECRET` (recommended; Vercel Cron sends it as Bearer token)
 
 Rate limit tuning:
 - `WAITLIST_RATE_LIMIT_MAX` (default: 10)
@@ -129,6 +137,9 @@ Run these in the Supabase SQL editor (in order):
 - `scripts/sql/app_auth_favorites.sql`
 - `scripts/sql/app_crowd_reports.sql`
 
+Note:
+- Crowd reports store salted hashes for `source_ip` and `user_agent` (not raw values) when submitted through `/api/reports`.
+
 ## Data retention and cleanup
 
 - Waitlist data is retained until launch plus up to 12 months (or deletion on request).
@@ -137,3 +148,9 @@ Run these in the Supabase SQL editor (in order):
 delete from public.waitlist_rate_limits
 where window_start < now() - interval '30 days';
 ```
+
+Crowd reports cleanup:
+- Vercel cron is configured in `vercel.json` to call `/api/reports/prune` daily.
+- The endpoint deletes rows older than `REPORTS_RETENTION_DAYS`.
+- Auth: `Authorization: Bearer <token>` where token is `CRON_SECRET` (preferred) or `REPORTS_PRUNE_TOKEN`.
+- Dry run: `GET /api/reports/prune?dry=1` (same auth), returns `candidateCount` without deleting.

@@ -10,6 +10,12 @@ create table if not exists public.beach_reports (
   created_at timestamptz not null default now()
 );
 
+comment on column public.beach_reports.source_ip is
+  'Salted SHA-256 hash of client IP (never raw value).';
+
+comment on column public.beach_reports.user_agent is
+  'Salted SHA-256 hash of client user-agent (never raw value).';
+
 create index if not exists beach_reports_created_at_idx
   on public.beach_reports(created_at desc);
 
