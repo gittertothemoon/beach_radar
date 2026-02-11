@@ -143,6 +143,7 @@ const TopSearchComponent = ({
               {STRINGS.search.label}
             </span>
             <input
+              data-testid="search-input"
               ref={inputRef}
               value={value}
               onChange={(event) => {

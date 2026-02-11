@@ -116,6 +116,7 @@ const ReportModal = ({
         role="dialog"
         aria-modal="true"
         aria-label={STRINGS.aria.reportBeach(beachName)}
+        data-testid="report-modal"
         className="w-full max-w-screen-sm rounded-[18px] contrast-guard px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-6"
       >
         <div className="flex items-start justify-between">
@@ -139,7 +140,10 @@ const ReportModal = ({
         </div>
 
         {submitError ? (
-          <div className="mt-3 rounded-[12px] border border-rose-300/60 bg-rose-500/25 px-4 py-2 text-xs text-rose-50">
+          <div
+            data-testid="report-error"
+            className="mt-3 rounded-[12px] border border-rose-300/60 bg-rose-500/25 px-4 py-2 text-xs text-rose-50"
+          >
             {submitError}
           </div>
         ) : null}
@@ -156,6 +160,7 @@ const ReportModal = ({
               key={option.level}
               onClick={() => onSubmit(option.level)}
               disabled={!canReport || submitting}
+              data-testid={`report-level-${option.level}`}
               className="br-press rounded-[12px] border border-white/20 bg-black/40 px-3 py-4 text-sm font-semibold br-text-primary transition disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
             >
               {option.level} • {option.label}

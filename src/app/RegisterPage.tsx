@@ -440,6 +440,7 @@ const RegisterPage = () => {
                     {STRINGS.account.emailLabel}
                   </span>
                   <input
+                    data-testid="auth-email-input"
                     type="email"
                     value={email}
                     onChange={(event) => {
@@ -460,6 +461,7 @@ const RegisterPage = () => {
                     {STRINGS.account.passwordLabel}
                   </span>
                   <input
+                    data-testid="auth-password-input"
                     type="password"
                     value={password}
                     onChange={(event) => {
@@ -540,6 +542,7 @@ const RegisterPage = () => {
               <button
                 type="button"
                 disabled={submitting}
+                data-testid="auth-submit"
                 onClick={() => {
                   void handleSubmit();
                 }}

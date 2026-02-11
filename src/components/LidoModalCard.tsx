@@ -174,6 +174,7 @@ const LidoModalCardComponent = ({
         role="dialog"
         aria-modal="true"
         aria-label={STRINGS.aria.beachDetails(beach.name)}
+        data-testid="lido-modal"
         onClick={(event) => event.stopPropagation()}
         className="flex max-h-[80svh] w-[min(92vw,560px)] flex-col overflow-hidden rounded-[18px] contrast-guard"
       >
@@ -199,6 +200,7 @@ const LidoModalCardComponent = ({
                 type="button"
                 onClick={onToggleFavorite}
                 aria-label={STRINGS.aria.toggleFavoriteBeach(beach.name, isFavorite)}
+                data-testid="favorite-toggle"
                 className={`br-press inline-flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
                   isFavorite
                     ? "border-amber-300/55 bg-amber-400/20 text-amber-100"
@@ -257,7 +259,10 @@ const LidoModalCardComponent = ({
             </div>
           </div>
 
-          <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 backdrop-blur-sm">
+          <div
+            data-testid="lido-weather"
+            className="rounded-[12px] border border-white/15 bg-black/30 p-4 backdrop-blur-sm"
+          >
             <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
               <span>{STRINGS.labels.weather}</span>
               {weather ? (
@@ -425,6 +430,7 @@ const LidoModalCardComponent = ({
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={onReport}
+              data-testid="report-cta"
               className="br-press rounded-[12px] border border-white/25 bg-black/50 px-4 py-3 text-[14px] font-semibold text-slate-50 shadow-[0_10px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
             >
               {STRINGS.actions.report}

@@ -635,6 +635,7 @@ const MapViewComponent = ({
 
   return (
     <MapContainer
+      data-testid="map-container"
       center={[center.lat, center.lng]}
       zoom={12}
       minZoom={2}

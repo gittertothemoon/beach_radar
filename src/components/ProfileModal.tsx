@@ -104,7 +104,10 @@ const ProfileModal = ({
             </div>
           </div>
           {favoriteBeaches.length > 0 ? (
-            <div className="mt-2 max-h-[220px] overflow-y-auto rounded-[10px] border border-white/12 bg-black/35">
+            <div
+              data-testid="favorites-list"
+              className="mt-2 max-h-[220px] overflow-y-auto rounded-[10px] border border-white/12 bg-black/35"
+            >
               {favoriteBeaches.map((beach) => (
                 <button
                   type="button"

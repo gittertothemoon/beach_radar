@@ -65,6 +65,7 @@ const AccountRequiredModal = ({
         role="dialog"
         aria-modal="true"
         aria-label={titleLabel}
+        data-testid="auth-required-modal"
         className="w-full max-w-screen-sm rounded-[18px] contrast-guard px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-6"
       >
         <div className="flex items-start justify-between">

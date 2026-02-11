@@ -49,6 +49,7 @@ jobs:
       WAITLIST_TEST_MODE: "1"
       REPORTS_TEST_MODE: "1"
       TEST_RATE_LIMIT: "10"
+      APP_ACCESS_KEY: "test-app-access-key"
       PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
     steps:
       - uses: actions/checkout@v4
@@ -101,9 +102,9 @@ jobs:
           echo "Server did not become ready" >&2
           exit 1
 
-      - name: Run waitlist tests
+      - name: Run waitlist + app tests
         if: env.SKIP_WAITLIST != '1'
-        run: npx playwright test tests/waitlist.api.spec.ts tests/waitlist.e2e.spec.ts tests/reports.api.spec.ts --workers=1 --retries=1
+        run: npx playwright test tests/waitlist.api.spec.ts tests/waitlist.e2e.spec.ts tests/reports.api.spec.ts tests/app.gating.spec.ts tests/app.map.spec.ts tests/app.reports.spec.ts tests/app.favorites.spec.ts --workers=1 --retries=1
 
       - name: Stop server
         if: always() && env.SKIP_WAITLIST != '1'

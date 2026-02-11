@@ -25,6 +25,7 @@ const WeatherWidgetComponent = ({
       type="button"
       onClick={onOpenDetails}
       aria-label={`${STRINGS.labels.weather} ${beachName}`}
+      data-testid="weather-widget"
       className="br-press fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+126px)] z-10 w-[min(68vw,240px)] rounded-2xl border border-white/16 bg-black/40 px-3 py-2 text-left text-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.42)] backdrop-blur-md transition hover:border-white/28 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 sm:bottom-[calc(env(safe-area-inset-bottom)+168px)]"
     >
       <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-[0.1em] br-text-tertiary">

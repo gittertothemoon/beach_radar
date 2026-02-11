@@ -278,6 +278,7 @@ const BottomSheetComponent = ({
 
   return (
     <div
+      data-testid="bottom-sheet"
       className={`fixed bottom-0 left-0 right-0 z-20 ${
         isDragging ? "" : "transition-transform duration-300"
       }`}
@@ -349,6 +350,7 @@ const BottomSheetComponent = ({
               </button>
               <div
                 id={favoritesSectionId}
+                data-testid="favorites-list"
                 className={`${isFavoritesOpen ? "mt-2 divide-y divide-[color:var(--hairline)]" : "hidden"}`}
               >
                 {favoriteBeaches.map((beach) => (
