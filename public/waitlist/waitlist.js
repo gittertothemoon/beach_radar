@@ -8,6 +8,9 @@
     PROJECT: "beach_radar",
     VERSION: "waitlist_v1",
     CAP: 1000,
+    COUNT_DISPLAY: {
+      step: 10
+    },
     STORAGE: {
       lang: "br_lang_v1",
       joined: "br_waitlist_joined_v1",
@@ -22,8 +25,8 @@
       langTitle: "Switch to English",
       title: "Il radar per le tue spiagge.",
       descHTML:
-        "Evita la folla. Scopri dove c'&egrave; posto grazie alle segnalazioni della community, in tempo reale.<br>Iscriviti <b>gratuitamente</b> per <b>Early Access</b>.",
-      pill1: "Early Access",
+        "Evita la folla. Scopri dove c'&egrave; posto grazie alle segnalazioni della community, in tempo reale.<br>Iscriviti <b>gratuitamente</b> per <b>Accesso anticipato</b>.",
+      pill1: "Accesso anticipato",
       pill2: "Badge Founding Member",
       pill3: "Priorit\u00e0 sulla tua zona",
       scarcity: "Prima ondata <b>limitata</b>.<br>Posti rimanenti <b>{remaining}</b>/{cap}",
@@ -96,6 +99,10 @@
   const mockMode = mockParam === "1" || mockParam === "true";
   const mockAlready = mockParam === "already" || getParamValue(params, "mockAlready") === "1";
   const mockEnabled = mockMode || mockAlready;
+  const mockRemainingRaw = Number.parseInt(getParamValue(params, "mockRemaining"), 10);
+  const mockRemaining = Number.isFinite(mockRemainingRaw)
+    ? Math.max(0, Math.min(CONFIG.CAP, mockRemainingRaw))
+    : null;
 
   function debugLog(...args) {
     if (debugEnabled) {
@@ -126,6 +133,7 @@
   let currentLang = resolveInitialLang(params);
   let joined = readStorage(CONFIG.STORAGE.joined) === "1";
   let remainingCount = null;
+  let rawRemainingCount = null;
   let retryBtn = null;
 
   const companyInput = document.getElementById("company");
@@ -183,7 +191,7 @@
     if (pill3) pill3.innerText = t.pill3;
 
     if (scarcityEl) {
-      const remaining = typeof remainingCount === "number" ? remainingCount : "x";
+      const remaining = typeof remainingCount === "number" ? String(remainingCount) : "x";
       const cap = CONFIG.CAP;
       const html = t.scarcity.replace("{remaining}", remaining).replace("{cap}", cap);
       scarcityEl.innerHTML = "<span>" + html + "</span>";
@@ -435,6 +443,17 @@
   hydrateJoinedState();
   fetchRemainingCount();
 
+  function projectRemainingForDisplay(remaining) {
+    const safeRemaining = Math.max(0, Math.min(CONFIG.CAP, Math.floor(Number(remaining) || 0)));
+    const step = Math.max(1, Number(CONFIG.COUNT_DISPLAY.step) || 1);
+    return Math.floor(safeRemaining / step) * step;
+  }
+
+  function setRemainingFromRaw(remainingRaw) {
+    rawRemainingCount = Math.max(0, Math.min(CONFIG.CAP, Math.floor(Number(remainingRaw) || 0)));
+    remainingCount = projectRemainingForDisplay(rawRemainingCount);
+  }
+
   function isValidEmail(value) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
   }
@@ -569,7 +588,10 @@
     input.disabled = true;
     input.value = "";
 
-    if (!responseData.already && typeof remainingCount === "number") {
+    if (!responseData.already && typeof rawRemainingCount === "number") {
+      setRemainingFromRaw(rawRemainingCount - 1);
+      updateUI();
+    } else if (!responseData.already && typeof remainingCount === "number") {
       remainingCount = Math.max(0, remainingCount - 1);
       updateUI();
     }
@@ -668,7 +690,10 @@
 
   async function fetchRemainingCount() {
     if (mockEnabled) {
-      remainingCount = CONFIG.CAP - (joined ? 1 : 0);
+      const seedRemaining = typeof mockRemaining === "number"
+        ? mockRemaining
+        : Math.floor(CONFIG.CAP * 0.55);
+      setRemainingFromRaw(seedRemaining - (joined ? 1 : 0));
       updateUI();
       return;
     }
@@ -687,9 +712,9 @@
       if (!data || data.ok !== true) return;
 
       if (typeof data.remaining === "number") {
-        remainingCount = Math.max(0, data.remaining);
+        setRemainingFromRaw(data.remaining);
       } else if (typeof data.count === "number") {
-        remainingCount = Math.max(0, CONFIG.CAP - data.count);
+        setRemainingFromRaw(CONFIG.CAP - data.count);
       }
 
       updateUI();
