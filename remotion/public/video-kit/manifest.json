@@ -1,0 +1,113 @@
+{
+  "brand": {
+    "name": "Beach Radar",
+    "colors": {
+      "bg_deep": "#020617",
+      "bg_app": "#07090D",
+      "panel": "#0B0F16",
+      "text_primary": "#F8FAFC",
+      "text_secondary": "#94A3B8",
+      "accent_cyan": "#06B6D4",
+      "accent_blue": "#3B82F6",
+      "state_live": "#22C55E",
+      "state_recent": "#F59E0B",
+      "state_pred": "#64748B",
+      "crowd_level_2": "#FACC15",
+      "crowd_level_3": "#F97316",
+      "crowd_level_4": "#EF4444"
+    },
+    "fonts": {
+      "heading": {
+        "family": "Space Grotesk",
+        "weights": [
+          500,
+          600,
+          700
+        ],
+        "source": "Google Fonts"
+      },
+      "body": {
+        "family": "Inter",
+        "weights": [
+          300,
+          400,
+          500
+        ],
+        "source": "Google Fonts"
+      },
+      "local_files": "MISSING"
+    }
+  },
+  "assets": [
+    {
+      "id": "logo_main",
+      "path": "src/assets/logo.png",
+      "type": "image"
+    },
+    {
+      "id": "logo_wordmark",
+      "path": "src/assets/beach-radar-scritta.png",
+      "type": "image"
+    },
+    {
+      "id": "waitlist_logo_main",
+      "path": "public/waitlist/logo.png",
+      "type": "image"
+    },
+    {
+      "id": "waitlist_logo_wordmark",
+      "path": "public/waitlist/beach-radar-scritta.png",
+      "type": "image"
+    },
+    {
+      "id": "bg_sharecard",
+      "path": "src/assets/sharecard-bg.png",
+      "type": "image"
+    },
+    {
+      "id": "bg_initial",
+      "path": "src/assets/initial-bg.png",
+      "type": "image"
+    },
+    {
+      "id": "pin_beach_level_1",
+      "path": "src/assets/markers/pin_beach.png",
+      "type": "image"
+    },
+    {
+      "id": "pin_beach_level_2",
+      "path": "src/assets/markers/pin_beach_poco_affollata.png",
+      "type": "image"
+    },
+    {
+      "id": "pin_beach_level_3",
+      "path": "src/assets/markers/pin_beach_affollata.png",
+      "type": "image"
+    },
+    {
+      "id": "pin_beach_level_4",
+      "path": "src/assets/markers/pin_beach_piena.png",
+      "type": "image"
+    },
+    {
+      "id": "pin_cluster",
+      "path": "src/assets/markers/pin_cluster.png",
+      "type": "image"
+    },
+    {
+      "id": "og_default",
+      "path": "public/og/og-default.png",
+      "type": "image"
+    }
+  ],
+  "copy": {
+    "hook": "Il radar per le tue spiagge.",
+    "value_bullets": [
+      "Evita la folla.",
+      "Scopri dove c'e posto grazie alle segnalazioni della community, in tempo reale.",
+      "Early Access, Badge Founding Member, priorita sulla tua zona."
+    ],
+    "cta_title": "OTTIENI ACCESSO ANTICIPATO",
+    "cta_subtitle": "Prima ondata limitata. Posti rimanenti {remaining}/1000."
+  }
+}

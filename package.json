@@ -24,7 +24,9 @@
     "seed:sync": "node scripts/sync-seed.mjs",
     "posters:csv": "node tools/posters/make-csv.mjs",
     "posters:gen": "node tools/posters/generate.mjs",
-    "test:waitlist:smoke:static": "node scripts/run-smoke-static.mjs"
+    "test:waitlist:smoke:static": "node scripts/run-smoke-static.mjs",
+    "video:dev": "npm --prefix remotion run dev",
+    "video:render": "npm --prefix remotion run render"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.93.2",
