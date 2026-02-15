@@ -152,3 +152,29 @@ test("network failure shows retry and keeps form enabled", async ({ page }) => {
   const joined = await page.evaluate(() => localStorage.getItem("br_waitlist_joined_v1"));
   expect(joined).toBeNull();
 });
+
+test("joined users can reset and use another email", async ({ page }) => {
+  await page.goto(WAITLIST_URL);
+  await page.evaluate(() => {
+    localStorage.setItem("br_waitlist_joined_v1", "1");
+    localStorage.setItem("br_waitlist_meta_v1", "{\"ts\":\"2026-01-01T00:00:00.000Z\"}");
+  });
+  await page.reload();
+
+  const input = page.locator("#emailInput");
+  const button = page.locator("#t-btn");
+  const reset = page.locator("#resetJoinBtn");
+
+  await expect(input).toBeDisabled();
+  await expect(button).toBeDisabled();
+  await expect(reset).toBeVisible();
+
+  await reset.click({ force: true });
+
+  await expect(input).toBeEnabled();
+  await expect(button).toBeEnabled();
+  await expect(page.locator("#postJoin")).toHaveAttribute("aria-hidden", "true");
+
+  const joined = await page.evaluate(() => localStorage.getItem("br_waitlist_joined_v1"));
+  expect(joined).toBeNull();
+});

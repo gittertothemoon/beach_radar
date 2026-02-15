@@ -19,10 +19,11 @@ test("waitlist page loads and shows core UI", async ({ page }) => {
   await expect(page.locator("#waitlistForm")).toBeVisible();
   await expect(page.locator("#emailInput")).toBeVisible();
   await expect(page.locator("#t-btn")).toBeVisible();
+  await expect(page.locator("#t-scarcity")).not.toContainText(/x\/1000/i);
 
   const privacyLink = page.locator("#privacyLink");
   await expect(privacyLink).toBeVisible();
-  await expect(privacyLink).toHaveAttribute("href", "/privacy/");
+  await expect(privacyLink).toHaveAttribute("href", /\/privacy\/(\?|$)/);
 });
 
 test("privacy page reachable", async ({ page }) => {

@@ -5,6 +5,7 @@
   const CONFIG = {
     ENDPOINT: "/api/waitlist",
     COUNT_ENDPOINT: "/api/waitlist/count",
+    ANALYTICS_ENDPOINT: "/api/analytics",
     PROJECT: "beach_radar",
     VERSION: "waitlist_v1",
     CAP: 1000,
@@ -15,7 +16,8 @@
       lang: "br_lang_v1",
       joined: "br_waitlist_joined_v1",
       meta: "br_waitlist_meta_v1",
-      events: "br_events_v1"
+      events: "br_events_v1",
+      session: "br_session_id_v1"
     }
   };
 
@@ -30,6 +32,7 @@
       pill2: "Badge Founding Member",
       pill3: "Priorit\u00e0 sulla tua zona",
       scarcity: "Prima ondata <b>limitata</b>.<br>Posti rimanenti <b>{remaining}</b>/{cap}",
+      scarcityFallback: "Prima ondata <b>limitata</b>.<br>Accesso in ordine di iscrizione.",
       btn: "OTTIENI ACCESSO ANTICIPATO",
       ctaJoined: "SEI DENTRO \u2705",
       loading: "Invio...",
@@ -45,6 +48,7 @@
       alreadyBody: "La tua iscrizione \u00e8 attiva. Condividi il link se vuoi aiutare i tuoi amici.",
       shareLabel: "Condividi",
       copyLabel: "Copia link",
+      resetJoinLabel: "Usa un'altra email",
       shareTitle: "Beach Radar",
       shareText: "Sto entrando nella waitlist di Beach Radar. Unisciti anche tu!",
       shareSuccess: "Link pronto \u2705",
@@ -65,6 +69,7 @@
       pill2: "Founding Member badge",
       pill3: "Priority for your area",
       scarcity: "First wave is <b>limited</b>.<br>Spots remaining <b>{remaining}</b>/{cap}",
+      scarcityFallback: "First wave is <b>limited</b>.<br>Access opens by signup order.",
       btn: "GET EARLY ACCESS",
       ctaJoined: "YOU'RE IN \u2705",
       loading: "Submitting...",
@@ -80,6 +85,7 @@
       alreadyBody: "Your spot is confirmed. Share the link if you'd like to invite friends.",
       shareLabel: "Share",
       copyLabel: "Copy link",
+      resetJoinLabel: "Use another email",
       shareTitle: "Beach Radar",
       shareText: "I'm joining the Beach Radar waitlist. Come with me!",
       shareSuccess: "Link ready \u2705",
@@ -117,7 +123,8 @@
   const devStorageBlock = new Set([
     CONFIG.STORAGE.joined,
     CONFIG.STORAGE.meta,
-    CONFIG.STORAGE.events
+    CONFIG.STORAGE.events,
+    CONFIG.STORAGE.session
   ]);
 
   if (devMode) {
@@ -166,6 +173,7 @@
     const postJoinDesc = document.getElementById("postJoinDesc");
     const shareBtn = document.getElementById("shareBtn");
     const copyBtn = document.getElementById("copyBtn");
+    const resetJoinBtn = document.getElementById("resetJoinBtn");
 
     if (titleEl && descEl) {
       setFading(titleEl, true);
@@ -191,9 +199,12 @@
     if (pill3) pill3.innerText = t.pill3;
 
     if (scarcityEl) {
-      const remaining = typeof remainingCount === "number" ? String(remainingCount) : "x";
+      const hasCount = typeof remainingCount === "number";
+      const remaining = hasCount ? String(remainingCount) : "";
       const cap = CONFIG.CAP;
-      const html = t.scarcity.replace("{remaining}", remaining).replace("{cap}", cap);
+      const html = hasCount
+        ? t.scarcity.replace("{remaining}", remaining).replace("{cap}", cap)
+        : t.scarcityFallback;
       scarcityEl.innerHTML = "<span>" + html + "</span>";
     }
 
@@ -209,6 +220,7 @@
     }
     if (shareBtn) shareBtn.innerText = t.shareLabel;
     if (copyBtn) copyBtn.innerText = t.copyLabel;
+    if (resetJoinBtn) resetJoinBtn.innerText = t.resetJoinLabel;
 
     if (postJoin && postJoin.dataset.state) {
       const isAlready = postJoin.dataset.state === "already";
@@ -334,6 +346,30 @@
       postJoin.dataset.state = "";
     }
     if (!isVisible) setShareStatus("");
+  }
+
+  function clearJoinedStateStorage() {
+    removeStorage(CONFIG.STORAGE.joined);
+    removeStorage(CONFIG.STORAGE.meta);
+  }
+
+  function resetJoinedState() {
+    const btn = document.getElementById("t-btn");
+    const input = document.getElementById("emailInput");
+    if (!btn || !input) return;
+
+    joined = false;
+    clearJoinedStateStorage();
+    setLoadingState(false);
+    clearStatusMessage();
+    setPostJoinVisible(false);
+
+    btn.disabled = false;
+    btn.innerText = content[currentLang].btn;
+    input.disabled = false;
+    input.value = "";
+    input.focus();
+    track("wl_joined_reset", { lang: currentLang });
   }
 
   function pulseSuccess() {
@@ -466,8 +502,10 @@
 
   const shareBtn = document.getElementById("shareBtn");
   const copyBtn = document.getElementById("copyBtn");
+  const resetJoinBtn = document.getElementById("resetJoinBtn");
   if (shareBtn) shareBtn.addEventListener("click", handleShare);
   if (copyBtn) copyBtn.addEventListener("click", handleCopy);
+  if (resetJoinBtn) resetJoinBtn.addEventListener("click", resetJoinedState);
 
   emailInput.addEventListener("input", () => {
     if (!joined) {
@@ -774,10 +812,122 @@
     }
   }
 
+  function randomHex(length) {
+    const safeLength = Math.max(2, Number(length) || 2);
+    if (window.crypto && window.crypto.getRandomValues) {
+      const bytes = new Uint8Array(Math.ceil(safeLength / 2));
+      window.crypto.getRandomValues(bytes);
+      const hex = Array.from(bytes)
+        .map((value) => value.toString(16).padStart(2, "0"))
+        .join("");
+      return hex.slice(0, safeLength);
+    }
+    let fallback = "";
+    while (fallback.length < safeLength) {
+      fallback += Math.random().toString(16).slice(2);
+    }
+    return fallback.slice(0, safeLength);
+  }
+
+  function randomUuid() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+    const hex = randomHex(32);
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-a${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+  }
+
+  function getSessionId() {
+    const existing = readStorage(CONFIG.STORAGE.session);
+    if (existing && existing.trim().length >= 8) return existing;
+    const next = randomHex(32);
+    writeStorage(CONFIG.STORAGE.session, next);
+    return next;
+  }
+
+  function getCurrentPath() {
+    const pathname = window.location.pathname || "/";
+    const search = window.location.search || "";
+    return `${pathname.startsWith("/") ? pathname : "/" + pathname}${search}`;
+  }
+
+  function sanitizeTrackingValue(value, depth = 0) {
+    if (depth > 5) return null;
+    if (value === null) return null;
+    if (typeof value === "string") return value.slice(0, 500);
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+    if (typeof value === "boolean") return value;
+
+    if (Array.isArray(value)) {
+      const items = [];
+      value.slice(0, 40).forEach((item) => {
+        const sanitized = sanitizeTrackingValue(item, depth + 1);
+        if (sanitized !== null) items.push(sanitized);
+      });
+      return items.length > 0 ? items : null;
+    }
+
+    if (typeof value !== "object") return null;
+    const out = {};
+    Object.entries(value).forEach(([key, raw]) => {
+      if (!key || key.length > 100) return;
+      const lowered = key.toLowerCase();
+      if (lowered.includes("email") || lowered.includes("ip") || lowered.includes("useragent")) return;
+      const sanitized = sanitizeTrackingValue(raw, depth + 1);
+      if (sanitized !== null) out[key] = sanitized;
+    });
+    return Object.keys(out).length > 0 ? out : null;
+  }
+
+  function queueServerEvent(name, ts, payload) {
+    const utmSource = getParamValue(utm, "utm_source");
+    const utmMedium = getParamValue(utm, "utm_medium");
+    const utmCampaign = getParamValue(utm, "utm_campaign");
+    const src = getParamValue(params, "src");
+    const sanitizedPayload = sanitizeTrackingValue(payload);
+    const analyticsPayload = {
+      eventName: name,
+      ts,
+      sessionId: getSessionId(),
+      path: getCurrentPath(),
+      eventId: randomUuid()
+    };
+
+    if (src) analyticsPayload.src = src;
+    if (utmSource) analyticsPayload.utm_source = utmSource;
+    if (utmMedium) analyticsPayload.utm_medium = utmMedium;
+    if (utmCampaign) analyticsPayload.utm_campaign = utmCampaign;
+    if (
+      sanitizedPayload &&
+      typeof sanitizedPayload === "object" &&
+      !Array.isArray(sanitizedPayload)
+    ) {
+      analyticsPayload.props = sanitizedPayload;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 1800);
+    fetch(CONFIG.ANALYTICS_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify(analyticsPayload),
+      signal: controller.signal,
+      keepalive: true
+    }).catch(() => {
+      // fail silent
+    }).finally(() => {
+      window.clearTimeout(timeoutId);
+    });
+  }
+
   function track(name, payload = {}) {
+    const ts = new Date().toISOString();
     const event = {
       name,
-      ts: new Date().toISOString(),
+      ts,
       payload
     };
 
@@ -799,6 +949,7 @@
     }
 
     writeStorage(CONFIG.STORAGE.events, JSON.stringify(events));
+    queueServerEvent(name, ts, payload);
   }
 
   function readStorage(key) {
@@ -814,6 +965,15 @@
     if (devMode && devStorageBlock.has(key)) return null;
     try {
       window.localStorage.setItem(key, value);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function removeStorage(key) {
+    if (devMode && devStorageBlock.has(key)) return null;
+    try {
+      window.localStorage.removeItem(key);
     } catch (_) {
       return null;
     }
