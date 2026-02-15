@@ -4,6 +4,11 @@ import {
   BEACH_RADAR_FINAL_FRAMES,
   BeachRadarWaitlistFinal,
 } from "./compositions/BeachRadarWaitlistFinal";
+import {
+  BEACH_RADAR_BOMB_FRAMES,
+  BEACH_RADAR_BOMB_VARIANTS,
+  BeachRadarBombPack15,
+} from "./compositions/BeachRadarBombPack15";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -16,6 +21,19 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
       />
+
+      {BEACH_RADAR_BOMB_VARIANTS.map((variant) => (
+        <Composition
+          key={variant.id}
+          id={`BeachRadar-Bomb-${variant.id}`}
+          component={BeachRadarBombPack15}
+          durationInFrames={BEACH_RADAR_BOMB_FRAMES}
+          fps={30}
+          width={1080}
+          height={1920}
+          defaultProps={{variantId: variant.id}}
+        />
+      ))}
     </>
   );
 };

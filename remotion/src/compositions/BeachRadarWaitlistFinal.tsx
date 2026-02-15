@@ -3,8 +3,10 @@ import {loadFont as loadInter} from "@remotion/google-fonts/Inter";
 import {loadFont as loadSpaceGrotesk} from "@remotion/google-fonts/SpaceGrotesk";
 import {
   AbsoluteFill,
+  Audio,
   Easing,
   Img,
+  OffthreadVideo,
   Sequence,
   interpolate,
   spring,
@@ -19,36 +21,38 @@ const {fontFamily: headingFont} = loadSpaceGrotesk("normal", {
 });
 
 const {fontFamily: bodyFont} = loadInter("normal", {
-  weights: ["400", "500", "600", "700"],
+  weights: ["400", "500", "600", "700", "800"],
   subsets: ["latin"],
 });
 
 const FPS = 30;
 export const BEACH_RADAR_FINAL_FRAMES = 360;
 
-const INTRO_DURATION = 104;
-const VALUE_DURATION = 184;
-const CTA_DURATION = 102;
-const VALUE_FROM = 88;
-const CTA_FROM = 258;
+const INTRO_FROM = 0;
+const INTRO_DURATION = 132;
 
-const LOCKUP_SCALE = 1.34;
+const VALUE_FROM = 108;
+const VALUE_DURATION = 168;
+
+const CTA_FROM = 240;
+const CTA_DURATION = 120;
 
 const COLORS = {
   bg: "#020617",
-  text: "#F8FAFC",
-  muted: "#94A3B8",
+  white: "#F8FAFC",
+  muted: "#A7B7CF",
   cyan: "#06B6D4",
   live: "#22C55E",
   recent: "#F59E0B",
   pred: "#64748B",
+  panel: "rgba(3, 10, 28, 0.78)",
 };
 
 const SAFE = {
-  left: 64,
-  right: 64,
-  top: 112,
-  bottom: 136,
+  left: 66,
+  right: 66,
+  top: 98,
+  bottom: 106,
 };
 
 const safeArea: React.CSSProperties = {
@@ -65,47 +69,17 @@ const fillCover: React.CSSProperties = {
   objectFit: "cover",
 };
 
-const BaseBackdrop: React.FC<{frame: number}> = ({frame}) => {
-  const drift = interpolate(frame, [0, BEACH_RADAR_FINAL_FRAMES - 1], [0, 70], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  return (
-    <>
-      <Img src={staticFile("video-kit/initial-bg.png")} style={fillCover} />
-      <AbsoluteFill
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(0deg, rgba(6,182,212,0.05) 0px, rgba(6,182,212,0.05) 1px, transparent 1px, transparent 34px)",
-          backgroundPosition: `0 ${drift}px`,
-          opacity: 0.35,
-        }}
-      />
-      <AbsoluteFill
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(2,6,23,0.24) 0%, rgba(2,6,23,0.74) 52%, rgba(2,6,23,0.94) 100%)",
-        }}
-      />
-      <AbsoluteFill
-        style={{
-          background:
-            "radial-gradient(ellipse 760px 420px at 50% 14%, rgba(6,182,212,0.32), rgba(2,6,23,0) 63%)",
-        }}
-      />
-    </>
-  );
-};
-
-const BrandLockup: React.FC<{frame: number; scale?: number}> = ({
+const BrandLockup: React.FC<{frame: number; width?: number; pulse?: boolean}> = ({
   frame,
-  scale = LOCKUP_SCALE,
+  width = 512,
+  pulse = true,
 }) => {
-  const radarPulse = interpolate(frame % 28, [0, 27], [0.86, 1.28], {
+  const iconSize = Math.round(width * 0.42);
+  const pulseScale = interpolate(frame % 36, [0, 35], [0.9, 1.35], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const radarOpacity = interpolate(frame % 28, [0, 27], [0.34, 0], {
+  const pulseOpacity = interpolate(frame % 36, [0, 35], [0.28, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -113,168 +87,245 @@ const BrandLockup: React.FC<{frame: number; scale?: number}> = ({
   return (
     <div
       style={{
-        position: "relative",
-        width: 620,
-        height: 470,
-        transform: `scale(${scale})`,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        width,
       }}
     >
       <div
         style={{
-          position: "absolute",
-          left: 220,
-          top: 18,
-          width: 182,
-          height: 182,
-          borderRadius: "50%",
-          border: `2px solid rgba(6,182,212,${radarOpacity})`,
-          transform: `scale(${radarPulse})`,
+          position: "relative",
+          width: iconSize,
+          height: iconSize,
+          marginBottom: -16,
         }}
-      />
+      >
+        {pulse ? (
+          <div
+            style={{
+              position: "absolute",
+              inset: -18,
+              borderRadius: "50%",
+              border: `2px solid rgba(6,182,212,${pulseOpacity})`,
+              transform: `scale(${pulseScale})`,
+            }}
+          />
+        ) : null}
+        <Img
+          src={staticFile("video-kit/logo-tight.png")}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            filter: "drop-shadow(0 0 26px rgba(6,182,212,0.48))",
+          }}
+        />
+      </div>
+
       <Img
-        src={staticFile("video-kit/logo.png")}
+        src={staticFile("video-kit/beach-radar-scritta-tight.png")}
         style={{
-          position: "absolute",
-          left: 196,
-          top: 0,
-          width: 230,
-          height: 230,
+          width,
+          height: Math.round(width * 0.46),
           objectFit: "contain",
-          filter: "drop-shadow(0 0 36px rgba(6,182,212,0.55))",
-        }}
-      />
-      <Img
-        src={staticFile("video-kit/beach-radar-scritta.png")}
-        style={{
-          position: "absolute",
-          left: 56,
-          top: 148,
-          width: 508,
-          height: 224,
-          objectFit: "contain",
+          marginTop: -16,
+          filter: "drop-shadow(0 10px 26px rgba(2,6,23,0.5))",
         }}
       />
     </div>
   );
 };
 
-const StatusChip: React.FC<{label: string; color: string}> = ({label, color}) => (
+const StatusChip: React.FC<{
+  label: string;
+  color: string;
+  small?: boolean;
+}> = ({label, color, small = false}) => (
   <div
     style={{
       borderRadius: 999,
       border: `1px solid ${color}`,
-      backgroundColor: "rgba(2,6,23,0.74)",
+      backgroundColor: "rgba(2,6,23,0.7)",
       color,
       fontFamily: bodyFont,
       fontWeight: 700,
-      fontSize: 19,
+      fontSize: small ? 20 : 22,
       lineHeight: 1,
-      padding: "9px 13px",
+      padding: small ? "9px 14px" : "10px 16px",
     }}
   >
     {label}
   </div>
 );
 
-const IntroScene: React.FC = () => {
+const CinematicBackground: React.FC<{frame: number}> = ({frame}) => {
+  const travelA = interpolate(frame, [0, BEACH_RADAR_FINAL_FRAMES - 1], [0, 42], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const travelB = interpolate(frame, [0, BEACH_RADAR_FINAL_FRAMES - 1], [20, -28], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const noiseOffset = interpolate(frame, [0, BEACH_RADAR_FINAL_FRAMES - 1], [0, 190], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <AbsoluteFill style={{backgroundColor: COLORS.bg}}>
+      <div
+        style={{
+          position: "absolute",
+          inset: -36,
+          transform: `translateY(${travelA}px) scale(1.22)`,
+          opacity: 0.9,
+        }}
+      >
+        <OffthreadVideo
+          src={staticFile("video-kit/stock/beach-panorama-1080.mp4")}
+          muted
+          style={fillCover}
+        />
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          inset: -44,
+          transform: `translateY(${travelB}px) scale(1.2)`,
+          opacity: 0.34,
+          mixBlendMode: "screen",
+        }}
+      >
+        <OffthreadVideo
+          src={staticFile("video-kit/stock/beach-seashore-1080.mp4")}
+          muted
+          style={fillCover}
+        />
+      </div>
+
+      <Img
+        src={staticFile("video-kit/initial-bg.png")}
+        style={{
+          ...fillCover,
+          opacity: 0.32,
+          mixBlendMode: "screen",
+        }}
+      />
+
+      <AbsoluteFill
+        style={{
+          background:
+            "radial-gradient(ellipse 760px 460px at 50% 11%, rgba(6,182,212,0.36), rgba(3,9,24,0.0) 62%)",
+          opacity: 0.68,
+        }}
+      />
+
+      <AbsoluteFill
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(2,6,23,0.12) 0%, rgba(2,6,23,0.42) 46%, rgba(2,6,23,0.8) 100%)",
+        }}
+      />
+
+      <AbsoluteFill
+        style={{
+          opacity: 0.11,
+          backgroundImage:
+            "repeating-linear-gradient(0deg, rgba(148,163,184,0.4) 0px, rgba(148,163,184,0.4) 1px, transparent 1px, transparent 3px)",
+          backgroundPosition: `0 ${noiseOffset}px`,
+          mixBlendMode: "soft-light",
+        }}
+      />
+
+      <AbsoluteFill
+        style={{
+          background:
+            "radial-gradient(circle at 50% 54%, rgba(2,6,23,0) 28%, rgba(2,6,23,0.24) 72%, rgba(2,6,23,0.52) 100%)",
+        }}
+      />
+    </AbsoluteFill>
+  );
+};
+
+const IntroScene: React.FC<{duration: number}> = ({duration}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
+
   const inSpring = spring({
     frame,
     fps,
-    durationInFrames: 22,
-    config: {damping: 180},
+    durationInFrames: 26,
+    config: {damping: 170},
   });
+
   const sceneOpacity = interpolate(
     frame,
-    [0, 7, INTRO_DURATION - 14, INTRO_DURATION - 1],
-    [1, 1, 1, 0],
+    [0, 12, duration - 22, duration - 1],
+    [0, 1, 1, 0],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     },
   );
 
+  const rise = interpolate(inSpring, [0, 1], [34, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.cubic),
+  });
+
   return (
-    <AbsoluteFill style={{backgroundColor: COLORS.bg, opacity: sceneOpacity}}>
-      <BaseBackdrop frame={frame} />
+    <AbsoluteFill style={{opacity: sceneOpacity}}>
+      <CinematicBackground frame={frame} />
+
       <div style={safeArea}>
         <div
           style={{
             height: "100%",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-between",
+            justifyContent: "center",
             alignItems: "center",
             textAlign: "center",
-            transform: `translateY(${interpolate(inSpring, [0, 1], [20, 0])}px)`,
-            opacity: interpolate(inSpring, [0, 1], [0.5, 1]),
+            transform: `translateY(${rise + 24}px)`,
+            opacity: interpolate(inSpring, [0, 1], [0.4, 1]),
+            gap: 26,
           }}
         >
-          <BrandLockup frame={frame} />
-
-          <div>
-            <div
-              style={{
-                fontFamily: headingFont,
-                fontWeight: 700,
-                fontSize: 98,
-                lineHeight: 0.92,
-                letterSpacing: -2.2,
-                color: COLORS.text,
-              }}
-            >
-              EVITA LA FOLLA.
-            </div>
-            <div
-              style={{
-                marginTop: 7,
-                fontFamily: headingFont,
-                fontWeight: 700,
-                fontSize: 94,
-                lineHeight: 0.92,
-                letterSpacing: -2.1,
-                color: COLORS.text,
-              }}
-            >
-              SCEGLI MEGLIO.
-            </div>
-          </div>
+          <BrandLockup frame={frame} width={556} />
 
           <div
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 11,
+              fontFamily: headingFont,
+              color: COLORS.white,
+              fontWeight: 700,
+              fontSize: 98,
+              letterSpacing: -2.6,
+              lineHeight: 0.92,
+              textShadow: "0 10px 42px rgba(2,6,23,0.55)",
             }}
           >
-            <div
-              style={{
-                borderRadius: 999,
-                border: "1px solid rgba(6,182,212,0.55)",
-                backgroundColor: "rgba(2,6,23,0.65)",
-                color: COLORS.cyan,
-                fontFamily: bodyFont,
-                fontWeight: 700,
-                fontSize: 30,
-                lineHeight: 1,
-                padding: "11px 22px",
-              }}
-            >
-              Riviera + Bologna
-            </div>
-            <div
-              style={{
-                fontFamily: bodyFont,
-                color: COLORS.muted,
-                fontWeight: 600,
-                fontSize: 28,
-                lineHeight: 1.1,
-              }}
-            >
-              Radar live per scegliere la spiaggia giusta.
-            </div>
+            EVITA LA FOLLA.
+            <br />
+            SCEGLI MEGLIO.
+          </div>
+
+          <StatusChip label="Beach Radar LIVE" color={COLORS.cyan} />
+
+          <div
+            style={{
+              fontFamily: bodyFont,
+              fontSize: 31,
+              lineHeight: 1.08,
+              color: COLORS.muted,
+              fontWeight: 600,
+              maxWidth: 900,
+            }}
+          >
+            Radar live per trovare la spiaggia giusta, adesso.
           </div>
         </div>
       </div>
@@ -282,47 +333,53 @@ const IntroScene: React.FC = () => {
   );
 };
 
-const ValueScene: React.FC = () => {
+const ValueScene: React.FC<{duration: number}> = ({duration}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
+
   const sceneOpacity = interpolate(
     frame,
-    [0, 8, VALUE_DURATION - 14, VALUE_DURATION - 1],
+    [0, 12, duration - 20, duration - 1],
     [0, 1, 1, 0],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     },
   );
+
   const inSpring = spring({
     frame,
     fps,
-    durationInFrames: 22,
-    config: {damping: 180},
+    durationInFrames: 24,
+    config: {damping: 182},
   });
+
   const panelIn = spring({
-    frame: frame - 6,
+    frame: frame - 8,
     fps,
-    durationInFrames: 22,
-    config: {damping: 190},
+    durationInFrames: 24,
+    config: {damping: 192},
   });
-  const panelShift = interpolate(frame, [0, VALUE_DURATION - 1], [30, -24], {
+
+  const panelDrift = interpolate(frame, [0, duration - 1], [20, -24], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.inOut(Easing.quad),
   });
 
   return (
-    <AbsoluteFill style={{backgroundColor: COLORS.bg, opacity: sceneOpacity}}>
-      <BaseBackdrop frame={frame + 35} />
+    <AbsoluteFill style={{opacity: sceneOpacity}}>
+      <CinematicBackground frame={frame + 70} />
+
       <div style={safeArea}>
         <div
           style={{
             height: "100%",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-between",
-            transform: `translateY(${interpolate(inSpring, [0, 1], [18, 0])}px)`,
+            justifyContent: "center",
+            gap: 26,
+            transform: `translateY(${interpolate(inSpring, [0, 1], [24, 8])}px)`,
             opacity: inSpring,
           }}
         >
@@ -330,26 +387,27 @@ const ValueScene: React.FC = () => {
             <div
               style={{
                 fontFamily: headingFont,
+                color: COLORS.white,
                 fontWeight: 700,
-                fontSize: 90,
-                lineHeight: 0.93,
-                letterSpacing: -2.1,
-                color: COLORS.text,
+                fontSize: 86,
+                lineHeight: 0.94,
+                letterSpacing: -2,
+                textShadow: "0 10px 42px rgba(2,6,23,0.55)",
               }}
             >
               LIVE, RECENT,
               <br />
               PRED.
             </div>
+
             <div
               style={{
-                marginTop: 10,
+                marginTop: 12,
                 fontFamily: bodyFont,
+                color: COLORS.muted,
                 fontWeight: 700,
                 fontSize: 40,
-                lineHeight: 1.05,
-                color: COLORS.muted,
-                maxWidth: 920,
+                lineHeight: 1.04,
               }}
             >
               Affollamento chiaro in tempo reale.
@@ -358,14 +416,14 @@ const ValueScene: React.FC = () => {
 
           <div
             style={{
-              height: 860,
+              height: 950,
               borderRadius: 42,
-              border: "1px solid rgba(148,163,184,0.24)",
-              backgroundColor: "rgba(11,15,22,0.86)",
-              boxShadow: "0 24px 82px rgba(2,6,23,0.58)",
+              border: "1px solid rgba(148,163,184,0.28)",
+              boxShadow: "0 22px 78px rgba(2,6,23,0.64)",
+              backgroundColor: COLORS.panel,
               overflow: "hidden",
               position: "relative",
-              transform: `translateY(${interpolate(panelIn, [0, 1], [24, 0])}px)`,
+              transform: `translateY(${interpolate(panelIn, [0, 1], [22, 0])}px) scale(${interpolate(panelIn, [0, 1], [0.97, 1])})`,
               opacity: panelIn,
             }}
           >
@@ -373,77 +431,92 @@ const ValueScene: React.FC = () => {
               style={{
                 position: "absolute",
                 inset: 0,
-                transform: `translateY(${panelShift}px) scale(1.06)`,
+                transform: `translateY(${panelDrift}px) scale(1.06)`,
               }}
             >
               <Img src={staticFile("video-kit/sharecard-bg.png")} style={fillCover} />
             </div>
-            <AbsoluteFill style={{backgroundColor: "rgba(2,6,23,0.34)"}} />
+
+            <AbsoluteFill style={{backgroundColor: "rgba(2,6,23,0.26)"}} />
 
             <div
               style={{
                 position: "absolute",
-                top: 22,
-                left: 22,
-                right: 22,
+                top: 24,
+                left: 24,
+                right: 24,
                 display: "flex",
-                justifyContent: "space-between",
                 alignItems: "center",
-                zIndex: 4,
+                justifyContent: "space-between",
+                zIndex: 3,
               }}
             >
               <div style={{display: "flex", gap: 8}}>
-                <StatusChip label="LIVE" color={COLORS.live} />
-                <StatusChip label="RECENT" color={COLORS.recent} />
-                <StatusChip label="PRED" color={COLORS.pred} />
+                <StatusChip label="LIVE" color={COLORS.live} small />
+                <StatusChip label="RECENT" color={COLORS.recent} small />
+                <StatusChip label="PRED" color={COLORS.pred} small />
               </div>
-              <StatusChip label="Riviera + Bologna" color={COLORS.cyan} />
+              <StatusChip label="Comunita LIVE" color={COLORS.cyan} small />
             </div>
 
             <Img
               src={staticFile("video-kit/pin_beach.png")}
               style={{
                 position: "absolute",
-                left: 160,
-                top: 280,
-                width: 100,
-                height: 100,
+                left: 180,
+                top: 340,
+                width: 102,
+                height: 102,
                 objectFit: "contain",
+                transform: `translateY(${interpolate(frame % 60, [0, 30, 59], [0, -8, 0], {
+                  extrapolateLeft: "clamp",
+                  extrapolateRight: "clamp",
+                })}px)`,
               }}
             />
+
             <Img
               src={staticFile("video-kit/pin_beach_affollata.png")}
               style={{
                 position: "absolute",
-                left: 424,
-                top: 378,
-                width: 100,
-                height: 100,
+                left: 444,
+                top: 462,
+                width: 102,
+                height: 102,
                 objectFit: "contain",
+                transform: `translateY(${interpolate((frame + 18) % 60, [0, 30, 59], [0, -9, 0], {
+                  extrapolateLeft: "clamp",
+                  extrapolateRight: "clamp",
+                })}px)`,
               }}
             />
+
             <Img
               src={staticFile("video-kit/pin_beach_poco_affollata.png")}
               style={{
                 position: "absolute",
-                left: 642,
-                top: 265,
-                width: 100,
-                height: 100,
+                left: 690,
+                top: 320,
+                width: 102,
+                height: 102,
                 objectFit: "contain",
+                transform: `translateY(${interpolate((frame + 36) % 60, [0, 30, 59], [0, -8, 0], {
+                  extrapolateLeft: "clamp",
+                  extrapolateRight: "clamp",
+                })}px)`,
               }}
             />
 
             <div
               style={{
                 position: "absolute",
-                left: 22,
-                right: 22,
-                bottom: 22,
+                left: 24,
+                right: 24,
+                bottom: 24,
                 borderRadius: 24,
                 border: "1px solid rgba(148,163,184,0.2)",
-                backgroundColor: "rgba(2,6,23,0.75)",
-                padding: "16px 18px",
+                backgroundColor: "rgba(2,6,23,0.72)",
+                padding: "18px 20px",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -452,10 +525,10 @@ const ValueScene: React.FC = () => {
               <div
                 style={{
                   fontFamily: bodyFont,
-                  fontWeight: 700,
-                  fontSize: 30,
+                  fontWeight: 800,
+                  fontSize: 34,
                   lineHeight: 1,
-                  color: COLORS.text,
+                  color: COLORS.white,
                 }}
               >
                 Dove c'e posto, adesso.
@@ -463,7 +536,7 @@ const ValueScene: React.FC = () => {
               <div
                 style={{
                   fontFamily: bodyFont,
-                  fontWeight: 700,
+                  fontWeight: 800,
                   fontSize: 24,
                   lineHeight: 1,
                   color: COLORS.cyan,
@@ -477,11 +550,11 @@ const ValueScene: React.FC = () => {
           <div
             style={{
               textAlign: "center",
-              color: COLORS.muted,
               fontFamily: bodyFont,
+              color: COLORS.muted,
               fontWeight: 600,
               fontSize: 28,
-              lineHeight: 1.1,
+              lineHeight: 1.05,
             }}
           >
             Segnalazioni community in tempo reale.
@@ -492,35 +565,40 @@ const ValueScene: React.FC = () => {
   );
 };
 
-const CtaScene: React.FC = () => {
+const CtaScene: React.FC<{duration: number}> = ({duration}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
+
   const inSpring = spring({
     frame,
     fps,
-    durationInFrames: 20,
-    config: {damping: 180},
+    durationInFrames: 24,
+    config: {damping: 175},
   });
-  const ctaIn = spring({
-    frame: frame - 7,
+
+  const ctaSpring = spring({
+    frame: frame - 8,
     fps,
-    durationInFrames: 18,
-    config: {damping: 165},
+    durationInFrames: 22,
+    config: {damping: 160},
   });
-  const sceneOpacity = interpolate(frame, [0, 7], [0, 1], {
+
+  const sceneOpacity = interpolate(frame, [0, 12, duration - 1], [0, 1, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
+
   const remaining = Math.round(
-    interpolate(frame, [0, CTA_DURATION - 1], [188, 146], {
+    interpolate(frame, [0, duration - 1], [162, 145], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     }),
   );
 
   return (
-    <AbsoluteFill style={{backgroundColor: COLORS.bg, opacity: sceneOpacity}}>
-      <BaseBackdrop frame={frame + 64} />
+    <AbsoluteFill style={{opacity: sceneOpacity}}>
+      <CinematicBackground frame={frame + 118} />
+
       <div style={safeArea}>
         <div
           style={{
@@ -531,20 +609,20 @@ const CtaScene: React.FC = () => {
             alignItems: "center",
             textAlign: "center",
             gap: 18,
-            transform: `translateY(${interpolate(inSpring, [0, 1], [18, 0])}px)`,
+            transform: `translateY(${interpolate(inSpring, [0, 1], [24, 18])}px)`,
             opacity: inSpring,
           }}
         >
-          <BrandLockup frame={frame} />
+          <BrandLockup frame={frame} width={560} />
 
           <div
             style={{
               fontFamily: headingFont,
+              color: COLORS.white,
               fontWeight: 700,
-              fontSize: 78,
-              lineHeight: 0.97,
-              letterSpacing: -1.7,
-              color: COLORS.text,
+              fontSize: 86,
+              letterSpacing: -2.2,
+              lineHeight: 0.95,
             }}
           >
             Prima ondata limitata.
@@ -552,63 +630,58 @@ const CtaScene: React.FC = () => {
 
           <div
             style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 16,
+              fontFamily: bodyFont,
+              color: COLORS.cyan,
+              fontWeight: 800,
+              fontSize: 36,
+              lineHeight: 1,
             }}
           >
-            <div
-              style={{
-                fontFamily: bodyFont,
-                fontWeight: 700,
-                fontSize: 30,
-                color: COLORS.cyan,
-              }}
-            >
-              ENTRA ORA IN WAITLIST
-            </div>
-            <div
-              style={{
-                borderRadius: 999,
-                border: "1px solid rgba(148,163,184,0.35)",
-                backgroundColor: "rgba(11,15,22,0.75)",
-                color: COLORS.muted,
-                fontFamily: bodyFont,
-                fontWeight: 700,
-                fontSize: 32,
-                lineHeight: 1,
-                padding: "11px 22px",
-              }}
-            >
-              Posti rimanenti {remaining}/1000
-            </div>
-            <div
-              style={{
-                borderRadius: 30,
-                backgroundColor: COLORS.text,
-                color: COLORS.bg,
-                fontFamily: headingFont,
-                fontWeight: 700,
-                fontSize: 46,
-                lineHeight: 1,
-                letterSpacing: 0.2,
-                padding: "31px 56px",
-                transform: `scale(${interpolate(ctaIn, [0, 1], [0.88, 1])})`,
-                boxShadow: "0 18px 58px rgba(248,250,252,0.27)",
-              }}
-            >
-              OTTIENI ACCESSO ANTICIPATO
-            </div>
+            ENTRA ORA IN WAITLIST
+          </div>
+
+          <div
+            style={{
+              borderRadius: 999,
+              border: "1px solid rgba(148,163,184,0.32)",
+              backgroundColor: "rgba(2,6,23,0.74)",
+              color: COLORS.muted,
+              fontFamily: bodyFont,
+              fontWeight: 800,
+              fontSize: 36,
+              lineHeight: 1,
+              padding: "12px 24px",
+            }}
+          >
+            Posti rimanenti {remaining}/1000
+          </div>
+
+          <div
+            style={{
+              borderRadius: 30,
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(239,245,255,1) 100%)",
+              color: "#111827",
+              fontFamily: headingFont,
+              fontWeight: 700,
+              fontSize: 48,
+              letterSpacing: 0.2,
+              lineHeight: 1,
+              padding: "32px 64px",
+              transform: `scale(${interpolate(ctaSpring, [0, 1], [0.88, 1])})`,
+              boxShadow:
+                "0 22px 65px rgba(248,250,252,0.24), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -2px 0 rgba(17,24,39,0.08)",
+            }}
+          >
+            OTTIENI ACCESSO ANTICIPATO
           </div>
 
           <div
             style={{
               fontFamily: bodyFont,
-              fontWeight: 700,
-              fontSize: 30,
               color: COLORS.cyan,
+              fontWeight: 800,
+              fontSize: 32,
             }}
           >
             beachradar.it/waitlist
@@ -622,14 +695,42 @@ const CtaScene: React.FC = () => {
 export const BeachRadarWaitlistFinal: React.FC = () => {
   return (
     <AbsoluteFill style={{backgroundColor: COLORS.bg}}>
-      <Sequence durationInFrames={INTRO_DURATION} premountFor={FPS}>
-        <IntroScene />
+      <Audio
+        src={staticFile("video-kit/audio/our-world-preview.mp3")}
+        volume={(f) => {
+          if (f < 18) {
+            return interpolate(f, [0, 18], [0, 0.28], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            });
+          }
+
+          if (f > BEACH_RADAR_FINAL_FRAMES - 28) {
+            return interpolate(
+              f,
+              [BEACH_RADAR_FINAL_FRAMES - 28, BEACH_RADAR_FINAL_FRAMES - 1],
+              [0.28, 0],
+              {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+              },
+            );
+          }
+
+          return 0.28;
+        }}
+      />
+
+      <Sequence from={INTRO_FROM} durationInFrames={INTRO_DURATION} premountFor={FPS}>
+        <IntroScene duration={INTRO_DURATION} />
       </Sequence>
+
       <Sequence from={VALUE_FROM} durationInFrames={VALUE_DURATION} premountFor={FPS}>
-        <ValueScene />
+        <ValueScene duration={VALUE_DURATION} />
       </Sequence>
+
       <Sequence from={CTA_FROM} durationInFrames={CTA_DURATION} premountFor={FPS}>
-        <CtaScene />
+        <CtaScene duration={CTA_DURATION} />
       </Sequence>
     </AbsoluteFill>
   );
