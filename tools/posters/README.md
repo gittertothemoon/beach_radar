@@ -11,6 +11,7 @@ npm run posters:gen
 
 ## Output
 - Posters are written to: `tools/posters/out/`
+- `tools/posters/out/` is a generated output directory and is gitignored.
 
 ## Validation
 - Before generating any PNGs, the script checks that every CSV `beachId` exists in the runtime dataset (`src/data/BeachRadar_Rimini_100_geocoded.json`).

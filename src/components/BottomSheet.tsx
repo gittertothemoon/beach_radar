@@ -20,6 +20,7 @@ import { isPerfEnabled, useRenderCounter } from "../lib/perf";
 
 type BottomSheetProps = {
   beaches: BeachWithStats[];
+  favoriteBeaches: BeachWithStats[];
   favoriteBeachIds: Set<string>;
   selectedBeachId: string | null;
   onSelectBeach: (beachId: string) => void;
@@ -27,6 +28,8 @@ type BottomSheetProps = {
   isOpen: boolean;
   onToggle: () => void;
   now: number;
+  hasLocation: boolean;
+  nearbyRadiusKm: number;
 };
 
 const PEEK_HEIGHT = 56;
@@ -150,6 +153,7 @@ const BeachRow = memo(BeachRowComponent, beachRowEqual);
 
 const BottomSheetComponent = ({
   beaches,
+  favoriteBeaches,
   favoriteBeachIds,
   selectedBeachId,
   onSelectBeach,
@@ -157,6 +161,8 @@ const BottomSheetComponent = ({
   isOpen,
   onToggle,
   now,
+  hasLocation,
+  nearbyRadiusKm,
 }: BottomSheetProps) => {
   const perfEnabled = isPerfEnabled();
   useRenderCounter("BottomSheet", perfEnabled);
@@ -170,11 +176,10 @@ const BottomSheetComponent = ({
   const startOffsetRef = useRef(0);
   const lastMoveRef = useRef({ y: 0, t: 0 });
 
-  const favoriteBeaches = useMemo(
-    () => beaches.filter((beach) => favoriteBeachIds.has(beach.id)),
+  const otherBeaches = useMemo(
+    () => beaches.filter((beach) => !favoriteBeachIds.has(beach.id)),
     [beaches, favoriteBeachIds],
   );
-  const otherBeaches = beaches;
   const hasFavorites = favoriteBeaches.length > 0;
   const isFavoritesOpen = favoritesOpen && hasFavorites;
   const favoritesSectionId = "br-favorites-panel";
@@ -313,7 +318,9 @@ const BottomSheetComponent = ({
               {STRINGS.labels.nearbyBeaches}
             </div>
             <div className="text-[11px] br-text-tertiary">
-              {STRINGS.search.resultsCount(beaches.length)}
+              {hasLocation
+                ? STRINGS.labels.nearbyWithinRadius(beaches.length, nearbyRadiusKm)
+                : STRINGS.labels.enableLocationNearby}
             </div>
           </div>
           <div className="h-1 w-10 rounded-full bg-white/20" />
@@ -370,19 +377,27 @@ const BottomSheetComponent = ({
               <div className="px-4 text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
                 {STRINGS.labels.nearbyBeaches}
               </div>
-              <div className="mt-2 divide-y divide-[color:var(--hairline)]">
-                {otherBeaches.map((beach) => (
-                  <BeachRow
-                    key={beach.id}
-                    beach={beach}
-                    isSelected={beach.id === selectedBeachId}
-                    isFavorite={favoriteBeachIds.has(beach.id)}
-                    now={now}
-                    onSelectBeach={onSelectBeach}
-                    onToggleFavorite={handleToggleBeachFavorite}
-                  />
-                ))}
-              </div>
+              {otherBeaches.length > 0 ? (
+                <div className="mt-2 divide-y divide-[color:var(--hairline)]">
+                  {otherBeaches.map((beach) => (
+                    <BeachRow
+                      key={beach.id}
+                      beach={beach}
+                      isSelected={beach.id === selectedBeachId}
+                      isFavorite={favoriteBeachIds.has(beach.id)}
+                      now={now}
+                      onSelectBeach={onSelectBeach}
+                      onToggleFavorite={handleToggleBeachFavorite}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-2 rounded-xl border border-[color:var(--hairline)] bg-black/15 px-4 py-3 text-[12px] br-text-tertiary">
+                  {hasLocation
+                    ? STRINGS.labels.noNearbyWithinRadius(nearbyRadiusKm)
+                    : STRINGS.labels.enableLocationNearby}
+                </div>
+              )}
             </section>
           </div>
         </div>
@@ -393,13 +408,16 @@ const BottomSheetComponent = ({
 
 const bottomSheetEqual = (prev: BottomSheetProps, next: BottomSheetProps) =>
   prev.beaches === next.beaches &&
+  prev.favoriteBeaches === next.favoriteBeaches &&
   prev.favoriteBeachIds === next.favoriteBeachIds &&
   prev.selectedBeachId === next.selectedBeachId &&
   prev.onSelectBeach === next.onSelectBeach &&
   prev.onToggleFavorite === next.onToggleFavorite &&
   prev.isOpen === next.isOpen &&
   prev.onToggle === next.onToggle &&
-  prev.now === next.now;
+  prev.now === next.now &&
+  prev.hasLocation === next.hasLocation &&
+  prev.nearbyRadiusKm === next.nearbyRadiusKm;
 
 const BottomSheet = memo(BottomSheetComponent, bottomSheetEqual);
 

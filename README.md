@@ -79,6 +79,10 @@ Seed & tooling:
 npm run seed:geocode
 npm run seed:sync
 npm run seed:validate
+npm run assets:sync
+npm run assets:check
+npm run repo:hygiene
+npm run check:all
 npm run posters:csv
 npm run posters:gen
 ```

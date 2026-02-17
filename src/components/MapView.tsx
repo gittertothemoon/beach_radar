@@ -44,25 +44,26 @@ const CLUSTER_FORCE_EXPAND_MS = 4000;
 const CLUSTER_FORCE_EXPAND_DISTANCE_PX = 56;
 const CLUSTER_FORCE_ZOOM_STEP = 3;
 const CLUSTER_FIRST_TAP_MIN_ZOOM_STEP = 3;
-const CLUSTER_FLY_MIN_DURATION_S = 1.8;
-const CLUSTER_FLY_MAX_DURATION_S = 3.4;
-const CLUSTER_FLY_BASE_DURATION_S = 1.0;
-const CLUSTER_FLY_STEP_DURATION_S = 0.2;
-const CLUSTER_FLY_EASE_LINEARITY = 0.2;
+const CLUSTER_FLY_MIN_DURATION_S = 1.25;
+const CLUSTER_FLY_MAX_DURATION_S = 2.55;
+const CLUSTER_FLY_BASE_DURATION_S = 0.82;
+const CLUSTER_FLY_STEP_DURATION_S = 0.16;
+const CLUSTER_FLY_EASE_LINEARITY = 0.17;
 const Z_INDEX_CLUSTER = 2000;
 const Z_INDEX_SELECTED = 1500;
 const Z_INDEX_UMBRELLA = 1000;
 const LOCATION_Z_INDEX = 900;
+const LOCATION_STALE_MS = 45_000;
 const WORLD_BOUNDS = L.latLngBounds(
   [-85.05112878, -180],
   [85.05112878, 180],
 );
-const USER_LOCATION_PATH_OPTIONS: L.PathOptions = {
-  color: "#60a5fa",
-  fillColor: "#60a5fa",
-  fillOpacity: 0.18,
-  weight: 1,
-};
+const TILE_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+const TILE_URL_BASE =
+  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
+const TILE_URL_LABELS =
+  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png";
 
 const isValidCoord = (value: number) => Number.isFinite(value);
 const hasValidCoords = (beach: BeachWithStats) =>
@@ -217,6 +218,8 @@ type MapViewProps = {
   onOverride?: (beachId: string, lat: number, lng: number) => void;
   onMapReady?: (map: L.Map) => void;
   userLocation?: UserLocation | null;
+  nowTs?: number;
+  onUserLocationTap?: () => void;
   onUserInteract?: () => void;
 };
 
@@ -354,6 +357,7 @@ const ClusteredMarkers = ({
           animate: true,
           duration,
           easeLinearity: CLUSTER_FLY_EASE_LINEARITY,
+          noMoveStart: true,
         });
         return;
       }
@@ -392,6 +396,7 @@ const ClusteredMarkers = ({
         animate: true,
         duration: getZoomDuration(targetZoom),
         easeLinearity: CLUSTER_FLY_EASE_LINEARITY,
+        noMoveStart: true,
       });
     },
     [map],
@@ -561,30 +566,102 @@ const MapViewportFix = () => {
   return null;
 };
 
-const userLocationIcon = L.divIcon({
-  className: "",
-  html: '<div class="user-location-dot"></div>',
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-});
+type LocationQuality = "good" | "medium" | "poor";
 
-const UserLocationLayer = ({ location }: { location: UserLocation }) => {
+const getLocationQuality = (accuracy: number): LocationQuality => {
+  if (!Number.isFinite(accuracy)) return "poor";
+  if (accuracy <= 15) return "good";
+  if (accuracy <= 45) return "medium";
+  return "poor";
+};
+
+const getUserLocationPathOptions = (
+  quality: LocationQuality,
+  stale: boolean,
+): L.PathOptions => {
+  if (stale) {
+    return {
+      color: "#94a3b8",
+      fillColor: "#94a3b8",
+      fillOpacity: 0.12,
+      weight: 1,
+    };
+  }
+  if (quality === "good") {
+    return {
+      color: "#3b82f6",
+      fillColor: "#3b82f6",
+      fillOpacity: 0.2,
+      weight: 1,
+    };
+  }
+  if (quality === "medium") {
+    return {
+      color: "#f59e0b",
+      fillColor: "#f59e0b",
+      fillOpacity: 0.16,
+      weight: 1,
+    };
+  }
+  return {
+    color: "#f97316",
+    fillColor: "#f97316",
+    fillOpacity: 0.14,
+    weight: 1,
+  };
+};
+
+const userLocationIconCache = new Map<string, L.DivIcon>();
+const createUserLocationIcon = (quality: LocationQuality, stale: boolean) => {
+  const key = `${quality}|${stale ? "stale" : "fresh"}`;
+  const cached = userLocationIconCache.get(key);
+  if (cached) return cached;
+  const icon = L.divIcon({
+    className: "",
+    html: `<div class="user-location-dot user-location-dot--${quality}${stale ? " user-location-dot--stale" : ""}"></div>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+  userLocationIconCache.set(key, icon);
+  return icon;
+};
+
+const UserLocationLayer = ({
+  location,
+  nowTs,
+  onTap,
+}: {
+  location: UserLocation;
+  nowTs: number;
+  onTap?: () => void;
+}) => {
   if (!Number.isFinite(location.lat) || !Number.isFinite(location.lng)) {
     return null;
   }
+  const stale = nowTs - location.ts > LOCATION_STALE_MS;
+  const quality = getLocationQuality(location.accuracy);
+  const pathOptions = getUserLocationPathOptions(quality, stale);
+  const icon = createUserLocationIcon(quality, stale);
+  const eventHandlers = onTap
+    ? {
+        click: () => onTap(),
+      }
+    : undefined;
 
   return (
     <>
       <Circle
         center={[location.lat, location.lng]}
         radius={location.accuracy}
-        pathOptions={USER_LOCATION_PATH_OPTIONS}
+        pathOptions={pathOptions}
+        eventHandlers={eventHandlers}
       />
       <Marker
         position={[location.lat, location.lng]}
-        icon={userLocationIcon}
+        icon={icon}
         zIndexOffset={LOCATION_Z_INDEX}
-        interactive={false}
+        interactive={Boolean(onTap)}
+        eventHandlers={eventHandlers}
       />
     </>
   );
@@ -630,13 +707,15 @@ const MapViewComponent = ({
   onOverride,
   onMapReady,
   userLocation,
+  nowTs = 0,
+  onUserLocationTap,
   onUserInteract,
 }: MapViewProps) => {
   const perfEnabled = isPerfEnabled();
   useRenderCounter("MapView", perfEnabled);
 
   return (
-    <div data-testid="map-container" className="h-full w-full">
+    <div data-testid="map-container" className="br-map-shell h-full w-full">
       <MapContainer
         center={[center.lat, center.lng]}
         zoom={initialZoom}
@@ -647,13 +726,30 @@ const MapViewComponent = ({
         maxBoundsViscosity={1}
         zoomControl={false}
         bounceAtZoomLimits={false}
-        className="h-full w-full"
+        className="h-full w-full br-map"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={TILE_ATTRIBUTION}
+          url={TILE_URL_BASE}
+          subdomains={["a", "b", "c", "d"]}
+          detectRetina
           minZoom={2}
           maxZoom={18}
+          updateWhenIdle={false}
+          updateWhenZooming
+          updateInterval={30}
+          keepBuffer={8}
+          noWrap
+          bounds={WORLD_BOUNDS}
+        />
+        <TileLayer
+          attribution={TILE_ATTRIBUTION}
+          url={TILE_URL_LABELS}
+          subdomains={["a", "b", "c", "d"]}
+          detectRetina
+          minZoom={2}
+          maxZoom={18}
+          opacity={0.86}
           updateWhenIdle={false}
           updateWhenZooming
           updateInterval={30}
@@ -672,7 +768,13 @@ const MapViewComponent = ({
           editMode={editMode}
           onOverride={onOverride}
         />
-        {userLocation ? <UserLocationLayer location={userLocation} /> : null}
+        {userLocation ? (
+          <UserLocationLayer
+            location={userLocation}
+            nowTs={nowTs}
+            onTap={onUserLocationTap}
+          />
+        ) : null}
       </MapContainer>
     </div>
   );

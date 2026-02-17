@@ -5,10 +5,12 @@ import {
   BeachRadarWaitlistFinal,
 } from "./compositions/BeachRadarWaitlistFinal";
 import {
-  BEACH_RADAR_BOMB_FRAMES,
-  BEACH_RADAR_BOMB_VARIANTS,
   BeachRadarBombPack15,
 } from "./compositions/BeachRadarBombPack15";
+import {
+  BEACH_RADAR_BOMB_FRAMES,
+  BEACH_RADAR_BOMB_VARIANTS,
+} from "./compositions/BeachRadarBombPack15.config";
 
 export const RemotionRoot: React.FC = () => {
   return (

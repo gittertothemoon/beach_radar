@@ -38,6 +38,14 @@ export const STRINGS = {
   },
   labels: {
     nearbyBeaches: "Spiagge in zona",
+    nearbyWithinRadius: (count: number, km: number) =>
+      count === 0
+        ? `Nessun lido entro ${km} km`
+        : count === 1
+          ? `1 lido entro ${km} km`
+          : `${count} lidi entro ${km} km`,
+    noNearbyWithinRadius: (km: number) => `Nessun lido entro ${km} km.`,
+    enableLocationNearby: "Attiva la posizione per vedere i lidi vicini.",
     crowdStatus: "Stato affollamento",
     crowd: "Affollamento",
     level: "Livello",
@@ -237,6 +245,8 @@ export const STRINGS = {
     notSupported: "La posizione non è supportata su questo dispositivo.",
     toastUnavailable:
       "Posizione non disponibile. Attiva la posizione per usare \"La mia posizione\".",
+    centered: "Posizione centrata.",
+    centeredStale: "Posizione centrata. Aggiorno la precisione...",
   },
   empty: {
     notAvailable: "Non disponibile",

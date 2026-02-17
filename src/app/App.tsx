@@ -86,6 +86,9 @@ const REPORTS_FEED_ERROR_TOAST_GRACE_MS = 10_000;
 const REMOTE_REPORT_SESSION_KEY = "br_report_anywhere_v1";
 const REGISTER_RESUME_KEY = "beach-radar-register-resume-v1";
 const MOCK_CROWD_LEVELS: CrowdLevel[] = [1, 2, 3, 4];
+const LOCATION_FOCUS_ZOOM = 16;
+const LOCATION_REFRESH_MS = 15_000;
+const NEARBY_RADIUS_M = 15_000;
 
 type GeoStatus = "idle" | "loading" | "ready" | "denied" | "error";
 type WeatherStatus = "loading" | "ready" | "error";
@@ -260,7 +263,6 @@ function App() {
   const watchIdRef = useRef<number | null>(null);
   const followInitializedRef = useRef(false);
   const followModeRef = useRef(false);
-  const lastLocateTapRef = useRef(0);
   const didInitRef = useRef(false);
   const lastSelectedBeachIdRef = useRef<string | null>(null);
   const selectionSourceRef = useRef<AnalyticsSource | null>(null);
@@ -517,8 +519,30 @@ function App() {
     return nextLocation;
   }, []);
 
+  const focusMapOnLocation = useCallback(
+    (location: UserLocation, preferredZoom = LOCATION_FOCUS_ZOOM) => {
+      const map = mapRef.current;
+      if (!map) return;
+      const currentZoom = map.getZoom();
+      const nextZoom = Number.isFinite(currentZoom)
+        ? Math.max(currentZoom, preferredZoom)
+        : preferredZoom;
+      map.flyTo([location.lat, location.lng], nextZoom, {
+        animate: true,
+        duration: 0.9,
+        easeLinearity: 0.25,
+      });
+    },
+    [],
+  );
+
   const requestLocation = useCallback(
-    (options?: { flyTo?: boolean; showToast?: boolean }) => {
+    (options?: {
+      flyTo?: boolean;
+      showToast?: boolean;
+      forceFresh?: boolean;
+      silent?: boolean;
+    }) => {
       if (!navigator.geolocation) {
         setGeoStatus("error");
         setGeoError(STRINGS.location.notSupported);
@@ -527,14 +551,17 @@ function App() {
         }
         return;
       }
-      setGeoStatus("loading");
+      if (!options?.silent) {
+        setGeoStatus("loading");
+      }
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const nextLocation = updateLocation(position);
-          if (options?.flyTo && mapRef.current) {
-            mapRef.current.flyTo([nextLocation.lat, nextLocation.lng], 16, {
-              animate: true,
-            });
+          if (options?.flyTo) {
+            focusMapOnLocation(nextLocation);
+          }
+          if (options?.showToast) {
+            showLocationToast(STRINGS.location.centered, "success");
           }
         },
         (error) => {
@@ -543,14 +570,25 @@ function App() {
             showLocationToast(STRINGS.location.toastUnavailable, "info");
           }
         },
-        { enableHighAccuracy: true, maximumAge: 15000, timeout: 8000 },
+        {
+          enableHighAccuracy: true,
+          maximumAge: options?.forceFresh ? 0 : 15000,
+          timeout: 8000,
+        },
       );
     },
-    [handleGeoError, showLocationToast, updateLocation],
+    [focusMapOnLocation, handleGeoError, showLocationToast, updateLocation],
   );
 
   useEffect(() => {
     requestLocation();
+  }, [requestLocation]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      requestLocation({ silent: true, forceFresh: true });
+    }, LOCATION_REFRESH_MS);
+    return () => window.clearInterval(intervalId);
   }, [requestLocation]);
 
   useEffect(() => {
@@ -621,15 +659,26 @@ function App() {
   }, []);
 
   const handleLocateClick = useCallback(() => {
-    const nowTs = Date.now();
-    if (nowTs - lastLocateTapRef.current < 2000) {
-      setFollowMode((prev) => !prev);
-      lastLocateTapRef.current = 0;
+    if (followModeRef.current) {
+      setFollowMode(false);
+    }
+    if (userLocation) {
+      focusMapOnLocation(userLocation);
+      requestLocation({
+        flyTo: true,
+        forceFresh: true,
+        silent: true,
+        showToast: true,
+      });
       return;
     }
-    lastLocateTapRef.current = nowTs;
-    requestLocation({ flyTo: true, showToast: true });
-  }, [requestLocation]);
+
+    requestLocation({ flyTo: true, showToast: true, forceFresh: true });
+  }, [focusMapOnLocation, requestLocation, userLocation]);
+
+  const handleUserLocationPinTap = useCallback(() => {
+    handleLocateClick();
+  }, [handleLocateClick]);
 
   const handleUserInteract = useCallback(() => {
     if (followModeRef.current) {
@@ -769,8 +818,16 @@ function App() {
     return predCount / total >= 0.85 ? STRINGS.banners.limitedData : null;
   }, [beachViewsBase]);
 
+  const nearbyBeaches = useMemo(() => {
+    if (!userLocation) return [];
+    return filteredBeaches.filter(
+      (beach) =>
+        typeof beach.distanceM === "number" && beach.distanceM <= NEARBY_RADIUS_M,
+    );
+  }, [filteredBeaches, userLocation]);
+
   const sortedBeaches = useMemo(() => {
-    return [...filteredBeaches].sort((a, b) => {
+    return [...nearbyBeaches].sort((a, b) => {
       if (a.distanceM !== null && b.distanceM !== null) {
         return a.distanceM - b.distanceM;
       }
@@ -778,7 +835,21 @@ function App() {
       if (b.distanceM !== null) return 1;
       return a.name.localeCompare(b.name);
     });
-  }, [filteredBeaches]);
+  }, [nearbyBeaches]);
+  const favoriteBeachesForSheet = useMemo(() => {
+    const byId = new Map(beachViews.map((beach) => [beach.id, beach] as const));
+    return Array.from(favoriteBeachIds)
+      .map((id) => byId.get(id))
+      .filter((beach): beach is BeachWithStats => Boolean(beach))
+      .sort((a, b) => {
+        if (a.distanceM !== null && b.distanceM !== null) {
+          return a.distanceM - b.distanceM;
+        }
+        if (a.distanceM !== null) return -1;
+        if (b.distanceM !== null) return 1;
+        return a.name.localeCompare(b.name);
+      });
+  }, [beachViews, favoriteBeachIds]);
   const profileFavoriteBeaches = useMemo(() => {
     const byId = new Map(beachViewsBase.map((beach) => [beach.id, beach] as const));
     return Array.from(favoriteBeachIds)
@@ -1407,6 +1478,8 @@ function App() {
         onOverride={handleOverride}
         onMapReady={handleMapReady}
         userLocation={userLocation ?? undefined}
+        nowTs={now}
+        onUserLocationTap={handleUserLocationPinTap}
         onUserInteract={handleUserInteract}
       />
       {isDebug ? (
@@ -1441,9 +1514,13 @@ function App() {
         onClick={handleLocateClick}
         aria-label={STRINGS.aria.myLocation}
         className={`br-press fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+72px)] z-60 flex h-12 w-12 items-center justify-center rounded-full border backdrop-blur transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 sm:bottom-[calc(env(safe-area-inset-bottom)+120px)] ${
-          followMode
-            ? "border-white/30 bg-black/50 text-slate-50 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_14px_30px_rgba(0,0,0,0.45)]"
-            : "border-white/18 bg-black/30 text-slate-100"
+          geoStatus === "loading"
+            ? "border-sky-200/70 bg-sky-900/45 text-sky-50 shadow-[0_0_0_1px_rgba(186,230,253,0.24),0_14px_30px_rgba(2,132,199,0.35)]"
+            : geoStatus === "denied" || geoStatus === "error"
+              ? "border-rose-300/65 bg-rose-900/40 text-rose-50"
+              : followMode
+                ? "border-white/30 bg-black/50 text-slate-50 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_14px_30px_rgba(0,0,0,0.45)]"
+                : "border-white/18 bg-black/30 text-slate-100"
         }`}
       >
         <svg
@@ -1699,6 +1776,7 @@ function App() {
       ) : null}
       <BottomSheet
         beaches={sortedBeaches}
+        favoriteBeaches={favoriteBeachesForSheet}
         favoriteBeachIds={favoriteBeachIds}
         selectedBeachId={selectedBeachId}
         onSelectBeach={handleSelectBeach}
@@ -1706,6 +1784,8 @@ function App() {
         isOpen={sheetOpen}
         onToggle={handleToggleSheet}
         now={now}
+        hasLocation={Boolean(userLocation)}
+        nearbyRadiusKm={15}
       />
       {selectedBeach ? (
         <Suspense fallback={null}>

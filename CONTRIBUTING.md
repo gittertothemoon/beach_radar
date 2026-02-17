@@ -31,6 +31,8 @@ vercel dev --listen 3000 --yes
 npm run lint
 npm run typecheck
 npm run build
+npm run repo:hygiene
+npm run assets:check
 ```
 
 Optional waitlist checks:

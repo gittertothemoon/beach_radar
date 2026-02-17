@@ -11,8 +11,9 @@ This document describes where responsibilities live in the codebase.
 - `tests/`: Playwright tests
 - `tools/`: auxiliary generators (poster tooling)
 - `docs/`: runbooks and project documentation
-- `seed/`: source datasets used by seed tooling
-- `data/`: runtime data, KML intake, and archived datasets
+- `seed/`: geocoded intermediate datasets and runtime overrides used by seed tooling
+- `data/`: raw source datasets, KML intake, and archived datasets
+- `remotion/`: video rendering project and media kit assets
 
 ## Frontend (`src/`)
 
@@ -49,11 +50,18 @@ This document describes where responsibilities live in the codebase.
 - `scripts/seed/sync.mjs`: canonical sync from `seed/` to `src/data/`
 - `scripts/seed/validate.mjs`: integrity checks for ids/coords/schema/sync state
 - `scripts/seed/lib/sync-utils.mjs`: shared seed merge/sync utilities
+- `scripts/sync-brand-assets.mjs`: keeps duplicated brand assets aligned across app/waitlist/remotion
+- `scripts/repo-hygiene.mjs`: guardrail checks for root clutter, tracked generated outputs, and raw naming
 
 ## KML Intake (`data/raw/kml/`)
 
 - Drop new KML exports here before import/mapping operations.
 - Keep source filenames stable to preserve provenance in `notes`.
+
+## Poster Output (`tools/posters/out/`)
+
+- This directory contains generated PNG artifacts.
+- It should be treated as local build output and not committed.
 
 ## Conventions
 
