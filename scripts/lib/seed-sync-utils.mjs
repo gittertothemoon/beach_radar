@@ -1,0 +1,124 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+
+export const INPUT_PATH = path.resolve("seed/BeachRadar_Rimini_100_geocoded.json");
+export const OVERRIDES_PATH = path.resolve("seed/seed-overrides.json");
+export const OUTPUT_PATH = path.resolve(
+  "src/data/BeachRadar_Rimini_100_geocoded.json",
+);
+
+export const loadJson = async (filePath, fallback) => {
+  try {
+    const raw = await fs.readFile(filePath, "utf8");
+    return JSON.parse(raw);
+  } catch (error) {
+    if (error && error.code === "ENOENT") return fallback;
+    throw error;
+  }
+};
+
+export const saveJson = async (filePath, data) => {
+  const payload = `${JSON.stringify(data, null, 2)}\n`;
+  await fs.writeFile(filePath, payload, "utf8");
+};
+
+export const toNumber = (value) => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+};
+
+export const normalizeGeocodeMeta = (meta) => {
+  if (!meta || typeof meta !== "object") {
+    return {
+      queryUsed: null,
+      fromCache: false,
+      place_id: null,
+      osm_id: null,
+      display_name: null,
+    };
+  }
+  return {
+    queryUsed: meta.queryUsed ?? null,
+    fromCache: Boolean(meta.fromCache),
+    place_id: meta.place_id ?? null,
+    osm_id: meta.osm_id ?? null,
+    display_name: meta.display_name ?? null,
+  };
+};
+
+export const buildSyncedSeed = (seed, overrides) => {
+  const missingIds = [];
+  const merged = seed.map((spot) => {
+    const override = overrides[spot.id];
+    const next = { ...spot };
+    if (override) {
+      const lat = toNumber(override.lat);
+      const lng = toNumber(override.lng);
+      next.lat = Number.isFinite(lat) ? lat : null;
+      next.lng = Number.isFinite(lng) ? lng : null;
+      next.geocodeMeta = {
+        ...normalizeGeocodeMeta(spot.geocodeMeta),
+        status: Number.isFinite(lat) && Number.isFinite(lng)
+          ? "override"
+          : "override_invalid",
+        source: override.source ?? "manual",
+        note: override.note ?? null,
+        queryUsed: "override",
+        fromCache: false,
+        place_id: null,
+        osm_id: null,
+        display_name: null,
+      };
+    } else {
+      const lat = toNumber(spot.lat);
+      const lng = toNumber(spot.lng);
+      next.lat = Number.isFinite(lat) ? lat : null;
+      next.lng = Number.isFinite(lng) ? lng : null;
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        next.geocodeMeta = {
+          ...normalizeGeocodeMeta(spot.geocodeMeta),
+          status: "missing",
+        };
+      }
+    }
+
+    if (!Number.isFinite(next.lat) || !Number.isFinite(next.lng)) {
+      missingIds.push(spot.id ?? spot.name ?? "unknown");
+    }
+
+    return next;
+  });
+
+  return { merged, missingIds };
+};
+
+export const loadSeedAndOverrides = async () => {
+  try {
+    await fs.access(INPUT_PATH);
+  } catch {
+    throw new Error(
+      `Missing geocoded seed file at ${INPUT_PATH}. Run npm run seed:geocode first.`,
+    );
+  }
+
+  const seed = await loadJson(INPUT_PATH, []);
+  if (!Array.isArray(seed)) {
+    throw new Error("Geocoded seed file must contain a JSON array.");
+  }
+
+  const overrides = await loadJson(OVERRIDES_PATH, {});
+  if (
+    overrides === null ||
+    typeof overrides !== "object" ||
+    Array.isArray(overrides)
+  ) {
+    throw new Error("Overrides file must contain a JSON object.");
+  }
+
+  return { seed, overrides };
+};
+

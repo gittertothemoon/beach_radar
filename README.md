@@ -78,6 +78,7 @@ Seed & tooling:
 ```bash
 npm run seed:geocode
 npm run seed:sync
+npm run seed:validate
 npm run posters:csv
 npm run posters:gen
 ```

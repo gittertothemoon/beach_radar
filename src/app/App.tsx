@@ -71,7 +71,12 @@ const PerformanceOverlay = lazy(() => import("../components/PerformanceOverlay")
 const AccountRequiredModal = lazy(() => import("../components/AccountRequiredModal"));
 const ProfileModal = lazy(() => import("../components/ProfileModal"));
 
-const DEFAULT_CENTER: LatLng = { lat: 44.0678, lng: 12.5695 };
+const DEFAULT_CENTER: LatLng = { lat: 41.9028, lng: 12.4964 };
+const INITIAL_MAP_ZOOM = 6;
+const ITALY_BOUNDS: [[number, number], [number, number]] = [
+  [35.3, 6.3],
+  [47.3, 18.7],
+];
 const BEACH_FOCUS_ZOOM = 17;
 const SHOW_ALL_PINS_ZOOM_TRIGGER = BEACH_FOCUS_ZOOM - 1;
 const SHOW_ALL_PINS_ZOOM_OUT_DELTA = 2;
@@ -1035,6 +1040,13 @@ function App() {
         animate: false,
       });
       resumeMapViewRef.current = null;
+    } else {
+      map.fitBounds(ITALY_BOUNDS, {
+        animate: false,
+        maxZoom: INITIAL_MAP_ZOOM,
+        paddingTopLeft: [16, 96],
+        paddingBottomRight: [16, 140],
+      });
     }
     setMapReady(true);
   }, []);
@@ -1364,14 +1376,7 @@ function App() {
     setDebugToast(STRINGS.debug.attributionCleared);
   };
 
-  const mapCenter = useMemo(() => {
-    const firstBeach = beachViewsBase.find(
-      (beach) => Number.isFinite(beach.lat) && Number.isFinite(beach.lng),
-    );
-    return firstBeach
-      ? { lat: firstBeach.lat, lng: firstBeach.lng }
-      : DEFAULT_CENTER;
-  }, [beachViewsBase]);
+  const mapCenter = DEFAULT_CENTER;
 
   if (splashPhase !== "hidden") {
     return (
@@ -1397,6 +1402,7 @@ function App() {
         selectedBeachId={selectedBeachId}
         onSelectBeach={handleSelectBeachFromMarker}
         center={mapCenter}
+        initialZoom={INITIAL_MAP_ZOOM}
         editMode={effectiveEditMode}
         onOverride={handleOverride}
         onMapReady={handleMapReady}

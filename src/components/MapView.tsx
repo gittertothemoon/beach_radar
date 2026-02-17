@@ -212,6 +212,7 @@ type MapViewProps = {
   selectedBeachId: string | null;
   onSelectBeach: (beachId: string) => void;
   center: LatLng;
+  initialZoom?: number;
   editMode?: boolean;
   onOverride?: (beachId: string, lat: number, lng: number) => void;
   onMapReady?: (map: L.Map) => void;
@@ -624,6 +625,7 @@ const MapViewComponent = ({
   selectedBeachId,
   onSelectBeach,
   center,
+  initialZoom = 12,
   editMode,
   onOverride,
   onMapReady,
@@ -637,7 +639,7 @@ const MapViewComponent = ({
     <div data-testid="map-container" className="h-full w-full">
       <MapContainer
         center={[center.lat, center.lng]}
-        zoom={12}
+        zoom={initialZoom}
         minZoom={2}
         maxZoom={18}
         fadeAnimation={false}
