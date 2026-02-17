@@ -3,7 +3,7 @@ import {
   loadJson,
   loadSeedAndOverrides,
   OUTPUT_PATH,
-} from "./lib/seed-sync-utils.mjs";
+} from "./lib/sync-utils.mjs";
 
 const ID_PATTERN = /^BR-[A-Z0-9]+(?:-[A-Z0-9]+)*-\d{3}$/;
 const ALLOWED_BASELINE_SOURCES = new Set(["PRED", "LIVE", "RECENT"]);
@@ -231,4 +231,3 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-

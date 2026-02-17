@@ -12,7 +12,7 @@ This document describes where responsibilities live in the codebase.
 - `tools/`: auxiliary generators (poster tooling)
 - `docs/`: runbooks and project documentation
 - `seed/`: source datasets used by seed tooling
-- `data/`: runtime data and archived datasets
+- `data/`: runtime data, KML intake, and archived datasets
 
 ## Frontend (`src/`)
 
@@ -42,6 +42,18 @@ This document describes where responsibilities live in the codebase.
 - `app_auth_favorites.sql`: auth/favorites schema
 - `app_crowd_reports.sql`: crowd reports schema
 - `app_analytics_events.sql`: anonymous analytics events schema
+
+## Seed Flow (`scripts/seed/`)
+
+- `scripts/seed/geocode.mjs`: geocode seed generation from raw source schemas
+- `scripts/seed/sync.mjs`: canonical sync from `seed/` to `src/data/`
+- `scripts/seed/validate.mjs`: integrity checks for ids/coords/schema/sync state
+- `scripts/seed/lib/sync-utils.mjs`: shared seed merge/sync utilities
+
+## KML Intake (`data/raw/kml/`)
+
+- Drop new KML exports here before import/mapping operations.
+- Keep source filenames stable to preserve provenance in `notes`.
 
 ## Conventions
 

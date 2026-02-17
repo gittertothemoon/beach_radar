@@ -5,7 +5,7 @@ import {
   loadSeedAndOverrides,
   OUTPUT_PATH,
   saveJson,
-} from "./lib/seed-sync-utils.mjs";
+} from "./lib/sync-utils.mjs";
 
 const main = async () => {
   const { seed, overrides } = await loadSeedAndOverrides();

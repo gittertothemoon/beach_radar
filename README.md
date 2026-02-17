@@ -83,6 +83,8 @@ npm run posters:csv
 npm run posters:gen
 ```
 
+KML intake directory: `data/raw/kml/`
+
 ## Environment Variables
 
 See `.env.example` for the full list.
