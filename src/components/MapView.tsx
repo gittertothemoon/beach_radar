@@ -39,37 +39,45 @@ type SingleMarker = {
 };
 
 const CLUSTER_RADIUS_PX = 18;
-const CLUSTER_RADIUS_PX_SQUARED = CLUSTER_RADIUS_PX * CLUSTER_RADIUS_PX;
 const CLUSTER_CLICK_DEBOUNCE_MS = 240;
 const CLUSTER_FORCE_EXPAND_MS = 4000;
 const CLUSTER_FORCE_EXPAND_DISTANCE_PX = 56;
-const CLUSTER_FORCE_ZOOM_STEP = 3;
-const CLUSTER_FIRST_TAP_MIN_ZOOM_STEP = 3;
-const CLUSTER_FLY_MIN_DURATION_S = 1.25;
-const CLUSTER_FLY_MAX_DURATION_S = 2.55;
-const CLUSTER_FLY_BASE_DURATION_S = 0.82;
-const CLUSTER_FLY_STEP_DURATION_S = 0.16;
-const CLUSTER_FLY_EASE_LINEARITY = 0.17;
+const CLUSTER_FORCE_ZOOM_STEP = 2;
+const CLUSTER_FIRST_TAP_MIN_ZOOM_STEP = 2;
+const CLUSTER_FLY_MIN_DURATION_S = 0.42;
+const CLUSTER_FLY_MAX_DURATION_S = 1.15;
+const CLUSTER_FLY_BASE_DURATION_S = 0.24;
+const CLUSTER_FLY_STEP_DURATION_S = 0.1;
+const CLUSTER_FLY_EASE_LINEARITY = 0.22;
 const Z_INDEX_CLUSTER = 2000;
 const Z_INDEX_SELECTED = 1500;
 const Z_INDEX_UMBRELLA = 1000;
 const LOCATION_Z_INDEX = 900;
 const LOCATION_STALE_MS = 45_000;
-const CLUSTER_VIEW_BOUNDS_PAD = 0.25;
+const CLUSTER_VIEW_BOUNDS_PAD = 0.18;
 const WORLD_BOUNDS = L.latLngBounds(
   [-85.05112878, -180],
   [85.05112878, 180],
 );
 const TILE_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
-const TILE_URL_BASE =
-  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
-const TILE_URL_LABELS =
-  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png";
+const TILE_URL =
+  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 
 const isValidCoord = (value: number) => Number.isFinite(value);
 const hasValidCoords = (beach: BeachWithStats) =>
   isValidCoord(beach.lat) && isValidCoord(beach.lng);
+
+const getClusterRadiusPx = (zoom: number) => {
+  const safeZoom = Number.isFinite(zoom) ? zoom : 12;
+  if (safeZoom <= 7) return 44;
+  if (safeZoom <= 9) return 36;
+  if (safeZoom <= 11) return 30;
+  if (safeZoom <= 13) return 24;
+  if (safeZoom <= 15) return 20;
+  return CLUSTER_RADIUS_PX;
+};
+
 const getSafeZoom = (map: L.Map) => {
   const rawZoom = map.getZoom();
   const minZoom = map.getMinZoom?.() ?? 0;
@@ -101,15 +109,6 @@ const getStateFromMask = (mask: number): Cluster["state"] => {
   if (mask === 2) return "recent";
   if (mask === 4) return "pred";
   return "mixed";
-};
-
-const getClusterState = (beaches: BeachWithStats[]): Cluster["state"] => {
-  let mask = 0;
-  for (let i = 0; i < beaches.length; i += 1) {
-    mask |= getBeachStateMask(beaches[i]);
-    if (mask === 7) return "mixed";
-  }
-  return getStateFromMask(mask);
 };
 
 const createClusterIcon = (_cluster: Cluster, zoom: number) => {
@@ -148,10 +147,12 @@ const clusterBeaches = (
   }
 
   const zoom = getSafeZoom(map);
+  const clusterRadiusPx = getClusterRadiusPx(zoom);
+  const clusterRadiusPxSquared = clusterRadiusPx * clusterRadiusPx;
   const projected = rest.map((beach) => {
     const point = map.project([beach.lat, beach.lng], zoom);
-    const cellX = Math.floor(point.x / CLUSTER_RADIUS_PX);
-    const cellY = Math.floor(point.y / CLUSTER_RADIUS_PX);
+    const cellX = Math.floor(point.x / clusterRadiusPx);
+    const cellY = Math.floor(point.y / clusterRadiusPx);
     return {
       beach,
       lat: beach.lat,
@@ -195,12 +196,14 @@ const clusterBeaches = (
     if (visited[i] === 1) continue;
     const queue = [i];
     const members: typeof projected = [];
+    let stateMask = 0;
     visited[i] = 1;
 
     while (queue.length > 0) {
       const index = queue.pop() as number;
       const current = projected[index];
       members.push(current);
+      stateMask |= getBeachStateMask(current.beach);
       const minCellX = current.cellX - 1;
       const maxCellX = current.cellX + 1;
       const minCellY = current.cellY - 1;
@@ -216,7 +219,7 @@ const clusterBeaches = (
             const candidate = projected[j];
             const dx = current.x - candidate.x;
             const dy = current.y - candidate.y;
-            if (dx * dx + dy * dy > CLUSTER_RADIUS_PX_SQUARED) continue;
+            if (dx * dx + dy * dy > clusterRadiusPxSquared) continue;
             visited[j] = 1;
             queue.push(j);
           }
@@ -226,11 +229,12 @@ const clusterBeaches = (
 
     const lat = members.reduce((sum, item) => sum + item.lat, 0) / members.length;
     const lng = members.reduce((sum, item) => sum + item.lng, 0) / members.length;
-    const clusterItems = members.map((item) => item.beach);
+    const roundedLat = Math.round(lat * 10_000);
+    const roundedLng = Math.round(lng * 10_000);
     const clusterId =
       members.length === 1
         ? members[0].beach.id
-        : `cluster-${members.length}-${members.map((item) => item.beach.id).join("|")}`;
+        : `cluster-${members.length}-${roundedLat}-${roundedLng}-${members[0].beach.id}`;
 
     if (members.length === 1) {
       const only = members[0];
@@ -250,7 +254,7 @@ const clusterBeaches = (
       })),
       count: members.length,
       beachIds,
-      state: getClusterState(clusterItems),
+      state: getStateFromMask(stateMask),
     });
   }
 
@@ -319,6 +323,10 @@ const ClusteredMarkers = ({
     () => beaches.filter((beach) => hasValidCoords(beach)),
     [beaches],
   );
+  const isCoarsePointer = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+  }, []);
 
   const zoom = useMemo(() => {
     // mapTick is a signal that the map state (center/bounds) changed.
@@ -403,6 +411,12 @@ const ClusteredMarkers = ({
         const targetZoom = Math.min(currentZoom + CLUSTER_FORCE_ZOOM_STEP, maxZoom);
         const safeCurrent = Number.isFinite(currentZoom) ? currentZoom : targetZoom;
         const zoomDelta = Math.max(0, targetZoom - safeCurrent);
+        if (isCoarsePointer && zoomDelta >= 2) {
+          map.setView([cluster.lat, cluster.lng], targetZoom, {
+            animate: false,
+          });
+          return;
+        }
         const duration = Math.min(
           CLUSTER_FLY_MAX_DURATION_S,
           Math.max(
@@ -449,6 +463,14 @@ const ClusteredMarkers = ({
         maxZoom,
         Math.max(safeNextZoom, currentZoom + firstTapStep),
       );
+      const safeCurrent = Number.isFinite(currentZoom) ? currentZoom : targetZoom;
+      const zoomDelta = Math.max(0, targetZoom - safeCurrent);
+      if (isCoarsePointer && zoomDelta >= 2) {
+        map.setView([cluster.lat, cluster.lng], targetZoom, {
+          animate: false,
+        });
+        return;
+      }
       map.flyTo([cluster.lat, cluster.lng], targetZoom, {
         animate: true,
         duration: getZoomDuration(targetZoom),
@@ -456,7 +478,7 @@ const ClusteredMarkers = ({
         noMoveStart: true,
       });
     },
-    [map],
+    [isCoarsePointer, map],
   );
 
   const scheduleMapTick = useCallback(() => {
@@ -770,6 +792,22 @@ const MapViewComponent = ({
 }: MapViewProps) => {
   const perfEnabled = isPerfEnabled();
   useRenderCounter("MapView", perfEnabled);
+  const mapRenderProfile = useMemo(() => {
+    if (typeof window === "undefined") {
+      return {
+        coarsePointer: false,
+        detectRetina: false,
+        tileKeepBuffer: 4,
+      };
+    }
+    const coarsePointer =
+      window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+    return {
+      coarsePointer,
+      detectRetina: !coarsePointer && window.devicePixelRatio > 1,
+      tileKeepBuffer: coarsePointer ? 2 : 4,
+    };
+  }, []);
 
   return (
     <div data-testid="map-container" className="br-map-shell h-full w-full">
@@ -783,34 +821,22 @@ const MapViewComponent = ({
         maxBoundsViscosity={1}
         zoomControl={false}
         bounceAtZoomLimits={false}
+        zoomAnimation={!mapRenderProfile.coarsePointer}
+        markerZoomAnimation={!mapRenderProfile.coarsePointer}
+        preferCanvas={mapRenderProfile.coarsePointer}
         className="h-full w-full br-map"
       >
         <TileLayer
           attribution={TILE_ATTRIBUTION}
-          url={TILE_URL_BASE}
+          url={TILE_URL}
           subdomains={["a", "b", "c", "d"]}
-          detectRetina
+          detectRetina={mapRenderProfile.detectRetina}
           minZoom={2}
           maxZoom={18}
-          updateWhenIdle={false}
-          updateWhenZooming
-          updateInterval={30}
-          keepBuffer={8}
-          noWrap
-          bounds={WORLD_BOUNDS}
-        />
-        <TileLayer
-          attribution={TILE_ATTRIBUTION}
-          url={TILE_URL_LABELS}
-          subdomains={["a", "b", "c", "d"]}
-          detectRetina
-          minZoom={2}
-          maxZoom={18}
-          opacity={0.86}
-          updateWhenIdle={false}
-          updateWhenZooming
-          updateInterval={30}
-          keepBuffer={8}
+          updateWhenIdle={!mapRenderProfile.coarsePointer}
+          updateWhenZooming={mapRenderProfile.coarsePointer}
+          updateInterval={mapRenderProfile.coarsePointer ? 80 : 150}
+          keepBuffer={mapRenderProfile.tileKeepBuffer}
           noWrap
           bounds={WORLD_BOUNDS}
         />
