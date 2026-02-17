@@ -39,6 +39,7 @@ type SingleMarker = {
 };
 
 const CLUSTER_RADIUS_PX = 18;
+const CLUSTER_RADIUS_PX_SQUARED = CLUSTER_RADIUS_PX * CLUSTER_RADIUS_PX;
 const CLUSTER_CLICK_DEBOUNCE_MS = 240;
 const CLUSTER_FORCE_EXPAND_MS = 4000;
 const CLUSTER_FORCE_EXPAND_DISTANCE_PX = 56;
@@ -54,6 +55,7 @@ const Z_INDEX_SELECTED = 1500;
 const Z_INDEX_UMBRELLA = 1000;
 const LOCATION_Z_INDEX = 900;
 const LOCATION_STALE_MS = 45_000;
+const CLUSTER_VIEW_BOUNDS_PAD = 0.25;
 const WORLD_BOUNDS = L.latLngBounds(
   [-85.05112878, -180],
   [85.05112878, 180],
@@ -88,13 +90,26 @@ const createMarkerIcon = (
   return createBeachPinIcon({ selected, state, zoom, crowdLevel, favorite });
 };
 
-const getClusterState = (beaches: BeachWithStats[]): Cluster["state"] => {
-  const states = new Set(beaches.map((beach) => beach.state));
-  if (states.size === 1) {
-    const [state] = Array.from(states);
-    return state.toLowerCase() as Cluster["state"];
-  }
+const getBeachStateMask = (beach: BeachWithStats) => {
+  if (beach.state === "LIVE") return 1;
+  if (beach.state === "RECENT") return 2;
+  return 4;
+};
+
+const getStateFromMask = (mask: number): Cluster["state"] => {
+  if (mask === 1) return "live";
+  if (mask === 2) return "recent";
+  if (mask === 4) return "pred";
   return "mixed";
+};
+
+const getClusterState = (beaches: BeachWithStats[]): Cluster["state"] => {
+  let mask = 0;
+  for (let i = 0; i < beaches.length; i += 1) {
+    mask |= getBeachStateMask(beaches[i]);
+    if (mask === 7) return "mixed";
+  }
+  return getStateFromMask(mask);
 };
 
 const createClusterIcon = (_cluster: Cluster, zoom: number) => {
@@ -107,27 +122,59 @@ const clusterBeaches = (
   favoriteBeachIds: Set<string>,
   selectedBeachId?: string | null,
 ) => {
-  const selected =
-    selectedBeachId && beaches.find((beach) => beach.id === selectedBeachId);
-  const favorites = beaches.filter(
-    (beach) => favoriteBeachIds.has(beach.id) && beach.id !== selectedBeachId,
-  );
-  const rest = selected
-    ? beaches.filter(
-        (beach) =>
-          beach.id !== selectedBeachId && !favoriteBeachIds.has(beach.id),
-      )
-    : beaches.filter((beach) => !favoriteBeachIds.has(beach.id));
+  const bounds = map.getBounds();
+  const paddedBounds =
+    bounds && bounds.isValid() ? bounds.pad(CLUSTER_VIEW_BOUNDS_PAD) : null;
+  let selected: BeachWithStats | undefined;
+  const favorites: BeachWithStats[] = [];
+  const rest: BeachWithStats[] = [];
+
+  for (let i = 0; i < beaches.length; i += 1) {
+    const beach = beaches[i];
+    const isSelected = selectedBeachId !== null && beach.id === selectedBeachId;
+    if (isSelected) {
+      selected = beach;
+      continue;
+    }
+    const isInBounds =
+      !paddedBounds || paddedBounds.contains([beach.lat, beach.lng]);
+    if (favoriteBeachIds.has(beach.id)) {
+      if (isInBounds) favorites.push(beach);
+      continue;
+    }
+    if (isInBounds) {
+      rest.push(beach);
+    }
+  }
+
   const zoom = getSafeZoom(map);
   const projected = rest.map((beach) => {
+    const point = map.project([beach.lat, beach.lng], zoom);
+    const cellX = Math.floor(point.x / CLUSTER_RADIUS_PX);
+    const cellY = Math.floor(point.y / CLUSTER_RADIUS_PX);
     return {
       beach,
       lat: beach.lat,
       lng: beach.lng,
-      point: map.project([beach.lat, beach.lng], zoom),
+      x: point.x,
+      y: point.y,
+      cellX,
+      cellY,
     };
   });
-  const visited = new Set<number>();
+  const buckets = new Map<string, number[]>();
+  for (let i = 0; i < projected.length; i += 1) {
+    const item = projected[i];
+    const key = `${item.cellX}:${item.cellY}`;
+    const bucket = buckets.get(key);
+    if (bucket) {
+      bucket.push(i);
+    } else {
+      buckets.set(key, [i]);
+    }
+  }
+
+  const visited = new Uint8Array(projected.length);
   const clusters: Cluster[] = [];
   const singles: SingleMarker[] = [];
   const addedSingles = new Set<string>();
@@ -140,26 +187,39 @@ const clusterBeaches = (
       beach,
       lat,
       lng,
-      state: getClusterState([beach]),
+      state: getStateFromMask(getBeachStateMask(beach)),
     });
   };
 
   for (let i = 0; i < projected.length; i += 1) {
-    if (visited.has(i)) continue;
+    if (visited[i] === 1) continue;
     const queue = [i];
     const members: typeof projected = [];
-    visited.add(i);
+    visited[i] = 1;
 
     while (queue.length > 0) {
       const index = queue.pop() as number;
       const current = projected[index];
       members.push(current);
+      const minCellX = current.cellX - 1;
+      const maxCellX = current.cellX + 1;
+      const minCellY = current.cellY - 1;
+      const maxCellY = current.cellY + 1;
 
-      for (let j = 0; j < projected.length; j += 1) {
-        if (visited.has(j)) continue;
-        if (current.point.distanceTo(projected[j].point) <= CLUSTER_RADIUS_PX) {
-          visited.add(j);
-          queue.push(j);
+      for (let cellX = minCellX; cellX <= maxCellX; cellX += 1) {
+        for (let cellY = minCellY; cellY <= maxCellY; cellY += 1) {
+          const bucket = buckets.get(`${cellX}:${cellY}`);
+          if (!bucket) continue;
+          for (let n = 0; n < bucket.length; n += 1) {
+            const j = bucket[n];
+            if (visited[j] === 1) continue;
+            const candidate = projected[j];
+            const dx = current.x - candidate.x;
+            const dy = current.y - candidate.y;
+            if (dx * dx + dy * dy > CLUSTER_RADIUS_PX_SQUARED) continue;
+            visited[j] = 1;
+            queue.push(j);
+          }
         }
       }
     }
@@ -170,10 +230,7 @@ const clusterBeaches = (
     const clusterId =
       members.length === 1
         ? members[0].beach.id
-        : `cluster-${members
-            .map((item) => item.beach.id)
-            .sort()
-            .join("|")}`;
+        : `cluster-${members.length}-${members.map((item) => item.beach.id).join("|")}`;
 
     if (members.length === 1) {
       const only = members[0];
