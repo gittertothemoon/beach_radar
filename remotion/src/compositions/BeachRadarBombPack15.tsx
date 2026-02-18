@@ -284,21 +284,58 @@ const FloatingPin: React.FC<{
   size: number;
   phase: number;
 }> = ({frame, src, x, y, size, phase}) => {
-  const bob = Math.sin((frame + phase) / 9) * 6;
+  const cycle = (frame + phase * 7) % 96;
+  const ringScale = interpolate(cycle, [0, 95], [0.82, 1.55], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const ringOpacity = interpolate(cycle, [0, 20, 95], [0.34, 0.16, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const pinScale = interpolate(cycle, [0, 10, 38, 95], [0.92, 1.04, 1, 0.96], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const driftX = Math.cos((frame + phase * 3) / 26) * 2.2;
+  const driftY = Math.sin((frame + phase * 5) / 31) * 1.8;
+  const lift = Math.sin((frame + phase) / 20) * 2.8;
+  const shadow = interpolate(cycle, [0, 95], [0.3, 0.14], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
 
   return (
-    <Img
-      src={staticFile(src)}
+    <div
       style={{
         position: "absolute",
         left: `${x * 100}%`,
         top: `${y * 100}%`,
         width: size,
         height: size,
-        objectFit: "contain",
-        transform: `translate(-50%, calc(-50% + ${bob}px))`,
+        transform: `translate(calc(-50% + ${driftX}px), calc(-50% + ${lift + driftY}px))`,
       }}
-    />
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: -10,
+          borderRadius: "50%",
+          border: `2px solid rgba(6,182,212,${ringOpacity})`,
+          transform: `scale(${ringScale})`,
+        }}
+      />
+      <Img
+        src={staticFile(src)}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          transform: `scale(${pinScale})`,
+          filter: `drop-shadow(0 10px 14px rgba(2,6,23,${shadow}))`,
+        }}
+      />
+    </div>
   );
 };
 
@@ -312,6 +349,18 @@ const CrowdPanel: React.FC<{
   const pinPreset = PANEL_PIN_PRESETS[(variantSeed + (compact ? 2 : 0)) % PANEL_PIN_PRESETS.length];
   const panelHeight = compact ? 570 : 900;
   const pinSize = compact ? 88 : 98;
+  const cameraX = Math.sin((frame + variantSeed * 19) / 44) * (compact ? 10 : 16);
+  const cameraY = Math.cos((frame + variantSeed * 13) / 52) * (compact ? 8 : 12);
+  const cameraScale = 1.06 + Math.sin((frame + variantSeed * 7) / 120) * 0.025;
+  const sweepY = interpolate((frame + variantSeed * 17) % 170, [0, 169], [-120, panelHeight + 120], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const livePulse = interpolate((frame + variantSeed * 9) % 50, [0, 24, 49], [0.55, 1, 0.55], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const liveMinute = String(Math.floor((frame + variantSeed * 40) / 18) % 60).padStart(2, "0");
 
   const panelBackground =
     theme.background === "sharecard" ? (
@@ -319,10 +368,10 @@ const CrowdPanel: React.FC<{
         src={staticFile("video-kit/sharecard-bg.png")}
         style={{
           ...fullCover,
-          transform: `translateY(${interpolate(frame, [0, 180], [16, -18], {
+          transform: `translate3d(${cameraX}px, ${interpolate(frame, [0, 180], [16, -18], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
-          })}px) scale(1.08)`,
+          }) + cameraY}px, 0) scale(${cameraScale})`,
         }}
       />
     ) : null;
@@ -333,10 +382,10 @@ const CrowdPanel: React.FC<{
         src={staticFile("video-kit/initial-bg.png")}
         style={{
           ...fullCover,
-          transform: `translateY(${interpolate(frame, [0, 180], [10, -16], {
+          transform: `translate3d(${-cameraX * 0.6}px, ${interpolate(frame, [0, 180], [10, -16], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
-          })}px) scale(1.06)`,
+          }) + cameraY * 0.75}px, 0) scale(${cameraScale - 0.01})`,
         }}
       />
     ) : null;
@@ -346,13 +395,13 @@ const CrowdPanel: React.FC<{
       <OffthreadVideo
         src={staticFile("video-kit/stock/beach-panorama-1080.mp4")}
         muted
-        style={{...fullCover, transform: "scale(1.08)"}}
+        style={{...fullCover, transform: `translate3d(${cameraX}px, ${cameraY}px, 0) scale(${cameraScale})`}}
       />
     ) : theme.background === "videoB" ? (
       <OffthreadVideo
         src={staticFile("video-kit/stock/beach-seashore-1080.mp4")}
         muted
-        style={{...fullCover, transform: "scale(1.08)"}}
+        style={{...fullCover, transform: `translate3d(${-cameraX}px, ${cameraY * 0.8}px, 0) scale(${cameraScale})`}}
       />
     ) : null;
 
@@ -372,6 +421,28 @@ const CrowdPanel: React.FC<{
       {altImageBackground}
       {videoBackground}
       <AbsoluteFill style={{backgroundColor: "rgba(2,6,23,0.3)"}} />
+      <AbsoluteFill
+        style={{
+          opacity: 0.56,
+          background: `radial-gradient(ellipse at ${48 + cameraX * 0.4}% ${40 + cameraY * 0.4}%, ${variant.accentSoft}, rgba(2,6,23,0) 62%)`,
+          mixBlendMode: "screen",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: 12,
+          right: 12,
+          top: sweepY,
+          height: compact ? 74 : 92,
+          borderRadius: 999,
+          background: `linear-gradient(180deg, rgba(255,255,255,0), ${variant.accentSoft}, rgba(255,255,255,0))`,
+          opacity: 0.42,
+          filter: "blur(2px)",
+          pointerEvents: "none",
+          mixBlendMode: "screen",
+        }}
+      />
 
       <div
         style={{
@@ -384,7 +455,7 @@ const CrowdPanel: React.FC<{
         }}
       >
         <div style={{display: "flex", gap: 8}}>
-          <Chip label="ORA" color={COLORS.live} compact />
+          <Chip label="ORA" color={`rgba(34,197,94,${livePulse})`} compact />
           <Chip label="RECENTE" color={COLORS.recent} compact />
           <Chip label="PREVISIONE" color={COLORS.pred} compact />
         </div>
@@ -436,7 +507,7 @@ const CrowdPanel: React.FC<{
             color: COLORS.cyan,
           }}
         >
-          Aggiornato ora
+          Aggiornato 12:{liveMinute}
         </div>
       </div>
     </div>
@@ -686,16 +757,19 @@ const ValueScene: React.FC<{
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              gap: 26,
-              transform: `translateY(${interpolate(inSpring, [0, 1], [20, 8])}px)`,
+              alignItems: "center",
+              gap: 20,
+              transform: `translateY(${interpolate(inSpring, [0, 1], [20, 0])}px)`,
               opacity: inSpring,
             }}
           >
-            <div>
+            <div style={{textAlign: "center", maxWidth: 880}}>
               <div style={{fontFamily: headingFont, fontWeight: 700, fontSize: 84, lineHeight: 0.93, color: COLORS.white}}>{variant.valueTitle}</div>
               <div style={{marginTop: 10, fontFamily: bodyFont, fontWeight: 700, fontSize: 38, color: COLORS.textSoft}}>{variant.valueSub}</div>
             </div>
-            <CrowdPanel frame={frame} variant={variant} />
+            <div style={{width: "100%", maxWidth: 900}}>
+              <CrowdPanel frame={frame + 12} variant={variant} />
+            </div>
             <div style={{textAlign: "center", fontFamily: bodyFont, fontWeight: 600, fontSize: 28, color: COLORS.textSoft}}>Segnalazioni della comunita in tempo reale.</div>
           </div>
         ) : null}
@@ -704,18 +778,20 @@ const ValueScene: React.FC<{
           <div
             style={{
               height: "100%",
-              display: "grid",
-              gridTemplateRows: "auto 1fr",
-              gap: 24,
-              transform: `translateY(${interpolate(inSpring, [0, 1], [24, 8])}px)`,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 20,
+              transform: `translateY(${interpolate(inSpring, [0, 1], [22, 0])}px)`,
               opacity: inSpring,
             }}
           >
-            <div style={{textAlign: "center"}}>
+            <div style={{textAlign: "center", maxWidth: 860}}>
               <div style={{fontFamily: headingFont, fontWeight: 700, fontSize: 82, lineHeight: 0.93, color: COLORS.white}}>{variant.valueTitle}</div>
               <div style={{marginTop: 10, fontFamily: bodyFont, fontWeight: 700, fontSize: 36, color: COLORS.textSoft}}>{variant.valueSub}</div>
             </div>
-            <div style={{display: "grid", gridTemplateColumns: "1fr 1.05fr", gap: 18}}>
+            <div style={{display: "grid", gridTemplateColumns: "0.95fr 1.05fr", gap: 18, width: "100%", maxWidth: 900, alignItems: "center"}}>
               <div style={{display: "flex", flexDirection: "column", gap: 14}}>
                 {["Segnale ora ogni minuto", "Andamento recente consolidato", "Previsione nelle prossime ore"].map((t, idx) => (
                   <div
@@ -725,7 +801,7 @@ const ValueScene: React.FC<{
                       border: `1px solid ${variant.accentSoft}`,
                       backgroundColor: "rgba(3,10,28,0.72)",
                       padding: "18px 18px",
-                      transform: `translateY(${Math.sin((frame + idx * 12) / 12) * 3}px)`,
+                      transform: `translateY(${Math.sin((frame + idx * 12) / 12) * 2}px)`,
                     }}
                   >
                     <div style={{fontFamily: bodyFont, fontWeight: 800, fontSize: 20, color: variant.accent}}>0{idx + 1}</div>
@@ -733,7 +809,7 @@ const ValueScene: React.FC<{
                   </div>
                 ))}
               </div>
-              <CrowdPanel frame={frame} variant={variant} compact />
+              <CrowdPanel frame={frame + 24} variant={variant} compact />
             </div>
           </div>
         ) : null}
@@ -825,18 +901,21 @@ const ValueScene: React.FC<{
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              gap: 20,
-              transform: `translateY(${interpolate(inSpring, [0, 1], [20, 8])}px)`,
+              alignItems: "center",
+              gap: 16,
+              transform: `translateY(${interpolate(inSpring, [0, 1], [20, 0])}px)`,
               opacity: inSpring,
             }}
           >
-            <div style={{textAlign: "left"}}>
+            <div style={{textAlign: "center", maxWidth: 900}}>
               <div style={{fontFamily: headingFont, fontWeight: 700, fontSize: 82, lineHeight: 0.93, color: COLORS.white}}>{variant.valueTitle}</div>
               <div style={{marginTop: 8, fontFamily: bodyFont, fontWeight: 700, fontSize: 35, color: COLORS.textSoft}}>{variant.valueSub}</div>
             </div>
 
             <div
               style={{
+                width: "100%",
+                maxWidth: 900,
                 borderRadius: 34,
                 border: "1px solid rgba(148,163,184,0.24)",
                 backgroundColor: "rgba(3,10,28,0.78)",
@@ -873,9 +952,11 @@ const ValueScene: React.FC<{
               ))}
             </div>
 
-            <CrowdPanel frame={frame} variant={variant} compact />
+            <div style={{width: "100%", maxWidth: 900}}>
+              <CrowdPanel frame={frame + 30} variant={variant} compact />
+            </div>
 
-            <div style={{display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10}}>
+            <div style={{display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, width: "100%", maxWidth: 900}}>
               <Chip label="Riepilogo zone" color={variant.accent} />
               <Chip label="Verifica ora" color={variant.accent} />
               <Chip label="Aggiornato ora" color={variant.accent} />
@@ -890,17 +971,18 @@ const ValueScene: React.FC<{
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              gap: 24,
-              transform: `translateY(${interpolate(inSpring, [0, 1], [20, 8])}px)`,
+              alignItems: "center",
+              gap: 20,
+              transform: `translateY(${interpolate(inSpring, [0, 1], [20, 0])}px)`,
               opacity: inSpring,
             }}
           >
-            <div style={{textAlign: "center"}}>
+            <div style={{textAlign: "center", maxWidth: 900}}>
               <div style={{fontFamily: headingFont, fontWeight: 700, fontSize: 80, lineHeight: 0.93, color: COLORS.white}}>{variant.valueTitle}</div>
               <div style={{marginTop: 8, fontFamily: bodyFont, fontWeight: 700, fontSize: 34, color: COLORS.textSoft}}>{variant.valueSub}</div>
             </div>
 
-            <div style={{position: "relative", height: 900}}>
+            <div style={{position: "relative", height: 820, width: "100%", maxWidth: 900}}>
               <div
                 style={{
                   position: "absolute",
