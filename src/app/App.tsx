@@ -1460,7 +1460,7 @@ function App() {
           <img
             src={logo}
             alt="Where2Beach"
-            className="h-auto w-[220px] max-w-[68vw] sm:w-[260px]"
+            className="h-auto w-[300px] max-w-[80vw] sm:w-[360px]"
           />
         </div>
       </div>
