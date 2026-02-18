@@ -41,18 +41,20 @@
       privacyText: "Solo aggiornamenti importanti. No spam.",
       privacyLabel: "Privacy",
       success: "Sei dentro! Ti avviseremo al lancio. \u{1F4E1}",
-      successTitle: "Posto riservato!",
-      successBody: "Ti avviseremo appena apriamo l'accesso. Condividi la pagina con chi vuole entrare.",
+      successKicker: "Founding wave",
+      successTitle: "Sei nella Founding Wave!",
+      successBody: "Condividi ora il link: aiuti la tua zona ad aprire prima e inviti i tuoi amici.",
       alreadyJoined: "Sei gia dentro \u2705",
-      alreadyTitle: "Sei gia in lista.",
-      alreadyBody: "La tua iscrizione \u00e8 attiva. Condividi il link se vuoi aiutare i tuoi amici.",
-      shareLabel: "Condividi",
-      copyLabel: "Copia link",
+      alreadyKicker: "Founding wave confermata",
+      alreadyTitle: "Sei gi\u00e0 nella Founding Wave.",
+      alreadyBody: "Il tuo posto \u00e8 confermato. Condividi il link e porta altri beach lovers nella prima ondata.",
+      shareLabel: "Invita amici",
+      copyLabel: "Copia link invito",
       resetJoinLabel: "Usa un'altra email",
       shareTitle: "Where2Beach",
-      shareText: "Sto entrando nella waitlist di Where2Beach. Unisciti anche tu!",
-      shareSuccess: "Link pronto \u2705",
-      copySuccess: "Link copiato.",
+      shareText: "Sono nella Founding Wave di Where2Beach. Entra anche tu prima del lancio!",
+      shareSuccess: "Invito pronto \u2705",
+      copySuccess: "Link invito copiato.",
       shareError: "Non riesco a condividere qui.",
       retry: "Riprova",
       error: "Inserisci un'email valida.",
@@ -78,18 +80,20 @@
       privacyText: "Important updates only. No spam.",
       privacyLabel: "Privacy",
       success: "You're in! We'll notify you at launch. \u{1F4E1}",
-      successTitle: "Spot reserved!",
-      successBody: "We'll reach out when access opens. Share the page with friends who want in.",
+      successKicker: "Founding wave",
+      successTitle: "You're in the Founding Wave!",
+      successBody: "Share your invite link now to help unlock your area faster and bring friends in.",
       alreadyJoined: "You're already in \u2705",
-      alreadyTitle: "You're already on the list.",
-      alreadyBody: "Your spot is confirmed. Share the link if you'd like to invite friends.",
-      shareLabel: "Share",
-      copyLabel: "Copy link",
+      alreadyKicker: "Founding wave confirmed",
+      alreadyTitle: "You're already in the Founding Wave.",
+      alreadyBody: "Your spot is confirmed. Share your link and bring more beach lovers into the first wave.",
+      shareLabel: "Invite friends",
+      copyLabel: "Copy invite link",
       resetJoinLabel: "Use another email",
       shareTitle: "Where2Beach",
-      shareText: "I'm joining the Where2Beach waitlist. Come with me!",
-      shareSuccess: "Link ready \u2705",
-      copySuccess: "Link copied.",
+      shareText: "I'm in the Where2Beach Founding Wave. Join before launch!",
+      shareSuccess: "Invite ready \u2705",
+      copySuccess: "Invite link copied.",
       shareError: "Unable to share here.",
       retry: "Retry",
       error: "Please enter a valid email.",
@@ -171,6 +175,7 @@
     const postJoin = document.getElementById("postJoin");
     const postJoinTitle = document.getElementById("postJoinTitle");
     const postJoinDesc = document.getElementById("postJoinDesc");
+    const postJoinKicker = document.getElementById("postJoinKicker");
     const shareBtn = document.getElementById("shareBtn");
     const copyBtn = document.getElementById("copyBtn");
     const resetJoinBtn = document.getElementById("resetJoinBtn");
@@ -224,6 +229,7 @@
 
     if (postJoin && postJoin.dataset.state) {
       const isAlready = postJoin.dataset.state === "already";
+      if (postJoinKicker) postJoinKicker.innerText = isAlready ? t.alreadyKicker : t.successKicker;
       if (postJoinTitle) postJoinTitle.innerText = isAlready ? t.alreadyTitle : t.successTitle;
       if (postJoinDesc) postJoinDesc.innerText = isAlready ? t.alreadyBody : t.successBody;
     }
@@ -328,10 +334,12 @@
     const postJoin = document.getElementById("postJoin");
     const title = document.getElementById("postJoinTitle");
     const desc = document.getElementById("postJoinDesc");
-    if (!postJoin || !title || !desc) return;
+    const kicker = document.getElementById("postJoinKicker");
+    if (!postJoin || !title || !desc || !kicker) return;
     const t = content[currentLang];
     const isAlready = state === "already";
     postJoin.dataset.state = isAlready ? "already" : "success";
+    kicker.innerText = isAlready ? t.alreadyKicker : t.successKicker;
     title.innerText = isAlready ? t.alreadyTitle : t.successTitle;
     desc.innerText = isAlready ? t.alreadyBody : t.successBody;
   }
