@@ -377,7 +377,7 @@ const RegisterPage = () => {
               <img
                 src={logo}
                 alt={STRINGS.appName}
-                className="h-16 w-auto drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)] sm:h-20"
+                className="h-auto w-24 drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)] sm:w-28"
               />
             </div>
 

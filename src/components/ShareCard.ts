@@ -220,13 +220,13 @@ const renderShareCard = async (
     ctx.globalAlpha = 1;
   }
 
-  const headerY = 60;
-  const logoHeight = 490;
-  const logoWidth = (logo.width / logo.height) * logoHeight;
+  const headerY = 76;
+  const logoSize = 420;
+  const logoWidth = (logo.width / logo.height) * logoSize;
   const centerX = width / 2;
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(logo, centerX - logoWidth / 2, headerY, logoWidth, logoHeight);
+  ctx.drawImage(logo, centerX - logoWidth / 2, headerY, logoWidth, logoSize);
 
   const pillText = data.state === "PRED" ? "STIMA" : "LIVE";
   ctx.font = "700 26px 'Space Grotesk', sans-serif";

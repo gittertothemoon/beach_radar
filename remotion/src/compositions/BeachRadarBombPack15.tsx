@@ -159,7 +159,7 @@ const BrandLockup: React.FC<{
   accent: string;
   pulse?: boolean;
 }> = ({frame, width, accent, pulse = true}) => {
-  const iconSize = Math.round(width * 0.42);
+  const logoSize = Math.round(width * 0.86);
   const ringScale = interpolate(frame % 40, [0, 39], [0.86, 1.34], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -174,9 +174,8 @@ const BrandLockup: React.FC<{
       <div
         style={{
           position: "relative",
-          width: iconSize,
-          height: iconSize,
-          marginBottom: -14,
+          width: logoSize,
+          height: logoSize,
         }}
       >
         {pulse ? (
@@ -201,17 +200,6 @@ const BrandLockup: React.FC<{
           }}
         />
       </div>
-
-      <Img
-        src={staticFile("video-kit/logo-tight.png")}
-        style={{
-          width,
-          height: Math.round(width * 0.47),
-          objectFit: "contain",
-          marginTop: -18,
-          filter: "drop-shadow(0 8px 22px rgba(2,6,23,0.45))",
-        }}
-      />
     </div>
   );
 };

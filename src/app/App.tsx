@@ -1457,7 +1457,11 @@ function App() {
         style={{ backgroundImage: `url(${splashBg})` }}
       >
         <div className="flex flex-col items-center">
-          <img src={logo} alt="Where2Beach" className="h-64 w-auto" />
+          <img
+            src={logo}
+            alt="Where2Beach"
+            className="h-auto w-[220px] max-w-[68vw] sm:w-[260px]"
+          />
         </div>
       </div>
     );
