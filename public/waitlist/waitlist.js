@@ -1106,14 +1106,42 @@
 
   let idleTimer = null;
   const IDLE_RESUME_MS = 1800;
+  const MAX_TILT_X_FINE = 7;
+  const MAX_TILT_Y_FINE = 5;
+  const MAX_TILT_X_COARSE = 6;
+  const MAX_TILT_Y_COARSE = 4.5;
+  const TILT_SMOOTHING = 0.16;
+  const TILT_SETTLE_EPS = 0.015;
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const isFinePointer = () => window.matchMedia("(pointer: fine)").matches;
+
+  function isPointInsideCard(clientX, clientY) {
+    const rect = card.getBoundingClientRect();
+    return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+  }
+
+  function isInteractiveTarget(target) {
+    return !!(target && target.closest && target.closest("input, button, a, textarea, select, label"));
+  }
 
   function applyTilt() {
-    currentX += (targetX - currentX) * 0.12;
-    currentY += (targetY - currentY) * 0.12;
+    currentX += (targetX - currentX) * TILT_SMOOTHING;
+    currentY += (targetY - currentY) * TILT_SMOOTHING;
+
+    const settled = Math.abs(targetX - currentX) < TILT_SETTLE_EPS && Math.abs(targetY - currentY) < TILT_SETTLE_EPS;
+    if (settled) {
+      currentX = targetX;
+      currentY = targetY;
+    }
+
     card.style.transform = `rotateY(${currentX}deg) rotateX(${currentY}deg)`;
-    tiltRaf = null;
+
+    if (settled) {
+      tiltRaf = null;
+      return;
+    }
+    tiltRaf = requestAnimationFrame(applyTilt);
   }
 
   function setTilt(xDeg, yDeg) {
@@ -1136,31 +1164,42 @@
   }
 
   function onPointerDown(event) {
-    dragging = true;
+    if (usingGyro) return;
+    if (!isPointInsideCard(event.clientX, event.clientY)) return;
+    if (isInteractiveTarget(event.target)) return;
+    dragging = !isFinePointer();
     setInteracting(true);
     try {
-      event.target.setPointerCapture(event.pointerId);
+      card.setPointerCapture(event.pointerId);
     } catch (_) {
       // ignore
     }
   }
 
   function onPointerMove(event) {
-    const isFinePointer = window.matchMedia("(pointer: fine)").matches;
     if (usingGyro) return;
+    const finePointer = isFinePointer();
+    const insideCard = isPointInsideCard(event.clientX, event.clientY);
 
-    if (!isFinePointer && !dragging) return;
+    if (finePointer && !insideCard && !dragging) {
+      setInteracting(false);
+      resetTilt();
+      return;
+    }
+    if (!finePointer && !dragging) return;
     setInteracting(true);
 
     const rect = card.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
 
-    const dx = (event.clientX - cx) / (rect.width / 2);
-    const dy = (event.clientY - cy) / (rect.height / 2);
+    const dx = clamp((event.clientX - cx) / (rect.width / 2), -1, 1);
+    const dy = clamp((event.clientY - cy) / (rect.height / 2), -1, 1);
 
-    const x = dx * 8;
-    const y = -dy * 6;
+    const maxX = finePointer ? MAX_TILT_X_FINE : MAX_TILT_X_COARSE;
+    const maxY = finePointer ? MAX_TILT_Y_FINE : MAX_TILT_Y_COARSE;
+    const x = dx * maxX;
+    const y = -dy * maxY;
     setTilt(x, y);
   }
 
@@ -1180,6 +1219,13 @@
     resetTilt();
   });
 
+  card.addEventListener("pointerleave", () => {
+    if (!isFinePointer()) return;
+    if (dragging) return;
+    setInteracting(false);
+    resetTilt();
+  }, { passive: true });
+
   function handleOrientation(event) {
     const gamma = typeof event.gamma === "number" ? event.gamma : 0;
     const beta = typeof event.beta === "number" ? event.beta : 0;
@@ -1187,9 +1233,7 @@
     const x = gamma / 7;
     const y = -(beta - 20) / 14;
 
-    setInteracting(true);
     setTilt(x, y);
-    setInteracting(false);
   }
 
   async function enableGyroIfPossible() {
@@ -1205,6 +1249,7 @@
     }
 
     usingGyro = true;
+    setInteracting(true);
     window.addEventListener("deviceorientation", handleOrientation, true);
   }
 
