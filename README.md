@@ -1,6 +1,6 @@
-# Beach Radar
+# Where2Beach
 
-Beach Radar is a Vite + React + TypeScript app with Vercel serverless APIs.
+Where2Beach is a Vite + React + TypeScript app with Vercel serverless APIs.
 The project currently includes:
 
 - public waitlist flow (`/waitlist/`)
@@ -135,7 +135,7 @@ SQL migration:
 
 ## Domain & Share Preview Checks
 
-1. `https://www.beachradar.it` must 301 to `https://beachradar.it`
-2. `https://beach-radar.vercel.app` must 301 to `https://beachradar.it`
-3. `http://beachradar.it` must 301 to `https://beachradar.it`
-4. Sharing `https://beachradar.it` in messaging apps should show correct preview
+1. `https://www.where2beach.com` must 301 to `https://where2beach.com`
+2. `https://where2beach.vercel.app` must 301 to `https://where2beach.com`
+3. `http://where2beach.com` must 301 to `https://where2beach.com`
+4. Sharing `https://where2beach.com` in messaging apps should show correct preview

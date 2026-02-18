@@ -49,7 +49,7 @@ BASE_URL=http://localhost:5173 E2E_APP_UI_PATH=/app/ npm run test:app:favorites
 
 Smoke test (safe for production, hits API only with invalid/honeypot):
 ```
-BASE_URL=https://beachradar.it npm run test:waitlist:smoke
+BASE_URL=https://where2beach.com npm run test:waitlist:smoke
 ```
 
 Smoke test (static, UI-only; no API required):
@@ -124,7 +124,7 @@ Privacy contact (optional front-end override):
 
 The app is gated behind `/app/`. Provide the access key once via:
 ```
-https://beachradar.it/app/?key=YOUR_KEY
+https://where2beach.com/app/?key=YOUR_KEY
 ```
 After a valid key is used, a 30-day cookie is set so `/app/` works without the query parameter.
 

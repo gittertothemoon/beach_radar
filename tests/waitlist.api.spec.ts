@@ -11,7 +11,7 @@ function buildPayload(email: string) {
     email,
     lang: "it",
     ts: new Date().toISOString(),
-    project: "beach_radar",
+    project: "where2beach",
     version: "waitlist_v1",
     page: "http://example.test/waitlist",
     referrer: "",

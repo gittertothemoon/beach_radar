@@ -1,4 +1,4 @@
-/* Dev-only performance instrumentation for Beach Radar. */
+/* Dev-only performance instrumentation for Where2Beach. */
 
 type RenderCounts = Record<string, number>;
 

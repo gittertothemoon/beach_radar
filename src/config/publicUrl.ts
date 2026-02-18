@@ -1,4 +1,4 @@
-const DEFAULT_PUBLIC_BASE_URL = "https://beachradar.it";
+const DEFAULT_PUBLIC_BASE_URL = "https://where2beach.com";
 
 const normalizeBaseUrl = (value: string) => value.replace(/\/+$/, "");
 

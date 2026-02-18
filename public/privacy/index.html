@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Informativa privacy Beach Radar" />
-  <title>Beach Radar - Privacy</title>
+  <meta name="description" content="Informativa privacy Where2Beach" />
+  <title>Where2Beach - Privacy</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
@@ -214,10 +214,10 @@
     const I18N = {
       it: {
         title: "Privacy",
-        pageTitle: "Beach Radar - Privacy",
-        pageDescription: "Informativa privacy Beach Radar",
+        pageTitle: "Where2Beach - Privacy",
+        pageDescription: "Informativa privacy Where2Beach",
         lead:
-          "Questa pagina spiega quali dati raccogliamo per la waitlist di Beach Radar, perché li raccogliamo e come contattarci.",
+          "Questa pagina spiega quali dati raccogliamo per la waitlist di Where2Beach, perché li raccogliamo e come contattarci.",
         dataCollectedTitle: "Dati raccolti",
         dataCollectedItems: [
           "Indirizzo email e timestamp di iscrizione (prima/ultima registrazione).",
@@ -244,10 +244,10 @@
       },
       en: {
         title: "Privacy",
-        pageTitle: "Beach Radar - Privacy",
-        pageDescription: "Beach Radar privacy information",
+        pageTitle: "Where2Beach - Privacy",
+        pageDescription: "Where2Beach privacy information",
         lead:
-          "This page explains what data we collect for the Beach Radar waitlist, why we collect it, and how you can contact us.",
+          "This page explains what data we collect for the Where2Beach waitlist, why we collect it, and how you can contact us.",
         dataCollectedTitle: "Data collected",
         dataCollectedItems: [
           "Email address and signup timestamps (first/last seen).",
@@ -391,7 +391,7 @@
       });
     }
 
-    const contactEmail = window.PRIVACY_CONTACT_EMAIL || "privacy@beachradar.it";
+    const contactEmail = window.PRIVACY_CONTACT_EMAIL || "privacy@where2beach.com";
     if (contactTextEl) {
       contactTextEl.innerHTML = `${t.contactPrefix} <a id=\"privacyContact\" href=\"mailto:${contactEmail}\">${contactEmail}</a>${t.contactSuffix}`;
     }

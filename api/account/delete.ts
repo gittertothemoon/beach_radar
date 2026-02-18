@@ -30,7 +30,7 @@ function normalizeOrigin(value: string | null): string | null {
 function applyCors(req: VercelRequest, res: VercelResponse): void {
   const configuredBase = normalizeOrigin(readEnv("VITE_PUBLIC_BASE_URL"));
   const allowedOrigins = new Set<string>([
-    "https://beachradar.it",
+    "https://where2beach.com",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",

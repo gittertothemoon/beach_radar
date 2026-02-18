@@ -1,4 +1,4 @@
-const REPORTER_KEY = "beach-radar-reporter-v1";
+const REPORTER_KEY = "where2beach-reporter-v1";
 
 const randomHex = (length: number) => {
   const bytes = new Uint8Array(length / 2);

@@ -1,6 +1,6 @@
 {
-  "name": "Beach Radar",
-  "short_name": "Beach Radar",
+  "name": "Where2Beach",
+  "short_name": "Where2Beach",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0c1220",

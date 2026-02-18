@@ -3,7 +3,7 @@ import path from "node:path";
 import QRCode from "qrcode";
 import sharp from "sharp";
 
-const DEFAULT_BASE_URL = "https://beachradar.it";
+const DEFAULT_BASE_URL = "https://where2beach.com";
 
 const normalizeBaseUrl = (value) => value.replace(/\/+$/, "");
 

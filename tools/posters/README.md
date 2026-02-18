@@ -1,4 +1,4 @@
-# Poster Generator (Beach Radar)
+# Poster Generator (Where2Beach)
 
 ## Prerequisites
 - Add the master poster template at: `tools/posters/templates/master.png`

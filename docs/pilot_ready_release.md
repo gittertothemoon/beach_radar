@@ -5,7 +5,7 @@ Date baseline: February 11, 2026
 ## PR Description (ready to paste)
 
 ### Summary
-This PR hardens Beach Radar for pilot operations without changing visible UI or feature behavior.
+This PR hardens Where2Beach for pilot operations without changing visible UI or feature behavior.
 
 Scope delivered:
 - P0: CI quality guardrail (`lint`, `typecheck`, `build`) on `push`/`pull_request` to `main`.
@@ -66,7 +66,7 @@ Scope delivered:
 3. Production smoke
 - Run:
 ```bash
-curl -X POST https://beachradar.it/api/analytics \
+curl -X POST https://where2beach.com/api/analytics \
   -H "content-type: application/json" \
   -d '{"eventName":"pilot_check","ts":"2026-02-11T12:00:00.000Z","sessionId":"manual-check","path":"/app"}'
 ```

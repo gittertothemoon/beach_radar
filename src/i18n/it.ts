@@ -1,5 +1,5 @@
 export const STRINGS = {
-  appName: "Beach Radar",
+  appName: "Where2Beach",
   actions: {
     close: "Chiudi",
     share: "Condividi",

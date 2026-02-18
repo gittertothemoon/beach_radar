@@ -11,10 +11,43 @@
       "has": [
         {
           "type": "host",
+          "value": "www.where2beach.com"
+        }
+      ],
+      "destination": "https://where2beach.com/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
           "value": "www.beachradar.it"
         }
       ],
-      "destination": "https://beachradar.it/$1",
+      "destination": "https://where2beach.com/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "beachradar.it"
+        }
+      ],
+      "destination": "https://where2beach.com/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "where2beach.vercel.app"
+        }
+      ],
+      "destination": "https://where2beach.com/$1",
       "permanent": true
     },
     {
@@ -25,7 +58,7 @@
           "value": "beach-radar.vercel.app"
         }
       ],
-      "destination": "https://beachradar.it/$1",
+      "destination": "https://where2beach.com/$1",
       "permanent": true
     },
     {
@@ -33,7 +66,7 @@
       "has": [
         {
           "type": "host",
-          "value": "beachradar.it"
+          "value": "where2beach.com"
         },
         {
           "type": "header",
@@ -41,7 +74,7 @@
           "value": "http"
         }
       ],
-      "destination": "https://beachradar.it/$1",
+      "destination": "https://where2beach.com/$1",
       "permanent": true
     },
     { "source": "/", "destination": "/waitlist/", "permanent": false },
@@ -54,6 +87,13 @@
       "destination": "/api/app-access",
       "permanent": false
     },
+    {
+      "source": "/app",
+      "missing": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
+      "destination": "/waitlist/",
+      "permanent": false
+    },
+    { "source": "/app", "destination": "/app/", "permanent": false },
     {
       "source": "/app/",
       "has": [{ "type": "query", "key": "key" }],

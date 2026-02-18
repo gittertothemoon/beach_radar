@@ -261,8 +261,8 @@ async function sendConfirmEmail(options: {
   const payload = {
     from: options.from,
     to: options.to,
-    subject: "Confirm your Beach Radar waitlist spot",
-    html: `<p>Confirm your email to join the Beach Radar waitlist:</p><p><a href="${url}">Confirm my spot</a></p>`
+    subject: "Confirm your Where2Beach waitlist spot",
+    html: `<p>Confirm your email to join the Where2Beach waitlist:</p><p><a href="${url}">Confirm my spot</a></p>`
   };
 
   const response = await fetch("https://api.resend.com/emails", {
