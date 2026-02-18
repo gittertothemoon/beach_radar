@@ -4,7 +4,6 @@ import { crowdLevelLabel } from "../lib/format";
 import type { BeachState, CrowdLevel } from "../lib/types";
 import { PUBLIC_HOSTNAME } from "../config/publicUrl";
 import logoUrl from "../assets/logo.png";
-import wordmarkUrl from "../assets/beach-radar-scritta.png";
 import shareBgUrl from "../assets/sharecard-bg.png";
 import { isPerfEnabled, recordTiming } from "../lib/perf";
 
@@ -163,9 +162,8 @@ const renderShareCard = async (
   ctx.scale(dpr, dpr);
   await document.fonts?.ready;
 
-  const [logo, wordmark, shareBg] = await Promise.all([
+  const [logo, shareBg] = await Promise.all([
     loadImageCached(logoUrl),
-    loadImageCached(wordmarkUrl).catch(() => null),
     loadImageCached(shareBgUrl),
   ]);
 
@@ -229,26 +227,6 @@ const renderShareCard = async (
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(logo, centerX - logoWidth / 2, headerY, logoWidth, logoHeight);
-
-  const wordmarkHeight = 281;
-  const wordmarkY = headerY + logoHeight - 210;
-  if (wordmark) {
-    const scale = wordmarkHeight / wordmark.height;
-    const wordmarkWidth = wordmark.width * scale;
-    ctx.drawImage(
-      wordmark,
-      centerX - wordmarkWidth / 2,
-      wordmarkY,
-      wordmarkWidth,
-      wordmarkHeight,
-    );
-  } else {
-    ctx.fillStyle = "#f8fafc";
-    ctx.font = "700 281px 'Space Grotesk', sans-serif";
-    const fallbackText = "BEACH RADAR";
-    const fallbackWidth = ctx.measureText(fallbackText).width;
-    ctx.fillText(fallbackText, centerX - fallbackWidth / 2, wordmarkY + 32);
-  }
 
   const pillText = data.state === "PRED" ? "STIMA" : "LIVE";
   ctx.font = "700 26px 'Space Grotesk', sans-serif";
@@ -359,7 +337,7 @@ export const shareBeachCard = async (data: ShareCardData) => {
   if (perfEnabled) {
     recordTiming("share_card_render", performance.now() - start, perfEnabled);
   }
-  const fileName = `beach-radar-${sanitizeFileName(data.name)}.jpg`;
+  const fileName = `where2beach-${sanitizeFileName(data.name)}.jpg`;
   const file = new File([blob], fileName, { type: mimeType });
 
   const canShareFiles =

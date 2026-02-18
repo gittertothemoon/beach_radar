@@ -5,7 +5,6 @@ import TopSearch from "../components/TopSearch";
 import BottomSheet from "../components/BottomSheet";
 import WeatherWidget from "../components/WeatherWidget";
 import logo from "../assets/logo.png";
-import logoText from "../assets/beach-radar-scritta.png";
 import splashBg from "../assets/initial-bg.png";
 import { SPOTS, hasFiniteCoords } from "../data/spots";
 import { STRINGS } from "../i18n/it";
@@ -84,7 +83,7 @@ const SHOW_ALL_PINS_FLY_DURATION_S = 1.1;
 const REPORT_RADIUS_M = 700;
 const REPORTS_FEED_ERROR_TOAST_GRACE_MS = 10_000;
 const REMOTE_REPORT_SESSION_KEY = "br_report_anywhere_v1";
-const REGISTER_RESUME_KEY = "beach-radar-register-resume-v1";
+const REGISTER_RESUME_KEY = "where2beach-register-resume-v1";
 const MOCK_CROWD_LEVELS: CrowdLevel[] = [1, 2, 3, 4];
 const LOCATION_FOCUS_ZOOM = 16;
 const LOCATION_REFRESH_MS = 15_000;
@@ -1457,9 +1456,8 @@ function App() {
         }`}
         style={{ backgroundImage: `url(${splashBg})` }}
       >
-        <div className="flex flex-col items-center gap-0">
-          <img src={logo} alt="Beach Radar" className="h-64 w-auto" />
-          <img src={logoText} alt="Beach Radar" className="-mt-32 h-64 w-auto" />
+        <div className="flex flex-col items-center">
+          <img src={logo} alt="Where2Beach" className="h-64 w-auto" />
         </div>
       </div>
     );

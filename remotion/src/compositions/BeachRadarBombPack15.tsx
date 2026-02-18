@@ -203,7 +203,7 @@ const BrandLockup: React.FC<{
       </div>
 
       <Img
-        src={staticFile("video-kit/beach-radar-scritta-tight.png")}
+        src={staticFile("video-kit/logo-tight.png")}
         style={{
           width,
           height: Math.round(width * 0.47),
@@ -1027,7 +1027,7 @@ const CtaScene: React.FC<{
             >
               {variant.ctaButton}
             </div>
-            <div style={{fontFamily: bodyFont, fontWeight: 800, fontSize: 30, color: variant.accent}}>beachradar.it</div>
+            <div style={{fontFamily: bodyFont, fontWeight: 800, fontSize: 30, color: variant.accent}}>where2beach.com</div>
           </div>
         ) : null}
 
@@ -1073,7 +1073,7 @@ const CtaScene: React.FC<{
                 {variant.ctaButton}
               </div>
             </div>
-            <div style={{fontFamily: bodyFont, fontWeight: 800, fontSize: 30, color: variant.accent}}>beachradar.it</div>
+            <div style={{fontFamily: bodyFont, fontWeight: 800, fontSize: 30, color: variant.accent}}>where2beach.com</div>
           </div>
         ) : null}
 
@@ -1114,7 +1114,7 @@ const CtaScene: React.FC<{
               {variant.ctaButton}
             </div>
 
-            <div style={{fontFamily: bodyFont, fontWeight: 800, fontSize: 30, color: variant.accent}}>beachradar.it</div>
+            <div style={{fontFamily: bodyFont, fontWeight: 800, fontSize: 30, color: variant.accent}}>where2beach.com</div>
           </div>
         ) : null}
 
@@ -1223,7 +1223,7 @@ const CtaScene: React.FC<{
             >
               {variant.ctaButton}
             </div>
-            <div style={{fontFamily: bodyFont, fontWeight: 800, fontSize: 30, color: variant.accent}}>beachradar.it</div>
+            <div style={{fontFamily: bodyFont, fontWeight: 800, fontSize: 30, color: variant.accent}}>where2beach.com</div>
           </div>
         ) : null}
       </div>

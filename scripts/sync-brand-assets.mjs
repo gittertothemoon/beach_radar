@@ -10,13 +10,6 @@ const ASSET_MAP = [
     targets: ["public/waitlist/logo.png", "remotion/public/video-kit/logo.png"],
   },
   {
-    source: "src/assets/beach-radar-scritta.png",
-    targets: [
-      "public/waitlist/beach-radar-scritta.png",
-      "remotion/public/video-kit/beach-radar-scritta.png",
-    ],
-  },
-  {
     source: "src/assets/initial-bg.png",
     targets: ["remotion/public/video-kit/initial-bg.png"],
   },

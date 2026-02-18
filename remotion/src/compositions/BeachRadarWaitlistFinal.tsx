@@ -124,7 +124,7 @@ const BrandLockup: React.FC<{frame: number; width?: number; pulse?: boolean}> = 
       </div>
 
       <Img
-        src={staticFile("video-kit/beach-radar-scritta-tight.png")}
+        src={staticFile("video-kit/logo-tight.png")}
         style={{
           width,
           height: Math.round(width * 0.46),
@@ -313,7 +313,7 @@ const IntroScene: React.FC<{duration: number}> = ({duration}) => {
             SCEGLI MEGLIO.
           </div>
 
-          <StatusChip label="Beach Radar LIVE" color={COLORS.cyan} />
+          <StatusChip label="Where2Beach LIVE" color={COLORS.cyan} />
 
           <div
             style={{
@@ -684,7 +684,7 @@ const CtaScene: React.FC<{duration: number}> = ({duration}) => {
               fontSize: 32,
             }}
           >
-            beachradar.it/waitlist
+            where2beach.com/waitlist
           </div>
         </div>
       </div>

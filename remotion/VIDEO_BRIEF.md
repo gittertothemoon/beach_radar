@@ -1,4 +1,4 @@
-# VIDEO BRIEF - Beach Radar (Handoff)
+# VIDEO BRIEF - Where2Beach (Handoff)
 
 ## Goal
 Promo verticale 1080x1920, 12s, obiettivo: waitlist.
@@ -35,9 +35,7 @@ Tech-summer, diretto, zero cringe.
 | Nome | Path nel repo | Note |
 | --- | --- | --- |
 | Logo principale (pin + radar) | `src/assets/logo.png` | PNG RGBA 1536x1024 |
-| Wordmark "BEACH RADAR" | `src/assets/beach-radar-scritta.png` | PNG RGBA 1536x1024 |
 | Logo waitlist (duplica logo main) | `public/waitlist/logo.png` | Gia pronto in `public/` |
-| Wordmark waitlist | `public/waitlist/beach-radar-scritta.png` | Gia pronto in `public/` |
 | Background hero sharecard | `src/assets/sharecard-bg.png` | Texture blu con onda light |
 | Background initial | `src/assets/initial-bg.png` | Variante background |
 | Pin beach livello 1 | `src/assets/markers/pin_beach.png` | Icona umbrella base |
@@ -52,7 +50,7 @@ Tech-summer, diretto, zero cringe.
 ## Storyboard 3 scene
 ### 0-3s
 - Testo esatto: `Il radar per le tue spiagge.`
-- Visual: reveal rapido di `logo.png` + wordmark su sfondo `sharecard-bg.png`, glow ciano (`#06B6D4`) e micro-radar pulse.
+- Visual: reveal rapido di `logo.png` su sfondo `sharecard-bg.png`, glow ciano (`#06B6D4`) e micro-radar pulse.
 
 ### 3-9s
 - Testo esatto:
