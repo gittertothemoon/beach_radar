@@ -26,6 +26,7 @@
     "dev": "remotion studio",
     "build": "remotion bundle",
     "render": "remotion render src/index.ts Where2Beach-Waitlist-Final out/Where2Beach-Waitlist-Final.mp4",
+    "render:bomb-pack": "node scripts/render-bomb-pack.mjs",
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc"
   },

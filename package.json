@@ -31,7 +31,8 @@
     "posters:gen": "node tools/posters/generate.mjs",
     "test:waitlist:smoke:static": "node scripts/run-smoke-static.mjs",
     "video:dev": "npm --prefix remotion run dev",
-    "video:render": "npm --prefix remotion run render"
+    "video:render": "npm --prefix remotion run render",
+    "video:render:bomb-pack": "npm --prefix remotion run render:bomb-pack"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.93.2",

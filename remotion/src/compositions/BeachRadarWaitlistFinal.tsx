@@ -112,7 +112,7 @@ const BrandLockup: React.FC<{frame: number; width?: number; pulse?: boolean}> = 
           />
         ) : null}
         <Img
-          src={staticFile("video-kit/logo-tight.png")}
+          src={staticFile("video-kit/logo.png")}
           style={{
             width: "100%",
             height: "100%",
