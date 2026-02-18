@@ -562,21 +562,32 @@ const IntroScene: React.FC<{
             <div
               style={{
                 position: "absolute",
-                left: 0,
-                right: 0,
-                top: 230,
-                fontFamily: headingFont,
-                fontWeight: 700,
-                fontSize: 148,
-                lineHeight: 0.86,
-                textAlign: "center",
-                color: "rgba(248,250,252,0.12)",
+                left: "50%",
+                top: 300,
+                width: 520,
+                height: 520,
+                marginLeft: -260,
+                marginTop: -260,
+                borderRadius: "50%",
+                border: "1px solid rgba(148,163,184,0.18)",
+                boxShadow: "0 0 80px rgba(6,182,212,0.12)",
+                opacity: 0.8,
               }}
-            >
-              BEACH
-              <br />
-              RADAR
-            </div>
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: 300,
+                width: 360,
+                height: 360,
+                marginLeft: -180,
+                marginTop: -180,
+                borderRadius: "50%",
+                border: "1px solid rgba(148,163,184,0.16)",
+                opacity: 0.7,
+              }}
+            />
 
             <div style={{position: "absolute", top: 26, left: 0, right: 0, display: "flex", justifyContent: "center"}}>
               <BrandLockup frame={frame} width={520} accent={variant.accent} />
