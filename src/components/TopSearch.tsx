@@ -19,7 +19,6 @@ type SearchBeach = {
 type TopSearchProps = {
   value: string;
   onChange: (value: string) => void;
-  resultCount: number;
   notice?: string | null;
   beaches: SearchBeach[];
   onSelectSuggestion: (beachId: string) => void;
@@ -29,8 +28,6 @@ type TopSearchProps = {
   onOpenProfile?: () => void;
   onSignOut?: () => void;
 };
-
-const MAX_SUGGESTIONS = 12;
 
 type IndexedBeach = SearchBeach & {
   nameNorm: string;
@@ -42,7 +39,6 @@ const DEBOUNCE_MS = 100;
 const TopSearchComponent = ({
   value,
   onChange,
-  resultCount,
   notice,
   beaches,
   onSelectSuggestion,
@@ -103,7 +99,6 @@ const TopSearchComponent = ({
         if (a.rank !== b.rank) return a.rank - b.rank;
         return a.beach.name.localeCompare(b.beach.name);
       })
-      .slice(0, MAX_SUGGESTIONS)
       .map((item) => item.beach);
 
     return matches;
@@ -212,9 +207,6 @@ const TopSearchComponent = ({
                 {(accountName?.trim() || accountEmail).slice(0, 1).toUpperCase()}
               </button>
             ) : null}
-            <span className="hidden text-[11px] br-text-tertiary min-[420px]:inline">
-              {STRINGS.search.resultsCount(resultCount)}
-            </span>
           </div>
           {profileOpen && accountEmail ? (
             <div className="br-radius-m br-surface absolute right-0 z-50 mt-2 w-[min(88vw,280px)] overflow-hidden">
@@ -291,7 +283,6 @@ const TopSearchComponent = ({
 
 const areEqual = (prev: TopSearchProps, next: TopSearchProps) =>
   prev.value === next.value &&
-  prev.resultCount === next.resultCount &&
   prev.notice === next.notice &&
   prev.beaches === next.beaches &&
   prev.onChange === next.onChange &&

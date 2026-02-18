@@ -1492,7 +1492,6 @@ function App() {
       <TopSearch
         value={search}
         onChange={setSearch}
-        resultCount={filteredBeaches.length}
         notice={liveDataNotice}
         beaches={searchBeaches}
         onSelectSuggestion={handleSelectSuggestion}
