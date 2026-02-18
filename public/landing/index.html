@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Scegli dove andare al mare senza caos. Entra gratis nella lista prioritaria di Where2Beach."
+    />
+    <title>Where2Beach | Mare senza stress</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #11283f;
+        --ink-soft: #2e4964;
+        --sand: #f6f2e7;
+        --paper: #fffcf5;
+        --sea: #1e89aa;
+        --sea-dark: #136986;
+        --line: rgba(17, 40, 63, 0.14);
+        --radius-l: 26px;
+        --radius-m: 16px;
+        --shadow-soft: 0 16px 40px rgba(18, 43, 71, 0.1);
+        --shadow-strong: 0 24px 60px rgba(14, 51, 78, 0.2);
+        --section-space: clamp(54px, 8vw, 96px);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Manrope", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 8% -6%, rgba(63, 180, 207, 0.26) 0%, transparent 38%),
+          radial-gradient(circle at 100% 16%, rgba(81, 151, 202, 0.18) 0%, transparent 42%),
+          linear-gradient(180deg, #fbf8ef 0%, #f5efdf 42%, #f8f5eb 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.25;
+        background-image: radial-gradient(circle at 1px 1px, rgba(17, 40, 63, 0.12) 1px, transparent 0);
+        background-size: 22px 22px;
+        z-index: -1;
+      }
+
+      .container {
+        width: min(1140px, calc(100vw - clamp(24px, 5vw, 64px)));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        border-bottom: 1px solid rgba(17, 40, 63, 0.08);
+        background: #ffffff;
+        backdrop-filter: blur(14px);
+      }
+
+      .topbar-inner {
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .brand img {
+        width: 146px;
+        display: block;
+      }
+
+      .lang-switch {
+        position: absolute;
+        right: 0;
+        display: inline-flex;
+        align-items: center;
+        padding: 3px;
+        border-radius: 999px;
+        background: #f3f6f9;
+        border: 1px solid rgba(17, 40, 63, 0.16);
+        gap: 2px;
+      }
+
+      .lang-btn {
+        border: 0;
+        background: transparent;
+        color: #4b667f;
+        font-weight: 800;
+        font-size: 0.75rem;
+        letter-spacing: 0.06em;
+        min-width: 38px;
+        height: 30px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+
+      .lang-btn.is-active {
+        background: #ffffff;
+        color: #173a59;
+        box-shadow: 0 2px 6px rgba(17, 40, 63, 0.16);
+      }
+
+      .topbar-inner .btn.secondary {
+        position: absolute;
+        left: 0;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-weight: 800;
+        border-radius: 14px;
+        border: 1px solid transparent;
+        transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+        white-space: nowrap;
+      }
+
+      .btn.primary {
+        color: #fff;
+        background: linear-gradient(120deg, var(--sea-dark), var(--sea));
+        padding: 14px 24px;
+        box-shadow: 0 14px 30px rgba(24, 111, 146, 0.34);
+      }
+
+      .btn.secondary {
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.74);
+        border-color: var(--line);
+        padding: 12px 20px;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .hero {
+        padding: var(--section-space) 0 clamp(42px, 5vw, 62px);
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: clamp(24px, 4vw, 46px);
+        align-items: stretch;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(30, 137, 170, 0.28);
+        background: rgba(255, 255, 255, 0.72);
+        padding: 9px 14px;
+        font-size: 0.8rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: var(--ink-soft);
+      }
+
+      .eyebrow-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--sea);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        font-family: "Fraunces", serif;
+        letter-spacing: -0.01em;
+      }
+
+      h1 {
+        margin-top: 18px;
+        font-size: clamp(2.2rem, 6.2vw, 4.5rem);
+        line-height: 1.03;
+        max-width: 14ch;
+      }
+
+      .hero-copy p {
+        margin: 18px 0 0;
+        font-size: clamp(1rem, 2.1vw, 1.18rem);
+        line-height: 1.72;
+        color: rgba(17, 40, 63, 0.86);
+        max-width: 55ch;
+      }
+
+      .hero-list {
+        list-style: none;
+        margin: 22px 0 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+        max-width: 52ch;
+      }
+
+      .hero-list li {
+        padding: 11px 14px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid rgba(17, 40, 63, 0.08);
+        font-weight: 600;
+      }
+
+      .hero-actions {
+        margin-top: 24px;
+      }
+
+      .hero-proof {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .proof-chip {
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.68);
+        border: 1px solid rgba(17, 40, 63, 0.1);
+        padding: 8px 12px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--ink-soft);
+      }
+
+      .mockup {
+        border-radius: 30px;
+        border: 1px solid rgba(17, 40, 63, 0.14);
+        background:
+          linear-gradient(175deg, rgba(255, 255, 255, 0.96) 0%, rgba(245, 248, 251, 0.95) 100%);
+        padding: 0;
+        box-shadow: var(--shadow-strong);
+        overflow: hidden;
+      }
+
+      .mockup-top {
+        padding: 16px 18px 14px;
+        background: linear-gradient(135deg, rgba(18, 56, 84, 0.95), rgba(21, 96, 130, 0.93));
+        color: #eff9ff;
+      }
+
+      .mockup-topline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .mockup-topline strong {
+        font-size: 0.78rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+
+      .mockup-live {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        opacity: 0.92;
+      }
+
+      .mockup-live::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: #7ee7f6;
+        box-shadow: 0 0 0 8px rgba(126, 231, 246, 0.18);
+      }
+
+      .mockup-sub {
+        margin-top: 10px;
+        font-size: 0.92rem;
+        line-height: 1.5;
+        color: rgba(239, 249, 255, 0.9);
+      }
+
+      .mockup-body {
+        padding: 14px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .signal {
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid rgba(17, 40, 63, 0.1);
+        padding: 12px 12px 12px 10px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 10px;
+        min-height: 58px;
+      }
+
+      .signal-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+      }
+
+      .signal-dot.ok {
+        background: #28b070;
+      }
+
+      .signal-dot.mid {
+        background: #d3a948;
+      }
+
+      .signal-dot.high {
+        background: #e57f51;
+      }
+
+      .signal .name {
+        font-weight: 700;
+        color: #213b55;
+        line-height: 1.3;
+      }
+
+      .signal .state {
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: #46627d;
+        white-space: nowrap;
+      }
+
+      section {
+        padding: clamp(42px, 5vw, 64px) 0;
+      }
+
+      .section-head {
+        max-width: 760px;
+        margin-bottom: 30px;
+      }
+
+      .kicker {
+        display: inline-block;
+        margin-bottom: 10px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--sea-dark);
+      }
+
+      h2 {
+        font-size: clamp(1.74rem, 3.2vw, 2.74rem);
+        line-height: 1.12;
+      }
+
+      .lead {
+        margin-top: 14px;
+        max-width: 60ch;
+        color: rgba(17, 40, 63, 0.78);
+        line-height: 1.72;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .card {
+        padding: 24px;
+        border-radius: var(--radius-l);
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.82);
+        box-shadow: var(--shadow-soft);
+        min-height: 184px;
+      }
+
+      .card-index {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        background: rgba(30, 137, 170, 0.12);
+        font-weight: 800;
+        color: var(--sea-dark);
+        margin-bottom: 12px;
+      }
+
+      .card h3 {
+        font-size: 1.2rem;
+        line-height: 1.2;
+      }
+
+      .card p {
+        margin: 12px 0 0;
+        color: rgba(17, 40, 63, 0.75);
+        line-height: 1.66;
+      }
+
+      .steps {
+        display: grid;
+        gap: 12px;
+      }
+
+      .step {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 14px;
+        align-items: center;
+        padding: 16px 18px;
+        border-radius: var(--radius-m);
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.74);
+      }
+
+      .step-badge {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: rgba(30, 137, 170, 0.14);
+        color: var(--sea-dark);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+      }
+
+      .step p {
+        margin: 0;
+        color: rgba(17, 40, 63, 0.78);
+        line-height: 1.56;
+      }
+
+      .quote {
+        margin-top: 22px;
+        padding: 26px;
+        border-radius: var(--radius-l);
+        border: 1px solid rgba(30, 137, 170, 0.24);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(167, 223, 233, 0.26));
+      }
+
+      .quote p {
+        margin: 0;
+        font-family: "Fraunces", serif;
+        font-size: clamp(1.2rem, 2.1vw, 1.58rem);
+        line-height: 1.48;
+      }
+
+      .mid-cta {
+        margin-top: 20px;
+        border-radius: var(--radius-m);
+        border: 1px solid rgba(30, 137, 170, 0.26);
+        background: rgba(255, 255, 255, 0.8);
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .mid-cta p {
+        margin: 0;
+        color: rgba(17, 40, 63, 0.8);
+        font-weight: 600;
+      }
+
+      .final {
+        padding-top: clamp(48px, 6vw, 74px);
+        padding-bottom: 120px;
+      }
+
+      .final-box {
+        border-radius: 34px;
+        padding: clamp(28px, 4vw, 48px);
+        background:
+          radial-gradient(circle at 92% 0%, rgba(112, 211, 224, 0.38) 0%, transparent 48%),
+          linear-gradient(145deg, #103a5c 0%, #115d7b 46%, #1384a2 100%);
+        color: #f0fbff;
+        box-shadow: 0 30px 60px rgba(12, 57, 86, 0.4);
+      }
+
+      .final-pill {
+        display: inline-flex;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 226, 140, 0.45);
+        background: rgba(255, 216, 100, 0.14);
+        color: #fff4ce;
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+
+      .final-box h2 {
+        margin-top: 12px;
+        max-width: 17ch;
+      }
+
+      .final-box p {
+        margin: 14px 0 24px;
+        max-width: 58ch;
+        line-height: 1.74;
+        color: rgba(239, 251, 255, 0.92);
+      }
+
+      .mobile-cta {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: max(10px, env(safe-area-inset-bottom));
+        z-index: 40;
+        display: none;
+      }
+
+      .mobile-cta .btn {
+        width: 100%;
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(14px);
+        animation: rise 680ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+      }
+
+      .d1 {
+        animation-delay: 100ms;
+      }
+
+      .d2 {
+        animation-delay: 200ms;
+      }
+
+      .d3 {
+        animation-delay: 280ms;
+      }
+
+      @keyframes rise {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 980px) {
+        .hero-grid,
+        .cards {
+          grid-template-columns: 1fr;
+        }
+
+        .mid-cta {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .card {
+          min-height: 0;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .topbar-inner {
+          min-height: 68px;
+        }
+
+        .topbar .btn.secondary {
+          display: none;
+        }
+
+        .lang-switch {
+          right: 0;
+        }
+
+        .lang-btn {
+          min-width: 34px;
+          height: 28px;
+          font-size: 0.7rem;
+        }
+
+        .brand img {
+          width: 126px;
+        }
+
+        .hero {
+          padding-top: clamp(34px, 7vw, 52px);
+        }
+
+        section {
+          padding: clamp(34px, 9vw, 48px) 0;
+        }
+
+        .mockup {
+          border-radius: 20px;
+        }
+
+        .card,
+        .quote,
+        .mid-cta,
+        .step,
+        .signal {
+          border-radius: 14px;
+        }
+
+        .card,
+        .quote {
+          padding: 20px;
+        }
+
+        .mid-cta {
+          padding: 16px;
+        }
+
+        .final {
+          padding-bottom: 160px;
+        }
+
+        .mobile-cta {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <div class="lang-switch" role="group" aria-label="Language selector">
+          <button type="button" class="lang-btn is-active" id="lang-it" data-lang="it">IT</button>
+          <button type="button" class="lang-btn" id="lang-en" data-lang="en">EN</button>
+        </div>
+        <a href="/landing/index.html" class="brand" aria-label="Where2Beach home">
+          <img src="/waitlist/logo.png" alt="Where2Beach" />
+        </a>
+        <a class="btn secondary" href="/waitlist/index.html?src=landing" id="top-cta">Entra gratis</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy reveal">
+            <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span><span id="eyebrow-text">Lista prioritaria aperta</span></span>
+            <h1 id="hero-title">Vai al mare sapendo già dove stare bene.</h1>
+            <p id="hero-sub">
+              Where2Beach ti aiuta a scegliere la zona giusta prima di partire.
+              Meno caos, meno giri a vuoto, più tempo per goderti la giornata.
+            </p>
+            <ul class="hero-list">
+              <li id="hero-li-1">Capisci subito dov'è più tranquillità.</li>
+              <li id="hero-li-2">Eviti le zone troppo piene e le code all'arrivo.</li>
+              <li id="hero-li-3">Ti iscrivi gratis in meno di 20 secondi.</li>
+            </ul>
+            <div class="hero-actions">
+              <a class="btn primary" href="/waitlist/index.html?src=landing" id="hero-cta">Voglio entrare gratis</a>
+            </div>
+            <div class="hero-proof">
+              <span class="proof-chip" id="proof-1">Iscrizione gratuita</span>
+              <span class="proof-chip" id="proof-2">Nessuna carta richiesta</span>
+              <span class="proof-chip" id="proof-3">Accesso anticipato</span>
+            </div>
+          </div>
+
+          <aside class="mockup reveal d1" aria-label="Anteprima semplice">
+            <div class="mockup-top">
+              <div class="mockup-topline">
+                <strong id="mockup-title">Esempio rapido</strong>
+                <span class="mockup-live" id="mockup-live">Aggiornato ora</span>
+              </div>
+              <div class="mockup-sub" id="mockup-sub">Scegli in un attimo una zona più comoda per te.</div>
+            </div>
+            <div class="mockup-body">
+              <div class="signal">
+                <span class="signal-dot ok" aria-hidden="true"></span>
+                <span class="name">Rimini, Bagno 78</span>
+                <span class="state" id="state-1">Tranquilla</span>
+              </div>
+              <div class="signal">
+                <span class="signal-dot mid" aria-hidden="true"></span>
+                <span class="name">Riccione, Zona Nord</span>
+                <span class="state" id="state-2">Normale</span>
+              </div>
+              <div class="signal">
+                <span class="signal-dot high" aria-hidden="true"></span>
+                <span class="name">Milano Marittima Centro</span>
+                <span class="state" id="state-3">Molto piena</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section>
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="kicker" id="section-1-kicker">Perché funziona</span>
+            <h2 id="section-1-title">Ti toglie il dubbio prima di uscire di casa.</h2>
+            <p class="lead" id="section-1-sub">
+              Il problema è semplice: arrivi al mare e trovi confusione, coda e zero spazio.
+              Con Where2Beach parti già con un piano e ti godi meglio la giornata.
+            </p>
+          </div>
+          <div class="cards">
+            <article class="card reveal d1">
+              <span class="card-index">1</span>
+              <h3 id="card-1-title">Scegli più velocemente</h3>
+              <p id="card-1-sub">In pochi secondi capisci quali zone sono adatte a te e quali evitare.</p>
+            </article>
+            <article class="card reveal d2">
+              <span class="card-index">2</span>
+              <h3 id="card-2-title">Meno stress</h3>
+              <p id="card-2-sub">Riduci tempi morti, giri inutili e nervoso prima ancora di arrivare.</p>
+            </article>
+            <article class="card reveal d3">
+              <span class="card-index">3</span>
+              <h3 id="card-3-title">Entri prima</h3>
+              <p id="card-3-sub">Con la lista prioritaria ricevi l'accesso appena apriamo i prossimi ingressi.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="kicker" id="section-2-kicker">Come funziona</span>
+            <h2 id="section-2-title">Semplice, veloce, senza complicazioni.</h2>
+          </div>
+          <div class="steps">
+            <div class="step reveal d1">
+              <span class="step-badge">1</span>
+              <p id="step-1">Lasci la tua email e blocchi subito il tuo posto gratis.</p>
+            </div>
+            <div class="step reveal d2">
+              <span class="step-badge">2</span>
+              <p id="step-2">Ti avvisiamo appena si apre il tuo accesso.</p>
+            </div>
+            <div class="step reveal d3">
+              <span class="step-badge">3</span>
+              <p id="step-3">Apri Where2Beach e scegli dove andare con più serenità.</p>
+            </div>
+          </div>
+          <div class="quote reveal d2">
+            <p id="quote">"Quando sai già dove andare, la giornata cambia davvero."</p>
+          </div>
+          <div class="mid-cta reveal d3">
+            <p id="mid-cta-text">Se vuoi provarlo prima degli altri, questo è il momento giusto.</p>
+            <a class="btn primary" href="/waitlist/index.html?src=landing" id="mid-cta-btn">Prenota il mio posto</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="final">
+        <div class="container">
+          <div class="final-box reveal">
+            <span class="final-pill" id="final-pill">Posti iniziali limitati</span>
+            <h2 id="final-title">Non restare fuori: entra ora nella lista prioritaria.</h2>
+            <p id="final-sub">
+              L'iscrizione è gratuita e dura pochi secondi.
+              Prima entri, prima ricevi l'accesso.
+            </p>
+            <a class="btn primary" href="/waitlist/index.html?src=landing" id="final-cta">Blocca il mio posto gratis</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="mobile-cta">
+      <a class="btn primary" href="/waitlist/index.html?src=landing" id="mobile-cta">Entra gratis ora</a>
+    </div>
+    <script>
+      (function () {
+        document.cookie = "br_seen_landing=1; Path=/; Max-Age=2592000; SameSite=Lax";
+
+        const STORAGE_KEY = "br_landing_lang_v1";
+        const translations = {
+          it: {
+            title: "Where2Beach | Mare senza stress",
+            description:
+              "Scegli dove andare al mare senza caos. Entra gratis nella lista prioritaria di Where2Beach.",
+            topCta: "Entra gratis",
+            eyebrowText: "Lista prioritaria aperta",
+            heroTitle: "Vai al mare sapendo già dove stare bene.",
+            heroSub:
+              "Where2Beach ti aiuta a scegliere la zona giusta prima di partire. Meno caos, meno giri a vuoto, più tempo per goderti la giornata.",
+            heroLi1: "Capisci subito dov'è più tranquillità.",
+            heroLi2: "Eviti le zone troppo piene e le code all'arrivo.",
+            heroLi3: "Ti iscrivi gratis in meno di 20 secondi.",
+            heroCta: "Voglio entrare gratis",
+            proof1: "Iscrizione gratuita",
+            proof2: "Nessuna carta richiesta",
+            proof3: "Accesso anticipato",
+            mockupTitle: "Esempio rapido",
+            mockupLive: "Aggiornato ora",
+            mockupSub: "Scegli in un attimo una zona più comoda per te.",
+            state1: "Tranquilla",
+            state2: "Normale",
+            state3: "Molto piena",
+            section1Kicker: "Perché funziona",
+            section1Title: "Ti toglie il dubbio prima di uscire di casa.",
+            section1Sub:
+              "Il problema è semplice: arrivi al mare e trovi confusione, coda e zero spazio. Con Where2Beach parti già con un piano e ti godi meglio la giornata.",
+            card1Title: "Scegli più velocemente",
+            card1Sub: "In pochi secondi capisci quali zone sono adatte a te e quali evitare.",
+            card2Title: "Meno stress",
+            card2Sub: "Riduci tempi morti, giri inutili e nervoso prima ancora di arrivare.",
+            card3Title: "Entri prima",
+            card3Sub: "Con la lista prioritaria ricevi l'accesso appena apriamo i prossimi ingressi.",
+            section2Kicker: "Come funziona",
+            section2Title: "Semplice, veloce, senza complicazioni.",
+            step1: "Lasci la tua email e blocchi subito il tuo posto gratis.",
+            step2: "Ti avvisiamo appena si apre il tuo accesso.",
+            step3: "Apri Where2Beach e scegli dove andare con più serenità.",
+            quote: "\"Quando sai già dove andare, la giornata cambia davvero.\"",
+            midCtaText: "Se vuoi provarlo prima degli altri, questo è il momento giusto.",
+            midCtaBtn: "Prenota il mio posto",
+            finalPill: "Posti iniziali limitati",
+            finalTitle: "Non restare fuori: entra ora nella lista prioritaria.",
+            finalSub: "L'iscrizione è gratuita e dura pochi secondi. Prima entri, prima ricevi l'accesso.",
+            finalCta: "Blocca il mio posto gratis",
+            mobileCta: "Entra gratis ora",
+          },
+          en: {
+            title: "Where2Beach | Beach days without stress",
+            description:
+              "Pick the best beach area before you leave home. Join the free priority list on Where2Beach.",
+            topCta: "Join free",
+            eyebrowText: "Priority list is open",
+            heroTitle: "Go to the beach knowing where it feels better.",
+            heroSub:
+              "Where2Beach helps you choose the right area before leaving home. Less chaos, fewer wasted trips, more time to enjoy your day.",
+            heroLi1: "See at a glance which areas are calmer.",
+            heroLi2: "Avoid crowded spots and long queues.",
+            heroLi3: "Join for free in under 20 seconds.",
+            heroCta: "I want free early access",
+            proof1: "Free signup",
+            proof2: "No card required",
+            proof3: "Early access",
+            mockupTitle: "Quick preview",
+            mockupLive: "Updated now",
+            mockupSub: "In seconds, choose a beach area that fits you better.",
+            state1: "Calm",
+            state2: "Normal",
+            state3: "Very crowded",
+            section1Kicker: "Why it works",
+            section1Title: "It removes uncertainty before you leave home.",
+            section1Sub:
+              "The problem is simple: you get to the beach and find chaos, queues, and no space. With Where2Beach, you leave with a clear plan and enjoy your day more.",
+            card1Title: "Choose faster",
+            card1Sub: "In a few seconds, you understand which areas fit you and which to avoid.",
+            card2Title: "Less stress",
+            card2Sub: "Cut wasted time, unnecessary detours, and frustration before you even arrive.",
+            card3Title: "Get in earlier",
+            card3Sub: "With the priority list, you get access as soon as we open new spots.",
+            section2Kicker: "How it works",
+            section2Title: "Simple, fast, no complications.",
+            step1: "Leave your email and lock your free spot right away.",
+            step2: "We notify you as soon as your access opens.",
+            step3: "Open Where2Beach and choose where to go with confidence.",
+            quote: "\"When you already know where to go, your day changes.\"",
+            midCtaText: "If you want to try it before others, this is the right moment.",
+            midCtaBtn: "Reserve my spot",
+            finalPill: "Initial spots are limited",
+            finalTitle: "Do not miss out: join the priority list now.",
+            finalSub: "Signup is free and takes only a few seconds. The earlier you join, the earlier you get access.",
+            finalCta: "Lock my free spot",
+            mobileCta: "Join free now",
+          },
+        };
+
+        const targets = {
+          topCta: "top-cta",
+          eyebrowText: "eyebrow-text",
+          heroTitle: "hero-title",
+          heroSub: "hero-sub",
+          heroLi1: "hero-li-1",
+          heroLi2: "hero-li-2",
+          heroLi3: "hero-li-3",
+          heroCta: "hero-cta",
+          proof1: "proof-1",
+          proof2: "proof-2",
+          proof3: "proof-3",
+          mockupTitle: "mockup-title",
+          mockupLive: "mockup-live",
+          mockupSub: "mockup-sub",
+          state1: "state-1",
+          state2: "state-2",
+          state3: "state-3",
+          section1Kicker: "section-1-kicker",
+          section1Title: "section-1-title",
+          section1Sub: "section-1-sub",
+          card1Title: "card-1-title",
+          card1Sub: "card-1-sub",
+          card2Title: "card-2-title",
+          card2Sub: "card-2-sub",
+          card3Title: "card-3-title",
+          card3Sub: "card-3-sub",
+          section2Kicker: "section-2-kicker",
+          section2Title: "section-2-title",
+          step1: "step-1",
+          step2: "step-2",
+          step3: "step-3",
+          quote: "quote",
+          midCtaText: "mid-cta-text",
+          midCtaBtn: "mid-cta-btn",
+          finalPill: "final-pill",
+          finalTitle: "final-title",
+          finalSub: "final-sub",
+          finalCta: "final-cta",
+          mobileCta: "mobile-cta",
+        };
+
+        const langButtons = {
+          it: document.getElementById("lang-it"),
+          en: document.getElementById("lang-en"),
+        };
+        const descriptionMeta = document.querySelector('meta[name="description"]');
+
+        const applyLanguage = (lang) => {
+          const content = translations[lang] || translations.it;
+          document.documentElement.lang = lang;
+          document.title = content.title;
+          if (descriptionMeta) descriptionMeta.setAttribute("content", content.description);
+
+          Object.entries(targets).forEach(([key, id]) => {
+            const node = document.getElementById(id);
+            if (!node) return;
+            node.textContent = content[key];
+          });
+
+          Object.entries(langButtons).forEach(([code, button]) => {
+            if (!button) return;
+            button.classList.toggle("is-active", code === lang);
+            button.setAttribute("aria-pressed", code === lang ? "true" : "false");
+          });
+        };
+
+        const setLanguage = (lang) => {
+          const nextLang = lang === "en" ? "en" : "it";
+          window.localStorage.setItem(STORAGE_KEY, nextLang);
+          applyLanguage(nextLang);
+        };
+
+        Object.values(langButtons).forEach((button) => {
+          if (!button) return;
+          button.addEventListener("click", () => setLanguage(button.dataset.lang || "it"));
+        });
+
+        const queryLang = new URLSearchParams(window.location.search).get("lang");
+        const savedLang = window.localStorage.getItem(STORAGE_KEY);
+        const initialLang = queryLang === "en" || queryLang === "it" ? queryLang : savedLang;
+        applyLanguage(initialLang === "en" ? "en" : "it");
+      })();
+    </script>
+  </body>
+</html>

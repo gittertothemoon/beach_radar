@@ -77,10 +77,23 @@
       "destination": "https://where2beach.com/$1",
       "permanent": true
     },
-    { "source": "/", "destination": "/waitlist/", "permanent": false },
+    { "source": "/", "destination": "/landing/", "permanent": false },
+    { "source": "/landing", "destination": "/landing/", "permanent": true },
+    {
+      "source": "/waitlist",
+      "missing": [{ "type": "cookie", "key": "br_seen_landing", "value": "1" }],
+      "destination": "/landing/",
+      "permanent": false
+    },
+    {
+      "source": "/waitlist/(.*)",
+      "missing": [{ "type": "cookie", "key": "br_seen_landing", "value": "1" }],
+      "destination": "/landing/",
+      "permanent": false
+    },
     { "source": "/waitlist", "destination": "/waitlist/", "permanent": true },
     { "source": "/privacy", "destination": "/privacy/", "permanent": true },
-    { "source": "/index.html", "destination": "/waitlist/", "permanent": false },
+    { "source": "/index.html", "destination": "/landing/", "permanent": false },
     {
       "source": "/app",
       "has": [{ "type": "query", "key": "key" }],
@@ -114,6 +127,7 @@
     }
   ],
   "rewrites": [
+    { "source": "/landing/", "destination": "/landing/index.html" },
     { "source": "/waitlist/", "destination": "/waitlist/index.html" },
     { "source": "/privacy/", "destination": "/privacy/index.html" },
     {
