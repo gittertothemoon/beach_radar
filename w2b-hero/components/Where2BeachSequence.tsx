@@ -9,14 +9,14 @@ export default function Where2BeachSequence() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const frameProgressRef = useRef(0);
 
-    const [desktopImages, setDesktopImages] = useState<(HTMLImageElement | null)[]>([]);
-    const [mobileImages, setMobileImages] = useState<(HTMLImageElement | null)[]>([]);
+    const [isMobileView, setIsMobileView] = useState(false);
+    const [frames, setFrames] = useState<(HTMLImageElement | null)[]>([]);
     const [loadedCount, setLoadedCount] = useState(0);
+    const [frameTotal, setFrameTotal] = useState(0);
     const [isReady, setIsReady] = useState(false);
 
     const DESKTOP_COUNT = 120;
     const MOBILE_COUNT = 240;
-    const TOTAL_COUNT = DESKTOP_COUNT + MOBILE_COUNT;
 
     // Scroll mapping
     const { scrollYProgress } = useScroll({
@@ -38,52 +38,92 @@ export default function Where2BeachSequence() {
         window.scrollTo(0, 0);
     }, []);
 
-    // Preload both image sequences simultaneously
+    // Track viewport mode so mobile doesn't allocate desktop 4K sequence.
+    useEffect(() => {
+        const updateViewportMode = () => {
+            setIsMobileView(window.innerWidth < 768);
+        };
+        updateViewportMode();
+        window.addEventListener('resize', updateViewportMode);
+        window.addEventListener('orientationchange', updateViewportMode);
+
+        return () => {
+            window.removeEventListener('resize', updateViewportMode);
+            window.removeEventListener('orientationchange', updateViewportMode);
+        };
+    }, []);
+
+    // Progressive loading with limited concurrency to avoid Safari memory spikes.
     useEffect(() => {
         let isCancelled = false;
+        const activeCount = isMobileView ? MOBILE_COUNT : DESKTOP_COUNT;
+        const sequencePath = isMobileView ? '/sequence/mobile' : '/sequence';
+        const concurrency = isMobileView ? 6 : 4;
+        const readyThreshold = isMobileView ? 16 : 10;
 
         const loadImages = async () => {
             setIsReady(false);
             setLoadedCount(0);
-            const loadedDesktop = Array.from({ length: DESKTOP_COUNT }, () => null as HTMLImageElement | null);
-            const loadedMobile = Array.from({ length: MOBILE_COUNT }, () => null as HTMLImageElement | null);
-            let count = 0;
+            setFrameTotal(activeCount);
 
-            const updateProgress = () => {
-                count++;
-                setLoadedCount(count);
-            };
+            const loaded = Array.from({ length: activeCount }, () => null as HTMLImageElement | null);
+            setFrames(loaded);
 
-            const loadSingleImage = (src: string, arr: (HTMLImageElement | null)[], index: number) => {
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    img.src = src;
-                    img.onload = () => {
-                        if (!isCancelled) {
-                            arr[index] = img;
-                            updateProgress();
-                        }
-                        resolve(null);
-                    };
-                    img.onerror = () => {
-                        if (!isCancelled) updateProgress();
-                        resolve(null);
-                    };
+            let nextIndex = 0;
+            let loadedSoFar = 0;
+            let readyRaised = false;
+            let commitQueued = false;
+
+            const commit = () => {
+                if (commitQueued) return;
+                commitQueued = true;
+                requestAnimationFrame(() => {
+                    commitQueued = false;
+                    if (isCancelled) return;
+                    setFrames([...loaded]);
+                    setLoadedCount(loadedSoFar);
+                    if (!readyRaised && loadedSoFar >= readyThreshold) {
+                        readyRaised = true;
+                        setIsReady(true);
+                    }
                 });
             };
 
-            const desktopPromises = Array.from({ length: DESKTOP_COUNT }).map((_, i) =>
-                loadSingleImage(`/sequence/frame_${i}.webp`, loadedDesktop, i)
-            );
-            const mobilePromises = Array.from({ length: MOBILE_COUNT }).map((_, i) =>
-                loadSingleImage(`/sequence/mobile/frame_${i}.webp`, loadedMobile, i)
-            );
+            const loadSingleImage = (index: number) =>
+                new Promise<void>((resolve) => {
+                    const img = new Image();
+                    img.src = `${sequencePath}/frame_${index}.webp`;
+                    img.onload = () => {
+                        if (!isCancelled) {
+                            loaded[index] = img;
+                            loadedSoFar += 1;
+                            commit();
+                        }
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        if (!isCancelled) {
+                            loadedSoFar += 1;
+                            commit();
+                        }
+                        resolve();
+                    };
+                });
 
-            await Promise.all([...desktopPromises, ...mobilePromises]);
+            const worker = async () => {
+                while (!isCancelled) {
+                    const index = nextIndex;
+                    nextIndex += 1;
+                    if (index >= activeCount) return;
+                    await loadSingleImage(index);
+                }
+            };
+
+            await Promise.all(Array.from({ length: concurrency }, () => worker()));
 
             if (!isCancelled) {
-                setDesktopImages(loadedDesktop);
-                setMobileImages(loadedMobile);
+                setFrames([...loaded]);
+                setLoadedCount(loadedSoFar);
                 setIsReady(true);
             }
         };
@@ -93,11 +133,11 @@ export default function Where2BeachSequence() {
         return () => {
             isCancelled = true;
         };
-    }, []);
+    }, [isMobileView]);
 
     // Animation logic
     useEffect(() => {
-        if (!isReady || desktopImages.length === 0 || mobileImages.length === 0) return;
+        if (!isReady || frames.length === 0) return;
 
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -116,7 +156,7 @@ export default function Where2BeachSequence() {
 
             const parent = canvas.parentElement;
             if (parent) {
-                const dpr = window.devicePixelRatio || 1;
+                const dpr = Math.min(window.devicePixelRatio || 1, isMobileView ? 1.5 : 2);
                 const rect = parent.getBoundingClientRect();
                 const nextWidth = Math.max(1, Math.floor(rect.width * dpr));
                 const nextHeight = Math.max(1, Math.floor(rect.height * dpr));
@@ -129,9 +169,8 @@ export default function Where2BeachSequence() {
                     canvas.style.height = `${rect.height}px`;
                 }
 
-                const isMobileView = window.innerWidth < 768;
-                const activeImages = isMobileView ? mobileImages : desktopImages;
-                const activeCount = activeImages.length;
+                const activeImages = frames;
+                const activeCount = frames.length;
                 if (activeCount === 0) return;
 
                 const currentFrameIndex = Math.min(
@@ -225,10 +264,10 @@ export default function Where2BeachSequence() {
             window.removeEventListener('orientationchange', requestDraw);
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
         };
-    }, [isReady, desktopImages, mobileImages, scrollYProgress]);
+    }, [frames, isMobileView, isReady, scrollYProgress]);
 
     return (
-        <div ref={containerRef} className="relative h-[400vh] w-full bg-[#000006]" style={{ position: 'relative' }}>
+        <div ref={containerRef} className="relative h-[400svh] md:h-[400vh] w-full bg-[#000006]" style={{ position: 'relative' }}>
             {/* Combined Loading State */}
             {!isReady && (
                 <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#000006]">
@@ -239,14 +278,14 @@ export default function Where2BeachSequence() {
                     <p className="mt-6 text-white/50 text-sm font-medium tracking-widest flex flex-col items-center gap-2">
                         <span className="uppercase">Calibrando il Radar</span>
                         <span className="text-cyan-400/80 font-mono text-xs">
-                            {Math.round((loadedCount / TOTAL_COUNT) * 100)}%
+                            {Math.round((loadedCount / Math.max(1, frameTotal)) * 100)}%
                         </span>
                     </p>
                 </div>
             )}
 
             {/* Sticky Canvas Container */}
-            <div className="sticky top-0 h-screen w-full overflow-hidden pointer-events-none">
+            <div className="sticky top-0 h-[100svh] md:h-screen w-full overflow-hidden pointer-events-none">
                 <canvas ref={canvasRef} className="w-full h-full object-contain pointer-events-none" />
 
                 {/* Scroll To Explore Indicator */}
