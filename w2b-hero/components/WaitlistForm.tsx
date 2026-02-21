@@ -121,163 +121,195 @@ export default function WaitlistForm() {
 
     return (
         <section id="waitlist" className="w-full bg-[#000006] py-32 px-6 relative overflow-hidden">
-            {/* Background Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none opacity-50" />
+            {/* Animated Background Orbs */}
+            <motion.div
+                animate={{ x: [0, 30, 0], y: [0, -20, 0], scale: [1, 1.1, 1] }}
+                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-1/3 left-1/3 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"
+            />
+            <motion.div
+                animate={{ x: [0, -20, 0], y: [0, 30, 0], scale: [1, 1.15, 1] }}
+                transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-cyan-500/8 rounded-full blur-[100px] pointer-events-none"
+            />
 
             <div className="max-w-3xl mx-auto relative z-10 text-center">
+                {/* Animated gradient border wrapper */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="bg-white/[0.03] border border-white/10 rounded-3xl p-10 md:p-16 backdrop-blur-xl shadow-2xl"
+                    className="relative rounded-3xl p-[1px] overflow-hidden"
                 >
-                    {status === 'success' ? (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="flex flex-col items-center justify-center space-y-6"
-                        >
-                            {/* The Visual Badge Collectible */}
+                    {/* Rotating gradient border */}
+                    <div className="absolute inset-0 rounded-3xl" style={{
+                        background: 'conic-gradient(from 0deg, rgba(6,182,212,0.3), rgba(99,102,241,0.2), rgba(6,182,212,0.05), rgba(59,130,246,0.2), rgba(6,182,212,0.3))',
+                        animation: 'spin 6s linear infinite',
+                    }} />
+                    <div className="relative bg-[#000006]/90 backdrop-blur-xl rounded-3xl p-10 md:p-16 shadow-2xl">
+                        {status === 'success' ? (
                             <motion.div
-                                initial={{ scale: 0, rotateY: 180 }}
-                                animate={{ scale: 1, rotateY: 0 }}
-                                transition={{ type: "spring", stiffness: 150, damping: 15, delay: 0.1 }}
-                                className="relative flex flex-col items-center justify-center p-6 bg-gradient-to-br from-indigo-500/20 via-cyan-500/10 to-transparent border border-cyan-500/30 rounded-2xl shadow-[0_0_40px_rgba(6,182,212,0.2)] mb-4 overflow-hidden group"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="flex flex-col items-center justify-center space-y-6"
                             >
-                                <div className="relative w-24 h-24 rounded-full flex items-center justify-center mb-3 shadow-[0_0_40px_rgba(6,182,212,0.8)] border-2 border-cyan-400/50 overflow-hidden">
-                                    <Image src="/badge-new.png" alt="Founding Member Badge" fill className="object-cover" />
-                                </div>
+                                {/* The Visual Badge Collectible */}
+                                <motion.div
+                                    initial={{ scale: 0, rotateY: 180 }}
+                                    animate={{ scale: 1, rotateY: 0 }}
+                                    transition={{ type: "spring", stiffness: 150, damping: 15, delay: 0.1 }}
+                                    className="relative flex flex-col items-center justify-center p-6 bg-gradient-to-br from-indigo-500/20 via-cyan-500/10 to-transparent border border-cyan-500/30 rounded-2xl shadow-[0_0_40px_rgba(6,182,212,0.2)] mb-4 overflow-hidden group"
+                                >
+                                    <div className="relative w-24 h-24 rounded-full flex items-center justify-center mb-3 shadow-[0_0_40px_rgba(6,182,212,0.8)] border-2 border-cyan-400/50 overflow-hidden">
+                                        <Image src="/badge-new.png" alt="Founding Member Badge" fill className="object-cover" />
+                                    </div>
 
-                                <div className="text-center relative z-10">
-                                    <div className="uppercase tracking-widest text-[10px] sm:text-xs font-bold text-cyan-400 mb-1">
-                                        Accesso Esclusivo Sbloccato
+                                    <div className="text-center relative z-10">
+                                        <div className="uppercase tracking-widest text-[10px] sm:text-xs font-bold text-cyan-400 mb-1">
+                                            Accesso Esclusivo Sbloccato
+                                        </div>
+                                        <div className="text-xl sm:text-2xl font-black text-white px-4 py-1 bg-white/5 rounded-lg border border-white/10 backdrop-blur-sm">
+                                            Founding Member Badge
+                                        </div>
                                     </div>
-                                    <div className="text-xl sm:text-2xl font-black text-white px-4 py-1 bg-white/5 rounded-lg border border-white/10 backdrop-blur-sm">
-                                        Founding Member Badge
+                                </motion.div>
+
+                                <h3 className="text-4xl md:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/80 mt-2">
+                                    Sei nella Founding Wave!
+                                </h3>
+
+                                <p className="text-white/70 text-lg md:text-xl max-w-lg mx-auto font-medium mt-4">
+                                    Il tuo posto esclusivo è confermato. <strong className="text-white">Invita 3 amici</strong> per scalare la classifica e aiutarci ad aprire prima la tua zona.
+                                </p>
+
+                                <div className="pt-6 w-full max-w-md mx-auto space-y-4">
+
+                                    {/* Unique Link Input */}
+                                    <div className="relative group">
+                                        <div className="absolute inset-0 bg-blue-500/20 rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
+                                        <div className="relative flex items-center bg-[#000006] border border-blue-500/30 rounded-xl overflow-hidden p-1 shadow-[inset_0_0_15px_rgba(59,130,246,0.1)]">
+                                            <div className="flex-1 px-4 py-3 text-left font-mono text-sm sm:text-base text-blue-200 truncate select-all">
+                                                {mounted ? `${window.location.host}/invite/${inviteCode}` : 'where2beach.it/invite/...'}
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(mounted ? `${window.location.host}/invite/${inviteCode}` : '');
+                                                    handleCopyFeedBack();
+                                                }}
+                                                className="flex-shrink-0 flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 p-3 rounded-lg transition-colors border border-blue-500/20"
+                                                title="Copia link"
+                                            >
+                                                {copied ? <CheckCircle2 className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5" />}
+                                            </button>
+                                        </div>
                                     </div>
+
+                                    {/* Direct Share Buttons */}
+                                    <div className="grid grid-cols-2 gap-3 pt-2">
+                                        <a
+                                            href={mounted ? getShareLinks().whatsapp : '#'}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 py-3 rounded-xl font-bold transition-colors"
+                                        >
+                                            <WhatsAppIcon className="w-5 h-5" />
+                                            WhatsApp
+                                        </a>
+                                        <a
+                                            href={mounted ? getShareLinks().telegram : '#'}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-center gap-2 bg-[#0088cc]/10 hover:bg-[#0088cc]/20 text-[#0088cc] border border-[#0088cc]/20 py-3 rounded-xl font-bold transition-colors"
+                                        >
+                                            <TelegramIcon className="w-5 h-5" />
+                                            Telegram
+                                        </a>
+                                    </div>
+
+                                    <p className="text-white/40 text-sm mt-4 text-center font-medium">
+                                        I Founding Member attivi ottengono il badge esclusivo nell&apos;app. 🌊
+                                    </p>
                                 </div>
                             </motion.div>
+                        ) : (
+                            <>
+                                <h3 className="text-4xl md:text-5xl font-black mb-4 tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
+                                    IL RADAR PER LE TUE SPIAGGE.
+                                </h3>
+                                <p className="text-white/60 text-lg mb-8 max-w-lg mx-auto font-medium">
+                                    Evita la folla. Scopri dove c&apos;è posto grazie alle segnalazioni della community, in tempo reale. Iscriviti per <strong className="text-white">Accesso anticipato</strong> e badge <strong className="text-white">Founding Member</strong>.
+                                </p>
+                                <motion.div
+                                    animate={{ y: [0, -4, 0] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                    className="inline-flex items-center gap-2 px-4 py-2 mb-10 rounded-xl bg-white/5 border border-cyan-500/20 text-sm text-white/80 font-semibold tracking-tight shadow-[0_0_20px_rgba(6,182,212,0.08)]"
+                                >
+                                    <span className="relative flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]"></span>
+                                    </span>
+                                    Prima ondata limitata. I Founding Member entrano per primi.
+                                </motion.div>
 
-                            <h3 className="text-4xl md:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/80 mt-2">
-                                Sei nella Founding Wave!
-                            </h3>
+                                <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-xl mx-auto">
 
-                            <p className="text-white/70 text-lg md:text-xl max-w-lg mx-auto font-medium mt-4">
-                                Il tuo posto esclusivo è confermato. <strong className="text-white">Invita 3 amici</strong> per scalare la classifica e aiutarci ad aprire prima la tua zona.
-                            </p>
+                                    {errorMessage && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="text-red-400 bg-red-400/10 border border-red-400/20 px-4 py-3 rounded-lg text-sm font-medium text-left mb-2"
+                                        >
+                                            {errorMessage}
+                                        </motion.div>
+                                    )}
 
-                            <div className="pt-6 w-full max-w-md mx-auto space-y-4">
-
-                                {/* Unique Link Input */}
-                                <div className="relative group">
-                                    <div className="absolute inset-0 bg-blue-500/20 rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
-                                    <div className="relative flex items-center bg-[#000006] border border-blue-500/30 rounded-xl overflow-hidden p-1 shadow-[inset_0_0_15px_rgba(59,130,246,0.1)]">
-                                        <div className="flex-1 px-4 py-3 text-left font-mono text-sm sm:text-base text-blue-200 truncate select-all">
-                                            {mounted ? `${window.location.host}/invite/${inviteCode}` : 'where2beach.it/invite/...'}
+                                    <div className="flex flex-col md:flex-row gap-4 w-full">
+                                        <div className="relative flex-1 group">
+                                            <div className="absolute inset-0 bg-white/10 rounded-xl blur-md transition-opacity opacity-0 group-focus-within:opacity-100" />
+                                            <input
+                                                type="email"
+                                                required
+                                                value={email}
+                                                onChange={(e) => {
+                                                    setEmail(e.target.value);
+                                                    if (errorMessage) setErrorMessage('');
+                                                }}
+                                                placeholder="La tua email..."
+                                                className="w-full bg-[#000006]/50 border border-white/20 rounded-xl px-6 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-white/50 focus:ring-1 focus:ring-white/50 transition-all font-medium relative z-10"
+                                                disabled={status === 'loading'}
+                                            />
                                         </div>
                                         <button
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(mounted ? `${window.location.host}/invite/${inviteCode}` : '');
-                                                handleCopyFeedBack();
+                                            type="submit"
+                                            disabled={status === 'loading'}
+                                            className="group relative flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold tracking-tight hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:hover:scale-100 text-white overflow-hidden"
+                                            style={{
+                                                background: 'linear-gradient(135deg, #06b6d4, #3b82f6, #6366f1)',
+                                                backgroundSize: '200% 200%',
+                                                animation: 'gradient-shift 3s ease infinite',
                                             }}
-                                            className="flex-shrink-0 flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 p-3 rounded-lg transition-colors border border-blue-500/20"
-                                            title="Copia link"
                                         >
-                                            {copied ? <CheckCircle2 className="w-5 h-5 text-green-400" /> : <Copy className="w-5 h-5" />}
+                                            {/* Shimmer sweep */}
+                                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                                                style={{ background: 'linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.15) 50%, transparent 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+                                            {status === 'loading' ? (
+                                                <span className="animate-pulse relative z-10">Invio in corso...</span>
+                                            ) : (
+                                                <>
+                                                    <span className="relative z-10">Unisciti ora</span>
+                                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
+                                                </>
+                                            )}
                                         </button>
                                     </div>
-                                </div>
-
-                                {/* Direct Share Buttons */}
-                                <div className="grid grid-cols-2 gap-3 pt-2">
-                                    <a
-                                        href={mounted ? getShareLinks().whatsapp : '#'}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 py-3 rounded-xl font-bold transition-colors"
-                                    >
-                                        <WhatsAppIcon className="w-5 h-5" />
-                                        WhatsApp
-                                    </a>
-                                    <a
-                                        href={mounted ? getShareLinks().telegram : '#'}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-center gap-2 bg-[#0088cc]/10 hover:bg-[#0088cc]/20 text-[#0088cc] border border-[#0088cc]/20 py-3 rounded-xl font-bold transition-colors"
-                                    >
-                                        <TelegramIcon className="w-5 h-5" />
-                                        Telegram
-                                    </a>
-                                </div>
-
-                                <p className="text-white/40 text-sm mt-4 text-center font-medium">
-                                    I Founding Member attivi ottengono il badge esclusivo nell&apos;app. 🌊
+                                </form>
+                                <p className="text-white/30 text-sm mt-6 font-medium">
+                                    Niente spam. Cancellati quando vuoi.
                                 </p>
-                            </div>
-                        </motion.div>
-                    ) : (
-                        <>
-                            <h3 className="text-4xl md:text-5xl font-black mb-4 tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
-                                IL RADAR PER LE TUE SPIAGGE.
-                            </h3>
-                            <p className="text-white/60 text-lg mb-8 max-w-lg mx-auto font-medium">
-                                Evita la folla. Scopri dove c&apos;è posto grazie alle segnalazioni della community, in tempo reale. Iscriviti per <strong className="text-white">Accesso anticipato</strong> e badge <strong className="text-white">Founding Member</strong>.
-                            </p>
-                            <div className="inline-flex items-center gap-2 px-4 py-2 mb-10 rounded-xl bg-white/5 border border-white/10 text-sm text-white/80 font-semibold tracking-tight">
-                                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.6)]"></span>
-                                Prima ondata limitata. I Founding Member entrano per primi.
-                            </div>
-
-                            <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-xl mx-auto">
-
-                                {errorMessage && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="text-red-400 bg-red-400/10 border border-red-400/20 px-4 py-3 rounded-lg text-sm font-medium text-left mb-2"
-                                    >
-                                        {errorMessage}
-                                    </motion.div>
-                                )}
-
-                                <div className="flex flex-col md:flex-row gap-4 w-full">
-                                    <div className="relative flex-1 group">
-                                        <div className="absolute inset-0 bg-white/10 rounded-xl blur-md transition-opacity opacity-0 group-focus-within:opacity-100" />
-                                        <input
-                                            type="email"
-                                            required
-                                            value={email}
-                                            onChange={(e) => {
-                                                setEmail(e.target.value);
-                                                if (errorMessage) setErrorMessage('');
-                                            }}
-                                            placeholder="La tua email..."
-                                            className="w-full bg-[#000006]/50 border border-white/20 rounded-xl px-6 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-white/50 focus:ring-1 focus:ring-white/50 transition-all font-medium relative z-10"
-                                            disabled={status === 'loading'}
-                                        />
-                                    </div>
-                                    <button
-                                        type="submit"
-                                        disabled={status === 'loading'}
-                                        className="group relative flex items-center justify-center gap-2 bg-white text-black px-8 py-4 rounded-xl font-bold tracking-tight hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:hover:scale-100"
-                                    >
-                                        {status === 'loading' ? (
-                                            <span className="animate-pulse">Invio in corso...</span>
-                                        ) : (
-                                            <>
-                                                <span>Unisciti ora</span>
-                                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
-                            <p className="text-white/30 text-sm mt-6 font-medium">
-                                Niente spam. Cancellati quando vuoi.
-                            </p>
-                        </>
-                    )}
+                            </>
+                        )}
+                    </div>
                 </motion.div>
             </div>
         </section>

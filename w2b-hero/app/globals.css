@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: #000006;
     color: white;
@@ -33,9 +37,45 @@
 /* Hide scrollbar on mobile */
 @media (max-width: 767px) {
   html {
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
+    /* Firefox */
   }
+
   html::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Edge */
+    display: none;
+    /* Chrome, Safari, Edge */
+  }
+}
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes gradient-shift {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
   }
 }

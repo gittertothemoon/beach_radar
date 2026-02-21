@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { ChevronRight } from 'lucide-react';
 
 const steps = [
     {
@@ -41,7 +42,15 @@ export default function HowItWorks() {
                     </motion.h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Connecting arrows between steps (desktop only) */}
+                    <div className="hidden md:flex absolute top-1/2 left-[33.33%] -translate-x-1/2 -translate-y-1/2 z-10">
+                        <ChevronRight className="w-5 h-5 text-cyan-500/40" />
+                    </div>
+                    <div className="hidden md:flex absolute top-1/2 left-[66.66%] -translate-x-1/2 -translate-y-1/2 z-10">
+                        <ChevronRight className="w-5 h-5 text-cyan-500/40" />
+                    </div>
+
                     {steps.map((step, index) => (
                         <motion.div
                             key={step.number}
@@ -49,7 +58,7 @@ export default function HowItWorks() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: "-50px" }}
                             transition={{ duration: 0.5, delay: index * 0.15 }}
-                            className="flex items-start gap-4 p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05]"
+                            className="flex items-start gap-4 p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300"
                         >
                             <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-black text-xl shadow-[inset_0_0_0_1px_rgba(34,211,238,0.2)]">
                                 {step.number}

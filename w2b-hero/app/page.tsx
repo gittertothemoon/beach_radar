@@ -1,5 +1,6 @@
 import Where2BeachSequence from '@/components/Where2BeachSequence'
 import FeaturesGrid from '@/components/FeaturesGrid'
+import TechShowcase from '@/components/TechShowcase'
 import HowItWorks from '@/components/HowItWorks'
 import WaitlistForm from '@/components/WaitlistForm'
 import { Instagram } from 'lucide-react'
@@ -19,6 +20,7 @@ export default function Home() {
 
       <div className="relative z-10 bg-[#000006]">
         <FeaturesGrid />
+        <TechShowcase />
         <HowItWorks />
         <WaitlistForm />
 
