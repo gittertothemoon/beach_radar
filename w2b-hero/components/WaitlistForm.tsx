@@ -31,7 +31,6 @@ export default function WaitlistForm() {
     const inviteCodeRef = useRef('');
     const [inviteCode, setInviteCode] = useState('');
 
-    /* eslint-disable react-hooks/set-state-in-effect */
     useEffect(() => {
         setMounted(true);
         // Generate a random mock invite code on mount for later use
@@ -39,7 +38,6 @@ export default function WaitlistForm() {
         inviteCodeRef.current = code;
         setInviteCode(code);
     }, []);
-    /* eslint-enable react-hooks/set-state-in-effect */
 
     // Form submission logic
     const handleSubmit = async (e: React.FormEvent) => {

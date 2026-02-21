@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const metadata = {
     title: 'Privacy Policy — Where 2 Beach',
     description: 'Informativa sulla privacy di Where 2 Beach.',

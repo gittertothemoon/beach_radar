@@ -13,7 +13,6 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const metadata: Metadata = {
   title: "Where 2 Beach — La spiaggia perfetta, trovata in un istante",
   description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire. Iscriviti alla lista d'attesa per l'accesso anticipato.",
