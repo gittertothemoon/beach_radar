@@ -85,7 +85,7 @@ export default function TechShowcase() {
                 return;
             }
 
-            const dpr = window.devicePixelRatio || 1;
+            const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
             const rect = parent.getBoundingClientRect();
             const width = Math.max(1, Math.floor(rect.width * dpr));
             const height = Math.max(1, Math.floor(rect.height * dpr));
@@ -171,8 +171,8 @@ export default function TechShowcase() {
     }, [frames, scrollYProgress]);
 
     return (
-        <section ref={ref} className="block md:hidden relative w-full h-[320vh] bg-[#000006] overflow-hidden">
-            <div className="sticky top-0 h-screen w-full overflow-hidden">
+        <section ref={ref} className="block md:hidden relative w-full h-[220svh] bg-[#000006]">
+            <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute inset-0 bg-gradient-to-b from-[#040412] via-[#000006] to-[#000006]" />
                     <div className="absolute inset-0 flex items-center justify-center">
