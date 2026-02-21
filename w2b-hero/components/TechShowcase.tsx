@@ -71,12 +71,17 @@ export default function TechShowcase() {
         if (!context) return;
 
         let raf = 0;
+        let pendingFrame = false;
+        let disposed = false;
+        let lastRenderKey = '';
         frameProgressRef.current = Math.min(1, Math.max(0, scrollYProgress.get()));
 
-        const render = () => {
+        const draw = () => {
+            pendingFrame = false;
+            if (disposed) return;
+
             const parent = canvas.parentElement;
             if (!parent) {
-                raf = requestAnimationFrame(render);
                 return;
             }
 
@@ -84,24 +89,22 @@ export default function TechShowcase() {
             const rect = parent.getBoundingClientRect();
             const width = Math.max(1, Math.floor(rect.width * dpr));
             const height = Math.max(1, Math.floor(rect.height * dpr));
+            const resized = canvas.width !== width || canvas.height !== height;
 
-            if (canvas.width !== width || canvas.height !== height) {
+            if (resized) {
                 canvas.width = width;
                 canvas.height = height;
                 canvas.style.width = `${rect.width}px`;
                 canvas.style.height = `${rect.height}px`;
             }
 
-            const target = Math.min(1, Math.max(0, scrollYProgress.get()));
-            frameProgressRef.current += (target - frameProgressRef.current) * 0.2;
-            if (Math.abs(target - frameProgressRef.current) < 0.0005) {
-                frameProgressRef.current = target;
-            }
-
             const frameIndex = Math.min(
                 FRAME_COUNT - 1,
                 Math.max(0, Math.round(frameProgressRef.current * (FRAME_COUNT - 1)))
             );
+            const renderKey = `${frameIndex}-${canvas.width}x${canvas.height}`;
+            if (!resized && renderKey === lastRenderKey) return;
+            lastRenderKey = renderKey;
 
             let image = frames[frameIndex];
             if (!image) {
@@ -141,16 +144,34 @@ export default function TechShowcase() {
 
                 context.drawImage(image, x, yOffset, drawWidth, drawHeight);
             }
-
-            raf = requestAnimationFrame(render);
         };
 
-        render();
-        return () => cancelAnimationFrame(raf);
+        const requestDraw = () => {
+            if (pendingFrame) return;
+            pendingFrame = true;
+            raf = requestAnimationFrame(draw);
+        };
+
+        const unsubscribe = scrollYProgress.on('change', (value) => {
+            frameProgressRef.current = Math.min(1, Math.max(0, value));
+            requestDraw();
+        });
+
+        requestDraw();
+        window.addEventListener('resize', requestDraw);
+        window.addEventListener('orientationchange', requestDraw);
+
+        return () => {
+            disposed = true;
+            unsubscribe();
+            window.removeEventListener('resize', requestDraw);
+            window.removeEventListener('orientationchange', requestDraw);
+            if (raf) cancelAnimationFrame(raf);
+        };
     }, [frames, scrollYProgress]);
 
     return (
-        <section ref={ref} className="block md:hidden relative w-full h-[170vh] bg-[#000006] overflow-hidden">
+        <section ref={ref} className="block md:hidden relative w-full h-[320vh] bg-[#000006] overflow-hidden">
             <div className="sticky top-0 h-screen w-full overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute inset-0 bg-gradient-to-b from-[#040412] via-[#000006] to-[#000006]" />
