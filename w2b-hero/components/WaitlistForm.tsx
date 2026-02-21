@@ -114,12 +114,17 @@ export default function WaitlistForm() {
     };
 
     const getShareLinks = () => {
-        const url = `${window.location.origin}/invite/${inviteCode}`;
+        const url = getInviteUrl();
         const text = encodeURIComponent(`Evita la folla al mare. Sblocca il tuo badge Founding Member esclusivo! Clicca questo link per scalare la classifica: ${url}`);
         return {
             whatsapp: `https://wa.me/?text=${text}`,
             telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${text}`
         };
+    };
+
+    const getInviteUrl = () => {
+        if (!mounted) return '';
+        return `${window.location.origin}/invite/${inviteCode}`;
     };
 
     return (
@@ -193,11 +198,11 @@ export default function WaitlistForm() {
                                         <div className="absolute inset-0 bg-blue-500/20 rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
                                         <div className="relative flex items-center bg-[#000006] border border-blue-500/30 rounded-xl overflow-hidden p-1 shadow-[inset_0_0_15px_rgba(59,130,246,0.1)]">
                                             <div className="flex-1 px-4 py-3 text-left font-mono text-sm sm:text-base text-blue-200 truncate select-all">
-                                                {mounted ? `${window.location.host}/invite/${inviteCode}` : 'where2beach.it/invite/...'}
+                                                {mounted ? getInviteUrl() : 'https://where2beach.com/invite/...'}
                                             </div>
                                             <button
                                                 onClick={() => {
-                                                    navigator.clipboard.writeText(mounted ? `${window.location.host}/invite/${inviteCode}` : '');
+                                                    navigator.clipboard.writeText(getInviteUrl());
                                                     handleCopyFeedBack();
                                                 }}
                                                 className="flex-shrink-0 flex items-center justify-center bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 p-3 rounded-lg transition-colors border border-blue-500/20"
