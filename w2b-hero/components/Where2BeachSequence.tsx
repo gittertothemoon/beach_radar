@@ -9,8 +9,8 @@ export default function Where2BeachSequence() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const frameProgressRef = useRef(0);
 
-    const [desktopImages, setDesktopImages] = useState<HTMLImageElement[]>([]);
-    const [mobileImages, setMobileImages] = useState<HTMLImageElement[]>([]);
+    const [desktopImages, setDesktopImages] = useState<(HTMLImageElement | null)[]>([]);
+    const [mobileImages, setMobileImages] = useState<(HTMLImageElement | null)[]>([]);
     const [loadedCount, setLoadedCount] = useState(0);
     const [isReady, setIsReady] = useState(false);
 
@@ -45,8 +45,8 @@ export default function Where2BeachSequence() {
         const loadImages = async () => {
             setIsReady(false);
             setLoadedCount(0);
-            const loadedDesktop: HTMLImageElement[] = [];
-            const loadedMobile: HTMLImageElement[] = [];
+            const loadedDesktop = Array.from({ length: DESKTOP_COUNT }, () => null as HTMLImageElement | null);
+            const loadedMobile = Array.from({ length: MOBILE_COUNT }, () => null as HTMLImageElement | null);
             let count = 0;
 
             const updateProgress = () => {
@@ -54,38 +54,37 @@ export default function Where2BeachSequence() {
                 setLoadedCount(count);
             };
 
-            const loadSingleImage = (src: string, arr: HTMLImageElement[]) => {
+            const loadSingleImage = (src: string, arr: (HTMLImageElement | null)[], index: number) => {
                 return new Promise((resolve) => {
                     const img = new Image();
                     img.src = src;
                     img.onload = () => {
                         if (!isCancelled) {
-                            arr.push(img);
+                            arr[index] = img;
                             updateProgress();
                         }
                         resolve(null);
                     };
-                    img.onerror = () => resolve(null);
+                    img.onerror = () => {
+                        if (!isCancelled) updateProgress();
+                        resolve(null);
+                    };
                 });
             };
 
             const desktopPromises = Array.from({ length: DESKTOP_COUNT }).map((_, i) =>
-                loadSingleImage(`/sequence/frame_${i}.webp`, loadedDesktop)
+                loadSingleImage(`/sequence/frame_${i}.webp`, loadedDesktop, i)
             );
             const mobilePromises = Array.from({ length: MOBILE_COUNT }).map((_, i) =>
-                loadSingleImage(`/sequence/mobile/frame_${i}.webp`, loadedMobile)
+                loadSingleImage(`/sequence/mobile/frame_${i}.webp`, loadedMobile, i)
             );
 
             await Promise.all([...desktopPromises, ...mobilePromises]);
 
             if (!isCancelled) {
-                // Sort arrays since Promise.all doesn't guarantee natural order of pushing
-                loadedDesktop.sort((a, b) => parseInt(a.src.match(/frame_(\d+)/)![1]) - parseInt(b.src.match(/frame_(\d+)/)![1]));
-                loadedMobile.sort((a, b) => parseInt(a.src.match(/frame_(\d+)/)![1]) - parseInt(b.src.match(/frame_(\d+)/)![1]));
-
                 setDesktopImages(loadedDesktop);
                 setMobileImages(loadedMobile);
-                setTimeout(() => setIsReady(true), 150);
+                setIsReady(true);
             }
         };
 
@@ -105,42 +104,61 @@ export default function Where2BeachSequence() {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        let animationFrameId: number;
+        let animationFrameId = 0;
+        let pendingFrame = false;
+        let disposed = false;
+        let lastRenderKey = '';
         frameProgressRef.current = Math.min(1, Math.max(0, scrollYProgress.get()));
 
-        const render = () => {
-            // Resize canvas for retina displays
+        const draw = () => {
+            pendingFrame = false;
+            if (disposed) return;
+
             const parent = canvas.parentElement;
             if (parent) {
                 const dpr = window.devicePixelRatio || 1;
                 const rect = parent.getBoundingClientRect();
+                const nextWidth = Math.max(1, Math.floor(rect.width * dpr));
+                const nextHeight = Math.max(1, Math.floor(rect.height * dpr));
+                const resized = canvas.width !== nextWidth || canvas.height !== nextHeight;
 
-                if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
-                    canvas.width = rect.width * dpr;
-                    canvas.height = rect.height * dpr;
+                if (resized) {
+                    canvas.width = nextWidth;
+                    canvas.height = nextHeight;
                     canvas.style.width = `${rect.width}px`;
                     canvas.style.height = `${rect.height}px`;
                 }
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Instantly switch between mobile and desktop images based on window width
                 const isMobileView = window.innerWidth < 768;
                 const activeImages = isMobileView ? mobileImages : desktopImages;
-
-                const targetProgress = Math.min(1, Math.max(0, scrollYProgress.get()));
-                // Exponential damping without spring bounce to avoid reverse-scroll jitter.
-                frameProgressRef.current += (targetProgress - frameProgressRef.current) * 0.18;
-                if (Math.abs(targetProgress - frameProgressRef.current) < 0.0005) {
-                    frameProgressRef.current = targetProgress;
-                }
+                const activeCount = activeImages.length;
+                if (activeCount === 0) return;
 
                 const currentFrameIndex = Math.min(
-                    activeImages.length - 1,
-                    Math.max(0, Math.round(frameProgressRef.current * (activeImages.length - 1)))
+                    activeCount - 1,
+                    Math.max(0, Math.round(frameProgressRef.current * (activeCount - 1)))
                 );
+                const renderKey = `${isMobileView ? 'm' : 'd'}-${currentFrameIndex}-${canvas.width}x${canvas.height}`;
+                if (!resized && renderKey === lastRenderKey) return;
+                lastRenderKey = renderKey;
 
-                const img = activeImages[currentFrameIndex];
+                let img = activeImages[currentFrameIndex];
+                if (!img) {
+                    for (let radius = 1; radius < activeCount; radius += 1) {
+                        const previous = currentFrameIndex - radius;
+                        if (previous >= 0 && activeImages[previous]) {
+                            img = activeImages[previous];
+                            break;
+                        }
+                        const next = currentFrameIndex + radius;
+                        if (next < activeCount && activeImages[next]) {
+                            img = activeImages[next];
+                            break;
+                        }
+                    }
+                }
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 if (img) {
                     const canvasAspect = canvas.width / canvas.height;
                     const imgAspect = img.width / img.height;
@@ -183,14 +201,29 @@ export default function Where2BeachSequence() {
                     ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
                 }
             }
-
-            animationFrameId = requestAnimationFrame(render);
         };
 
-        render();
+        const requestDraw = () => {
+            if (pendingFrame) return;
+            pendingFrame = true;
+            animationFrameId = requestAnimationFrame(draw);
+        };
+
+        const unsubscribe = scrollYProgress.on('change', (value) => {
+            frameProgressRef.current = Math.min(1, Math.max(0, value));
+            requestDraw();
+        });
+
+        requestDraw();
+        window.addEventListener('resize', requestDraw);
+        window.addEventListener('orientationchange', requestDraw);
 
         return () => {
-            cancelAnimationFrame(animationFrameId);
+            disposed = true;
+            unsubscribe();
+            window.removeEventListener('resize', requestDraw);
+            window.removeEventListener('orientationchange', requestDraw);
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
         };
     }, [isReady, desktopImages, mobileImages, scrollYProgress]);
 
