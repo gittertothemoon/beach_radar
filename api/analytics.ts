@@ -16,6 +16,17 @@ type RateEntry = {
   resetAt: number;
 };
 
+type JsonSafeValue = string | number | boolean | null | Record<string, unknown> | unknown[];
+
+type SupabaseAuthClient = {
+  auth: {
+    getUser: (jwt: string) => Promise<{
+      data: { user: { id?: string | null } | null };
+      error: unknown;
+    }>;
+  };
+};
+
 type AnalyticsInsert = {
   event_name: string;
   session_id: string;
@@ -93,7 +104,7 @@ function toIsoString(value: unknown): string | null {
 function sanitizeJsonValue(
   value: unknown,
   depth = 0,
-): string | number | boolean | null | Record<string, unknown> | unknown[] | null {
+): JsonSafeValue {
   if (depth > 5) return null;
   if (
     value === null ||
@@ -103,7 +114,7 @@ function sanitizeJsonValue(
   ) {
     if (typeof value === "number" && !Number.isFinite(value)) return null;
     if (typeof value === "string") return value.slice(0, 500);
-    return value;
+    return value as string | number | boolean | null;
   }
 
   if (Array.isArray(value)) {
@@ -279,7 +290,7 @@ function parseAnalyticsPayload(body: Record<string, unknown>): AnalyticsInsert |
 
 async function resolveUserId(
   req: VercelRequest,
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseAuthClient,
 ): Promise<string | null> {
   const authHeader = req.headers.authorization;
   if (!authHeader || typeof authHeader !== "string") return null;

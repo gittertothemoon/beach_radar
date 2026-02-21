@@ -36,7 +36,17 @@ type RateLimitConfig = {
   max: number;
 };
 
-type SupabaseClientAny = ReturnType<typeof createClient>;
+type WaitlistRateLimitRpcData =
+  | { count?: number | null }
+  | Array<{ count?: number | null }>
+  | null;
+
+type SupabaseRateLimitClient = {
+  rpc: (
+    fn: string,
+    params?: Record<string, unknown>
+  ) => PromiseLike<{ data: WaitlistRateLimitRpcData; error: unknown }>;
+};
 
 const MAX_BODY_BYTES = 10 * 1024;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -118,7 +128,7 @@ function checkRateLimitMemory(ip: string | null, userAgent: string | null, confi
 }
 
 async function checkRateLimitDb(
-  supabase: SupabaseClientAny,
+  supabase: SupabaseRateLimitClient,
   ip: string | null,
   userAgent: string | null,
   config: RateLimitConfig
