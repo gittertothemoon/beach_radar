@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const metadata = {
     title: 'Termini di Servizio — Where 2 Beach',
     description: 'Termini e condizioni di utilizzo di Where 2 Beach.',

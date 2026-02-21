@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Copy } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -28,13 +28,18 @@ export default function WaitlistForm() {
     const [errorMessage, setErrorMessage] = useState('');
     const [copied, setCopied] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const inviteCodeRef = useRef('');
     const [inviteCode, setInviteCode] = useState('');
 
+    /* eslint-disable react-hooks/set-state-in-effect */
     useEffect(() => {
         setMounted(true);
         // Generate a random mock invite code on mount for later use
-        setInviteCode(Math.random().toString(36).substring(2, 8).toUpperCase());
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        inviteCodeRef.current = code;
+        setInviteCode(code);
     }, []);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     // Form submission logic
     const handleSubmit = async (e: React.FormEvent) => {
