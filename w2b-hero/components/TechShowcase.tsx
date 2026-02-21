@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useScroll } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
 export default function TechShowcase() {
@@ -13,11 +13,8 @@ export default function TechShowcase() {
 
     const { scrollYProgress } = useScroll({
         target: ref,
-        offset: ["start end", "end start"]
+        offset: ["start start", "end end"]
     });
-
-    const y = useTransform(scrollYProgress, [0, 1], [40, -40]);
-    const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
 
     useEffect(() => {
         let cancelled = false;
@@ -125,27 +122,26 @@ export default function TechShowcase() {
     }, [frames, scrollYProgress]);
 
     return (
-        <section ref={ref} className="block md:hidden w-full bg-[#000006] relative overflow-hidden py-12">
-            {/* Ambient glow behind the image */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[300px] h-[500px] bg-cyan-500/8 rounded-full blur-[100px]" />
-            </div>
+        <section ref={ref} className="block md:hidden relative w-full h-[220svh] bg-[#000006] overflow-hidden">
+            <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#040412] via-[#000006] to-[#000006]" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-[65vw] h-[65vh] bg-cyan-500/10 rounded-full blur-[120px]" />
+                    </div>
+                </div>
 
-            <motion.div
-                style={{ y, opacity }}
-                className="relative z-10 max-w-sm mx-auto px-4"
-            >
-                <div className="relative w-full aspect-[4/7] overflow-hidden rounded-2xl border border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+                <div className="relative z-10 h-full w-full">
                     <canvas
                         ref={canvasRef}
                         className="absolute inset-0 w-full h-full"
                         aria-label="Where 2 Beach - Tech visual sequence"
                     />
                     {frames.length === 0 && (
-                        <div className="absolute inset-0 animate-pulse bg-white/[0.04]" />
+                        <div className="absolute inset-0 animate-pulse bg-black/30" />
                     )}
                 </div>
-            </motion.div>
+            </div>
 
             {/* Bottom fade-out into next section */}
             <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#000006] to-transparent pointer-events-none" />

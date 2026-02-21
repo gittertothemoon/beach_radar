@@ -6,9 +6,7 @@ const inputDir =
   process.argv[2] || "/Users/ivanpanto/Downloads/ezgif-8b98271299513ff8-png-split";
 const outputDir = path.join(process.cwd(), "public", "decor-sequence");
 
-const TARGET_WIDTH = 768;
-const TARGET_HEIGHT = 1344;
-const WEBP_QUALITY = 78;
+const WEBP_QUALITY = 80;
 
 async function main() {
   if (!fs.existsSync(inputDir)) {
@@ -16,6 +14,11 @@ async function main() {
   }
 
   fs.mkdirSync(outputDir, { recursive: true });
+  for (const existing of fs.readdirSync(outputDir)) {
+    if (existing.toLowerCase().endsWith(".webp")) {
+      fs.unlinkSync(path.join(outputDir, existing));
+    }
+  }
 
   const files = fs
     .readdirSync(inputDir)
@@ -35,12 +38,6 @@ async function main() {
     const target = path.join(outputDir, `frame_${i}.webp`);
 
     await sharp(source)
-      .resize({
-        width: TARGET_WIDTH,
-        height: TARGET_HEIGHT,
-        fit: "cover",
-        position: "centre",
-      })
       .webp({ quality: WEBP_QUALITY })
       .toFile(target);
 
