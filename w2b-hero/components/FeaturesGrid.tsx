@@ -23,7 +23,7 @@ const features = [
 
 export default function FeaturesGrid() {
     return (
-        <section className="w-full bg-[#000006] text-white py-32 px-6">
+        <section id="features" className="w-full bg-[#000006] text-white py-32 px-6">
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-20">
                     <motion.h3

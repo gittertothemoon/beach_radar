@@ -19,7 +19,7 @@ const steps = [
 
 export default function HowItWorks() {
     return (
-        <section className="w-full bg-[#000006] text-white py-24 px-6 relative z-10 border-t border-white/[0.03]">
+        <section id="how-it-works" className="w-full bg-[#000006] text-white py-24 px-6 relative z-10 border-t border-white/[0.03]">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-16">
                     <motion.span

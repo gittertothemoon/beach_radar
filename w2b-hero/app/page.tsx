@@ -30,7 +30,7 @@ export default function Home() {
 
               {/* Brand Column */}
               <div className="md:col-span-1 flex flex-col gap-4">
-                <img src="/logo.png" alt="Where 2 Beach" className="h-10 w-auto object-contain self-start" />
+                <img src="/logo.png" alt="Where 2 Beach" className="h-16 w-auto object-contain self-start" />
                 <p className="text-white/40 text-sm leading-relaxed max-w-xs">
                   La tua spiaggia perfetta, trovata in un istante. Dati in tempo reale, zero sorprese.
                 </p>
@@ -58,9 +58,9 @@ export default function Home() {
               {/* Legal Column */}
               <div className="flex flex-col gap-3">
                 <h4 className="text-xs font-bold text-white/60 uppercase tracking-[0.2em] mb-1">Legale</h4>
-                <a href="#" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Privacy Policy</a>
-                <a href="#" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Termini di Servizio</a>
-                <a href="mailto:info@where2beach.it" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Contattaci</a>
+                <a href="/privacy" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Privacy Policy</a>
+                <a href="/terms" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Termini di Servizio</a>
+                <a href="mailto:info@where2beach.com" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Contattaci</a>
               </div>
 
             </div>
