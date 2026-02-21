@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react';
 export default function Where2BeachSequence() {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const frameProgressRef = useRef(0);
 
     const [desktopImages, setDesktopImages] = useState<HTMLImageElement[]>([]);
     const [mobileImages, setMobileImages] = useState<HTMLImageElement[]>([]);
@@ -105,6 +106,7 @@ export default function Where2BeachSequence() {
         if (!ctx) return;
 
         let animationFrameId: number;
+        frameProgressRef.current = Math.min(1, Math.max(0, scrollYProgress.get()));
 
         const render = () => {
             // Resize canvas for retina displays
@@ -126,9 +128,16 @@ export default function Where2BeachSequence() {
                 const isMobileView = window.innerWidth < 768;
                 const activeImages = isMobileView ? mobileImages : desktopImages;
 
+                const targetProgress = Math.min(1, Math.max(0, scrollYProgress.get()));
+                // Exponential damping without spring bounce to avoid reverse-scroll jitter.
+                frameProgressRef.current += (targetProgress - frameProgressRef.current) * 0.18;
+                if (Math.abs(targetProgress - frameProgressRef.current) < 0.0005) {
+                    frameProgressRef.current = targetProgress;
+                }
+
                 const currentFrameIndex = Math.min(
                     activeImages.length - 1,
-                    Math.max(0, Math.floor(smoothProgress.get() * (activeImages.length - 1)))
+                    Math.max(0, Math.round(frameProgressRef.current * (activeImages.length - 1)))
                 );
 
                 const img = activeImages[currentFrameIndex];
@@ -183,7 +192,7 @@ export default function Where2BeachSequence() {
         return () => {
             cancelAnimationFrame(animationFrameId);
         };
-    }, [isReady, desktopImages, mobileImages, smoothProgress]);
+    }, [isReady, desktopImages, mobileImages, scrollYProgress]);
 
     return (
         <div ref={containerRef} className="relative h-[400vh] w-full bg-[#000006]" style={{ position: 'relative' }}>
