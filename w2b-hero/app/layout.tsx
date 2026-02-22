@@ -16,6 +16,14 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Where 2 Beach — La spiaggia perfetta, trovata in un istante",
   description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire. Iscriviti alla lista d'attesa per l'accesso anticipato.",
+  icons: {
+    icon: [
+      { url: "/favicon-32x32.png?v=20260222", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png?v=20260222", sizes: "16x16", type: "image/png" },
+    ],
+    shortcut: [{ url: "/favicon-32x32.png?v=20260222", type: "image/png" }],
+    apple: [{ url: "/apple-touch-icon.png?v=20260222", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     title: "Where 2 Beach — La spiaggia perfetta, trovata in un istante",
     description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire.",

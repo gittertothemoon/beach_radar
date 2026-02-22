@@ -77,6 +77,10 @@ syncOptionalFile(
   resolve(heroPublic, "favicon-16x16.png"),
 );
 syncOptionalFile(
+  resolve(rootPublic, "favicon.ico"),
+  resolve(heroPublic, "favicon.ico"),
+);
+syncOptionalFile(
   resolve(rootPublic, "favicon-32x32.png"),
   resolve(heroPublic, "favicon-32x32.png"),
 );
