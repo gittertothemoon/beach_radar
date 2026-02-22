@@ -12,7 +12,6 @@ export default function Where2BeachSequence() {
     const [isMobileView, setIsMobileView] = useState(false);
     const framesRef = useRef<(HTMLImageElement | null)[]>([]);
     const [loadedCount, setLoadedCount] = useState(0);
-    const [frameTotal, setFrameTotal] = useState(0);
     const [isReady, setIsReady] = useState(false);
 
     const DESKTOP_COUNT = 120;
@@ -64,7 +63,6 @@ export default function Where2BeachSequence() {
         const loadImages = async () => {
             setIsReady(false);
             setLoadedCount(0);
-            setFrameTotal(activeCount);
 
             const loaded = Array.from({ length: activeCount }, () => null as HTMLImageElement | null);
             framesRef.current = loaded;

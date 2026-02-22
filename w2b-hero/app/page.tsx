@@ -32,6 +32,7 @@ export default function Home() {
 
               {/* Brand Column */}
               <div className="md:col-span-1 flex flex-col gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo.png" alt="Where 2 Beach" className="h-16 w-auto object-contain self-start" />
                 <p className="text-white/40 text-sm leading-relaxed max-w-xs">
                   La tua spiaggia perfetta, trovata in un istante. Dati in tempo reale, zero sorprese.
