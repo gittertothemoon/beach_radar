@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async redirects() {
-    return [];
-  },
+  skipTrailingSlashRedirect: true,
 };
 
 export default nextConfig;

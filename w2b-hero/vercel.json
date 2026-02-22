@@ -1,0 +1,84 @@
+{
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "@vercel/node@5.5.28"
+    }
+  },
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "www.where2beach.com" }
+      ],
+      "destination": "https://where2beach.com/$1",
+      "permanent": true
+    },
+    {
+      "source": "/waitlist",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/waitlist/(.*)",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/landing",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/landing/(.*)",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/app",
+      "has": [{ "type": "query", "key": "key" }],
+      "destination": "/api/app-access",
+      "permanent": false
+    },
+    {
+      "source": "/app",
+      "missing": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/app",
+      "destination": "/app/",
+      "permanent": false
+    },
+    {
+      "source": "/app/",
+      "has": [{ "type": "query", "key": "key" }],
+      "destination": "/api/app-access",
+      "permanent": false
+    },
+    {
+      "source": "/app/(.*)",
+      "has": [{ "type": "query", "key": "key" }],
+      "destination": "/api/app-access?path=/app/$1",
+      "permanent": false
+    },
+    {
+      "source": "/app/(.*)",
+      "missing": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
+      "destination": "/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/app/",
+      "has": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
+      "destination": "/app-shell/index.html"
+    },
+    {
+      "source": "/app/(.*)",
+      "has": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
+      "destination": "/app-shell/index.html"
+    }
+  ]
+}

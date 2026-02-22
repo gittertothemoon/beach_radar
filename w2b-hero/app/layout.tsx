@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Where 2 Beach — La spiaggia perfetta, trovata in un istante",
     description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire.",
-    url: "https://www.where2beach.com",
+    url: "https://where2beach.com",
     siteName: "Where 2 Beach",
     locale: "it_IT",
     type: "website",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title: "Where 2 Beach — La spiaggia perfetta, trovata in un istante",
     description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire.",
   },
-  metadataBase: new URL("https://www.where2beach.com"),
+  metadataBase: new URL("https://where2beach.com"),
 };
 
 export default function RootLayout({

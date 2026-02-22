@@ -53,6 +53,19 @@ npm run build               # production build
 npm run preview             # preview dist
 ```
 
+Hero + app-shell (single Vercel project):
+
+```bash
+npm --prefix w2b-hero run build    # builds Vite app + syncs assets/APIs + builds Next hero
+```
+
+`w2b-hero` build now includes an automatic sync step that:
+- builds the root Vite app
+- copies `dist/index.html` to `w2b-hero/public/app-shell/index.html`
+- copies `dist/assets/*` to `w2b-hero/public/assets/*`
+- syncs required static files (`manifest`, favicons, `icons`, `og`)
+- syncs serverless APIs from `api/*` to `w2b-hero/api/*`
+
 Waitlist tests:
 
 ```bash
