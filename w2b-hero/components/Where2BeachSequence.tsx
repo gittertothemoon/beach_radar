@@ -10,7 +10,7 @@ export default function Where2BeachSequence() {
     const frameProgressRef = useRef(0);
 
     const [isMobileView, setIsMobileView] = useState(false);
-    const [frames, setFrames] = useState<(HTMLImageElement | null)[]>([]);
+    const framesRef = useRef<(HTMLImageElement | null)[]>([]);
     const [loadedCount, setLoadedCount] = useState(0);
     const [frameTotal, setFrameTotal] = useState(0);
     const [isReady, setIsReady] = useState(false);
@@ -67,7 +67,7 @@ export default function Where2BeachSequence() {
             setFrameTotal(activeCount);
 
             const loaded = Array.from({ length: activeCount }, () => null as HTMLImageElement | null);
-            setFrames(loaded);
+            framesRef.current = loaded;
 
             let nextIndex = 0;
             let loadedSoFar = 0;
@@ -80,12 +80,12 @@ export default function Where2BeachSequence() {
                 requestAnimationFrame(() => {
                     commitQueued = false;
                     if (isCancelled) return;
-                    setFrames([...loaded]);
                     setLoadedCount(loadedSoFar);
                     if (!readyRaised && loadedSoFar >= readyThreshold) {
                         readyRaised = true;
                         setIsReady(true);
                     }
+                    window.dispatchEvent(new CustomEvent('w2b-frame-loaded'));
                 });
             };
 
@@ -122,7 +122,6 @@ export default function Where2BeachSequence() {
             await Promise.all(Array.from({ length: concurrency }, () => worker()));
 
             if (!isCancelled) {
-                setFrames([...loaded]);
                 setLoadedCount(loadedSoFar);
                 setIsReady(true);
             }
@@ -137,7 +136,7 @@ export default function Where2BeachSequence() {
 
     // Animation logic
     useEffect(() => {
-        if (!isReady || frames.length === 0) return;
+        if (!isReady) return;
 
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -169,33 +168,38 @@ export default function Where2BeachSequence() {
                     canvas.style.height = `${rect.height}px`;
                 }
 
-                const activeImages = frames;
-                const activeCount = frames.length;
+                const activeImages = framesRef.current;
+                const activeCount = activeImages.length;
                 if (activeCount === 0) return;
 
                 const currentFrameIndex = Math.min(
                     activeCount - 1,
                     Math.max(0, Math.round(frameProgressRef.current * (activeCount - 1)))
                 );
-                const renderKey = `${isMobileView ? 'm' : 'd'}-${currentFrameIndex}-${canvas.width}x${canvas.height}`;
-                if (!resized && renderKey === lastRenderKey) return;
-                lastRenderKey = renderKey;
 
                 let img = activeImages[currentFrameIndex];
+                let drawnIndex = currentFrameIndex;
+
                 if (!img) {
                     for (let radius = 1; radius < activeCount; radius += 1) {
                         const previous = currentFrameIndex - radius;
                         if (previous >= 0 && activeImages[previous]) {
                             img = activeImages[previous];
+                            drawnIndex = previous;
                             break;
                         }
                         const next = currentFrameIndex + radius;
                         if (next < activeCount && activeImages[next]) {
                             img = activeImages[next];
+                            drawnIndex = next;
                             break;
                         }
                     }
                 }
+
+                const renderKey = `${isMobileView ? 'm' : 'd'}-${drawnIndex}-${canvas.width}x${canvas.height}`;
+                if (!resized && renderKey === lastRenderKey) return;
+                lastRenderKey = renderKey;
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 if (img) {
@@ -256,15 +260,17 @@ export default function Where2BeachSequence() {
         requestDraw();
         window.addEventListener('resize', requestDraw);
         window.addEventListener('orientationchange', requestDraw);
+        window.addEventListener('w2b-frame-loaded', requestDraw as EventListener);
 
         return () => {
             disposed = true;
             unsubscribe();
             window.removeEventListener('resize', requestDraw);
             window.removeEventListener('orientationchange', requestDraw);
+            window.removeEventListener('w2b-frame-loaded', requestDraw as EventListener);
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
         };
-    }, [frames, isMobileView, isReady, scrollYProgress]);
+    }, [isMobileView, isReady, scrollYProgress]);
 
     return (
         <div ref={containerRef} className="relative h-[400svh] md:h-[400vh] w-full bg-[#000006]" style={{ position: 'relative' }}>
