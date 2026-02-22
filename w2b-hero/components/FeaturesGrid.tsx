@@ -54,7 +54,7 @@ export default function FeaturesGrid() {
                         transition={{ duration: 0.6, delay: 0.1 }}
                         className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto tracking-tight"
                     >
-                        Non devi più girare tra spiagge troppo piene o troppo vuote. Confronti i lidi prima di partire e scegli quello con l'affollamento più adatto a te.
+                        Non devi più girare tra spiagge troppo piene o troppo vuote. Confronti i lidi prima di partire e scegli quello con l&apos;affollamento più adatto a te.
                     </motion.p>
                 </div>
 
