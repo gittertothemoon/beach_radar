@@ -14,7 +14,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Where 2 Beach — La spiaggia perfetta, trovata in un istante",
+  title: "Where2Beach — La spiaggia perfetta, trovata in un istante",
   description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire. Iscriviti alla lista d'attesa per l'accesso anticipato.",
   icons: {
     icon: [
@@ -25,16 +25,16 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-touch-icon.png?v=20260222", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
-    title: "Where 2 Beach — La spiaggia perfetta, trovata in un istante",
+    title: "Where2Beach — La spiaggia perfetta, trovata in un istante",
     description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire.",
     url: "https://where2beach.com",
-    siteName: "Where 2 Beach",
+    siteName: "Where2Beach",
     locale: "it_IT",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Where 2 Beach — La spiaggia perfetta, trovata in un istante",
+    title: "Where2Beach — La spiaggia perfetta, trovata in un istante",
     description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire.",
   },
   metadataBase: new URL("https://where2beach.com"),

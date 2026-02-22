@@ -22,40 +22,7 @@
       "has": [
         {
           "type": "host",
-          "value": "www.beachradar.it"
-        }
-      ],
-      "destination": "https://where2beach.com/$1",
-      "permanent": true
-    },
-    {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "beachradar.it"
-        }
-      ],
-      "destination": "https://where2beach.com/$1",
-      "permanent": true
-    },
-    {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "host",
           "value": "where2beach.vercel.app"
-        }
-      ],
-      "destination": "https://where2beach.com/$1",
-      "permanent": true
-    },
-    {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "beach-radar.vercel.app"
         }
       ],
       "destination": "https://where2beach.com/$1",

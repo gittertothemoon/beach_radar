@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata = {
-    title: 'Privacy Policy — Where 2 Beach',
-    description: 'Informativa sulla privacy di Where 2 Beach.',
+    title: 'Privacy Policy — Where2Beach',
+    description: 'Informativa sulla privacy di Where2Beach.',
 };
 
 export default function PrivacyPolicy() {

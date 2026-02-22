@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata = {
-    title: 'Termini di Servizio — Where 2 Beach',
-    description: 'Termini e condizioni di utilizzo di Where 2 Beach.',
+    title: 'Termini di Servizio — Where2Beach',
+    description: 'Termini e condizioni di utilizzo di Where2Beach.',
 };
 
 export default function TermsOfService() {

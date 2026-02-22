@@ -109,7 +109,7 @@ See `.env.example` for the full list.
 Most important:
 
 - frontend: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_PUBLIC_BASE_URL`
-- APIs: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `APP_ACCESS_KEY`
+- APIs: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `APP_ACCESS_KEY` (or `APP_ACCESS_KEY_HASH`)
 
 Optional feature flags:
 

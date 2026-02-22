@@ -73,7 +73,7 @@ Production API:
 - `SUPABASE_SERVICE_ROLE_KEY`
 
 App access gate:
-- `APP_ACCESS_KEY` (required to access `/app/`)
+- `APP_ACCESS_KEY` or `APP_ACCESS_KEY_HASH` (required to access `/app/`)
 
 App auth (frontend):
 - `VITE_SUPABASE_URL`
@@ -130,8 +130,10 @@ After a valid key is used, a 30-day cookie is set so `/app/` works without the q
 
 Notes:
 - If the key contains special characters, URL-encode it in the browser URL (encode once).
-- `APP_ACCESS_KEY` in Vercel must be the raw key (not URL-encoded).
-- After changing `APP_ACCESS_KEY`, redeploy to apply it.
+- If `APP_ACCESS_KEY_HASH` is set, it is used with precedence over `APP_ACCESS_KEY`.
+- `APP_ACCESS_KEY_HASH` accepts `sha256:<hex>` or plain `<hex>` (64 chars).
+- To generate hash: `node -e "console.log(require('node:crypto').createHash('sha256').update('YOUR_KEY').digest('hex'))"`
+- After changing app access env vars, redeploy to apply them.
 
 ## Rate limit behavior
 
