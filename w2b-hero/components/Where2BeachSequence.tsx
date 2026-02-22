@@ -59,7 +59,7 @@ export default function Where2BeachSequence() {
         const activeCount = isMobileView ? MOBILE_COUNT : DESKTOP_COUNT;
         const sequencePath = isMobileView ? '/sequence/mobile' : '/sequence';
         const concurrency = isMobileView ? 6 : 4;
-        const readyThreshold = isMobileView ? 16 : 10;
+        const readyThreshold = isMobileView ? 12 : 8;
 
         const loadImages = async () => {
             setIsReady(false);
@@ -278,7 +278,7 @@ export default function Where2BeachSequence() {
                     <p className="mt-6 text-white/50 text-sm font-medium tracking-widest flex flex-col items-center gap-2">
                         <span className="uppercase">Calibrando il Radar</span>
                         <span className="text-cyan-400/80 font-mono text-xs">
-                            {Math.round((loadedCount / Math.max(1, frameTotal)) * 100)}%
+                            {Math.round((Math.min(loadedCount, isMobileView ? 12 : 8) / (isMobileView ? 12 : 8)) * 100)}%
                         </span>
                     </p>
                 </div>
