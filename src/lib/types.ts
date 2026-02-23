@@ -1,4 +1,6 @@
 export type CrowdLevel = 1 | 2 | 3 | 4;
+export type WaterLevel = 1 | 2 | 3 | 4;
+export type BeachLevel = 1 | 2 | 3;
 
 export type AttributionSnapshot = {
   v: 1;
@@ -29,6 +31,8 @@ export type Report = {
   beachId: string;
   createdAt: number;
   crowdLevel: CrowdLevel;
+  waterCondition?: WaterLevel;
+  beachCondition?: BeachLevel;
   reporterHash?: string;
   attribution?: AttributionSnapshot;
 };
@@ -46,6 +50,8 @@ export type Review = {
 
 export type BeachStats = {
   crowdLevel: CrowdLevel;
+  waterCondition?: WaterLevel;
+  beachCondition?: BeachLevel;
   state: BeachState;
   confidence: number;
   updatedAt: number | null;

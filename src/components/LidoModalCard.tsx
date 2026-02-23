@@ -244,7 +244,23 @@ const LidoModalCardComponent = ({
                 {crowdLevelLabel(beach.crowdLevel)}
               </span>
             </div>
-            <div className="mt-3 grid gap-2">
+            {beach.waterCondition ? (
+              <div className="mt-3 flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-tertiary border-t border-white/5 pt-3">
+                <span>{STRINGS.labels.waterStatus}</span>
+                <span className="text-[11px] font-semibold br-text-primary">
+                  {STRINGS.waterLevels[beach.waterCondition]}
+                </span>
+              </div>
+            ) : null}
+            {beach.beachCondition ? (
+              <div className="mt-3 flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-tertiary border-t border-white/5 pt-3">
+                <span>{STRINGS.labels.beachStatus}</span>
+                <span className="text-[11px] font-semibold br-text-primary">
+                  {STRINGS.beachLevels[beach.beachCondition]}
+                </span>
+              </div>
+            ) : null}
+            <div className="mt-3 grid gap-2 border-t border-white/5 pt-3">
               <div className="flex items-center justify-between">
                 <span className="br-text-tertiary">
                   {STRINGS.labels.confidence}
@@ -523,6 +539,8 @@ const lidoModalEqual = (prev: LidoModalCardProps, next: LidoModalCardProps) => {
     a.region === b.region &&
     a.state === b.state &&
     a.crowdLevel === b.crowdLevel &&
+    a.waterCondition === b.waterCondition &&
+    a.beachCondition === b.beachCondition &&
     a.confidence === b.confidence &&
     a.updatedAt === b.updatedAt &&
     a.reportsCount === b.reportsCount &&

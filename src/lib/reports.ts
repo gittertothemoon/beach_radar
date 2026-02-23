@@ -40,6 +40,12 @@ const toFiniteNumber = (value: unknown): number | null =>
 const isCrowdLevel = (value: number): value is CrowdLevel =>
   value === 1 || value === 2 || value === 3 || value === 4;
 
+const isWaterLevel = (value: number): value is import("./types").WaterLevel =>
+  value === 1 || value === 2 || value === 3 || value === 4;
+
+const isBeachLevel = (value: number): value is import("./types").BeachLevel =>
+  value === 1 || value === 2 || value === 3;
+
 const isAttributionSnapshot = (value: unknown): value is AttributionSnapshot => {
   if (!isObject(value)) return false;
   if (value.v !== 1) return false;
@@ -56,6 +62,9 @@ const parseReport = (value: unknown): Report | null => {
   }
   const crowdLevel = toFiniteNumber(value.crowdLevel);
   const createdAt = toFiniteNumber(value.createdAt);
+  const waterConditionRaw = toFiniteNumber(value.waterCondition);
+  const beachConditionRaw = toFiniteNumber(value.beachCondition);
+
   if (crowdLevel === null || createdAt === null || !isCrowdLevel(crowdLevel)) {
     return null;
   }
@@ -63,6 +72,8 @@ const parseReport = (value: unknown): Report | null => {
     id: value.id,
     beachId: value.beachId,
     crowdLevel,
+    waterCondition: waterConditionRaw && isWaterLevel(waterConditionRaw) ? waterConditionRaw : undefined,
+    beachCondition: beachConditionRaw && isBeachLevel(beachConditionRaw) ? beachConditionRaw : undefined,
     createdAt,
     attribution: isAttributionSnapshot(value.attribution)
       ? value.attribution
@@ -120,6 +131,8 @@ export const fetchSharedReports = async (
 export const submitSharedReport = async (input: {
   beachId: string;
   crowdLevel: CrowdLevel;
+  waterCondition?: import("./types").WaterLevel;
+  beachCondition?: import("./types").BeachLevel;
   reporterHash: string;
   attribution?: AttributionSnapshot;
 }): Promise<SubmitReportResult> => {
@@ -150,6 +163,8 @@ export const submitSharedReport = async (input: {
       errorPayload?.error === "invalid_body" ||
       errorPayload?.error === "invalid_beach_id" ||
       errorPayload?.error === "invalid_crowd_level" ||
+      errorPayload?.error === "invalid_water_condition" ||
+      errorPayload?.error === "invalid_beach_condition" ||
       errorPayload?.error === "invalid_reporter_hash"
     ) {
       return { ok: false, code: "invalid_payload" };

@@ -35,6 +35,8 @@ type ReportRow = {
   id: string;
   beach_id: string;
   crowd_level: number;
+  water_condition?: number | null;
+  beach_condition?: number | null;
   created_at: string;
   attribution: unknown;
   reporter_hash?: string;
@@ -44,6 +46,8 @@ type PublicReport = {
   id: string;
   beachId: string;
   crowdLevel: 1 | 2 | 3 | 4;
+  waterCondition?: 1 | 2 | 3 | 4;
+  beachCondition?: 1 | 2 | 3;
   createdAt: number;
   attribution?: unknown;
 };
@@ -100,6 +104,24 @@ function parseCrowdLevel(value: unknown): 1 | 2 | 3 | 4 | null {
   const numeric = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(numeric)) return null;
   if (numeric === 1 || numeric === 2 || numeric === 3 || numeric === 4) {
+    return numeric;
+  }
+  return null;
+}
+
+function parseWaterLevel(value: unknown): 1 | 2 | 3 | 4 | null {
+  const numeric = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  if (numeric === 1 || numeric === 2 || numeric === 3 || numeric === 4) {
+    return numeric;
+  }
+  return null;
+}
+
+function parseBeachLevel(value: unknown): 1 | 2 | 3 | null {
+  const numeric = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  if (numeric === 1 || numeric === 2 || numeric === 3) {
     return numeric;
   }
   return null;
@@ -170,12 +192,18 @@ function toReportRow(value: unknown): ReportRow | null {
   const beachId = typeof value.beach_id === "string" ? value.beach_id : null;
   const crowdLevel =
     typeof value.crowd_level === "number" ? value.crowd_level : null;
+  const waterCondition =
+    typeof value.water_condition === "number" ? value.water_condition : null;
+  const beachCondition =
+    typeof value.beach_condition === "number" ? value.beach_condition : null;
   const createdAt = typeof value.created_at === "string" ? value.created_at : null;
   if (!id || !beachId || !crowdLevel || !createdAt) return null;
   return {
     id,
     beach_id: beachId,
     crowd_level: crowdLevel,
+    water_condition: waterCondition,
+    beach_condition: beachCondition,
     created_at: createdAt,
     attribution: value.attribution,
     reporter_hash:
@@ -192,6 +220,8 @@ function toPublicReport(row: ReportRow): PublicReport | null {
     id: row.id,
     beachId: row.beach_id,
     crowdLevel,
+    waterCondition: parseWaterLevel(row.water_condition) ?? undefined,
+    beachCondition: parseBeachLevel(row.beach_condition) ?? undefined,
     createdAt,
     attribution: row.attribution ?? undefined,
   };
@@ -292,7 +322,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data, error } = await supabase
       .from(REPORTS_TABLE)
-      .select("id, beach_id, crowd_level, created_at, attribution")
+      .select("id, beach_id, crowd_level, water_condition, beach_condition, created_at, attribution")
       .gte("created_at", lookbackIso)
       .order("created_at", { ascending: false })
       .limit(REPORTS_GET_LIMIT);
@@ -338,6 +368,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ ok: false, error: "invalid_crowd_level" });
   }
 
+  const waterCondition = body.waterCondition !== undefined ? parseWaterLevel(body.waterCondition) : undefined;
+  if (body.waterCondition !== undefined && !waterCondition) {
+    return res.status(400).json({ ok: false, error: "invalid_water_condition" });
+  }
+
+  const beachCondition = body.beachCondition !== undefined ? parseBeachLevel(body.beachCondition) : undefined;
+  if (body.beachCondition !== undefined && !beachCondition) {
+    return res.status(400).json({ ok: false, error: "invalid_beach_condition" });
+  }
+
   const reporterHash = toSingleString(body.reporterHash);
   if (!reporterHash || reporterHash.length > MAX_REPORTER_HASH_LENGTH) {
     return res.status(400).json({ ok: false, error: "invalid_reporter_hash" });
@@ -365,6 +405,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       id,
       beach_id: beachId,
       crowd_level: crowdLevel,
+      water_condition: waterCondition ?? null,
+      beach_condition: beachCondition ?? null,
       created_at: nowIso,
       attribution,
       reporter_hash: reporterHash,
@@ -411,6 +453,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const insertPayload = {
     beach_id: beachId,
     crowd_level: crowdLevel,
+    water_condition: waterCondition ?? null,
+    beach_condition: beachCondition ?? null,
     reporter_hash: reporterHash,
     attribution,
     source_ip: ipHash,
@@ -421,7 +465,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { data: inserted, error: insertError } = await supabase
     .from(REPORTS_TABLE)
     .insert(insertPayload)
-    .select("id, beach_id, crowd_level, created_at, attribution")
+    .select("id, beach_id, crowd_level, water_condition, beach_condition, created_at, attribution")
     .single();
 
   if (insertError) {

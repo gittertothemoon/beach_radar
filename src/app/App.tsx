@@ -1366,58 +1366,67 @@ function App() {
     [focusBeach],
   );
 
-  const handleSubmitReport = useCallback((level: CrowdLevel) => {
-    if (!selectedBeach || submittingReport) return;
-    if (
-      !allowRemoteReports &&
-      reportDistanceM !== null &&
-      reportDistanceM > REPORT_RADIUS_M
-    ) {
-      track("report_submit_blocked_geofence", { beachId: selectedBeach.id });
-      return;
-    }
+  const handleSubmitReport = useCallback(
+    (
+      level: CrowdLevel,
+      waterCondition?: import("../lib/types").WaterLevel,
+      beachCondition?: import("../lib/types").BeachLevel
+    ) => {
+      if (!selectedBeach || submittingReport) return;
+      if (
+        !allowRemoteReports &&
+        reportDistanceM !== null &&
+        reportDistanceM > REPORT_RADIUS_M
+      ) {
+        track("report_submit_blocked_geofence", { beachId: selectedBeach.id });
+        return;
+      }
 
-    const reporterHash = getReporterHash();
-    const attribution = loadAttribution() ?? undefined;
-    setSubmittingReport(true);
+      const reporterHash = getReporterHash();
+      const attribution = loadAttribution() ?? undefined;
+      setSubmittingReport(true);
 
-    void submitSharedReport({
-      beachId: selectedBeach.id,
-      crowdLevel: level,
-      reporterHash,
-      attribution,
-    })
-      .then((result) => {
-        if (result.ok) {
-          setReports((prev) => {
-            const deduped = prev.filter((report) => report.id !== result.report.id);
-            return [result.report, ...deduped];
-          });
-          setNow(Date.now);
-          setReportError(null);
-          setReportOpen(false);
-          setReportThanksOpen(true);
-          track("report_submit_success", {
-            beachId: selectedBeach.id,
-            level,
-          });
-          return;
-        }
-
-        if (result.code === "too_soon") {
-          setReportError(STRINGS.report.tooSoon);
-          track("report_submit_blocked_rate_limit", {
-            beachId: selectedBeach.id,
-          });
-          return;
-        }
-
-        setReportError(STRINGS.report.submitFailed);
+      void submitSharedReport({
+        beachId: selectedBeach.id,
+        crowdLevel: level,
+        waterCondition,
+        beachCondition,
+        reporterHash,
+        attribution,
       })
-      .finally(() => {
-        setSubmittingReport(false);
-      });
-  }, [allowRemoteReports, reportDistanceM, selectedBeach, submittingReport]);
+        .then((result) => {
+          if (result.ok) {
+            setReports((prev) => {
+              const deduped = prev.filter((report) => report.id !== result.report.id);
+              return [result.report, ...deduped];
+            });
+            setNow(Date.now);
+            setReportError(null);
+            setReportOpen(false);
+            setReportThanksOpen(true);
+            track("report_submit_success", {
+              beachId: selectedBeach.id,
+              level,
+            });
+            return;
+          }
+
+          if (result.code === "too_soon") {
+            setReportError(STRINGS.report.tooSoon);
+            track("report_submit_blocked_rate_limit", {
+              beachId: selectedBeach.id,
+            });
+            return;
+          }
+
+          setReportError(STRINGS.report.submitFailed);
+        })
+        .finally(() => {
+          setSubmittingReport(false);
+        });
+    },
+    [allowRemoteReports, reportDistanceM, selectedBeach, submittingReport]
+  );
 
   const handleShare = useCallback(async () => {
     if (!selectedBeach) return;

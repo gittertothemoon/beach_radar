@@ -1,4 +1,4 @@
-import type { Beach, BeachStats, CrowdLevel, Report } from "./types";
+import type { Beach, BeachStats, CrowdLevel, Report, WaterLevel, BeachLevel } from "./types";
 
 export const REPORT_TTL_MIN = 30;
 
@@ -31,6 +31,8 @@ const aggregateFromReports = (
   now: number,
 ): BeachStats => {
   const weights = new Map<CrowdLevel, number>();
+  const waterWeights = new Map<WaterLevel, number>();
+  const beachWeights = new Map<BeachLevel, number>();
   let totalWeight = 0;
   let latestReportAt = 0;
   let activeCount = 0;
@@ -38,13 +40,21 @@ const aggregateFromReports = (
   for (const report of reports) {
     const ageMin = (now - report.createdAt) / 60000;
     if (ageMin > REPORT_TTL_MIN) {
-      // Reports are sorted by createdAt desc, so we can stop early.
       break;
     }
     activeCount += 1;
     const weight = calcWeight(ageMin);
     totalWeight += weight;
+
     weights.set(report.crowdLevel, (weights.get(report.crowdLevel) ?? 0) + weight);
+
+    if (report.waterCondition) {
+      waterWeights.set(report.waterCondition, (waterWeights.get(report.waterCondition) ?? 0) + weight);
+    }
+    if (report.beachCondition) {
+      beachWeights.set(report.beachCondition, (beachWeights.get(report.beachCondition) ?? 0) + weight);
+    }
+
     if (report.createdAt > latestReportAt) latestReportAt = report.createdAt;
   }
 
@@ -70,6 +80,28 @@ const aggregateFromReports = (
     }
   }
 
+  let bestWaterLevel: WaterLevel | undefined;
+  let bestWaterWeight = -1;
+  for (const level of [1, 2, 3, 4] as WaterLevel[]) {
+    const weight = waterWeights.get(level) ?? 0;
+    if (weight > bestWaterWeight || (weight === bestWaterWeight && level > (bestWaterLevel ?? 0))) {
+      bestWaterWeight = weight;
+      bestWaterLevel = level;
+    }
+  }
+  if (bestWaterWeight === 0) bestWaterLevel = undefined;
+
+  let bestBeachLevel: BeachLevel | undefined;
+  let bestBeachWeight = -1;
+  for (const level of [1, 2, 3] as BeachLevel[]) {
+    const weight = beachWeights.get(level) ?? 0;
+    if (weight > bestBeachWeight || (weight === bestBeachWeight && level > (bestBeachLevel ?? 0))) {
+      bestBeachWeight = weight;
+      bestBeachLevel = level;
+    }
+  }
+  if (bestBeachWeight === 0) bestBeachLevel = undefined;
+
   const updatedMin = (now - latestReportAt) / 60000;
   const agreement = totalWeight > 0 ? bestWeight / totalWeight : 0;
   const nBoost = Math.min(1, activeCount / 10);
@@ -85,6 +117,8 @@ const aggregateFromReports = (
 
   return {
     crowdLevel: bestLevel,
+    waterCondition: bestWaterLevel,
+    beachCondition: bestBeachLevel,
     state,
     confidence,
     updatedAt: latestReportAt,
