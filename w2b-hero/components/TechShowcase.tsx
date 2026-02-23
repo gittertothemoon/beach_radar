@@ -3,12 +3,52 @@
 import { useScroll } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
+type ScrollDirection = -1 | 0 | 1;
+
+const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
+const PROGRESS_EPSILON = 0.0001;
+
+function resolveFrameForDirection(
+    frames: (HTMLImageElement | null)[],
+    targetIndex: number,
+    direction: ScrollDirection,
+    fallbackIndex: number
+) {
+    const direct = frames[targetIndex];
+    if (direct) {
+        return { image: direct, index: targetIndex };
+    }
+
+    const count = frames.length;
+    const preferredOffsetSign = direction < 0 ? 1 : -1;
+
+    for (let radius = 1; radius < count; radius += 1) {
+        const preferredIndex = targetIndex + preferredOffsetSign * radius;
+        if (preferredIndex >= 0 && preferredIndex < count && frames[preferredIndex]) {
+            return { image: frames[preferredIndex], index: preferredIndex };
+        }
+
+        const oppositeIndex = targetIndex - preferredOffsetSign * radius;
+        if (oppositeIndex >= 0 && oppositeIndex < count && frames[oppositeIndex]) {
+            return { image: frames[oppositeIndex], index: oppositeIndex };
+        }
+    }
+
+    if (fallbackIndex >= 0 && fallbackIndex < count && frames[fallbackIndex]) {
+        return { image: frames[fallbackIndex], index: fallbackIndex };
+    }
+
+    return { image: null, index: targetIndex };
+}
+
 export default function TechShowcase() {
     const ref = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const frameProgressRef = useRef(0);
-    const [frames, setFrames] = useState<(HTMLImageElement | null)[]>(
-        () => Array.from({ length: 240 }, () => null)
+    const scrollDirectionRef = useRef<ScrollDirection>(0);
+    const lastDrawnFrameIndexRef = useRef(0);
+    const framesRef = useRef<(HTMLImageElement | null)[]>(
+        Array.from({ length: 240 }, () => null)
     );
     const [loadedCount, setLoadedCount] = useState(0);
 
@@ -22,8 +62,11 @@ export default function TechShowcase() {
     useEffect(() => {
         let cancelled = false;
         const loaded = Array.from({ length: FRAME_COUNT }, () => null as HTMLImageElement | null);
+        framesRef.current = loaded;
         let pendingCommit = false;
         let loadedSoFar = 0;
+        let nextIndex = 0;
+        const concurrency = 6;
 
         const loadFrames = async () => {
             const loadSingle = (index: number) =>
@@ -40,20 +83,42 @@ export default function TechShowcase() {
                                 requestAnimationFrame(() => {
                                     pendingCommit = false;
                                     if (!cancelled) {
-                                        setFrames([...loaded]);
                                         setLoadedCount(loadedSoFar);
+                                        window.dispatchEvent(new CustomEvent('w2b-tech-frame-loaded'));
                                     }
                                 });
                             }
                         }
                         resolve();
                     };
-                    image.onerror = () => resolve();
+                    image.onerror = () => {
+                        if (!cancelled) {
+                            loadedSoFar += 1;
+                            if (!pendingCommit) {
+                                pendingCommit = true;
+                                requestAnimationFrame(() => {
+                                    pendingCommit = false;
+                                    if (!cancelled) {
+                                        setLoadedCount(loadedSoFar);
+                                        window.dispatchEvent(new CustomEvent('w2b-tech-frame-loaded'));
+                                    }
+                                });
+                            }
+                        }
+                        resolve();
+                    };
                 });
 
-            await Promise.all(
-                Array.from({ length: FRAME_COUNT }).map((_, index) => loadSingle(index))
-            );
+            const worker = async () => {
+                while (!cancelled) {
+                    const index = nextIndex;
+                    nextIndex += 1;
+                    if (index >= FRAME_COUNT) return;
+                    await loadSingle(index);
+                }
+            };
+
+            await Promise.all(Array.from({ length: concurrency }, () => worker()));
         };
 
         loadFrames();
@@ -74,7 +139,7 @@ export default function TechShowcase() {
         let pendingFrame = false;
         let disposed = false;
         let lastRenderKey = '';
-        frameProgressRef.current = Math.min(1, Math.max(0, scrollYProgress.get()));
+        frameProgressRef.current = clamp01(scrollYProgress.get());
 
         const draw = () => {
             pendingFrame = false;
@@ -102,28 +167,19 @@ export default function TechShowcase() {
                 FRAME_COUNT - 1,
                 Math.max(0, Math.round(frameProgressRef.current * (FRAME_COUNT - 1)))
             );
-            const renderKey = `${frameIndex}-${canvas.width}x${canvas.height}`;
+            const { image, index: drawnIndex } = resolveFrameForDirection(
+                framesRef.current,
+                frameIndex,
+                scrollDirectionRef.current,
+                lastDrawnFrameIndexRef.current
+            );
+            const renderKey = `${drawnIndex}-${canvas.width}x${canvas.height}`;
             if (!resized && renderKey === lastRenderKey) return;
             lastRenderKey = renderKey;
 
-            let image = frames[frameIndex];
-            if (!image) {
-                for (let radius = 1; radius < FRAME_COUNT; radius += 1) {
-                    const backward = frameIndex - radius;
-                    if (backward >= 0 && frames[backward]) {
-                        image = frames[backward];
-                        break;
-                    }
-                    const forward = frameIndex + radius;
-                    if (forward < FRAME_COUNT && frames[forward]) {
-                        image = frames[forward];
-                        break;
-                    }
-                }
-            }
-
             context.clearRect(0, 0, canvas.width, canvas.height);
             if (image) {
+                lastDrawnFrameIndexRef.current = drawnIndex;
                 const canvasAspect = canvas.width / canvas.height;
                 const imageAspect = image.width / image.height;
 
@@ -153,22 +209,33 @@ export default function TechShowcase() {
         };
 
         const unsubscribe = scrollYProgress.on('change', (value) => {
-            frameProgressRef.current = Math.min(1, Math.max(0, value));
+            const clamped = clamp01(value);
+            const previous = frameProgressRef.current;
+
+            if (clamped > previous + PROGRESS_EPSILON) {
+                scrollDirectionRef.current = 1;
+            } else if (clamped < previous - PROGRESS_EPSILON) {
+                scrollDirectionRef.current = -1;
+            }
+
+            frameProgressRef.current = clamped;
             requestDraw();
         });
 
         requestDraw();
         window.addEventListener('resize', requestDraw);
         window.addEventListener('orientationchange', requestDraw);
+        window.addEventListener('w2b-tech-frame-loaded', requestDraw as EventListener);
 
         return () => {
             disposed = true;
             unsubscribe();
             window.removeEventListener('resize', requestDraw);
             window.removeEventListener('orientationchange', requestDraw);
+            window.removeEventListener('w2b-tech-frame-loaded', requestDraw as EventListener);
             if (raf) cancelAnimationFrame(raf);
         };
-    }, [frames, scrollYProgress]);
+    }, [scrollYProgress]);
 
     return (
         <section ref={ref} className="block md:hidden relative w-full h-[220svh] bg-[#000006]">

@@ -4,10 +4,50 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useScroll, useSpring, motion, useTransform, MotionValue } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 
+type ScrollDirection = -1 | 0 | 1;
+
+const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
+const PROGRESS_EPSILON = 0.0001;
+
+function resolveFrameForDirection(
+    frames: (HTMLImageElement | null)[],
+    targetIndex: number,
+    direction: ScrollDirection,
+    fallbackIndex: number
+) {
+    const direct = frames[targetIndex];
+    if (direct) {
+        return { image: direct, index: targetIndex };
+    }
+
+    const count = frames.length;
+    const preferredOffsetSign = direction < 0 ? 1 : -1;
+
+    for (let radius = 1; radius < count; radius += 1) {
+        const preferredIndex = targetIndex + preferredOffsetSign * radius;
+        if (preferredIndex >= 0 && preferredIndex < count && frames[preferredIndex]) {
+            return { image: frames[preferredIndex], index: preferredIndex };
+        }
+
+        const oppositeIndex = targetIndex - preferredOffsetSign * radius;
+        if (oppositeIndex >= 0 && oppositeIndex < count && frames[oppositeIndex]) {
+            return { image: frames[oppositeIndex], index: oppositeIndex };
+        }
+    }
+
+    if (fallbackIndex >= 0 && fallbackIndex < count && frames[fallbackIndex]) {
+        return { image: frames[fallbackIndex], index: fallbackIndex };
+    }
+
+    return { image: null, index: targetIndex };
+}
+
 export default function Where2BeachSequence() {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const frameProgressRef = useRef(0);
+    const scrollDirectionRef = useRef<ScrollDirection>(0);
+    const lastDrawnFrameIndexRef = useRef(0);
 
     const [isMobileView, setIsMobileView] = useState(false);
     const framesRef = useRef<(HTMLImageElement | null)[]>([]);
@@ -145,7 +185,7 @@ export default function Where2BeachSequence() {
         let pendingFrame = false;
         let disposed = false;
         let lastRenderKey = '';
-        frameProgressRef.current = Math.min(1, Math.max(0, scrollYProgress.get()));
+        frameProgressRef.current = clamp01(scrollYProgress.get());
 
         const draw = () => {
             pendingFrame = false;
@@ -170,30 +210,17 @@ export default function Where2BeachSequence() {
                 const activeCount = activeImages.length;
                 if (activeCount === 0) return;
 
-                const currentFrameIndex = Math.min(
+                const targetFrameIndex = Math.min(
                     activeCount - 1,
                     Math.max(0, Math.round(frameProgressRef.current * (activeCount - 1)))
                 );
 
-                let img = activeImages[currentFrameIndex];
-                let drawnIndex = currentFrameIndex;
-
-                if (!img) {
-                    for (let radius = 1; radius < activeCount; radius += 1) {
-                        const previous = currentFrameIndex - radius;
-                        if (previous >= 0 && activeImages[previous]) {
-                            img = activeImages[previous];
-                            drawnIndex = previous;
-                            break;
-                        }
-                        const next = currentFrameIndex + radius;
-                        if (next < activeCount && activeImages[next]) {
-                            img = activeImages[next];
-                            drawnIndex = next;
-                            break;
-                        }
-                    }
-                }
+                const { image: img, index: drawnIndex } = resolveFrameForDirection(
+                    activeImages,
+                    targetFrameIndex,
+                    scrollDirectionRef.current,
+                    lastDrawnFrameIndexRef.current
+                );
 
                 const renderKey = `${isMobileView ? 'm' : 'd'}-${drawnIndex}-${canvas.width}x${canvas.height}`;
                 if (!resized && renderKey === lastRenderKey) return;
@@ -201,6 +228,7 @@ export default function Where2BeachSequence() {
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 if (img) {
+                    lastDrawnFrameIndexRef.current = drawnIndex;
                     const canvasAspect = canvas.width / canvas.height;
                     const imgAspect = img.width / img.height;
 
@@ -251,7 +279,16 @@ export default function Where2BeachSequence() {
         };
 
         const unsubscribe = scrollYProgress.on('change', (value) => {
-            frameProgressRef.current = Math.min(1, Math.max(0, value));
+            const clamped = clamp01(value);
+            const previous = frameProgressRef.current;
+
+            if (clamped > previous + PROGRESS_EPSILON) {
+                scrollDirectionRef.current = 1;
+            } else if (clamped < previous - PROGRESS_EPSILON) {
+                scrollDirectionRef.current = -1;
+            }
+
+            frameProgressRef.current = clamped;
             requestDraw();
         });
 
