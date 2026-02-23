@@ -128,17 +128,17 @@ export default function WaitlistForm() {
     };
 
     return (
-        <section id="waitlist" className="w-full bg-[#000006] py-32 px-6 relative overflow-hidden">
+        <section id="waitlist" className="w-full bg-[#000006] py-32 px-6 relative overflow-hidden wv-safe-area-bottom">
             {/* Animated Background Orbs */}
             <motion.div
                 animate={{ x: [0, 30, 0], y: [0, -20, 0], scale: [1, 1.1, 1] }}
                 transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-1/3 left-1/3 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"
+                className="wv-heavy-fx absolute top-1/3 left-1/3 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"
             />
             <motion.div
                 animate={{ x: [0, -20, 0], y: [0, 30, 0], scale: [1, 1.15, 1] }}
                 transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-cyan-500/8 rounded-full blur-[100px] pointer-events-none"
+                className="wv-heavy-fx absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-cyan-500/8 rounded-full blur-[100px] pointer-events-none"
             />
 
             <div className="max-w-3xl mx-auto relative z-10 text-center">
@@ -151,11 +151,11 @@ export default function WaitlistForm() {
                     className="relative rounded-3xl p-[1px] overflow-hidden"
                 >
                     {/* Rotating gradient border */}
-                    <div className="absolute inset-0 rounded-3xl" style={{
+                    <div className="wv-animated-gradient absolute inset-0 rounded-3xl" style={{
                         background: 'conic-gradient(from 0deg, rgba(6,182,212,0.3), rgba(99,102,241,0.2), rgba(6,182,212,0.05), rgba(59,130,246,0.2), rgba(6,182,212,0.3))',
                         animation: 'spin 6s linear infinite',
                     }} />
-                    <div className="relative bg-[#000006]/90 backdrop-blur-xl rounded-3xl p-10 md:p-16 shadow-2xl">
+                    <div className="wv-glass relative bg-[#000006]/90 backdrop-blur-xl rounded-3xl p-10 md:p-16 shadow-2xl">
                         {status === 'success' ? (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
@@ -195,7 +195,7 @@ export default function WaitlistForm() {
 
                                     {/* Unique Link Input */}
                                     <div className="relative group">
-                                        <div className="absolute inset-0 bg-blue-500/20 rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
+                                            <div className="wv-heavy-fx absolute inset-0 bg-blue-500/20 rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
                                         <div className="relative flex items-center bg-[#000006] border border-blue-500/30 rounded-xl overflow-hidden p-1 shadow-[inset_0_0_15px_rgba(59,130,246,0.1)]">
                                             <div className="flex-1 px-4 py-3 text-left font-mono text-sm sm:text-base text-blue-200 truncate select-all">
                                                 {mounted ? getInviteUrl() : 'https://where2beach.com/invite/...'}
@@ -291,7 +291,7 @@ export default function WaitlistForm() {
                                         <button
                                             type="submit"
                                             disabled={status === 'loading'}
-                                            className="group relative flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold tracking-tight hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:hover:scale-100 text-white overflow-hidden"
+                                            className="wv-animated-gradient group relative flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold tracking-tight hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:hover:scale-100 text-white overflow-hidden"
                                             style={{
                                                 background: 'linear-gradient(135deg, #06b6d4, #3b82f6, #6366f1)',
                                                 backgroundSize: '200% 200%',
@@ -299,7 +299,7 @@ export default function WaitlistForm() {
                                             }}
                                         >
                                             {/* Shimmer sweep */}
-                                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                                            <div className="wv-heavy-fx absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                                                 style={{ background: 'linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.15) 50%, transparent 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
                                             {status === 'loading' ? (
                                                 <span className="animate-pulse relative z-10">Invio in corso...</span>

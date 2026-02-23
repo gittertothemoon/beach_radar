@@ -60,7 +60,7 @@ export default function Home() {
         <WaitlistForm />
 
         {/* Premium Footer */}
-        <footer className="w-full border-t border-white/[0.06] bg-gradient-to-b from-[#000006] to-[#020210]">
+        <footer className="wv-safe-area-bottom w-full border-t border-white/[0.06] bg-gradient-to-b from-[#000006] to-[#020210]">
           {/* Main Footer Content */}
           <div className="max-w-5xl mx-auto px-6 py-16 md:py-20">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
@@ -75,11 +75,11 @@ export default function Home() {
                 {/* Social Icons */}
                 <div className="flex gap-3 mt-2">
                   <a href="https://www.instagram.com/where2beach/" target="_blank" rel="noopener noreferrer"
-                    className="group flex items-center justify-center w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm hover:bg-gradient-to-br hover:from-purple-500/20 hover:via-pink-500/15 hover:to-orange-500/10 hover:border-pink-500/30 hover:shadow-[0_0_20px_rgba(236,72,153,0.12)] transition-all duration-500">
+                    className="wv-glass group flex items-center justify-center w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm hover:bg-gradient-to-br hover:from-purple-500/20 hover:via-pink-500/15 hover:to-orange-500/10 hover:border-pink-500/30 hover:shadow-[0_0_20px_rgba(236,72,153,0.12)] transition-all duration-500">
                     <Instagram className="w-5 h-5 text-white/40 group-hover:text-pink-400 transition-colors duration-300" />
                   </a>
                   <a href="https://www.tiktok.com/@where2beach" target="_blank" rel="noopener noreferrer"
-                    className="group flex items-center justify-center w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm hover:bg-gradient-to-br hover:from-cyan-500/20 hover:via-blue-500/15 hover:to-purple-500/10 hover:border-cyan-500/30 hover:shadow-[0_0_20px_rgba(6,182,212,0.12)] transition-all duration-500">
+                    className="wv-glass group flex items-center justify-center w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm hover:bg-gradient-to-br hover:from-cyan-500/20 hover:via-blue-500/15 hover:to-purple-500/10 hover:border-cyan-500/30 hover:shadow-[0_0_20px_rgba(6,182,212,0.12)] transition-all duration-500">
                     <TikTokIcon className="w-5 h-5 text-white/40 group-hover:text-cyan-400 transition-colors duration-300" />
                   </a>
                 </div>

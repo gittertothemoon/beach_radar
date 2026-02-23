@@ -79,3 +79,27 @@
     background-position: -200% 0;
   }
 }
+
+/* WebView-only fallback to avoid repaint glitches on in-app browsers */
+html.wv-inapp {
+  scroll-behavior: auto;
+}
+
+html.wv-inapp .wv-heavy-fx {
+  display: none !important;
+}
+
+html.wv-inapp .wv-glass {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background-color: rgba(0, 0, 6, 0.95) !important;
+}
+
+html.wv-inapp .wv-animated-gradient {
+  animation: none !important;
+}
+
+html.wv-inapp #waitlist.wv-safe-area-bottom,
+html.wv-inapp footer.wv-safe-area-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem) !important;
+}
