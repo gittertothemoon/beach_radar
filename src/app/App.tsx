@@ -1558,44 +1558,59 @@ function App() {
         onOpenProfile={handleOpenProfile}
         onSignOut={handleSignOut}
       />
-      {soloBeachId ? (
-        <button
-          type="button"
-          onClick={handleShowAllPins}
-          className="br-press fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+72px)] z-60 rounded-full border border-white/18 bg-black/35 px-4 py-2 text-[12px] font-semibold text-slate-100 backdrop-blur transition hover:border-white/28 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 sm:bottom-[calc(env(safe-area-inset-bottom)+120px)]"
-        >
-          {STRINGS.actions.showAllPins}
-        </button>
-      ) : null}
-      <button
-        type="button"
-        onClick={handleLocateClick}
-        aria-label={STRINGS.aria.myLocation}
-        className={`br-press fixed z-60 flex h-10 w-10 items-center justify-center rounded-xl border backdrop-blur-md transition shadow-[0_8px_16px_rgba(0,0,0,0.4)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 ${geoStatus === "loading"
-          ? "border-sky-300/40 bg-sky-900/60 text-sky-200"
-          : geoStatus === "denied" || geoStatus === "error"
-            ? "border-rose-300/30 bg-rose-900/50 text-rose-200"
-            : followMode
-              ? "border-white/30 bg-white/15 text-white"
-              : "border-white/10 bg-[rgba(2,6,23,0.58)] text-slate-200"
-          }`}
+      <div
+        className="fixed z-60 flex flex-col items-end gap-3 pointer-events-none"
         style={{
           right: 'max(10px, calc((100vw - min(100vw, 640px)) / 2 + 10px))',
           bottom: 'calc(env(safe-area-inset-bottom) + 98px)'
         }}
       >
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          className="h-[18px] w-[18px]"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
+        {selectedBeach && soloBeachId && !isLidoModalOpen && !reportOpen ? (
+          <div className="pointer-events-auto">
+            <WeatherWidget
+              beachName={selectedBeach.name}
+              weather={selectedWeather}
+              weatherLoading={selectedWeatherLoading}
+              weatherUnavailable={selectedWeatherUnavailable}
+              onOpenDetails={handleOpenWeatherDetails}
+            />
+          </div>
+        ) : null}
+        {soloBeachId ? (
+          <button
+            type="button"
+            onClick={handleShowAllPins}
+            className="br-press pointer-events-auto rounded-full border border-white/18 bg-black/35 px-4 py-2 text-[12px] font-semibold text-slate-100 backdrop-blur transition hover:border-white/28 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25"
+          >
+            {STRINGS.actions.showAllPins}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={handleLocateClick}
+          aria-label={STRINGS.aria.myLocation}
+          className={`br-press pointer-events-auto flex h-10 w-10 items-center justify-center rounded-xl border backdrop-blur-md transition shadow-[0_8px_16px_rgba(0,0,0,0.4)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 ${geoStatus === "loading"
+            ? "border-sky-300/40 bg-sky-900/60 text-sky-200"
+            : geoStatus === "denied" || geoStatus === "error"
+              ? "border-rose-300/30 bg-rose-900/50 text-rose-200"
+              : followMode
+                ? "border-white/30 bg-white/15 text-white"
+                : "border-white/10 bg-[rgba(2,6,23,0.58)] text-slate-200"
+            }`}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v4M12 18v4M2 12h4M18 12h4" />
-          <circle cx="12" cy="12" r="5" />
-        </svg>
-      </button>
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="h-[18px] w-[18px]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+            <circle cx="12" cy="12" r="5" />
+          </svg>
+        </button>
+      </div>
       {locationToast ? (
         <div
           className={`fixed left-1/2 top-[calc(env(safe-area-inset-top)+130px)] z-40 -translate-x-1/2 rounded-xl border px-4 py-2 text-[12px] font-medium shadow-[0_14px_30px_rgba(0,0,0,0.45)] backdrop-blur-md ${locationToastTone === "error"
@@ -1613,15 +1628,7 @@ function App() {
           {shareToast}
         </div>
       ) : null}
-      {selectedBeach && soloBeachId && !isLidoModalOpen && !reportOpen ? (
-        <WeatherWidget
-          beachName={selectedBeach.name}
-          weather={selectedWeather}
-          weatherLoading={selectedWeatherLoading}
-          weatherUnavailable={selectedWeatherUnavailable}
-          onOpenDetails={handleOpenWeatherDetails}
-        />
-      ) : null}
+
       {accountRequiredOpen ? (
         <Suspense fallback={null}>
           <AccountRequiredModal
