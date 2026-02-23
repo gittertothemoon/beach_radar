@@ -16,6 +16,17 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Where2Beach — La spiaggia perfetta, trovata in un istante",
   description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire. Iscriviti alla lista d'attesa per l'accesso anticipato.",
+  applicationName: "Where2Beach",
+  keywords: [
+    "where2beach",
+    "where 2 beach",
+    "spiagge",
+    "affollamento spiagge",
+    "meteo spiaggia",
+    "lidi",
+  ],
+  authors: [{ name: "Where2Beach", url: "https://where2beach.com" }],
+  creator: "Where2Beach",
   icons: {
     icon: [
       { url: "/favicon-32x32.png?v=20260222", sizes: "32x32", type: "image/png" },
@@ -31,11 +42,31 @@ export const metadata: Metadata = {
     siteName: "Where2Beach",
     locale: "it_IT",
     type: "website",
+    images: [
+      {
+        url: "/og/og-default.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Where2Beach",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Where2Beach — La spiaggia perfetta, trovata in un istante",
     description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire.",
+    images: ["/og/og-default.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
   metadataBase: new URL("https://where2beach.com"),
 };

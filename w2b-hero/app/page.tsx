@@ -1,9 +1,38 @@
+import type { Metadata } from 'next'
 import Where2BeachSequence from '@/components/Where2BeachSequence'
 import FeaturesGrid from '@/components/FeaturesGrid'
 import TechShowcase from '@/components/TechShowcase'
 import HowItWorks from '@/components/HowItWorks'
 import WaitlistForm from '@/components/WaitlistForm'
 import { Instagram } from 'lucide-react'
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: '/',
+  },
+}
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      name: "Where2Beach",
+      url: "https://where2beach.com",
+      logo: "https://where2beach.com/logo.png",
+      sameAs: [
+        "https://www.instagram.com/where2beach/",
+        "https://www.tiktok.com/@where2beach",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      name: "Where2Beach",
+      url: "https://where2beach.com",
+      inLanguage: "it-IT",
+    },
+  ],
+}
 
 function TikTokIcon({ className }: { className?: string }) {
   return (
@@ -16,6 +45,12 @@ function TikTokIcon({ className }: { className?: string }) {
 export default function Home() {
   return (
     <main className="bg-[#000006] min-h-screen selection:bg-white/20 selection:text-white pb-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <h1 className="sr-only">Where2Beach: scopri la spiaggia perfetta in tempo reale</h1>
+
       <Where2BeachSequence />
 
       <div className="relative z-10 bg-[#000006]">

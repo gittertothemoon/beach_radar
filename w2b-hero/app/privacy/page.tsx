@@ -1,9 +1,13 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export const metadata = {
+export const metadata: Metadata = {
     title: 'Privacy Policy — Where2Beach',
     description: 'Informativa sulla privacy di Where2Beach.',
+    alternates: {
+        canonical: '/privacy',
+    },
 };
 
 export default function PrivacyPolicy() {

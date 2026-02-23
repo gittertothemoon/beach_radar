@@ -1,9 +1,13 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-export const metadata = {
+export const metadata: Metadata = {
     title: 'Termini di Servizio — Where2Beach',
     description: 'Termini e condizioni di utilizzo di Where2Beach.',
+    alternates: {
+        canonical: '/terms',
+    },
 };
 
 export default function TermsOfService() {
