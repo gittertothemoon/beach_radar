@@ -35,6 +35,15 @@ export type Report = {
 
 export type BeachState = "LIVE" | "RECENT" | "PRED";
 
+export type Review = {
+  id: string;
+  beachId: string;
+  authorName: string;
+  content: string;
+  rating: number;
+  createdAt: number;
+};
+
 export type BeachStats = {
   crowdLevel: CrowdLevel;
   state: BeachState;

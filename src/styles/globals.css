@@ -261,16 +261,12 @@ body {
     10px,
     calc((100vw - min(100vw, var(--overlay-max-width))) / 2 + 10px)
   ) !important;
-  margin-bottom: calc(env(safe-area-inset-bottom) + 96px) !important;
+  margin-bottom: calc(env(safe-area-inset-bottom) + 64px) !important;
 }
 
 @media (min-width: 1024px) {
   .leaflet-bottom.leaflet-right .leaflet-control-zoom {
     margin-bottom: 16px !important;
-  }
-
-  .leaflet-bottom.leaflet-right .leaflet-control-attribution {
-    margin-bottom: 10px !important;
   }
 }
 

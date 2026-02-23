@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef } from "react";
-import type { BeachWithStats } from "../lib/types";
+import type { BeachWithStats, Review } from "../lib/types";
 import { STRINGS } from "../i18n/it";
 import {
   crowdLevelLabel,
@@ -18,10 +18,13 @@ type LidoModalCardProps = {
   weather: BeachWeatherSnapshot | null;
   weatherLoading: boolean;
   weatherUnavailable: boolean;
+  reviews?: Review[];
+  reviewsLoading?: boolean;
   onClose: () => void;
   onToggleFavorite: () => void;
   onReport: () => void;
   onShare: () => void;
+  onWriteReview?: () => void;
 };
 
 const stateClass = (state: string) => {
@@ -97,10 +100,13 @@ const LidoModalCardComponent = ({
   weather,
   weatherLoading,
   weatherUnavailable,
+  reviews = [],
+  reviewsLoading = false,
   onClose,
   onToggleFavorite,
   onReport,
   onShare,
+  onWriteReview,
 }: LidoModalCardProps) => {
   const perfEnabled = isPerfEnabled();
   useRenderCounter("LidoModalCard", perfEnabled);
@@ -201,11 +207,10 @@ const LidoModalCardComponent = ({
                 onClick={onToggleFavorite}
                 aria-label={STRINGS.aria.toggleFavoriteBeach(beach.name, isFavorite)}
                 data-testid="favorite-toggle"
-                className={`br-press inline-flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
-                  isFavorite
-                    ? "border-amber-300/55 bg-amber-400/20 text-amber-100"
-                    : "border-white/18 bg-black/40 br-text-tertiary"
-                }`}
+                className={`br-press inline-flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${isFavorite
+                  ? "border-amber-300/55 bg-amber-400/20 text-amber-100"
+                  : "border-white/18 bg-black/40 br-text-tertiary"
+                  }`}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -420,6 +425,57 @@ const LidoModalCardComponent = ({
               ) : (
                 <p className="text-[13px] br-text-tertiary">
                   {STRINGS.empty.notAvailable}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 backdrop-blur-sm">
+            <div className="flex items-center justify-between">
+              <div className="text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
+                {STRINGS.labels?.reviews || "Recensioni"}
+              </div>
+              {onWriteReview && (
+                <button
+                  onClick={onWriteReview}
+                  className="br-press text-[11px] font-semibold text-sky-400 hover:text-sky-300 transition"
+                >
+                  {STRINGS.actions?.writeReview || "Scrivi una recensione"}
+                </button>
+              )}
+            </div>
+
+            <div className="mt-4 space-y-4">
+              {reviewsLoading ? (
+                <p className="text-[13px] text-slate-400 text-center py-2">
+                  {STRINGS.empty?.loadingReviews || "Caricamento recensioni..."}
+                </p>
+              ) : reviews.length > 0 ? (
+                reviews.map((r) => (
+                  <div key={r.id} className="border-b border-white/10 pb-4 last:border-0 last:pb-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[12px] font-semibold text-slate-200">{r.authorName}</span>
+                        <div className="flex">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <svg key={i} viewBox="0 0 24 24" fill={i < r.rating ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" className={`w-3.5 h-3.5 ${i < r.rating ? "text-amber-400" : "text-slate-600"}`}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                            </svg>
+                          ))}
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-slate-500 shrink-0">
+                        {new Date(r.createdAt).toLocaleDateString("it-IT", { day: "2-digit", month: "short", year: "numeric" })}
+                      </span>
+                    </div>
+                    <p className="text-[13px] text-slate-300 leading-relaxed break-words whitespace-pre-wrap">
+                      {r.content}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-[13px] text-slate-500 text-center py-2">
+                  {STRINGS.empty?.noReviews || "Nessuna recensione ancora. Sii il primo!"}
                 </p>
               )}
             </div>

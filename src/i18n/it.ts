@@ -12,6 +12,7 @@ export const STRINGS = {
     openInMaps: "Apri su Mappe",
     clearSearch: "Cancella ricerca",
     clearSymbol: "X",
+    writeReview: "Scrivi una recensione",
   },
   aria: {
     searchBeaches: "Cerca una spiaggia",
@@ -61,6 +62,7 @@ export const STRINGS = {
     services: "Servizi",
     weather: "Meteo",
     favorites: "Preferiti",
+    reviews: "Recensioni",
   },
   status: {
     live: "Aggiornato ora",
@@ -251,6 +253,8 @@ export const STRINGS = {
   empty: {
     notAvailable: "Non disponibile",
     toConfirm: "Da confermare",
+    loadingReviews: "Caricamento recensioni...",
+    noReviews: "Nessuna recensione ancora. Sii il primo!",
   },
   share: {
     confidenceLabel: "Affidabilità segnalazione",

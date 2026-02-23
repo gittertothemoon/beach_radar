@@ -58,12 +58,14 @@ import {
   type BeachWeatherSnapshot,
 } from "../lib/weather";
 import { fetchSharedReports, submitSharedReport } from "../lib/reports";
-import type { BeachWithStats, CrowdLevel, Report } from "../lib/types";
+import { fetchBeachReviews, submitBeachReview } from "../lib/reviews";
+import type { BeachWithStats, CrowdLevel, Report, Review } from "../lib/types";
 import type { LatLng, UserLocation } from "../lib/geo";
 import type { BeachOverrides } from "../lib/overrides";
 import { FEATURE_FLAGS } from "../config/features";
 
 const LidoModalCard = lazy(() => import("../components/LidoModalCard"));
+const ReviewModal = lazy(() => import("../components/ReviewModal"));
 const ReportModal = lazy(() => import("../components/ReportModal"));
 const ReportThanksModal = lazy(() => import("../components/ReportThanksModal"));
 const PerformanceOverlay = lazy(() => import("../components/PerformanceOverlay"));
@@ -155,18 +157,18 @@ const consumeRegisterResumeSnapshot = (): RegisterResumeSnapshot | null => {
     const parsed = JSON.parse(raw) as Partial<RegisterResumeSnapshot>;
     const mapView =
       parsed.mapView &&
-      typeof parsed.mapView === "object" &&
-      typeof parsed.mapView.lat === "number" &&
-      Number.isFinite(parsed.mapView.lat) &&
-      typeof parsed.mapView.lng === "number" &&
-      Number.isFinite(parsed.mapView.lng) &&
-      typeof parsed.mapView.zoom === "number" &&
-      Number.isFinite(parsed.mapView.zoom)
+        typeof parsed.mapView === "object" &&
+        typeof parsed.mapView.lat === "number" &&
+        Number.isFinite(parsed.mapView.lat) &&
+        typeof parsed.mapView.lng === "number" &&
+        Number.isFinite(parsed.mapView.lng) &&
+        typeof parsed.mapView.zoom === "number" &&
+        Number.isFinite(parsed.mapView.zoom)
         ? {
-            lat: parsed.mapView.lat,
-            lng: parsed.mapView.lng,
-            zoom: parsed.mapView.zoom,
-          }
+          lat: parsed.mapView.lat,
+          lng: parsed.mapView.lng,
+          zoom: parsed.mapView.zoom,
+        }
         : null;
 
     return {
@@ -248,6 +250,9 @@ function App() {
   const [debugToast, setDebugToast] = useState<string | null>(null);
   const [debugRefreshKey, setDebugRefreshKey] = useState(0);
   const [perfSnapshot, setPerfSnapshot] = useState(() => getPerfSnapshot());
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
   const [splashPhase, setSplashPhase] = useState<
     "visible" | "fading" | "hidden"
   >("visible");
@@ -432,6 +437,27 @@ function App() {
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    if (selectedBeachId && isLidoModalOpen) {
+      setReviewsLoading(true);
+      fetchBeachReviews(selectedBeachId).then((result) => {
+        if (!active) return;
+        if (result.ok) {
+          setReviews(result.reviews);
+        } else {
+          setReviews([]);
+        }
+        setReviewsLoading(false);
+      });
+    } else {
+      setReviews([]);
+    }
+    return () => {
+      active = false;
+    };
+  }, [selectedBeachId, isLidoModalOpen]);
 
   useEffect(() => {
     let active = true;
@@ -750,13 +776,13 @@ function App() {
         const isPred = stats.state === "PRED";
         const effectiveStats = useMockCrowd
           ? {
-              ...stats,
-              crowdLevel: mockLevel,
-              state: isPred ? "LIVE" : stats.state,
-              updatedAt: isPred ? now : stats.updatedAt,
-              reportsCount: isPred ? Math.max(1, stats.reportsCount) : stats.reportsCount,
-              confidence: isPred ? Math.max(0.7, stats.confidence) : stats.confidence,
-            }
+            ...stats,
+            crowdLevel: mockLevel,
+            state: isPred ? "LIVE" : stats.state,
+            updatedAt: isPred ? now : stats.updatedAt,
+            reportsCount: isPred ? Math.max(1, stats.reportsCount) : stats.reportsCount,
+            confidence: isPred ? Math.max(0.7, stats.confidence) : stats.confidence,
+          }
           : stats;
         return { ...beach, lat, lng, ...effectiveStats, distanceM: null };
       })
@@ -871,20 +897,20 @@ function App() {
   const selectedBeachLng = selectedBeach?.lng ?? null;
   const reportDistanceM =
     selectedBeach &&
-    userLocation &&
-    Number.isFinite(selectedBeach.lat) &&
-    Number.isFinite(selectedBeach.lng)
+      userLocation &&
+      Number.isFinite(selectedBeach.lat) &&
+      Number.isFinite(selectedBeach.lng)
       ? distanceInMeters(userLocation, {
-          lat: selectedBeach.lat,
-          lng: selectedBeach.lng,
-        })
+        lat: selectedBeach.lat,
+        lng: selectedBeach.lng,
+      })
       : null;
   const selectedOverride = selectedBeachId ? overrides[selectedBeachId] : null;
   const selectedWeatherKey =
     selectedBeachLat !== null &&
-    selectedBeachLng !== null &&
-    Number.isFinite(selectedBeachLat) &&
-    Number.isFinite(selectedBeachLng)
+      selectedBeachLng !== null &&
+      Number.isFinite(selectedBeachLat) &&
+      Number.isFinite(selectedBeachLng)
       ? weatherCacheKey(selectedBeachLat, selectedBeachLng)
       : null;
   const selectedWeatherEntry = selectedWeatherKey
@@ -976,9 +1002,9 @@ function App() {
       });
 
     return () => controller.abort();
-  // Intentionally exclude selectedWeatherEntry to avoid aborting in-flight
-  // requests when we flip cache status to "loading".
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Intentionally exclude selectedWeatherEntry to avoid aborting in-flight
+    // requests when we flip cache status to "loading".
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedBeachLat,
     selectedBeachLng,
@@ -1446,14 +1472,45 @@ function App() {
     setDebugToast(STRINGS.debug.attributionCleared);
   };
 
+  const handleWriteReview = useCallback(() => {
+    if (!account) {
+      setAccountRequiredBeachName(selectedBeach?.name ?? null);
+      setAccountRequiredOpen(true);
+      return;
+    }
+    setReviewOpen(true);
+  }, [account, selectedBeach]);
+
+  const handleCloseReview = useCallback(() => {
+    setReviewOpen(false);
+  }, []);
+
+  const handleSubmitReview = useCallback(
+    async (content: string, rating: number) => {
+      if (!selectedBeach || !account) return;
+      const authorName = `${account.firstName} ${account.lastName?.charAt(0) ?? ""}`.trim();
+      const result = await submitBeachReview({
+        beachId: selectedBeach.id,
+        authorName,
+        content,
+        rating,
+      });
+
+      if (!result.ok) {
+        throw new Error(result.error);
+      }
+      setReviews((prev) => [result.review, ...prev]);
+    },
+    [selectedBeach, account],
+  );
+
   const mapCenter = DEFAULT_CENTER;
 
   if (splashPhase !== "hidden") {
     return (
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center bg-cover bg-center transition-opacity duration-400 ${
-          splashPhase === "fading" ? "opacity-0" : "opacity-100"
-        }`}
+        className={`fixed inset-0 z-50 flex items-center justify-center bg-cover bg-center transition-opacity duration-400 ${splashPhase === "fading" ? "opacity-0" : "opacity-100"
+          }`}
         style={{ backgroundImage: `url(${splashBg})` }}
       >
         <div className="flex flex-col items-center">
@@ -1514,37 +1571,39 @@ function App() {
         type="button"
         onClick={handleLocateClick}
         aria-label={STRINGS.aria.myLocation}
-        className={`br-press fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+72px)] z-60 flex h-12 w-12 items-center justify-center rounded-full border backdrop-blur transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 sm:bottom-[calc(env(safe-area-inset-bottom)+120px)] ${
-          geoStatus === "loading"
-            ? "border-sky-200/70 bg-sky-900/45 text-sky-50 shadow-[0_0_0_1px_rgba(186,230,253,0.24),0_14px_30px_rgba(2,132,199,0.35)]"
-            : geoStatus === "denied" || geoStatus === "error"
-              ? "border-rose-300/65 bg-rose-900/40 text-rose-50"
-              : followMode
-                ? "border-white/30 bg-black/50 text-slate-50 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_14px_30px_rgba(0,0,0,0.45)]"
-                : "border-white/18 bg-black/30 text-slate-100"
-        }`}
+        className={`br-press fixed z-60 flex h-10 w-10 items-center justify-center rounded-xl border backdrop-blur-md transition shadow-[0_8px_16px_rgba(0,0,0,0.4)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 ${geoStatus === "loading"
+          ? "border-sky-300/40 bg-sky-900/60 text-sky-200"
+          : geoStatus === "denied" || geoStatus === "error"
+            ? "border-rose-300/30 bg-rose-900/50 text-rose-200"
+            : followMode
+              ? "border-white/30 bg-white/15 text-white"
+              : "border-white/10 bg-[rgba(2,6,23,0.58)] text-slate-200"
+          }`}
+        style={{
+          right: 'max(10px, calc((100vw - min(100vw, 640px)) / 2 + 10px))',
+          bottom: 'calc(env(safe-area-inset-bottom) + 98px)'
+        }}
       >
         <svg
           viewBox="0 0 24 24"
           aria-hidden="true"
-          className="h-5 w-5"
+          className="h-[18px] w-[18px]"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.8"
+          strokeWidth="2"
         >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v4M12 18v4M2 12h4M18 12h4" />
           <circle cx="12" cy="12" r="5" />
-          <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
         </svg>
       </button>
       {locationToast ? (
         <div
-          className={`fixed left-1/2 top-[calc(env(safe-area-inset-top)+130px)] z-40 -translate-x-1/2 rounded-xl border px-4 py-2 text-[12px] font-medium shadow-[0_14px_30px_rgba(0,0,0,0.45)] backdrop-blur-md ${
-            locationToastTone === "error"
-              ? "border-rose-300/70 bg-rose-700/45 text-rose-50"
-              : locationToastTone === "success"
-                ? "border-emerald-300/70 bg-emerald-700/40 text-emerald-50"
-                : "border-sky-300/65 bg-sky-800/45 text-sky-50"
-          }`}
+          className={`fixed left-1/2 top-[calc(env(safe-area-inset-top)+130px)] z-40 -translate-x-1/2 rounded-xl border px-4 py-2 text-[12px] font-medium shadow-[0_14px_30px_rgba(0,0,0,0.45)] backdrop-blur-md ${locationToastTone === "error"
+            ? "border-rose-300/70 bg-rose-700/45 text-rose-50"
+            : locationToastTone === "success"
+              ? "border-emerald-300/70 bg-emerald-700/40 text-emerald-50"
+              : "border-sky-300/65 bg-sky-800/45 text-sky-50"
+            }`}
         >
           {locationToast}
         </div>
@@ -1802,6 +1861,9 @@ function App() {
             onToggleFavorite={handleToggleSelectedFavorite}
             onReport={handleOpenReport}
             onShare={handleShare}
+            reviews={reviews}
+            reviewsLoading={reviewsLoading}
+            onWriteReview={handleWriteReview}
           />
         </Suspense>
       ) : null}
@@ -1820,6 +1882,17 @@ function App() {
             onSubmit={handleSubmitReport}
             submitError={reportError}
             submitting={submittingReport}
+          />
+        </Suspense>
+      ) : null}
+      {selectedBeach ? (
+        <Suspense fallback={null}>
+          <ReviewModal
+            isOpen={reviewOpen}
+            beachName={selectedBeach.name}
+            authorName={account ? `${account.firstName} ${account.lastName?.charAt(0) ?? ""}`.trim() : null}
+            onClose={handleCloseReview}
+            onSubmit={handleSubmitReview}
           />
         </Suspense>
       ) : null}
