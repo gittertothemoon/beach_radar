@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import { PNG } from 'pngjs';
 
 const removeWhiteBackground = (inputPath, outputPath) => {
@@ -25,4 +26,7 @@ const removeWhiteBackground = (inputPath, outputPath) => {
     });
 };
 
-removeWhiteBackground('Onda - 1.PNG', 'w2b-hero/public/images/onda/onda-transparent.png');
+const INPUT_ONDA_1 = path.join('data', 'raw', 'onda', 'onda-1.png');
+const OUTPUT_TRANSPARENT = path.join('w2b-hero', 'public', 'images', 'onda', 'onda-transparent.png');
+
+removeWhiteBackground(INPUT_ONDA_1, OUTPUT_TRANSPARENT);

@@ -22,7 +22,8 @@ const main = () => {
   const forbiddenRootData = rootFiles.filter(
     (file) =>
       /^BeachRadar_.*_schema\.(json|csv)$/.test(file) ||
-      /^seed-overrides_.*_schema\.json$/.test(file),
+      /^seed-overrides_.*_schema\.json$/.test(file) ||
+      /^Onda - [1-5]\.PNG$/.test(file),
   );
   if (forbiddenRootData.length > 0) {
     errors.push(
