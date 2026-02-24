@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/reports/prune",
+      "path": "/api/reports-prune",
       "schedule": "17 3 * * *"
     }
   ],
@@ -157,10 +157,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/api/reports/prune",
-      "destination": "/api/reports?action=prune"
-    },
     {
       "source": "/api/waitlist/count",
       "destination": "/api/waitlist?action=count"
