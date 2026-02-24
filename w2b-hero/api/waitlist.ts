@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import waitlistIndex from "./_handlers/waitlist-index";
-import waitlistCount from "./_handlers/waitlist-count";
-import waitlistConfirm from "./_handlers/waitlist-confirm";
+import waitlistIndex from "./_handlers/waitlist-index.js";
+import waitlistCount from "./_handlers/waitlist-count.js";
+import waitlistConfirm from "./_handlers/waitlist-confirm.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const action = req.query.action;
