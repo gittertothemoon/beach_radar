@@ -128,7 +128,7 @@ export default function WaitlistForm() {
     };
 
     return (
-        <section id="waitlist" className="w-full bg-[#000006] py-32 px-6 relative overflow-hidden wv-safe-area-bottom">
+        <section id="waitlist" className="w-full bg-[#000006] py-32 px-6 relative overflow-hidden">
             {/* Animated Background Orbs */}
             <motion.div
                 animate={{ x: [0, 30, 0], y: [0, -20, 0], scale: [1, 1.1, 1] }}

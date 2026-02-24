@@ -52,6 +52,19 @@ export default function OndaAssistant() {
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
     const tooltipTimeoutRef = useRef<NodeJS.Timeout>();
+    const clearTooltipTimer = useCallback(() => {
+        if (tooltipTimeoutRef.current) {
+            clearTimeout(tooltipTimeoutRef.current);
+            tooltipTimeoutRef.current = undefined;
+        }
+    }, []);
+
+    const closeTooltip = useCallback((markUnread = true) => {
+        clearTooltipTimer();
+        setShowTooltip(false);
+        setIsTyping(false);
+        setHasUnread(markUnread);
+    }, [clearTooltipTimer]);
 
     const openTooltip = useCallback(() => {
         setShowTooltip(true);
@@ -63,21 +76,42 @@ export default function OndaAssistant() {
         setTimeout(() => setIsTyping(false), 1800);
 
         // Auto dismiss dopo 10 secondi
-        if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+        clearTooltipTimer();
         tooltipTimeoutRef.current = setTimeout(() => {
-            setShowTooltip(false);
-            setHasUnread(true); // Se si chiude da solo, lascia il badge "non letto"
+            closeTooltip(true); // Se si chiude da solo, lascia il badge "non letto"
         }, 10000);
-    }, []);
+    }, [clearTooltipTimer, closeTooltip]);
 
     useEffect(() => {
-        // Apparizione iniziale post caricamento
-        const initTimer = setTimeout(() => {
-            setIsVisible(true);
-            openTooltip();
-        }, 2500);
-        return () => clearTimeout(initTimer);
-    }, [openTooltip]);
+        const unlockOnHeroComplete = () => {
+            if (isVisible) return;
+
+            const heroEl = document.getElementById('hero-sequence');
+            if (!heroEl) return;
+
+            const heroBottom = heroEl.offsetTop + heroEl.offsetHeight;
+            const viewportBottom = window.scrollY + window.innerHeight;
+
+            // Onda appare solo quando la hero è stata completata almeno una volta.
+            if (viewportBottom >= heroBottom - 8) {
+                setIsVisible(true);
+                setHasUnread(true);
+            }
+        };
+
+        unlockOnHeroComplete();
+        window.addEventListener('scroll', unlockOnHeroComplete, { passive: true });
+        window.addEventListener('resize', unlockOnHeroComplete);
+
+        return () => {
+            window.removeEventListener('scroll', unlockOnHeroComplete);
+            window.removeEventListener('resize', unlockOnHeroComplete);
+        };
+    }, [isVisible]);
+
+    useEffect(() => {
+        return () => clearTooltipTimer();
+    }, [clearTooltipTimer]);
 
     // P1: Smart Scroll Spy per cambiare testo in base alla sezione
     useEffect(() => {
@@ -94,16 +128,19 @@ export default function OndaAssistant() {
 
             if (newSection !== currentSection) {
                 setCurrentSection(newSection);
-                // Rilancia il tooltip col nuovo testo formativo solo se Onda è già apparsa
-                if (isVisible) {
-                    openTooltip();
-                }
+                // Aggiorna solo lo stato "non letto" senza aprire popup durante lo scroll
+                setHasUnread(true);
+            }
+
+            // Non bloccare la navigazione: chiudi il popup se l'utente sta scrollando
+            if (showTooltip) {
+                closeTooltip(true);
             }
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [currentSection, isVisible, openTooltip]);
+    }, [currentSection, showTooltip, closeTooltip, isVisible]);
 
     const scrollToWaitlist = () => {
         const waitlistEl = document.getElementById('waitlist');
@@ -115,14 +152,13 @@ export default function OndaAssistant() {
     const handleTooltipClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         scrollToWaitlist();
-        setShowTooltip(false);
-        setHasUnread(false);
+        closeTooltip(false);
     };
 
     const handleAvatarClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (showTooltip) {
-            handleTooltipClick(e);
+            closeTooltip(true);
         } else {
             openTooltip();
         }
@@ -130,8 +166,7 @@ export default function OndaAssistant() {
 
     const handleDismiss = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setShowTooltip(false);
-        setHasUnread(true);
+        closeTooltip(true);
     };
 
     // P4: Calcolo movimento magnetico particelle su Hover

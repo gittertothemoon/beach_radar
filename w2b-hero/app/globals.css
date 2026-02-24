@@ -83,6 +83,7 @@
 /* WebView-only fallback to avoid repaint glitches on in-app browsers */
 html.wv-inapp {
   scroll-behavior: auto;
+  overflow-x: hidden;
 }
 
 html.wv-inapp .wv-heavy-fx {
@@ -99,7 +100,13 @@ html.wv-inapp .wv-animated-gradient {
   animation: none !important;
 }
 
-html.wv-inapp #waitlist.wv-safe-area-bottom,
+html.wv-inapp body {
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  overflow-anchor: none;
+}
+
 html.wv-inapp footer.wv-safe-area-bottom {
   padding-bottom: calc(env(safe-area-inset-bottom) + 1rem) !important;
 }

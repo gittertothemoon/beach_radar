@@ -308,7 +308,12 @@ export default function Where2BeachSequence() {
     }, [isMobileView, isReady, scrollYProgress]);
 
     return (
-        <div ref={containerRef} className="relative h-[400svh] md:h-[400vh] w-full bg-[#000006]" style={{ position: 'relative' }}>
+        <div
+            id="hero-sequence"
+            ref={containerRef}
+            className="relative h-[400svh] md:h-[400vh] w-full bg-[#000006]"
+            style={{ position: 'relative' }}
+        >
             {/* Combined Loading State */}
             {!isReady && (
                 <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#000006]">

@@ -45,7 +45,7 @@ function TikTokIcon({ className }: { className?: string }) {
 
 export default function Home() {
   return (
-    <main className="bg-[#000006] min-h-screen selection:bg-white/20 selection:text-white pb-12">
+    <main className="bg-[#000006] min-h-screen selection:bg-white/20 selection:text-white pb-0 md:pb-12">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
