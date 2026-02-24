@@ -44,62 +44,152 @@
       "destination": "https://where2beach.com/$1",
       "permanent": true
     },
-    { "source": "/", "destination": "/landing/", "permanent": false },
-    { "source": "/landing", "destination": "/landing/", "permanent": true },
+    {
+      "source": "/",
+      "destination": "/landing/",
+      "permanent": false
+    },
+    {
+      "source": "/landing",
+      "destination": "/landing/",
+      "permanent": true
+    },
     {
       "source": "/waitlist",
-      "missing": [{ "type": "cookie", "key": "br_seen_landing", "value": "1" }],
+      "missing": [
+        {
+          "type": "cookie",
+          "key": "br_seen_landing",
+          "value": "1"
+        }
+      ],
       "destination": "/landing/",
       "permanent": false
     },
     {
       "source": "/waitlist/(.*)",
-      "missing": [{ "type": "cookie", "key": "br_seen_landing", "value": "1" }],
+      "missing": [
+        {
+          "type": "cookie",
+          "key": "br_seen_landing",
+          "value": "1"
+        }
+      ],
       "destination": "/landing/",
       "permanent": false
     },
-    { "source": "/waitlist", "destination": "/waitlist/", "permanent": true },
-    { "source": "/privacy", "destination": "/privacy/", "permanent": true },
-    { "source": "/index.html", "destination": "/landing/", "permanent": false },
+    {
+      "source": "/waitlist",
+      "destination": "/waitlist/",
+      "permanent": true
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy/",
+      "permanent": true
+    },
+    {
+      "source": "/index.html",
+      "destination": "/landing/",
+      "permanent": false
+    },
     {
       "source": "/app",
-      "has": [{ "type": "query", "key": "key" }],
+      "has": [
+        {
+          "type": "query",
+          "key": "key"
+        }
+      ],
       "destination": "/api/app-access",
       "permanent": false
     },
     {
       "source": "/app",
-      "missing": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
+      "missing": [
+        {
+          "type": "cookie",
+          "key": "br_app_access",
+          "value": "1"
+        }
+      ],
       "destination": "/waitlist/",
       "permanent": false
     },
-    { "source": "/app", "destination": "/app/", "permanent": false },
+    {
+      "source": "/app",
+      "destination": "/app/",
+      "permanent": false
+    },
     {
       "source": "/app/",
-      "has": [{ "type": "query", "key": "key" }],
+      "has": [
+        {
+          "type": "query",
+          "key": "key"
+        }
+      ],
       "destination": "/api/app-access",
       "permanent": false
     },
     {
       "source": "/app/(.*)",
-      "has": [{ "type": "query", "key": "key" }],
+      "has": [
+        {
+          "type": "query",
+          "key": "key"
+        }
+      ],
       "destination": "/api/app-access?path=/app/$1",
       "permanent": false
     },
     {
       "source": "/app/(.*)",
-      "missing": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
+      "missing": [
+        {
+          "type": "cookie",
+          "key": "br_app_access",
+          "value": "1"
+        }
+      ],
       "destination": "/waitlist/",
       "permanent": false
     }
   ],
   "rewrites": [
-    { "source": "/landing/", "destination": "/landing/index.html" },
-    { "source": "/waitlist/", "destination": "/waitlist/index.html" },
-    { "source": "/privacy/", "destination": "/privacy/index.html" },
+    {
+      "source": "/api/reports/prune",
+      "destination": "/api/reports?action=prune"
+    },
+    {
+      "source": "/api/waitlist/count",
+      "destination": "/api/waitlist?action=count"
+    },
+    {
+      "source": "/api/waitlist/confirm",
+      "destination": "/api/waitlist?action=confirm"
+    },
+    {
+      "source": "/landing/",
+      "destination": "/landing/index.html"
+    },
+    {
+      "source": "/waitlist/",
+      "destination": "/waitlist/index.html"
+    },
+    {
+      "source": "/privacy/",
+      "destination": "/privacy/index.html"
+    },
     {
       "source": "/app/(.*)",
-      "has": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
+      "has": [
+        {
+          "type": "cookie",
+          "key": "br_app_access",
+          "value": "1"
+        }
+      ],
       "destination": "/index.html"
     }
   ]
