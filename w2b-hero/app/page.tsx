@@ -4,6 +4,7 @@ import FeaturesGrid from '@/components/FeaturesGrid'
 import TechShowcase from '@/components/TechShowcase'
 import HowItWorks from '@/components/HowItWorks'
 import WaitlistForm from '@/components/WaitlistForm'
+import OndaAssistant from '@/components/OndaAssistant'
 import { Instagram } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -117,6 +118,7 @@ export default function Home() {
           </div>
         </footer>
       </div>
+      <OndaAssistant />
     </main>
   )
 }
