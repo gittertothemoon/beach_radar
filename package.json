@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "landing:dev": "node scripts/run-landing-dev.mjs",
+    "landing:build": "npm --prefix w2b-hero run build",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "lint": "eslint .",

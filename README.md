@@ -37,7 +37,12 @@ cp .env.example .env.local
 npm run dev
 ```
 
-5. If you need `/api/*` locally, run Vercel dev:
+5. Start landing (Next.js hero) with safe cleanup + Node 20 enforcement:
+```bash
+npm run landing:dev
+```
+
+6. If you need `/api/*` locally, run Vercel dev:
 ```bash
 vercel dev --listen 3000 --yes
 ```
@@ -46,6 +51,8 @@ vercel dev --listen 3000 --yes
 
 ```bash
 npm run dev                 # Vite app
+npm run landing:dev         # Next landing (safe: kills :3000, clears stale .next, runs with Node 20)
+npm run landing:build       # Builds Vite app + Next landing
 npm run lint                # ESLint
 npm run typecheck           # TypeScript project refs check
 npm run check               # lint + typecheck
