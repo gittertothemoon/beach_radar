@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "rm -rf .next && rm -rf api",
     "sync:app-shell": "node scripts/sync-app-shell.mjs",
-    "build": "npm run sync:app-shell && next build",
+    "build": "npm run prebuild && npm run sync:app-shell && next build",
     "start": "next start",
     "lint": "next lint"
   },
