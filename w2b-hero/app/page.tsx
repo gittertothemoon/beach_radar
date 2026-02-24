@@ -5,6 +5,7 @@ import TechShowcase from '@/components/TechShowcase'
 import HowItWorks from '@/components/HowItWorks'
 import WaitlistForm from '@/components/WaitlistForm'
 import OndaAssistant from '@/components/OndaAssistant'
+import WebViewHero from '@/components/WebViewHero'
 import { Instagram } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -52,11 +53,16 @@ export default function Home() {
       />
       <h1 className="sr-only">Where2Beach: scopri la spiaggia perfetta in tempo reale</h1>
 
-      <Where2BeachSequence />
+      <WebViewHero />
+      <div className="wv-hide-inapp">
+        <Where2BeachSequence />
+      </div>
 
       <div className="relative z-10 bg-[#000006]">
         <FeaturesGrid />
-        <TechShowcase />
+        <div className="wv-hide-inapp">
+          <TechShowcase />
+        </div>
         <HowItWorks />
         <WaitlistForm />
 
@@ -118,7 +124,9 @@ export default function Home() {
           </div>
         </footer>
       </div>
-      <OndaAssistant />
+      <div className="wv-hide-inapp">
+        <OndaAssistant />
+      </div>
     </main>
   )
 }

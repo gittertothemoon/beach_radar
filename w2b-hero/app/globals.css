@@ -81,9 +81,21 @@
 }
 
 /* WebView-only fallback to avoid repaint glitches on in-app browsers */
+.wv-only-inapp {
+  display: none;
+}
+
 html.wv-inapp {
   scroll-behavior: auto;
   overflow-x: hidden;
+}
+
+html.wv-inapp .wv-only-inapp {
+  display: block !important;
+}
+
+html.wv-inapp .wv-hide-inapp {
+  display: none !important;
 }
 
 html.wv-inapp .wv-heavy-fx {

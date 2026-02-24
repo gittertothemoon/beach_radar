@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 
 function detectInAppWebView(): boolean {
   const ua = navigator.userAgent || '';
@@ -16,12 +16,20 @@ function detectInAppWebView(): boolean {
   return isInstagram || isFacebookInApp || isAndroidWebView || isIosWebView;
 }
 
+function applyInAppClasses() {
+  document.documentElement.classList.add('wv-inapp');
+  document.body.classList.add('wv-inapp');
+}
+
+if (typeof window !== 'undefined' && detectInAppWebView()) {
+  applyInAppClasses();
+}
+
 export default function WebViewClassGate() {
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!detectInAppWebView()) return;
 
-    document.documentElement.classList.add('wv-inapp');
-    document.body.classList.add('wv-inapp');
+    applyInAppClasses();
 
     return () => {
       document.documentElement.classList.remove('wv-inapp');
