@@ -38,6 +38,7 @@ export const mockWeatherApi = async (page: Page) => {
           ts: Math.floor(Date.now() / 1000),
           temperatureC: 27,
           windKmh: 14,
+          windDirectionDeg: 315,
           rainProbability: 15,
           weatherCode: 0,
           isDay: true,

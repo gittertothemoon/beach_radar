@@ -4,6 +4,8 @@ export type BeachWeatherCurrent = {
   ts: number;
   temperatureC: number;
   windKmh: number;
+  windDirectionDeg: number | null;
+  windDirectionLabel: string | null;
   rainProbability: number | null;
   weatherCode: number;
   isDay: boolean;
@@ -35,6 +37,7 @@ type WeatherApiSuccess = {
     ts: number;
     temperatureC: number;
     windKmh: number;
+    windDirectionDeg: number | null;
     rainProbability: number | null;
     weatherCode: number;
     isDay: boolean;
@@ -79,6 +82,24 @@ const weatherConditionLabel = (code: number) => {
   return STRINGS.weather.conditions.unknown;
 };
 
+const normalizeDegrees = (degrees: number) => {
+  const normalized = degrees % 360;
+  return normalized < 0 ? normalized + 360 : normalized;
+};
+
+export const windDirectionLabel = (degrees: number | null): string | null => {
+  if (degrees === null) return null;
+  const sector = Math.round(normalizeDegrees(degrees) / 45) % 8;
+  if (sector === 0) return STRINGS.weather.windDirections.north;
+  if (sector === 1) return STRINGS.weather.windDirections.northEast;
+  if (sector === 2) return STRINGS.weather.windDirections.east;
+  if (sector === 3) return STRINGS.weather.windDirections.southEast;
+  if (sector === 4) return STRINGS.weather.windDirections.south;
+  if (sector === 5) return STRINGS.weather.windDirections.southWest;
+  if (sector === 6) return STRINGS.weather.windDirections.west;
+  return STRINGS.weather.windDirections.northWest;
+};
+
 const parseApiSuccess = (payload: unknown): BeachWeatherSnapshot => {
   if (!isObject(payload) || payload.ok !== true) {
     throw new Error("invalid_weather_payload");
@@ -100,6 +121,7 @@ const parseApiSuccess = (payload: unknown): BeachWeatherSnapshot => {
   const currentTs = toFiniteNumber(currentRaw.ts);
   const currentTemp = toFiniteNumber(currentRaw.temperatureC);
   const currentWind = toFiniteNumber(currentRaw.windKmh);
+  const currentWindDirectionDeg = toOptionalFiniteNumber(currentRaw.windDirectionDeg);
   const currentCode = toFiniteNumber(currentRaw.weatherCode);
   const currentRain = toOptionalFiniteNumber(currentRaw.rainProbability);
   const isDay = currentRaw.isDay === true;
@@ -143,6 +165,8 @@ const parseApiSuccess = (payload: unknown): BeachWeatherSnapshot => {
       ts: currentTs,
       temperatureC: currentTemp,
       windKmh: currentWind,
+      windDirectionDeg: currentWindDirectionDeg,
+      windDirectionLabel: windDirectionLabel(currentWindDirectionDeg),
       rainProbability: currentRain,
       weatherCode: currentCode,
       isDay,

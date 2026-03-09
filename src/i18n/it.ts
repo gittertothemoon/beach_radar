@@ -121,6 +121,16 @@ export const STRINGS = {
     wind: "Vento",
     rainProbability: "Prob. pioggia",
     noRainData: "N/D",
+    windDirections: {
+      north: "Tramontana",
+      northEast: "Grecale",
+      east: "Levante",
+      southEast: "Scirocco",
+      south: "Ostro",
+      southWest: "Libeccio",
+      west: "Ponente",
+      northWest: "Maestrale",
+    },
     conditions: {
       clear: "Sereno",
       mainlyClear: "Poco nuvoloso",

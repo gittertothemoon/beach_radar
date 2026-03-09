@@ -51,6 +51,11 @@ const sameServices = (a?: string[], b?: string[]) => {
 const formatRainProbability = (value: number | null) =>
   value === null ? STRINGS.weather.noRainData : `${Math.round(value)}%`;
 
+const formatWind = (windKmh: number, windDirectionLabel: string | null) => {
+  const speed = `${Math.round(windKmh)} km/h`;
+  return windDirectionLabel ? `${speed} · ${windDirectionLabel}` : speed;
+};
+
 const sameNextHours = (
   a: BeachWeatherSnapshot["nextHours"],
   b: BeachWeatherSnapshot["nextHours"],
@@ -84,6 +89,8 @@ const sameWeather = (
     a.current.ts === b.current.ts &&
     a.current.temperatureC === b.current.temperatureC &&
     a.current.windKmh === b.current.windKmh &&
+    a.current.windDirectionDeg === b.current.windDirectionDeg &&
+    a.current.windDirectionLabel === b.current.windDirectionLabel &&
     a.current.rainProbability === b.current.rainProbability &&
     a.current.weatherCode === b.current.weatherCode &&
     a.current.isDay === b.current.isDay &&
@@ -306,7 +313,10 @@ const LidoModalCardComponent = ({
                 <div className="flex items-center justify-between text-[12px]">
                   <span className="br-text-tertiary">{STRINGS.weather.wind}</span>
                   <span className="font-semibold br-text-primary">
-                    {Math.round(weather.current.windKmh)} km/h
+                    {formatWind(
+                      weather.current.windKmh,
+                      weather.current.windDirectionLabel,
+                    )}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[12px]">

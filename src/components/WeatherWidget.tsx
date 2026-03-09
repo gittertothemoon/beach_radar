@@ -13,6 +13,11 @@ type WeatherWidgetProps = {
 const formatRainProbability = (value: number | null) =>
   value === null ? STRINGS.weather.noRainData : `${Math.round(value)}%`;
 
+const formatWind = (windKmh: number, windDirectionLabel: string | null) => {
+  const speed = `${Math.round(windKmh)} km/h`;
+  return windDirectionLabel ? `${speed} · ${windDirectionLabel}` : speed;
+};
+
 const WeatherWidgetComponent = ({
   beachName,
   weather,
@@ -45,7 +50,11 @@ const WeatherWidgetComponent = ({
           <div className="mt-1 text-[10px] br-text-tertiary">
             {STRINGS.weather.rainProbability}:{" "}
             {formatRainProbability(weather.current.rainProbability)} ·{" "}
-            {STRINGS.weather.wind}: {Math.round(weather.current.windKmh)} km/h
+            {STRINGS.weather.wind}:{" "}
+            {formatWind(
+              weather.current.windKmh,
+              weather.current.windDirectionLabel,
+            )}
           </div>
         </div>
       ) : weatherLoading ? (
