@@ -1539,6 +1539,7 @@ function App() {
         beaches={mapBeaches}
         favoriteBeachIds={favoriteBeachIds}
         selectedBeachId={selectedBeachId}
+        keepSelectedPinExpanded={Boolean(soloBeachId)}
         onSelectBeach={handleSelectBeachFromMarker}
         center={mapCenter}
         initialZoom={INITIAL_MAP_ZOOM}

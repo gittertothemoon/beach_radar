@@ -272,6 +272,7 @@ type MapViewProps = {
   beaches: BeachWithStats[];
   favoriteBeachIds: Set<string>;
   selectedBeachId: string | null;
+  keepSelectedPinExpanded?: boolean;
   onSelectBeach: (beachId: string) => void;
   center: LatLng;
   initialZoom?: number;
@@ -288,6 +289,7 @@ const ClusteredMarkers = ({
   beaches,
   favoriteBeachIds,
   selectedBeachId,
+  keepSelectedPinExpanded = false,
   onSelectBeach,
   editMode,
   onOverride,
@@ -296,6 +298,7 @@ const ClusteredMarkers = ({
   | "beaches"
   | "favoriteBeachIds"
   | "selectedBeachId"
+  | "keepSelectedPinExpanded"
   | "onSelectBeach"
   | "editMode"
   | "onOverride"
@@ -333,7 +336,9 @@ const ClusteredMarkers = ({
     void mapTick;
     return getSafeZoom(map);
   }, [map, mapTick]);
-  const selectedIdForClustering = selectedBeachId;
+  const selectedIdForClustering = keepSelectedPinExpanded
+    ? selectedBeachId
+    : null;
   const perfEnabled = isPerfEnabled();
 
   const { clusters, singles } = useMemo(() => {
@@ -779,6 +784,7 @@ const MapViewComponent = ({
   beaches,
   favoriteBeachIds,
   selectedBeachId,
+  keepSelectedPinExpanded = false,
   onSelectBeach,
   center,
   initialZoom = 12,
@@ -847,6 +853,7 @@ const MapViewComponent = ({
           beaches={beaches}
           favoriteBeachIds={favoriteBeachIds}
           selectedBeachId={selectedBeachId}
+          keepSelectedPinExpanded={keepSelectedPinExpanded}
           onSelectBeach={onSelectBeach}
           editMode={editMode}
           onOverride={onOverride}
