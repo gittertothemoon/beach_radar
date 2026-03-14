@@ -4,7 +4,6 @@ import FeaturesGrid from '@/components/FeaturesGrid'
 import TechShowcase from '@/components/TechShowcase'
 import HowItWorks from '@/components/HowItWorks'
 import WaitlistForm from '@/components/WaitlistForm'
-import OndaAssistant from '@/components/OndaAssistant'
 import WebViewHero from '@/components/WebViewHero'
 import { Instagram } from 'lucide-react'
 
@@ -123,9 +122,6 @@ export default function Home() {
             </div>
           </div>
         </footer>
-      </div>
-      <div className="wv-hide-inapp">
-        <OndaAssistant />
       </div>
     </main>
   )
