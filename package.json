@@ -38,7 +38,13 @@
     "mobile:start": "npm --prefix mobile run start",
     "mobile:ios": "npm --prefix mobile run ios",
     "mobile:android": "npm --prefix mobile run android",
-    "mobile:typecheck": "npm --prefix mobile run typecheck"
+    "mobile:typecheck": "npm --prefix mobile run typecheck",
+    "mobile:build:android:dev": "npm --prefix mobile run eas:build:android:dev",
+    "mobile:build:android:preview": "npm --prefix mobile run eas:build:android:preview",
+    "mobile:build:android:prod": "npm --prefix mobile run eas:build:android:prod",
+    "mobile:build:ios:dev": "npm --prefix mobile run eas:build:ios:dev",
+    "mobile:build:ios:preview": "npm --prefix mobile run eas:build:ios:preview",
+    "mobile:build:ios:prod": "npm --prefix mobile run eas:build:ios:prod"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.93.2",

@@ -27,4 +27,27 @@ npm run start
 npm run ios
 npm run android
 npm run typecheck
+npm run eas:build:android:preview
+npm run eas:build:ios:preview
+```
+
+## Internal Builds (EAS)
+
+1. Login:
+```bash
+npx eas-cli login
+```
+
+2. Set required app key secret (once per project):
+```bash
+npx eas-cli secret:create --scope project --name EXPO_PUBLIC_APP_ACCESS_KEY --value "<APP_ACCESS_KEY>"
+```
+
+3. Build:
+```bash
+# Android internal APK
+npm run eas:build:android:preview
+
+# iOS internal build
+npm run eas:build:ios:preview
 ```

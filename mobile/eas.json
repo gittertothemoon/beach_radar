@@ -1,0 +1,44 @@
+{
+  "cli": {
+    "version": ">= 18.3.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_BASE_URL": "https://where2beach.com",
+        "EXPO_PUBLIC_API_TIMEOUT_MS": "12000"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_BASE_URL": "https://where2beach.com",
+        "EXPO_PUBLIC_API_TIMEOUT_MS": "12000"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_BASE_URL": "https://where2beach.com",
+        "EXPO_PUBLIC_API_TIMEOUT_MS": "12000"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

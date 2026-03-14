@@ -62,6 +62,8 @@ npm run mobile:start        # Expo mobile app
 npm run mobile:ios          # Expo iOS target
 npm run mobile:android      # Expo Android target
 npm run mobile:typecheck    # TypeScript check (mobile)
+npm run mobile:build:android:preview  # EAS Android internal APK
+npm run mobile:build:ios:preview      # EAS iOS internal build
 ```
 
 Hero + app-shell (single Vercel project):
@@ -131,6 +133,15 @@ Optional mobile env vars (`EXPO_PUBLIC_*`) can be set in `mobile/.env`:
 - `EXPO_PUBLIC_BASE_URL` (default: `https://where2beach.com`)
 - `EXPO_PUBLIC_APP_ACCESS_KEY` (required app gate key for `/app/`)
 - `EXPO_PUBLIC_API_TIMEOUT_MS` (default: `12000`)
+
+Internal build (EAS):
+
+```bash
+npx eas-cli login
+npx eas-cli secret:create --scope project --name EXPO_PUBLIC_APP_ACCESS_KEY --value "<APP_ACCESS_KEY>"
+npm run mobile:build:android:preview
+npm run mobile:build:ios:preview
+```
 
 ## Environment Variables
 
