@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createHash, randomBytes } from "node:crypto";
+import { updateTestModeStore } from "./test-mode-store.js";
 
 /*
 SQL migration snippet (Phase 1):
@@ -36,6 +37,16 @@ type RateLimitConfig = {
   max: number;
 };
 
+type WaitlistTestState = {
+  rateLimits: Record<string, RateEntry>;
+  signups: Record<string, { count: number }>;
+};
+
+type WaitlistTestOutcome =
+  | { type: "rate_limited"; retryAfter: number }
+  | { type: "spam" }
+  | { type: "ok"; already: boolean };
+
 type WaitlistRateLimitRpcData =
   | { count?: number | null }
   | Array<{ count?: number | null }>
@@ -51,6 +62,7 @@ type SupabaseRateLimitClient = {
 const MAX_BODY_BYTES = 10 * 1024;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const DEFAULT_RATE_LIMIT_MAX = 10;
+const WAITLIST_TEST_STORE_FILE = "waitlist-state.json";
 const TEST_MODE = process.env.WAITLIST_TEST_MODE === "1";
 const DOUBLE_OPT_IN_ENABLED = process.env.ENABLE_DOUBLE_OPTIN === "1";
 
@@ -66,9 +78,6 @@ function readEnv(name: string): string | null {
   }
   return trimmed;
 }
-
-const testRateLimits = new Map<string, RateEntry>();
-const testSignups = new Map<string, { count: number }>();
 
 function getClientIp(req: VercelRequest): string | null {
   const forwarded = req.headers["x-forwarded-for"];
@@ -105,26 +114,63 @@ function getRateLimitKey(ipHash: string, uaHash: string, windowStartMs: number):
   return `${ipHash}:${uaHash}:${windowStartMs}`;
 }
 
-function checkRateLimitMemory(ip: string | null, userAgent: string | null, config: RateLimitConfig): RateResult {
+function createWaitlistTestState(): WaitlistTestState {
+  return {
+    rateLimits: {},
+    signups: {}
+  };
+}
+
+function runWaitlistTestMode(
+  ip: string | null,
+  userAgent: string | null,
+  config: RateLimitConfig,
+  honeypot: string | null,
+  emailValue: string
+): WaitlistTestOutcome {
+  return updateTestModeStore(
+    WAITLIST_TEST_STORE_FILE,
+    createWaitlistTestState,
+    (state) => {
   const now = Date.now();
+      for (const [key, entry] of Object.entries(state.rateLimits)) {
+        if (!entry || entry.resetAt <= now) {
+          delete state.rateLimits[key];
+        }
+      }
+
   const ipHash = hashValue(ip || "unknown");
   const uaHash = hashValue(userAgent || "unknown");
   const windowStartMs = getWindowStartMs(now, config.windowMs);
   const key = getRateLimitKey(ipHash, uaHash, windowStartMs);
-  const entry = testRateLimits.get(key);
+      const entry = state.rateLimits[key];
 
   if (!entry || entry.resetAt <= now) {
-    testRateLimits.set(key, { count: 1, resetAt: windowStartMs + config.windowMs });
-    return { ok: true };
-  }
+        state.rateLimits[key] = { count: 1, resetAt: windowStartMs + config.windowMs };
+      } else if (entry.count >= config.max) {
+        return {
+          type: "rate_limited",
+          retryAfter: Math.max(1, Math.ceil((entry.resetAt - now) / 1000))
+        };
+      } else {
+        entry.count += 1;
+      }
 
-  if (entry.count >= config.max) {
-    const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
-    return { ok: false, retryAfter };
-  }
+      if (honeypot) {
+        return { type: "spam" };
+      }
 
-  entry.count += 1;
-  return { ok: true };
+      const normalizedEmail = emailValue.trim().toLowerCase();
+      const existing = state.signups[normalizedEmail];
+      if (existing) {
+        existing.count += 1;
+        return { type: "ok", already: true };
+      }
+
+      state.signups[normalizedEmail] = { count: 1 };
+      return { type: "ok", already: false };
+    }
+  );
 }
 
 async function checkRateLimitDb(
@@ -325,27 +371,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const rateConfig = getRateLimitConfig();
 
   if (TEST_MODE) {
-    const rateResult = checkRateLimitMemory(ip, userAgent, rateConfig);
-    if (!rateResult.ok) {
+    const outcome = runWaitlistTestMode(ip, userAgent, rateConfig, honeypot, emailValue);
+
+    if (outcome.type === "rate_limited") {
       return res.status(429).json({
         ok: false,
         error: "rate_limited",
-        retry_after: rateResult.retryAfter
+        retry_after: outcome.retryAfter
       });
     }
 
-    if (honeypot) {
+    if (outcome.type === "spam") {
       return res.status(200).json({ ok: true, spam: true });
     }
 
-    const normalizedEmail = emailValue.trim().toLowerCase();
-    const existing = testSignups.get(normalizedEmail);
-    if (existing) {
-      existing.count += 1;
-      return res.status(200).json({ ok: true, already: true });
-    }
-    testSignups.set(normalizedEmail, { count: 1 });
-    return res.status(200).json({ ok: true, already: false });
+    return res.status(200).json({ ok: true, already: outcome.already });
   }
 
   const supabaseUrl = readEnv("SUPABASE_URL");

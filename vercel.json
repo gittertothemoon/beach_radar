@@ -67,18 +67,6 @@
       "permanent": false
     },
     {
-      "source": "/waitlist/(.*)",
-      "missing": [
-        {
-          "type": "cookie",
-          "key": "br_seen_landing",
-          "value": "1"
-        }
-      ],
-      "destination": "/landing/",
-      "permanent": false
-    },
-    {
       "source": "/waitlist",
       "destination": "/waitlist/",
       "permanent": true
@@ -186,7 +174,7 @@
           "value": "1"
         }
       ],
-      "destination": "/index.html"
+      "destination": "/app-shell/index.html"
     }
   ]
 }

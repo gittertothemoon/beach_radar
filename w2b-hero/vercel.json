@@ -14,16 +14,6 @@
       "permanent": true
     },
     {
-      "source": "/waitlist",
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/waitlist/(.*)",
-      "destination": "/",
-      "permanent": false
-    },
-    {
       "source": "/landing",
       "destination": "/",
       "permanent": false
@@ -42,7 +32,7 @@
     {
       "source": "/app",
       "missing": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
-      "destination": "/",
+      "destination": "/waitlist/",
       "permanent": false
     },
     {
@@ -65,7 +55,7 @@
     {
       "source": "/app/(.*)",
       "missing": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
-      "destination": "/",
+      "destination": "/waitlist/",
       "permanent": false
     }
   ],

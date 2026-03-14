@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Copy } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -27,17 +27,8 @@ export default function WaitlistForm() {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
     const [copied, setCopied] = useState(false);
-    const [mounted, setMounted] = useState(false);
-    const inviteCodeRef = useRef('');
-    const [inviteCode, setInviteCode] = useState('');
-
-    useEffect(() => {
-        setMounted(true);
-        // Generate a random mock invite code on mount for later use
-        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-        inviteCodeRef.current = code;
-        setInviteCode(code);
-    }, []);
+    const [inviteCode] = useState(() => Math.random().toString(36).substring(2, 8).toUpperCase());
+    const isClient = typeof window !== 'undefined';
 
     // Form submission logic
     const handleSubmit = async (e: React.FormEvent) => {
@@ -61,11 +52,14 @@ export default function WaitlistForm() {
                     version: 'waitlist_v2_hero'
                 })
             });
+            const body = await response.json().catch(() => null);
 
-            if (response.ok) {
+            if (response.ok && !body?.already) {
                 handleSuccess();
+            } else if (response.ok && body?.already) {
+                setStatus('idle');
+                setErrorMessage('Questa email è già registrata in lista d\'attesa!');
             } else {
-                const body = await response.json().catch(() => null);
                 if (response.status === 409 || body?.already) {
                     setStatus('idle');
                     setErrorMessage('Questa email è già registrata in lista d\'attesa!');
@@ -123,7 +117,7 @@ export default function WaitlistForm() {
     };
 
     const getInviteUrl = () => {
-        if (!mounted) return '';
+        if (!isClient) return '';
         return `${window.location.origin}/invite/${inviteCode}`;
     };
 
@@ -198,7 +192,7 @@ export default function WaitlistForm() {
                                             <div className="wv-heavy-fx absolute inset-0 bg-blue-500/20 rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
                                         <div className="relative flex items-center bg-[#000006] border border-blue-500/30 rounded-xl overflow-hidden p-1 shadow-[inset_0_0_15px_rgba(59,130,246,0.1)]">
                                             <div className="flex-1 px-4 py-3 text-left font-mono text-sm sm:text-base text-blue-200 truncate select-all">
-                                                {mounted ? getInviteUrl() : 'https://where2beach.com/invite/...'}
+                                                {isClient ? getInviteUrl() : 'https://where2beach.com/invite/...'}
                                             </div>
                                             <button
                                                 onClick={() => {
@@ -216,7 +210,7 @@ export default function WaitlistForm() {
                                     {/* Direct Share Buttons */}
                                     <div className="grid grid-cols-2 gap-3 pt-2">
                                         <a
-                                            href={mounted ? getShareLinks().whatsapp : '#'}
+                                            href={isClient ? getShareLinks().whatsapp : '#'}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex items-center justify-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 py-3 rounded-xl font-bold transition-colors"
@@ -225,7 +219,7 @@ export default function WaitlistForm() {
                                             WhatsApp
                                         </a>
                                         <a
-                                            href={mounted ? getShareLinks().telegram : '#'}
+                                            href={isClient ? getShareLinks().telegram : '#'}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex items-center justify-center gap-2 bg-[#0088cc]/10 hover:bg-[#0088cc]/20 text-[#0088cc] border border-[#0088cc]/20 py-3 rounded-xl font-bold transition-colors"

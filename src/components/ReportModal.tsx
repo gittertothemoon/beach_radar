@@ -180,6 +180,7 @@ const ReportModal = ({
                 <button
                   key={option.level}
                   onClick={() => setSelectedCrowd(option.level)}
+                  data-testid={`report-level-${option.level}`}
                   disabled={!canReport || submitting}
                   className={`br-press rounded-[10px] border px-2 py-2.5 text-[13px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${selectedCrowd === option.level
                       ? "border-sky-300/60 bg-sky-500/20 text-sky-100 shadow-[0_0_15px_rgba(14,165,233,0.15)]"
@@ -238,6 +239,7 @@ const ReportModal = ({
 
           <button
             onClick={() => selectedCrowd && onSubmit(selectedCrowd, selectedWater ?? undefined, selectedBeach ?? undefined)}
+            data-testid="report-submit"
             disabled={!selectedCrowd || !canReport || submitting}
             className="br-press w-full rounded-[12px] border border-sky-300/60 bg-sky-500/30 px-4 py-3.5 text-[15px] font-semibold text-sky-50 shadow-[0_8px_20px_rgba(14,165,233,0.3)] backdrop-blur-sm transition hover:border-sky-300/80 hover:bg-sky-500/40 disabled:border-white/10 disabled:bg-white/5 disabled:text-white/30 disabled:shadow-none disabled:cursor-not-allowed mt-2"
           >

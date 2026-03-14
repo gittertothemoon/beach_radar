@@ -47,7 +47,7 @@ const ReviewModalComponent = ({
         try {
             await onSubmit(content.trim(), rating);
             onClose();
-        } catch (err) {
+        } catch {
             setError(STRINGS.report.submitFailed || "Errore durante l'invio");
         } finally {
             if (isOpen) {

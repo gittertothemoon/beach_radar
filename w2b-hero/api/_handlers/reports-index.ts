@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { readTestModeStore, updateTestModeStore } from "./test-mode-store.js";
 
 const REPORTS_TABLE = "beach_reports";
 const MAX_BODY_BYTES = 8 * 1024;
@@ -10,6 +11,7 @@ const DEFAULT_REPORTS_GET_LIMIT = 5000;
 const MAX_BEACH_ID_LENGTH = 96;
 const MAX_REPORTER_HASH_LENGTH = 128;
 const TEST_MODE_MAX_REPORTS = 5000;
+const REPORTS_TEST_STORE_FILE = "reports-state.json";
 const TEST_MODE = process.env.REPORTS_TEST_MODE === "1";
 const REPORT_RATE_LIMIT_MIN = readIntEnv(
   "REPORTS_RATE_LIMIT_MIN",
@@ -52,7 +54,13 @@ type PublicReport = {
   attribution?: unknown;
 };
 
-const testReports: ReportRow[] = [];
+type ReportsTestStore = {
+  reports: ReportRow[];
+};
+
+function createReportsTestStore(): ReportsTestStore {
+  return { reports: [] };
+}
 
 function readEnv(name: string): string | null {
   const raw = process.env[name];
@@ -302,7 +310,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const lookbackIso = getLookbackIso();
 
     if (TEST_MODE) {
-      const reports = testReports
+      const state = readTestModeStore(
+        REPORTS_TEST_STORE_FILE,
+        createReportsTestStore,
+      );
+      const reports = state.reports
         .filter((report) => report.created_at >= lookbackIso)
         .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
         .map((row) => toPublicReport(row))
@@ -390,30 +402,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   ).toISOString();
 
   if (TEST_MODE) {
-    const duplicate = testReports.find(
-      (report) =>
-        report.beach_id === beachId &&
-        report.reporter_hash === reporterHash &&
-        report.created_at >= rateSinceIso,
+    const result = updateTestModeStore(
+      REPORTS_TEST_STORE_FILE,
+      createReportsTestStore,
+      (state) => {
+        const duplicate = state.reports.find(
+          (report) =>
+            report.beach_id === beachId &&
+            report.reporter_hash === reporterHash &&
+            report.created_at >= rateSinceIso,
+        );
+        if (duplicate) {
+          return { duplicate: true as const, row: null as ReportRow | null };
+        }
+
+        const id = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        const row: ReportRow = {
+          id,
+          beach_id: beachId,
+          crowd_level: crowdLevel,
+          water_condition: waterCondition ?? null,
+          beach_condition: beachCondition ?? null,
+          created_at: nowIso,
+          attribution,
+          reporter_hash: reporterHash,
+        };
+
+        state.reports.unshift(row);
+        if (state.reports.length > TEST_MODE_MAX_REPORTS) {
+          state.reports.length = TEST_MODE_MAX_REPORTS;
+        }
+
+        return { duplicate: false as const, row };
+      },
     );
-    if (duplicate) {
+
+    if (result.duplicate) {
       return sendTooSoon(res);
     }
 
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    const row: ReportRow = {
-      id,
-      beach_id: beachId,
-      crowd_level: crowdLevel,
-      water_condition: waterCondition ?? null,
-      beach_condition: beachCondition ?? null,
-      created_at: nowIso,
-      attribution,
-      reporter_hash: reporterHash,
-    };
-    testReports.unshift(row);
-    if (testReports.length > TEST_MODE_MAX_REPORTS) {
-      testReports.length = TEST_MODE_MAX_REPORTS;
+    const row = result.row;
+    if (!row) {
+      return res.status(500).json({ ok: false, error: "report_invalid" });
     }
     const publicReport = toPublicReport(row);
     if (!publicReport) {

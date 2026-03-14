@@ -47,6 +47,7 @@ test("report submit happy path", async ({ page }) => {
   await page.getByTestId("report-cta").click();
   await expect(page.getByTestId("report-modal")).toBeVisible();
   await page.getByTestId("report-level-2").click();
+  await page.getByTestId("report-submit").click();
 
   await expect.poll(() => postCount).toBe(1);
   await expect(page.getByTestId("report-modal")).not.toBeVisible();
@@ -85,6 +86,7 @@ test("report submit rate-limited shows error", async ({ page }) => {
   await page.getByTestId("report-cta").click();
   await expect(page.getByTestId("report-modal")).toBeVisible();
   await page.getByTestId("report-level-2").click();
+  await page.getByTestId("report-submit").click();
 
   await expect(page.getByTestId("report-error")).toBeVisible();
 });
