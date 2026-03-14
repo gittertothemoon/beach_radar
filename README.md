@@ -58,6 +58,10 @@ npm run typecheck           # TypeScript project refs check
 npm run check               # lint + typecheck
 npm run build               # production build
 npm run preview             # preview dist
+npm run mobile:start        # Expo mobile app
+npm run mobile:ios          # Expo iOS target
+npm run mobile:android      # Expo Android target
+npm run mobile:typecheck    # TypeScript check (mobile)
 ```
 
 Hero + app-shell (single Vercel project):
@@ -108,6 +112,26 @@ npm run posters:gen
 ```
 
 KML intake directory: `data/raw/kml/`
+
+## Mobile App (Expo)
+
+The repo includes a phase-2 mobile app in `mobile/` with:
+- native reports flow (`GET/POST /api/reports`)
+- native weather flow (`GET /api/weather`)
+- native waitlist flow (`POST /api/waitlist`)
+- web map fallback (`/app/` in WebView)
+
+Run it:
+
+```bash
+npm run mobile:start
+```
+
+Optional mobile env vars (`EXPO_PUBLIC_*`) can be set in `mobile/.env`:
+
+- `EXPO_PUBLIC_BASE_URL` (default: `https://where2beach.com`)
+- `EXPO_PUBLIC_APP_ACCESS_KEY` (optional; app gate key for `/app/`)
+- `EXPO_PUBLIC_API_TIMEOUT_MS` (default: `12000`)
 
 ## Environment Variables
 
