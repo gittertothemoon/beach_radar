@@ -10,6 +10,7 @@ type OpenMeteoPayload = {
     time?: number;
     temperature_2m?: number;
     wind_speed_10m?: number;
+    wind_direction_10m?: number;
     precipitation_probability?: number;
     weather_code?: number;
     is_day?: number;
@@ -114,7 +115,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     latitude: lat.toFixed(5),
     longitude: lng.toFixed(5),
     current:
-      "temperature_2m,wind_speed_10m,precipitation_probability,weather_code,is_day",
+      "temperature_2m,wind_speed_10m,wind_direction_10m,precipitation_probability,weather_code,is_day",
     hourly: "temperature_2m,precipitation_probability,weather_code",
     forecast_days: "2",
     timezone: "auto",
@@ -140,6 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const currentTs = current.time;
   const currentTemperature = current.temperature_2m;
   const currentWind = current.wind_speed_10m;
+  const currentWindDirection = current.wind_direction_10m;
   const currentCode = current.weather_code;
   const currentRain = current.precipitation_probability;
   const currentIsDay = current.is_day;
@@ -171,6 +173,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ts: currentTs,
       temperatureC: currentTemperature,
       windKmh: currentWind,
+      windDirectionDeg: isFiniteNumber(currentWindDirection)
+        ? currentWindDirection
+        : null,
       rainProbability: isFiniteNumber(currentRain) ? currentRain : null,
       weatherCode: currentCode,
       isDay: currentIsDay === 1,
