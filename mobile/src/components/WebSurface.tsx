@@ -16,9 +16,16 @@ type WebNavigationState = {
 type WebSurfaceProps = {
   title: string;
   initialUrl: string;
+  blockWaitlistRedirect?: boolean;
+  waitlistBlockedMessage?: string;
 };
 
-export const WebSurface = ({ title, initialUrl }: WebSurfaceProps) => {
+export const WebSurface = ({
+  title,
+  initialUrl,
+  blockWaitlistRedirect = false,
+  waitlistBlockedMessage,
+}: WebSurfaceProps) => {
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +45,21 @@ export const WebSurface = ({ title, initialUrl }: WebSurfaceProps) => {
   const handleOpenInBrowser = useCallback(() => {
     void Linking.openURL(currentUrl);
   }, [currentUrl]);
+
+  const handleShouldStartLoadWithRequest = useCallback(
+    (request: { url: string }) => {
+      if (blockWaitlistRedirect && /\/waitlist(\/|$)/i.test(request.url)) {
+        setLoading(false);
+        setError(
+          waitlistBlockedMessage ??
+            "Accesso app non autorizzato. Configura la chiave app e riprova.",
+        );
+        return false;
+      }
+      return true;
+    },
+    [blockWaitlistRedirect, waitlistBlockedMessage],
+  );
 
   return (
     <View style={styles.container}>
@@ -61,6 +83,7 @@ export const WebSurface = ({ title, initialUrl }: WebSurfaceProps) => {
       <WebView
         ref={webViewRef}
         source={source}
+        onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
         onLoadStart={() => {
           setLoading(true);
           setError(null);

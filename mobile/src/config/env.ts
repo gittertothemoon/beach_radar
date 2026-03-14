@@ -41,7 +41,9 @@ export const MOBILE_API_BASE_URL = `${MOBILE_BASE_URL}/api`;
 export const MOBILE_WAITLIST_URL = `${MOBILE_BASE_URL}/waitlist/index.html?utm_source=mobile&utm_medium=app&utm_campaign=mobile_waitlist_v1`;
 
 export const MOBILE_APP_URL = MOBILE_APP_ACCESS_KEY
-  ? `${MOBILE_BASE_URL}/app/?key=${encodeURIComponent(MOBILE_APP_ACCESS_KEY)}`
+  ? `${MOBILE_BASE_URL}/api/app-access?key=${encodeURIComponent(
+      MOBILE_APP_ACCESS_KEY,
+    )}&path=${encodeURIComponent("/app/")}`
   : `${MOBILE_BASE_URL}/app/`;
 
 export const buildApiUrl = (

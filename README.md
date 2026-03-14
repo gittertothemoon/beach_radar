@@ -115,11 +115,10 @@ KML intake directory: `data/raw/kml/`
 
 ## Mobile App (Expo)
 
-The repo includes a phase-2 mobile app in `mobile/` with:
-- native reports flow (`GET/POST /api/reports`)
-- native weather flow (`GET /api/weather`)
-- native waitlist flow (`POST /api/waitlist`)
-- web map fallback (`/app/` in WebView)
+The repo includes a mobile app in `mobile/` that opens the definitive `/app/`
+experience (map + pins + full app flow) in mobile.
+
+The app does not include landing/waitlist flows in its navigation.
 
 Run it:
 
@@ -130,7 +129,7 @@ npm run mobile:start
 Optional mobile env vars (`EXPO_PUBLIC_*`) can be set in `mobile/.env`:
 
 - `EXPO_PUBLIC_BASE_URL` (default: `https://where2beach.com`)
-- `EXPO_PUBLIC_APP_ACCESS_KEY` (optional; app gate key for `/app/`)
+- `EXPO_PUBLIC_APP_ACCESS_KEY` (required app gate key for `/app/`)
 - `EXPO_PUBLIC_API_TIMEOUT_MS` (default: `12000`)
 
 ## Environment Variables

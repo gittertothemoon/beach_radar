@@ -1,18 +1,10 @@
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer, DarkTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { HomeScreen } from "./src/screens/HomeScreen";
 import { AppWebScreen } from "./src/screens/AppWebScreen";
-import { ReportsScreen } from "./src/screens/ReportsScreen";
-import { WeatherScreen } from "./src/screens/WeatherScreen";
-import { WaitlistNativeScreen } from "./src/screens/WaitlistNativeScreen";
 
 export type RootStackParamList = {
-  Home: undefined;
   MapWeb: undefined;
-  Reports: undefined;
-  Weather: undefined;
-  WaitlistNative: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -40,35 +32,10 @@ export default function App() {
           contentStyle: { backgroundColor: "#020617" },
         }}
       >
-        <Stack.Screen name="Home" options={{ title: "Where2Beach" }}>
-          {({ navigation }) => (
-            <HomeScreen
-              onOpenMapWeb={() => navigation.navigate("MapWeb")}
-              onOpenReports={() => navigation.navigate("Reports")}
-              onOpenWeather={() => navigation.navigate("Weather")}
-              onOpenWaitlistNative={() => navigation.navigate("WaitlistNative")}
-            />
-          )}
-        </Stack.Screen>
         <Stack.Screen
           name="MapWeb"
           component={AppWebScreen}
-          options={{ title: "App Spiagge" }}
-        />
-        <Stack.Screen
-          name="Reports"
-          component={ReportsScreen}
-          options={{ title: "Segnalazioni" }}
-        />
-        <Stack.Screen
-          name="Weather"
-          component={WeatherScreen}
-          options={{ title: "Meteo" }}
-        />
-        <Stack.Screen
-          name="WaitlistNative"
-          component={WaitlistNativeScreen}
-          options={{ title: "Waitlist" }}
+          options={{ title: "Where2Beach" }}
         />
       </Stack.Navigator>
     </NavigationContainer>
