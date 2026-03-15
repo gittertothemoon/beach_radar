@@ -133,6 +133,7 @@ Optional mobile env vars (`EXPO_PUBLIC_*`) can be set in `mobile/.env`:
 - `EXPO_PUBLIC_BASE_URL` (default: `https://where2beach.com`)
 - `EXPO_PUBLIC_APP_ACCESS_KEY` (required app gate key for `/app/`)
 - `EXPO_PUBLIC_API_TIMEOUT_MS` (default: `12000`)
+- `EXPO_PUBLIC_REPORT_ANYWHERE` (QA-only, set `1` to bypass report geofence)
 
 Internal build (EAS):
 

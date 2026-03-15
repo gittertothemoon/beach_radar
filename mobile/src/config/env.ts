@@ -12,6 +12,14 @@ const readAppAccessKey = (rawValue: string | undefined): string | null => {
   return trimmed.length > 0 ? trimmed : null;
 };
 
+const readBooleanEnv = (rawValue: string | undefined, fallback = false): boolean => {
+  if (!rawValue) return fallback;
+  const normalized = rawValue.trim().toLowerCase();
+  if (normalized === "1" || normalized === "true") return true;
+  if (normalized === "0" || normalized === "false") return false;
+  return fallback;
+};
+
 const readNumberEnv = (
   rawValue: string | undefined,
   fallback: number,
@@ -35,16 +43,22 @@ export const MOBILE_API_TIMEOUT_MS = readNumberEnv(
   3000,
   30000,
 );
+export const MOBILE_REPORT_ANYWHERE = readBooleanEnv(
+  process.env.EXPO_PUBLIC_REPORT_ANYWHERE,
+  false,
+);
 
 export const MOBILE_API_BASE_URL = `${MOBILE_BASE_URL}/api`;
 
 export const MOBILE_WAITLIST_URL = `${MOBILE_BASE_URL}/waitlist/index.html?utm_source=mobile&utm_medium=app&utm_campaign=mobile_waitlist_v1`;
 
+const MOBILE_APP_PATH = MOBILE_REPORT_ANYWHERE ? "/app/?report_anywhere=1" : "/app/";
+
 export const MOBILE_APP_URL = MOBILE_APP_ACCESS_KEY
   ? `${MOBILE_BASE_URL}/api/app-access?key=${encodeURIComponent(
       MOBILE_APP_ACCESS_KEY,
-    )}&path=${encodeURIComponent("/app/")}`
-  : `${MOBILE_BASE_URL}/app/`;
+    )}&path=${encodeURIComponent(MOBILE_APP_PATH)}`
+  : `${MOBILE_BASE_URL}${MOBILE_APP_PATH}`;
 
 export const buildApiUrl = (
   endpoint: string,
