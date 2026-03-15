@@ -45,6 +45,7 @@ export default defineConfig({
       name: "app-ui",
       testDir: "tests",
       testMatch: [
+        "app.auth.spec.ts",
         "app.map.spec.ts",
         "app.reports.spec.ts",
         "app.favorites.spec.ts"

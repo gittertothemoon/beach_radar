@@ -26,6 +26,7 @@ export type RegisterResult =
 type LoginErrorCode =
   | "missing_config"
   | "invalid_credentials"
+  | "email_not_confirmed"
   | "network"
   | "unknown";
 
@@ -153,6 +154,9 @@ const mapLoginError = (message: string | undefined): LoginErrorCode => {
   const normalized = (message ?? "").toLowerCase();
   if (normalized.includes("invalid login credentials")) {
     return "invalid_credentials";
+  }
+  if (normalized.includes("email not confirmed")) {
+    return "email_not_confirmed";
   }
   if (normalized.includes("network")) return "network";
   return "unknown";

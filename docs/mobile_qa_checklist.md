@@ -61,6 +61,7 @@ iOS (temporary while Apple team approval is pending):
 
 - `npm run test:app:map` -> pass
 - `npm run test:app:reports` -> pass
+- `npm run test:app:auth` -> pass
 - `npm run test:app:favorites` -> pass (authenticated branch skipped without test credentials)
 - `npm run test:app:gating` -> pass (key/cookie branch skipped when key not set in test env)
 

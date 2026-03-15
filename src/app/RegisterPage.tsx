@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import logo from "../assets/logo.png";
 import { STRINGS } from "../i18n/it";
 import { PUBLIC_BASE_URL } from "../config/publicUrl";
@@ -295,7 +295,11 @@ const RegisterPage = () => {
             setError(STRINGS.account.invalidCredentials);
             return;
           }
-          setError(STRINGS.account.createFailed);
+          if (loginResult.code === "email_not_confirmed") {
+            setError(STRINGS.account.emailConfirmationRequired);
+            return;
+          }
+          setError(STRINGS.account.loginFailed);
           return;
         }
         if (!loginResult.sessionReady) {
@@ -360,12 +364,20 @@ const RegisterPage = () => {
         setError(STRINGS.account.resetPasswordRequestFailed);
       } else if (isResetMode) {
         setError(STRINGS.account.resetPasswordFailed);
+      } else if (isLoginMode) {
+        setError(STRINGS.account.loginFailed);
       } else {
         setError(STRINGS.account.createFailed);
       }
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (submitting) return;
+    void handleSubmit();
   };
 
   return (
@@ -394,137 +406,138 @@ const RegisterPage = () => {
 
             <p className="mt-2 text-[13px] leading-snug br-text-secondary">{pageSubtitle}</p>
 
-            <div className="mt-4 grid grid-cols-1 gap-x-2.5 gap-y-3.5 min-[390px]:grid-cols-2">
-              {isRegisterMode ? (
-                <label className="block">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
-                    {STRINGS.account.firstNameLabel}
-                  </span>
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={(event) => {
-                      setFirstName(event.target.value);
-                      setError(null);
-                      setNotice(null);
-                    }}
-                    placeholder={STRINGS.account.firstNamePlaceholder}
-                    className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
-                    autoFocus
-                  />
-                </label>
-              ) : null}
+            <form onSubmit={handleFormSubmit} noValidate>
+              <div className="mt-4 grid grid-cols-1 gap-x-2.5 gap-y-3.5 min-[390px]:grid-cols-2">
+                {isRegisterMode ? (
+                  <label className="block">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
+                      {STRINGS.account.firstNameLabel}
+                    </span>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(event) => {
+                        setFirstName(event.target.value);
+                        setError(null);
+                        setNotice(null);
+                      }}
+                      placeholder={STRINGS.account.firstNamePlaceholder}
+                      className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                      autoFocus
+                    />
+                  </label>
+                ) : null}
 
-              {isRegisterMode ? (
-                <label className="block">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
-                    {STRINGS.account.lastNameLabel}
-                  </span>
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={(event) => {
-                      setLastName(event.target.value);
-                      setError(null);
-                      setNotice(null);
-                    }}
-                    placeholder={STRINGS.account.lastNamePlaceholder}
-                    className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
-                  />
-                </label>
-              ) : null}
+                {isRegisterMode ? (
+                  <label className="block">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
+                      {STRINGS.account.lastNameLabel}
+                    </span>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(event) => {
+                        setLastName(event.target.value);
+                        setError(null);
+                        setNotice(null);
+                      }}
+                      placeholder={STRINGS.account.lastNamePlaceholder}
+                      className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                    />
+                  </label>
+                ) : null}
 
-              {!isResetMode ? (
-                <label className="col-span-full block">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
-                    {STRINGS.account.emailLabel}
-                  </span>
-                  <input
-                    data-testid="auth-email-input"
-                    type="email"
-                    value={email}
-                    onChange={(event) => {
-                      setEmail(event.target.value);
-                      setError(null);
-                      setNotice(null);
-                    }}
-                    placeholder={STRINGS.account.emailPlaceholder}
-                    className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
-                    autoFocus={isLoginMode || isForgotMode}
-                  />
-                </label>
-              ) : null}
+                {!isResetMode ? (
+                  <label className="col-span-full block">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
+                      {STRINGS.account.emailLabel}
+                    </span>
+                    <input
+                      data-testid="auth-email-input"
+                      type="email"
+                      value={email}
+                      onChange={(event) => {
+                        setEmail(event.target.value);
+                        setError(null);
+                        setNotice(null);
+                      }}
+                      placeholder={STRINGS.account.emailPlaceholder}
+                      className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                      autoFocus={isLoginMode || isForgotMode}
+                    />
+                  </label>
+                ) : null}
 
-              {!isForgotMode ? (
-                <label className={isLoginMode ? "col-span-full block" : "block"}>
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
-                    {STRINGS.account.passwordLabel}
-                  </span>
-                  <input
-                    data-testid="auth-password-input"
-                    type="password"
-                    value={password}
-                    onChange={(event) => {
-                      setPassword(event.target.value);
-                      setError(null);
-                      setNotice(null);
-                    }}
-                    placeholder={STRINGS.account.passwordPlaceholder}
-                    className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
-                    autoFocus={isResetMode}
-                  />
-                </label>
-              ) : null}
+                {!isForgotMode ? (
+                  <label className={isLoginMode ? "col-span-full block" : "block"}>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
+                      {STRINGS.account.passwordLabel}
+                    </span>
+                    <input
+                      data-testid="auth-password-input"
+                      type="password"
+                      value={password}
+                      onChange={(event) => {
+                        setPassword(event.target.value);
+                        setError(null);
+                        setNotice(null);
+                      }}
+                      placeholder={STRINGS.account.passwordPlaceholder}
+                      className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                      autoFocus={isResetMode}
+                    />
+                  </label>
+                ) : null}
 
-              {isRegisterMode || isResetMode ? (
-                <label className="block">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
-                    {STRINGS.account.confirmPasswordLabel}
-                  </span>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(event) => {
-                      setConfirmPassword(event.target.value);
-                      setError(null);
-                      setNotice(null);
-                    }}
-                    placeholder={STRINGS.account.confirmPasswordPlaceholder}
-                    className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
-                  />
-                </label>
-              ) : null}
+                {isRegisterMode || isResetMode ? (
+                  <label className="block">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
+                      {STRINGS.account.confirmPasswordLabel}
+                    </span>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(event) => {
+                        setConfirmPassword(event.target.value);
+                        setError(null);
+                        setNotice(null);
+                      }}
+                      placeholder={STRINGS.account.confirmPasswordPlaceholder}
+                      className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                    />
+                  </label>
+                ) : null}
 
-              {isRegisterMode || isResetMode ? (
-                <div className="col-span-full rounded-[10px] border border-white/12 bg-black/30 px-3 py-2.5 text-[11px] leading-snug br-text-tertiary">
-                  {STRINGS.account.passwordHint}
-                </div>
-              ) : null}
+                {isRegisterMode || isResetMode ? (
+                  <div className="col-span-full rounded-[10px] border border-white/12 bg-black/30 px-3 py-2.5 text-[11px] leading-snug br-text-tertiary">
+                    {STRINGS.account.passwordHint}
+                  </div>
+                ) : null}
 
-              {isRegisterMode ? (
-                <label className="col-span-full flex items-start gap-2.5 rounded-[10px] border border-white/12 bg-black/30 px-3 py-2.5 text-[12px] leading-snug br-text-secondary">
-                  <input
-                    type="checkbox"
-                    checked={consentAccepted}
-                    onChange={(event) => {
-                      setConsentAccepted(event.target.checked);
-                      setError(null);
-                      setNotice(null);
-                    }}
-                    className="mt-[1px] h-4 w-4 shrink-0 accent-sky-400"
-                  />
-                  <span>
-                    {STRINGS.account.consentLabel}{" "}
-                    <a
-                      href={privacyUrl}
-                      className="font-semibold underline-offset-2 hover:underline"
-                    >
-                      Privacy
-                    </a>
-                  </span>
-                </label>
-              ) : null}
-            </div>
+                {isRegisterMode ? (
+                  <label className="col-span-full flex items-start gap-2.5 rounded-[10px] border border-white/12 bg-black/30 px-3 py-2.5 text-[12px] leading-snug br-text-secondary">
+                    <input
+                      type="checkbox"
+                      checked={consentAccepted}
+                      onChange={(event) => {
+                        setConsentAccepted(event.target.checked);
+                        setError(null);
+                        setNotice(null);
+                      }}
+                      className="mt-[1px] h-4 w-4 shrink-0 accent-sky-400"
+                    />
+                    <span>
+                      {STRINGS.account.consentLabel}{" "}
+                      <a
+                        href={privacyUrl}
+                        className="font-semibold underline-offset-2 hover:underline"
+                      >
+                        Privacy
+                      </a>
+                    </span>
+                  </label>
+                ) : null}
+              </div>
 
             {error ? (
               <div className="mt-3.5 rounded-[10px] border border-rose-300/60 bg-rose-500/25 px-3 py-2.5 text-[12px] text-rose-50">
@@ -538,18 +551,15 @@ const RegisterPage = () => {
               </div>
             ) : null}
 
-            <div className="mt-5 space-y-3 border-t border-white/8 pt-4">
-              <button
-                type="button"
-                disabled={submitting}
-                data-testid="auth-submit"
-                onClick={() => {
-                  void handleSubmit();
-                }}
-                className="br-press w-full rounded-[10px] border border-white/25 bg-black/50 px-3 py-3.5 text-[14px] font-semibold text-slate-50 shadow-[0_8px_20px_rgba(0,0,0,0.42)] backdrop-blur-sm focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {submitLabel}
-              </button>
+              <div className="mt-5 space-y-3 border-t border-white/8 pt-4">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  data-testid="auth-submit"
+                  className="br-press w-full rounded-[10px] border border-white/25 bg-black/50 px-3 py-3.5 text-[14px] font-semibold text-slate-50 shadow-[0_8px_20px_rgba(0,0,0,0.42)] backdrop-blur-sm focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {submitLabel}
+                </button>
 
               <button
                 type="button"
@@ -634,7 +644,8 @@ const RegisterPage = () => {
                   </p>
                 </div>
               ) : null}
-            </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>
