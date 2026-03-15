@@ -184,6 +184,7 @@ SQL migration:
 - `docs/README.md`: documentation index
 - `docs/repo_map.md`: directory map and ownership boundaries
 - `docs/waitlist_ops.md`: waitlist runbook (local, CI, envs, SQL, retention)
+- `docs/mobile_qa_checklist.md`: mobile map QA checklist (manual + automated)
 - `tools/posters/README.md`: poster generation workflow
 - `CONTRIBUTING.md`: contribution and quality workflow
 
