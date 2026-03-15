@@ -27,16 +27,11 @@ export default function App() {
       <StatusBar style="light" />
       <Stack.Navigator
         screenOptions={{
-          headerStyle: { backgroundColor: "#0f172a" },
-          headerTintColor: "#e2e8f0",
+          headerShown: false,
           contentStyle: { backgroundColor: "#020617" },
         }}
       >
-        <Stack.Screen
-          name="MapWeb"
-          component={AppWebScreen}
-          options={{ title: "Where2Beach" }}
-        />
+        <Stack.Screen name="MapWeb" component={AppWebScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

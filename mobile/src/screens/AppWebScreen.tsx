@@ -22,7 +22,6 @@ export const AppWebScreen = () => {
 
   return (
     <WebSurface
-      title="Mappa spiagge"
       initialUrl={MOBILE_APP_URL}
       blockWaitlistRedirect
       waitlistBlockedMessage="Chiave app non valida o scaduta. Aggiorna EXPO_PUBLIC_APP_ACCESS_KEY e riapri."
