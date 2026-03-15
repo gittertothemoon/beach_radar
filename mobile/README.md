@@ -52,3 +52,10 @@ npm run eas:build:android:preview
 # iOS internal build
 npm run eas:build:ios:preview
 ```
+
+## Release Prep
+
+- Store release checklist and runbook:
+  - `docs/mobile_release_ready_pack.md`
+- Manual + automated QA before release:
+  - `docs/mobile_qa_checklist.md`
