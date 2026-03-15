@@ -1,11 +1,13 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 
 type WebSurfaceProps = {
@@ -19,6 +21,9 @@ export const WebSurface = ({
   blockWaitlistRedirect = false,
   waitlistBlockedMessage,
 }: WebSurfaceProps) => {
+  const insets = useSafeAreaInsets();
+  const statusBarOverlayHeight = Math.max(28, insets.top + 2);
+  const statusBarFadeHeight = Platform.OS === "ios" ? 8 : 6;
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +52,24 @@ export const WebSurface = ({
 
   return (
     <View style={styles.container}>
+      <View
+        pointerEvents="none"
+        style={[
+          styles.statusBarScrim,
+          { height: statusBarOverlayHeight },
+        ]}
+      />
+      <View
+        pointerEvents="none"
+        style={[
+          styles.statusBarGradient,
+          {
+            top: statusBarOverlayHeight,
+            height: statusBarFadeHeight,
+          },
+        ]}
+      />
+
       {error ? (
         <View style={styles.errorBox}>
           <Text style={styles.errorTitle}>Connessione non disponibile</Text>
@@ -94,6 +117,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#020617",
+  },
+  statusBarScrim: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(2, 6, 23, 0.52)",
+    zIndex: 5,
+  },
+  statusBarGradient: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(2, 6, 23, 0.12)",
+    zIndex: 4,
   },
   loadingLayer: {
     position: "absolute",
