@@ -33,6 +33,8 @@ export type Report = {
   crowdLevel: CrowdLevel;
   waterCondition?: WaterLevel;
   beachCondition?: BeachLevel;
+  hasJellyfish?: boolean;
+  hasAlgae?: boolean;
   reporterHash?: string;
   attribution?: AttributionSnapshot;
 };
@@ -52,6 +54,8 @@ export type BeachStats = {
   crowdLevel: CrowdLevel;
   waterCondition?: WaterLevel;
   beachCondition?: BeachLevel;
+  hasJellyfish?: boolean;
+  hasAlgae?: boolean;
   state: BeachState;
   confidence: number;
   updatedAt: number | null;

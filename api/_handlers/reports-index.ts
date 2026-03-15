@@ -50,6 +50,8 @@ type PublicReport = {
   crowdLevel: 1 | 2 | 3 | 4;
   waterCondition?: 1 | 2 | 3 | 4;
   beachCondition?: 1 | 2 | 3;
+  hasJellyfish?: boolean;
+  hasAlgae?: boolean;
   createdAt: number;
   attribution?: unknown;
 };
@@ -135,6 +137,22 @@ function parseBeachLevel(value: unknown): 1 | 2 | 3 | null {
   return null;
 }
 
+function parseOptionalBoolean(value: unknown): boolean | undefined | null {
+  if (value === undefined) return undefined;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") {
+    if (value === 1) return true;
+    if (value === 0) return false;
+    return null;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1") return true;
+    if (normalized === "false" || normalized === "0") return false;
+  }
+  return null;
+}
+
 function sanitizeAttribution(value: unknown): Record<string, unknown> | null {
   if (!isObject(value)) return null;
 
@@ -147,6 +165,8 @@ function sanitizeAttribution(value: unknown): Record<string, unknown> | null {
     "utm_campaign",
     "first_seen_at",
     "last_seen_at",
+    "has_jellyfish",
+    "has_algae",
   ];
 
   for (const key of allowed) {
@@ -163,6 +183,23 @@ function sanitizeAttribution(value: unknown): Record<string, unknown> | null {
   }
 
   return Object.keys(next).length > 0 ? next : null;
+}
+
+function mergeAttributionFlags(
+  attribution: Record<string, unknown> | null,
+  hasJellyfish: boolean | undefined,
+  hasAlgae: boolean | undefined,
+): Record<string, unknown> | null {
+  const merged: Record<string, unknown> = {
+    ...(attribution ?? {}),
+  };
+  if (hasJellyfish !== undefined) {
+    merged.has_jellyfish = hasJellyfish;
+  }
+  if (hasAlgae !== undefined) {
+    merged.has_algae = hasAlgae;
+  }
+  return Object.keys(merged).length > 0 ? merged : null;
 }
 
 function getClientIp(req: VercelRequest): string | null {
@@ -224,12 +261,22 @@ function toPublicReport(row: ReportRow): PublicReport | null {
   if (!crowdLevel) return null;
   const createdAt = Date.parse(row.created_at);
   if (!Number.isFinite(createdAt)) return null;
+  const attribution = isObject(row.attribution) ? row.attribution : null;
+  const hasJellyfishRaw =
+    parseOptionalBoolean(attribution?.has_jellyfish) ??
+    parseOptionalBoolean(attribution?.hasJellyfish);
+  const hasAlgaeRaw =
+    parseOptionalBoolean(attribution?.has_algae) ??
+    parseOptionalBoolean(attribution?.hasAlgae);
+
   return {
     id: row.id,
     beachId: row.beach_id,
     crowdLevel,
     waterCondition: parseWaterLevel(row.water_condition) ?? undefined,
     beachCondition: parseBeachLevel(row.beach_condition) ?? undefined,
+    hasJellyfish: typeof hasJellyfishRaw === "boolean" ? hasJellyfishRaw : undefined,
+    hasAlgae: typeof hasAlgaeRaw === "boolean" ? hasAlgaeRaw : undefined,
     createdAt,
     attribution: row.attribution ?? undefined,
   };
@@ -390,12 +437,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ ok: false, error: "invalid_beach_condition" });
   }
 
+  const hasJellyfish = parseOptionalBoolean(body.hasJellyfish);
+  if (hasJellyfish === null) {
+    return res.status(400).json({ ok: false, error: "invalid_has_jellyfish" });
+  }
+
+  const hasAlgae = parseOptionalBoolean(body.hasAlgae);
+  if (hasAlgae === null) {
+    return res.status(400).json({ ok: false, error: "invalid_has_algae" });
+  }
+
   const reporterHash = toSingleString(body.reporterHash);
   if (!reporterHash || reporterHash.length > MAX_REPORTER_HASH_LENGTH) {
     return res.status(400).json({ ok: false, error: "invalid_reporter_hash" });
   }
 
-  const attribution = sanitizeAttribution(body.attribution);
+  const attribution = mergeAttributionFlags(
+    sanitizeAttribution(body.attribution),
+    hasJellyfish,
+    hasAlgae,
+  );
   const nowIso = new Date().toISOString();
   const rateSinceIso = new Date(
     Date.now() - REPORT_RATE_LIMIT_MIN * 60 * 1000,

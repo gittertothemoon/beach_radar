@@ -70,7 +70,10 @@ test.describe("reports api", () => {
   });
 
   test("POST valid report then GET returns that report", async ({ request }) => {
-    const payload = buildPayload();
+    const payload = buildPayload({
+      hasJellyfish: true,
+      hasAlgae: false,
+    });
     const post = await request.post(REPORTS_ENDPOINT, { data: payload });
     const postBody = await readJson(post);
     if (post.status() === 500 && postBody?.error === "missing_env") {
@@ -85,6 +88,8 @@ test.describe("reports api", () => {
     if (!created) return;
     expect(created.beachId).toBe(payload.beachId);
     expect(created.crowdLevel).toBe(payload.crowdLevel);
+    expect(created.hasJellyfish).toBe(true);
+    expect(created.hasAlgae).toBe(false);
     expect(typeof created.createdAt).toBe("number");
     expect(created.createdAt).toBeGreaterThan(0);
 

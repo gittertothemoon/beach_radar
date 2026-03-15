@@ -46,6 +46,11 @@ const isWaterLevel = (value: number): value is import("./types").WaterLevel =>
 const isBeachLevel = (value: number): value is import("./types").BeachLevel =>
   value === 1 || value === 2 || value === 3;
 
+const toOptionalBoolean = (value: unknown): boolean | undefined => {
+  if (typeof value === "boolean") return value;
+  return undefined;
+};
+
 const isAttributionSnapshot = (value: unknown): value is AttributionSnapshot => {
   if (!isObject(value)) return false;
   if (value.v !== 1) return false;
@@ -64,6 +69,15 @@ const parseReport = (value: unknown): Report | null => {
   const createdAt = toFiniteNumber(value.createdAt);
   const waterConditionRaw = toFiniteNumber(value.waterCondition);
   const beachConditionRaw = toFiniteNumber(value.beachCondition);
+  const attribution = isObject(value.attribution) ? value.attribution : null;
+  const hasJellyfish =
+    toOptionalBoolean(value.hasJellyfish) ??
+    toOptionalBoolean(attribution?.has_jellyfish) ??
+    toOptionalBoolean(attribution?.hasJellyfish);
+  const hasAlgae =
+    toOptionalBoolean(value.hasAlgae) ??
+    toOptionalBoolean(attribution?.has_algae) ??
+    toOptionalBoolean(attribution?.hasAlgae);
 
   if (crowdLevel === null || createdAt === null || !isCrowdLevel(crowdLevel)) {
     return null;
@@ -74,9 +88,11 @@ const parseReport = (value: unknown): Report | null => {
     crowdLevel,
     waterCondition: waterConditionRaw && isWaterLevel(waterConditionRaw) ? waterConditionRaw : undefined,
     beachCondition: beachConditionRaw && isBeachLevel(beachConditionRaw) ? beachConditionRaw : undefined,
+    hasJellyfish,
+    hasAlgae,
     createdAt,
-    attribution: isAttributionSnapshot(value.attribution)
-      ? value.attribution
+    attribution: isAttributionSnapshot(attribution)
+      ? attribution
       : undefined,
   };
 };
@@ -133,6 +149,8 @@ export const submitSharedReport = async (input: {
   crowdLevel: CrowdLevel;
   waterCondition?: import("./types").WaterLevel;
   beachCondition?: import("./types").BeachLevel;
+  hasJellyfish?: boolean;
+  hasAlgae?: boolean;
   reporterHash: string;
   attribution?: AttributionSnapshot;
 }): Promise<SubmitReportResult> => {
@@ -165,6 +183,8 @@ export const submitSharedReport = async (input: {
       errorPayload?.error === "invalid_crowd_level" ||
       errorPayload?.error === "invalid_water_condition" ||
       errorPayload?.error === "invalid_beach_condition" ||
+      errorPayload?.error === "invalid_has_jellyfish" ||
+      errorPayload?.error === "invalid_has_algae" ||
       errorPayload?.error === "invalid_reporter_hash"
     ) {
       return { ok: false, code: "invalid_payload" };

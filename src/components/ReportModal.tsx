@@ -35,7 +35,12 @@ type ReportModalProps = {
   geoError: string | null;
   onRequestLocation: () => void;
   onClose: () => void;
-  onSubmit: (level: CrowdLevel, water?: WaterLevel, beach?: BeachLevel) => void;
+  onSubmit: (
+    level: CrowdLevel,
+    water?: WaterLevel,
+    beach?: BeachLevel,
+    options?: { hasJellyfish?: boolean; hasAlgae?: boolean },
+  ) => void;
   submitError: string | null;
   submitting?: boolean;
 };
@@ -58,6 +63,8 @@ const ReportModal = ({
   const [selectedCrowd, setSelectedCrowd] = useState<CrowdLevel | null>(null);
   const [selectedWater, setSelectedWater] = useState<WaterLevel | null>(null);
   const [selectedBeach, setSelectedBeach] = useState<BeachLevel | null>(null);
+  const [hasJellyfish, setHasJellyfish] = useState(false);
+  const [hasAlgae, setHasAlgae] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -237,8 +244,47 @@ const ReportModal = ({
             </div>
           </div>
 
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.12em] br-text-tertiary mb-2 text-center md:text-left">
+              4. {STRINGS.report.specialConditions}{" "}
+              <span className="text-[10px] lowercase font-normal opacity-60">(opzionale)</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <button
+                type="button"
+                data-testid="report-jellyfish-toggle"
+                onClick={() => setHasJellyfish((prev) => !prev)}
+                disabled={!canReport || submitting}
+                className={`br-press rounded-[10px] border px-3 py-2.5 text-[12px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${hasJellyfish
+                    ? "border-fuchsia-300/60 bg-fuchsia-500/20 text-fuchsia-100 shadow-[0_0_15px_rgba(217,70,239,0.15)]"
+                    : "border-white/10 bg-black/30 br-text-tertiary hover:border-white/20 hover:bg-black/40"
+                  }`}
+              >
+                {STRINGS.report.hasJellyfish}
+              </button>
+              <button
+                type="button"
+                data-testid="report-algae-toggle"
+                onClick={() => setHasAlgae((prev) => !prev)}
+                disabled={!canReport || submitting}
+                className={`br-press rounded-[10px] border px-3 py-2.5 text-[12px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${hasAlgae
+                    ? "border-emerald-300/60 bg-emerald-500/20 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                    : "border-white/10 bg-black/30 br-text-tertiary hover:border-white/20 hover:bg-black/40"
+                  }`}
+              >
+                {STRINGS.report.hasAlgae}
+              </button>
+            </div>
+          </div>
+
           <button
-            onClick={() => selectedCrowd && onSubmit(selectedCrowd, selectedWater ?? undefined, selectedBeach ?? undefined)}
+            onClick={() =>
+              selectedCrowd &&
+              onSubmit(selectedCrowd, selectedWater ?? undefined, selectedBeach ?? undefined, {
+                hasJellyfish: hasJellyfish ? true : undefined,
+                hasAlgae: hasAlgae ? true : undefined,
+              })
+            }
             data-testid="report-submit"
             disabled={!selectedCrowd || !canReport || submitting}
             className="br-press w-full rounded-[12px] border border-sky-300/60 bg-sky-500/30 px-4 py-3.5 text-[15px] font-semibold text-sky-50 shadow-[0_8px_20px_rgba(14,165,233,0.3)] backdrop-blur-sm transition hover:border-sky-300/80 hover:bg-sky-500/40 disabled:border-white/10 disabled:bg-white/5 disabled:text-white/30 disabled:shadow-none disabled:cursor-not-allowed mt-2"

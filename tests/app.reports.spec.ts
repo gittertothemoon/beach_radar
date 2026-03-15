@@ -15,6 +15,7 @@ test("report submit happy path", async ({ page }) => {
   await mockWeatherApi(page);
 
   let postCount = 0;
+  const postBodies: Array<Record<string, unknown>> = [];
   await page.route("**/api/reports", async (route) => {
     if (route.request().method() === "GET") {
       await route.fulfill({
@@ -26,6 +27,10 @@ test("report submit happy path", async ({ page }) => {
     }
 
     postCount += 1;
+    const postData = route.request().postDataJSON();
+    if (postData && typeof postData === "object") {
+      postBodies.push(postData as Record<string, unknown>);
+    }
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -47,9 +52,17 @@ test("report submit happy path", async ({ page }) => {
   await page.getByTestId("report-cta").click();
   await expect(page.getByTestId("report-modal")).toBeVisible();
   await page.getByTestId("report-level-2").click();
+  await page.getByTestId("report-jellyfish-toggle").click();
+  await page.getByTestId("report-algae-toggle").click();
   await page.getByTestId("report-submit").click();
 
   await expect.poll(() => postCount).toBe(1);
+  await expect
+    .poll(() => postBodies[0]?.hasJellyfish)
+    .toBe(true);
+  await expect
+    .poll(() => postBodies[0]?.hasAlgae)
+    .toBe(true);
   await expect(page.getByTestId("report-modal")).not.toBeVisible();
 });
 

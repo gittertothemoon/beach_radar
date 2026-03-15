@@ -1370,7 +1370,8 @@ function App() {
     (
       level: CrowdLevel,
       waterCondition?: import("../lib/types").WaterLevel,
-      beachCondition?: import("../lib/types").BeachLevel
+      beachCondition?: import("../lib/types").BeachLevel,
+      options?: { hasJellyfish?: boolean; hasAlgae?: boolean },
     ) => {
       if (!selectedBeach || submittingReport) return;
       if (
@@ -1391,6 +1392,8 @@ function App() {
         crowdLevel: level,
         waterCondition,
         beachCondition,
+        hasJellyfish: options?.hasJellyfish,
+        hasAlgae: options?.hasAlgae,
         reporterHash,
         attribution,
       })

@@ -67,6 +67,8 @@ export const STRINGS = {
     weather: "Meteo",
     favorites: "Preferiti",
     reviews: "Recensioni",
+    jellyfish: "Meduse",
+    algae: "Alghe",
   },
   status: {
     live: "Aggiornato ora",
@@ -166,6 +168,10 @@ export const STRINGS = {
       "Non riesco a salvare la segnalazione ora. Riprova tra poco.",
     feedUnavailable:
       "Dati segnalazioni non disponibili al momento. Riprova tra poco.",
+    specialConditions: "Condizioni speciali",
+    hasJellyfish: "Meduse presenti",
+    hasAlgae: "Alghe presenti",
+    presenceDetected: "Segnalate",
     thanksPrompt: "✅ Grazie. Vuoi aiutare anche gli altri?",
     thanksSubtitle: "Condividi la segnalazione per aggiornare chi sta arrivando.",
   },
