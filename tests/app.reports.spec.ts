@@ -103,3 +103,35 @@ test("report submit rate-limited shows error", async ({ page }) => {
 
   await expect(page.getByTestId("report-error")).toBeVisible();
 });
+
+test("report submit network failure shows generic error and keeps modal open", async ({
+  page,
+}) => {
+  await grantAppAccess(page.context());
+  await mockAnalyticsApi(page);
+  await mockGeolocation(page.context());
+  await mockWeatherApi(page);
+
+  await page.route("**/api/reports", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true, reports: [] }),
+      });
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.goto(appUiUrl({ beachId: E2E_BEACH_ID, reportAnywhere: "1" }));
+  await expect(page.getByTestId("lido-modal")).toBeVisible();
+
+  await page.getByTestId("report-cta").click();
+  await expect(page.getByTestId("report-modal")).toBeVisible();
+  await page.getByTestId("report-level-2").click();
+  await page.getByTestId("report-submit").click();
+
+  await expect(page.getByTestId("report-error")).toBeVisible();
+  await expect(page.getByTestId("report-modal")).toBeVisible();
+});

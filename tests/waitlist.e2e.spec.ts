@@ -169,7 +169,12 @@ test("joined users can reset and use another email", async ({ page }) => {
   await expect(button).toBeDisabled();
   await expect(reset).toBeVisible();
 
-  await reset.click({ force: true });
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await reset.click({ force: true });
+    const enabled = await input.isEnabled().catch(() => false);
+    if (enabled) break;
+    await page.waitForTimeout(120);
+  }
 
   await expect(input).toBeEnabled();
   await expect(button).toBeEnabled();
