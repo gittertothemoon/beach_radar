@@ -1575,7 +1575,7 @@ function App() {
         className="fixed z-60 flex flex-col items-end gap-3 pointer-events-none"
         style={{
           right: 'max(10px, calc((100vw - min(100vw, 640px)) / 2 + 10px))',
-          bottom: 'calc(env(safe-area-inset-bottom) + 60px)'
+          bottom: 'calc(env(safe-area-inset-bottom) + var(--mobile-bottom-lift) + 60px)'
         }}
       >
         {selectedBeach && soloBeachId && !isLidoModalOpen && !reportOpen ? (

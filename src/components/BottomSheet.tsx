@@ -35,6 +35,8 @@ type BottomSheetProps = {
 const PEEK_HEIGHT = 56;
 const DRAG_THRESHOLD = 6;
 const VELOCITY_THRESHOLD = 0.45;
+const CLOSED_LIFT_PX = 34;
+const CLOSED_VISIBLE_HEIGHT = PEEK_HEIGHT + CLOSED_LIFT_PX;
 
 const stateBadge = (state: string) => {
   switch (state) {
@@ -186,7 +188,8 @@ const BottomSheetComponent = ({
 
   const translateY = useMemo(() => {
     if (dragOffset !== null) return dragOffset;
-    return isOpen ? 0 : maxTranslate;
+    const closedOffset = Math.max(maxTranslate - CLOSED_LIFT_PX, 0);
+    return isOpen ? 0 : closedOffset;
   }, [dragOffset, isOpen, maxTranslate]);
 
   useEffect(() => {
@@ -216,7 +219,7 @@ const BottomSheetComponent = ({
     if (event.pointerType === "mouse" && event.button !== 0) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     startYRef.current = event.clientY;
-    startOffsetRef.current = isOpen ? 0 : maxTranslate;
+    startOffsetRef.current = isOpen ? 0 : Math.max(maxTranslate - CLOSED_LIFT_PX, 0);
     lastMoveRef.current = { y: event.clientY, t: performance.now() };
     setDragOffset(startOffsetRef.current);
     setIsDragging(true);
@@ -226,13 +229,14 @@ const BottomSheetComponent = ({
     event: ReactPointerEvent<HTMLButtonElement>,
   ) => {
     if (!isDragging) return;
+    const closedOffset = Math.max(maxTranslate - CLOSED_LIFT_PX, 0);
     const delta = event.clientY - startYRef.current;
     if (Math.abs(delta) > DRAG_THRESHOLD) {
       suppressClickRef.current = true;
     }
     const next = Math.min(
       Math.max(startOffsetRef.current + delta, 0),
-      maxTranslate,
+      closedOffset,
     );
     setDragOffset(next);
     lastMoveRef.current = { y: event.clientY, t: performance.now() };
@@ -246,12 +250,13 @@ const BottomSheetComponent = ({
     setIsDragging(false);
 
     const now = performance.now();
+    const closedOffset = Math.max(maxTranslate - CLOSED_LIFT_PX, 0);
     const { y: lastY, t: lastT } = lastMoveRef.current;
     const dt = Math.max(now - lastT, 1);
     const velocity = (event.clientY - lastY) / dt;
-    const finalOffset = dragOffset ?? (isOpen ? 0 : maxTranslate);
+    const finalOffset = dragOffset ?? (isOpen ? 0 : closedOffset);
 
-    let shouldOpen = finalOffset < maxTranslate / 2;
+    let shouldOpen = finalOffset < closedOffset / 2;
     if (velocity < -VELOCITY_THRESHOLD) shouldOpen = true;
     if (velocity > VELOCITY_THRESHOLD) shouldOpen = false;
 
@@ -311,7 +316,7 @@ const BottomSheetComponent = ({
           onPointerCancel={handlePointerUp}
           aria-expanded={isOpen}
           aria-label={STRINGS.aria.expandBeaches}
-          style={{ touchAction: "none" }}
+          style={{ touchAction: "none", minHeight: CLOSED_VISIBLE_HEIGHT }}
         >
           <div>
             <div className="text-[15px] font-semibold br-text-primary">

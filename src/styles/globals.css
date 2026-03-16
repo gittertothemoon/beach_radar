@@ -36,6 +36,7 @@
   --muted-strong: rgba(148, 163, 184, 0.9);
   --focus-ring: rgba(255, 255, 255, 0.5);
   --overlay-max-width: 640px;
+  --mobile-bottom-lift: 34px;
 }
 
 * {
@@ -225,7 +226,9 @@ body {
 
 .leaflet-bottom.leaflet-right .leaflet-control-zoom {
   margin-right: 12px !important;
-  margin-bottom: calc(env(safe-area-inset-bottom) + 136px) !important;
+  margin-bottom: calc(
+    env(safe-area-inset-bottom) + var(--mobile-bottom-lift) + 136px
+  ) !important;
 }
 
 @media (hover: none) and (pointer: coarse) {
@@ -261,7 +264,9 @@ body {
     10px,
     calc((100vw - min(100vw, var(--overlay-max-width))) / 2 + 10px)
   ) !important;
-  margin-bottom: calc(env(safe-area-inset-bottom) + 26px) !important;
+  margin-bottom: calc(
+    env(safe-area-inset-bottom) + var(--mobile-bottom-lift) + 26px
+  ) !important;
 }
 
 @media (min-width: 1024px) {

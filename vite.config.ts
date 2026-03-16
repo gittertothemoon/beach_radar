@@ -10,6 +10,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    host: true,
+    proxy: {
+      "/api": "http://127.0.0.1:3000",
+    },
+  },
   css: {
     postcss: {
       plugins: [

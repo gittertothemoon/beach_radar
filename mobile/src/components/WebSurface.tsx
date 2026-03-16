@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -23,7 +22,6 @@ export const WebSurface = ({
 }: WebSurfaceProps) => {
   const insets = useSafeAreaInsets();
   const statusBarOverlayHeight = Math.max(28, insets.top + 2);
-  const statusBarFadeHeight = Platform.OS === "ios" ? 8 : 6;
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,16 +55,6 @@ export const WebSurface = ({
         style={[
           styles.statusBarScrim,
           { height: statusBarOverlayHeight },
-        ]}
-      />
-      <View
-        pointerEvents="none"
-        style={[
-          styles.statusBarGradient,
-          {
-            top: statusBarOverlayHeight,
-            height: statusBarFadeHeight,
-          },
         ]}
       />
 
@@ -125,13 +113,6 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: "rgba(2, 6, 23, 0.52)",
     zIndex: 5,
-  },
-  statusBarGradient: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    backgroundColor: "rgba(2, 6, 23, 0.12)",
-    zIndex: 4,
   },
   loadingLayer: {
     position: "absolute",
