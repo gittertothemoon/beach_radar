@@ -5,6 +5,25 @@ Date baseline: March 15, 2026
 Goal:
 - Validate the mobile experience opens the definitive `/app/` map flow
 - Catch regressions on pins, map behavior, reports, and favorites
+- Enforce web non-regression while optimizing mobile UX
+
+## Non-Regression Guardrail (Mandatory)
+
+Every mobile-focused UI change must pass both:
+
+1. Mobile validation
+- iPhone target device check on Expo/TestFlight.
+- Verify touch gestures (bottom sheet drag, map pan/zoom, CTA taps).
+
+2. Web validation
+- Verify desktop browser layout (search/header alignment, map controls, drawer states).
+- Verify mobile browser layout (Safari responsive view) for parity.
+- Confirm no visual regressions on:
+  - bottom sheet open/closed states
+  - Leaflet attribution and geolocation button positioning
+  - status bar/top overlays
+
+A change is not considered done if mobile improves but web regresses.
 
 ## Build Targets
 
