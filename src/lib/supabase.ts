@@ -1,10 +1,15 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL?.trim();
-const SUPABASE_ANON_KEY = (
+const normalizeEnvValue = (value: unknown): string => {
+  if (typeof value !== "string") return "";
+  return value.trim().replace(/\\n/g, "").trim();
+};
+
+const SUPABASE_URL = normalizeEnvValue(import.meta.env.VITE_SUPABASE_URL);
+const SUPABASE_ANON_KEY = normalizeEnvValue(
   import.meta.env.VITE_SUPABASE_ANON_KEY ??
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-)?.trim();
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+);
 
 let browserClient: SupabaseClient | null = null;
 
