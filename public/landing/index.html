@@ -890,15 +890,17 @@
             <p class="mt-8 text-sm text-onda/80 font-medium">In arrivo a breve sui principali store.<br>Lascia la tua
                 email per l'accesso anticipato.</p>
 
-            <form class="mt-6 flex flex-col sm:flex-row gap-3 max-w-md mx-auto relative z-20"
-                onsubmit="event.preventDefault();">
-                <input type="email" placeholder="La tua migliore email..." required
+            <form id="landing-email-form" class="mt-6 flex flex-col sm:flex-row gap-3 max-w-md mx-auto relative z-20">
+                <input type="email" id="landing-email-input" name="email" placeholder="La tua migliore email..." required
                     class="email-input flex-1 bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-onda/50 px-6 py-4 rounded-[2rem] focus:outline-none focus:ring-2 focus:ring-corallo transition-all">
-                <button type="submit"
+                <input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true"
+                    class="hidden">
+                <button type="submit" id="landing-email-submit"
                     class="bg-corallo text-white px-8 py-4 rounded-[2rem] font-bold shadow-glow-corallo hover:bg-corallo-hover transition-all hover:-translate-y-1">
                     Avvisami
                 </button>
             </form>
+            <p id="landing-email-feedback" class="mt-3 text-sm text-onda/90 min-h-[1.25rem]" aria-live="polite"></p>
         </div>
     </section>
 

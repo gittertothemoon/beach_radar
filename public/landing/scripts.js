@@ -157,28 +157,166 @@ document.addEventListener('DOMContentLoaded', () => {
         counterObserver.observe(el);
     });
 
-    // ===== Email Form Feedback =====
-    const emailForm = document.querySelector('#download form');
+    // ===== Email Form Submission (Supabase waitlist via API) =====
+    const emailForm = document.getElementById('landing-email-form');
+    const feedbackEl = document.getElementById('landing-email-feedback');
+    const submitBtn = document.getElementById('landing-email-submit');
+    const WAITLIST_ENDPOINT = '/api/waitlist';
+
+    const setFeedback = (message, tone) => {
+        if (!feedbackEl) return;
+        feedbackEl.textContent = message;
+        feedbackEl.classList.remove('text-onda/90', 'text-green-300', 'text-red-300');
+        if (tone === 'success') {
+            feedbackEl.classList.add('text-green-300');
+            return;
+        }
+        if (tone === 'error') {
+            feedbackEl.classList.add('text-red-300');
+            return;
+        }
+        feedbackEl.classList.add('text-onda/90');
+    };
+
+    const parseQueryParams = (search) => {
+        const paramsObj = {};
+        const searchParams = new URLSearchParams(search || '');
+        for (const [key, value] of searchParams.entries()) {
+            paramsObj[key] = value;
+        }
+        return paramsObj;
+    };
+
+    const buildAttribution = (paramsObj) => {
+        const allowedKeys = [
+            'poster',
+            'city',
+            'fbclid',
+            'gclid',
+            'msclkid',
+            'ttclid',
+            'igshid',
+            'twclid',
+            'gbraid',
+            'wbraid',
+        ];
+        const out = {};
+        allowedKeys.forEach((key) => {
+            if (paramsObj[key]) out[key] = paramsObj[key];
+        });
+        return out;
+    };
+
+    const submitWaitlist = async (payload) => {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 7000);
+        try {
+            const response = await fetch(WAITLIST_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify(payload),
+                keepalive: true,
+                signal: controller.signal,
+            });
+
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (_) {
+                data = null;
+            }
+
+            if (!response.ok) {
+                const error = new Error('request_failed');
+                error.code = data && data.error ? data.error : 'request_failed';
+                throw error;
+            }
+
+            return data || { ok: true, already: false };
+        } finally {
+            window.clearTimeout(timeoutId);
+        }
+    };
+
     if (emailForm) {
-        emailForm.addEventListener('submit', (e) => {
+        emailForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const input = emailForm.querySelector('input[type="email"]');
-            const btn = emailForm.querySelector('button[type="submit"]');
-            if (input && input.value) {
-                const original = btn.textContent;
-                btn.textContent = '✓ Registrato!';
-                btn.classList.add('bg-green-500');
-                btn.classList.remove('bg-corallo');
+
+            const input = document.getElementById('landing-email-input');
+            const honeypot = emailForm.querySelector('input[name="company"]');
+            if (!input || !submitBtn) return;
+
+            const email = String(input.value || '').trim().toLowerCase();
+            const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            if (!emailValid) {
+                setFeedback('Inserisci un indirizzo email valido.', 'error');
+                return;
+            }
+
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            input.disabled = true;
+            submitBtn.textContent = 'Invio...';
+            setFeedback('Stiamo salvando la tua iscrizione.', 'neutral');
+
+            try {
+                const params = parseQueryParams(window.location.search);
+                const utm = {};
+                Object.keys(params).forEach((key) => {
+                    if (key.toLowerCase().startsWith('utm_')) {
+                        utm[key] = params[key];
+                    }
+                });
+
+                const payload = {
+                    email,
+                    lang: 'it',
+                    page: window.location.pathname,
+                    referrer: document.referrer || null,
+                    tz: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+                    device: {
+                        w: window.innerWidth,
+                        h: window.innerHeight,
+                        dpr: window.devicePixelRatio || 1,
+                        ua: navigator.userAgent,
+                    },
+                    hp: honeypot ? String(honeypot.value || '').trim() : '',
+                    utm,
+                    attribution: buildAttribution(params),
+                    project: 'where2beach',
+                    version: 'landing_v2',
+                };
+
+                const result = await submitWaitlist(payload);
+                submitBtn.classList.add('bg-green-500');
+                submitBtn.classList.remove('bg-corallo');
+                submitBtn.textContent = '✓ Registrato!';
                 input.value = '';
-                input.disabled = true;
-                btn.disabled = true;
-                setTimeout(() => {
-                    btn.textContent = original;
-                    btn.classList.remove('bg-green-500');
-                    btn.classList.add('bg-corallo');
+                if (result && result.already) {
+                    setFeedback('Email già presente: iscrizione confermata.', 'success');
+                } else {
+                    setFeedback('Perfetto, ti avviseremo al lancio.', 'success');
+                }
+            } catch (error) {
+                const code = error && error.code ? error.code : '';
+                if (code === 'invalid_email') {
+                    setFeedback('Inserisci un indirizzo email valido.', 'error');
+                } else if (code === 'rate_limited') {
+                    setFeedback('Troppi tentativi ravvicinati. Riprova tra poco.', 'error');
+                } else {
+                    setFeedback('Errore temporaneo. Riprova tra qualche secondo.', 'error');
+                }
+                submitBtn.classList.remove('bg-green-500');
+                submitBtn.classList.add('bg-corallo');
+                submitBtn.textContent = originalBtnText;
+            } finally {
+                if (submitBtn.textContent !== '✓ Registrato!') {
+                    submitBtn.disabled = false;
                     input.disabled = false;
-                    btn.disabled = false;
-                }, 3000);
+                }
             }
         });
     }
