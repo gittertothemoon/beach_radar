@@ -1,1014 +1,999 @@
 <!DOCTYPE html>
-<html lang="it">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
-    />
-    <meta
-      name="description"
-      content="Scegli spiagge e lidi in base all'affollamento che preferisci e aiuta la community con le tue segnalazioni. Entra gratis nella lista prioritaria di Where2Beach."
-    />
-    <title>Where2Beach | Scegli il lido giusto per te</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        --ink: #11283f;
-        --ink-soft: #2e4964;
-        --sand: #f6f2e7;
-        --paper: #fffcf5;
-        --sea: #1e89aa;
-        --sea-dark: #136986;
-        --line: rgba(17, 40, 63, 0.14);
-        --radius-l: 26px;
-        --radius-m: 16px;
-        --shadow-soft: 0 16px 40px rgba(18, 43, 71, 0.1);
-        --shadow-strong: 0 24px 60px rgba(14, 51, 78, 0.2);
-        --section-space: clamp(54px, 8vw, 96px);
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-      }
-
-      body {
-        font-family: "Manrope", sans-serif;
-        color: var(--ink);
-        background:
-          radial-gradient(circle at 8% -6%, rgba(63, 180, 207, 0.26) 0%, transparent 38%),
-          radial-gradient(circle at 100% 16%, rgba(81, 151, 202, 0.18) 0%, transparent 42%),
-          linear-gradient(180deg, #fbf8ef 0%, #f5efdf 42%, #f8f5eb 100%);
-      }
-
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        opacity: 0.25;
-        background-image: radial-gradient(circle at 1px 1px, rgba(17, 40, 63, 0.12) 1px, transparent 0);
-        background-size: 22px 22px;
-        z-index: -1;
-      }
-
-      .container {
-        width: min(1140px, calc(100vw - clamp(24px, 5vw, 64px)));
-        margin: 0 auto;
-      }
-
-      .topbar {
-        position: sticky;
-        top: 0;
-        z-index: 30;
-        border-bottom: 1px solid rgba(17, 40, 63, 0.08);
-        background: #ffffff;
-        backdrop-filter: blur(14px);
-      }
-
-      .topbar-inner {
-        min-height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-      }
-
-      .brand img {
-        width: 146px;
-        display: block;
-      }
-
-      .lang-switch {
-        position: absolute;
-        right: 0;
-        display: inline-flex;
-        align-items: center;
-        padding: 3px;
-        border-radius: 999px;
-        background: #f3f6f9;
-        border: 1px solid rgba(17, 40, 63, 0.16);
-        gap: 2px;
-      }
-
-      .lang-btn {
-        border: 0;
-        background: transparent;
-        color: #4b667f;
-        font-weight: 800;
-        font-size: 0.75rem;
-        letter-spacing: 0.06em;
-        min-width: 38px;
-        height: 30px;
-        border-radius: 999px;
-        cursor: pointer;
-      }
-
-      .lang-btn.is-active {
-        background: #ffffff;
-        color: #173a59;
-        box-shadow: 0 2px 6px rgba(17, 40, 63, 0.16);
-      }
-
-      .topbar-inner .btn.secondary {
-        position: absolute;
-        left: 0;
-      }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        font-weight: 800;
-        border-radius: 14px;
-        border: 1px solid transparent;
-        transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
-        white-space: nowrap;
-      }
-
-      .btn.primary {
-        color: #fff;
-        background: linear-gradient(120deg, var(--sea-dark), var(--sea));
-        padding: 14px 24px;
-        box-shadow: 0 14px 30px rgba(24, 111, 146, 0.34);
-      }
-
-      .btn.secondary {
-        color: var(--ink);
-        background: rgba(255, 255, 255, 0.74);
-        border-color: var(--line);
-        padding: 12px 20px;
-      }
-
-      .btn:hover {
-        transform: translateY(-2px);
-      }
-
-      .hero {
-        padding: var(--section-space) 0 clamp(42px, 5vw, 62px);
-      }
-
-      .hero-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-        gap: clamp(24px, 4vw, 46px);
-        align-items: stretch;
-      }
-
-      .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border-radius: 999px;
-        border: 1px solid rgba(30, 137, 170, 0.28);
-        background: rgba(255, 255, 255, 0.72);
-        padding: 9px 14px;
-        font-size: 0.8rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        font-weight: 800;
-        color: var(--ink-soft);
-      }
-
-      .eyebrow-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: var(--sea);
-      }
-
-      h1,
-      h2,
-      h3 {
-        margin: 0;
-        font-family: "Fraunces", serif;
-        letter-spacing: -0.01em;
-      }
-
-      h1 {
-        margin-top: 18px;
-        font-size: clamp(2.2rem, 6.2vw, 4.5rem);
-        line-height: 1.03;
-        max-width: 14ch;
-      }
-
-      .hero-copy p {
-        margin: 18px 0 0;
-        font-size: clamp(1rem, 2.1vw, 1.18rem);
-        line-height: 1.72;
-        color: rgba(17, 40, 63, 0.86);
-        max-width: 55ch;
-      }
-
-      .hero-list {
-        list-style: none;
-        margin: 22px 0 0;
-        padding: 0;
-        display: grid;
-        gap: 10px;
-        max-width: 52ch;
-      }
-
-      .hero-list li {
-        padding: 11px 14px;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.65);
-        border: 1px solid rgba(17, 40, 63, 0.08);
-        font-weight: 600;
-      }
-
-      .hero-actions {
-        margin-top: 24px;
-      }
-
-      .hero-proof {
-        margin-top: 16px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .proof-chip {
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.68);
-        border: 1px solid rgba(17, 40, 63, 0.1);
-        padding: 8px 12px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        color: var(--ink-soft);
-      }
-
-      .mockup {
-        border-radius: 30px;
-        border: 1px solid rgba(17, 40, 63, 0.14);
-        background: linear-gradient(175deg, rgba(255, 255, 255, 0.96) 0%, rgba(245, 248, 251, 0.95) 100%);
-        padding: 14px;
-        box-shadow: var(--shadow-strong);
-        display: grid;
-        gap: 12px;
-        width: min(100%, 540px);
-        justify-self: end;
-      }
-
-      .mockup-top {
-        padding: 16px 18px;
-        border-radius: 20px;
-        background: linear-gradient(135deg, rgba(18, 56, 84, 0.95), rgba(21, 96, 130, 0.93));
-        color: #eff9ff;
-      }
-
-      .mockup-topline {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-      }
-
-      .mockup-topline strong {
-        font-size: 0.78rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        font-weight: 800;
-      }
-
-      .mockup-live {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.74rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        opacity: 0.92;
-      }
-
-      .mockup-live::before {
-        content: "";
-        width: 7px;
-        height: 7px;
-        border-radius: 999px;
-        background: #7ee7f6;
-        box-shadow: 0 0 0 8px rgba(126, 231, 246, 0.18);
-      }
-
-      .mockup-sub {
-        margin-top: 10px;
-        font-size: 0.92rem;
-        line-height: 1.5;
-        color: rgba(239, 249, 255, 0.9);
-      }
-
-      .mockup-body {
-        display: grid;
-        gap: 10px;
-      }
-
-      .mockup-shot-wrap {
-        border-radius: 20px;
-        padding: 8px;
-        background: linear-gradient(165deg, #111c28 0%, #0c1722 100%);
-        border: 1px solid rgba(17, 40, 63, 0.14);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      }
-
-      .mockup-shot-desktop {
-        display: none;
-      }
-
-      .mockup-shot-mobile {
-        display: block;
-      }
-
-      .mockup-shot {
-        display: block;
-        width: 100%;
-        height: auto;
-        aspect-ratio: auto;
-        object-fit: contain;
-        border-radius: 14px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .mockup-note {
-        font-size: 0.82rem;
-        line-height: 1.5;
-        color: rgba(17, 40, 63, 0.72);
-        padding: 2px 2px 0;
-      }
-
-      section {
-        padding: clamp(42px, 5vw, 64px) 0;
-      }
-
-      .section-head {
-        max-width: 760px;
-        margin-bottom: 30px;
-      }
-
-      .kicker {
-        display: inline-block;
-        margin-bottom: 10px;
-        font-size: 0.78rem;
-        font-weight: 800;
-        letter-spacing: 0.09em;
-        text-transform: uppercase;
-        color: var(--sea-dark);
-      }
-
-      h2 {
-        font-size: clamp(1.74rem, 3.2vw, 2.74rem);
-        line-height: 1.12;
-      }
-
-      .lead {
-        margin-top: 14px;
-        max-width: 60ch;
-        color: rgba(17, 40, 63, 0.78);
-        line-height: 1.72;
-      }
-
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 18px;
-      }
-
-      .card {
-        padding: 24px;
-        border-radius: var(--radius-l);
-        border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.82);
-        box-shadow: var(--shadow-soft);
-        min-height: 184px;
-      }
-
-      .card-index {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        display: grid;
-        place-items: center;
-        background: rgba(30, 137, 170, 0.12);
-        font-weight: 800;
-        color: var(--sea-dark);
-        margin-bottom: 12px;
-      }
-
-      .card h3 {
-        font-size: 1.2rem;
-        line-height: 1.2;
-      }
-
-      .card p {
-        margin: 12px 0 0;
-        color: rgba(17, 40, 63, 0.75);
-        line-height: 1.66;
-      }
-
-      .steps {
-        display: grid;
-        gap: 12px;
-      }
-
-      .step {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 14px;
-        align-items: center;
-        padding: 16px 18px;
-        border-radius: var(--radius-m);
-        border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.74);
-      }
-
-      .step-badge {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        background: rgba(30, 137, 170, 0.14);
-        color: var(--sea-dark);
-        display: grid;
-        place-items: center;
-        font-weight: 800;
-      }
-
-      .step p {
-        margin: 0;
-        color: rgba(17, 40, 63, 0.78);
-        line-height: 1.56;
-      }
-
-      .quote {
-        margin-top: 22px;
-        padding: 26px;
-        border-radius: var(--radius-l);
-        border: 1px solid rgba(30, 137, 170, 0.24);
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(167, 223, 233, 0.26));
-      }
-
-      .quote p {
-        margin: 0;
-        font-family: "Fraunces", serif;
-        font-size: clamp(1.2rem, 2.1vw, 1.58rem);
-        line-height: 1.48;
-      }
-
-      .mid-cta {
-        margin-top: 20px;
-        border-radius: var(--radius-m);
-        border: 1px solid rgba(30, 137, 170, 0.26);
-        background: rgba(255, 255, 255, 0.8);
-        padding: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-      }
-
-      .mid-cta p {
-        margin: 0;
-        color: rgba(17, 40, 63, 0.8);
-        font-weight: 600;
-      }
-
-      .final {
-        padding-top: clamp(48px, 6vw, 74px);
-        padding-bottom: 120px;
-      }
-
-      .final-box {
-        border-radius: 34px;
-        padding: clamp(28px, 4vw, 48px);
-        background:
-          radial-gradient(circle at 92% 0%, rgba(112, 211, 224, 0.38) 0%, transparent 48%),
-          linear-gradient(145deg, #103a5c 0%, #115d7b 46%, #1384a2 100%);
-        color: #f0fbff;
-        box-shadow: 0 30px 60px rgba(12, 57, 86, 0.4);
-      }
-
-      .final-pill {
-        display: inline-flex;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 226, 140, 0.45);
-        background: rgba(255, 216, 100, 0.14);
-        color: #fff4ce;
-        padding: 8px 12px;
-        font-size: 0.78rem;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        font-weight: 800;
-      }
-
-      .final-box h2 {
-        margin-top: 12px;
-        max-width: 17ch;
-      }
-
-      .final-box p {
-        margin: 14px 0 24px;
-        max-width: 58ch;
-        line-height: 1.74;
-        color: rgba(239, 251, 255, 0.92);
-      }
-
-      .mobile-cta {
-        position: fixed;
-        left: 10px;
-        right: 10px;
-        bottom: max(10px, env(safe-area-inset-bottom));
-        z-index: 40;
-        display: none;
-      }
-
-      .mobile-cta .btn {
-        width: 100%;
-      }
-
-      .reveal {
-        opacity: 0;
-        transform: translateY(14px);
-        animation: rise 680ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
-      }
-
-      .d1 {
-        animation-delay: 100ms;
-      }
-
-      .d2 {
-        animation-delay: 200ms;
-      }
-
-      .d3 {
-        animation-delay: 280ms;
-      }
-
-      @keyframes rise {
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @media (max-width: 980px) {
-        .hero-grid,
-        .cards {
-          grid-template-columns: 1fr;
-        }
-
-        .mockup {
-          justify-self: center;
-        }
-
-        .mid-cta {
-          flex-direction: column;
-          align-items: flex-start;
-        }
-
-        .card {
-          min-height: 0;
-        }
-      }
-
-      @media (min-width: 981px) {
-        .mockup {
-          width: min(100%, 720px);
-          padding: 0;
-          border: 0;
-          background: transparent;
-          box-shadow: none;
-          gap: 0;
-        }
-
-        .mockup-top {
-          display: none;
-        }
-
-        .mockup-body {
-          display: block;
-        }
-
-        .mockup-shot-desktop {
-          display: block;
-          padding: 0;
-          border: 0;
-          background: transparent;
-          box-shadow: 0 26px 58px rgba(13, 43, 67, 0.22);
-        }
-
-        .mockup-shot-mobile {
-          display: none;
-        }
-
-        .mockup-note {
-          display: none;
-        }
-
-        .mockup-shot-desktop .mockup-shot {
-          border-radius: 24px;
-          border-color: rgba(17, 40, 63, 0.16);
-        }
-      }
-
-      @media (max-width: 760px) {
-        .topbar-inner {
-          min-height: 68px;
-        }
-
-        .topbar .btn.secondary {
-          display: none;
-        }
-
-        .lang-switch {
-          right: 0;
-        }
-
-        .lang-btn {
-          min-width: 34px;
-          height: 28px;
-          font-size: 0.7rem;
-        }
-
-        .brand img {
-          width: 126px;
-        }
-
-        .hero {
-          padding-top: clamp(34px, 7vw, 52px);
-        }
-
-        section {
-          padding: clamp(34px, 9vw, 48px) 0;
-        }
-
-        .mockup {
-          border-radius: 20px;
-        }
-
-        .card,
-        .quote,
-        .mid-cta,
-        .step {
-          border-radius: 14px;
-        }
-
-        .card,
-        .quote {
-          padding: 20px;
-        }
-
-        .mid-cta {
-          padding: 16px;
-        }
-
-        .final {
-          padding-bottom: 160px;
-        }
-
-        .mobile-cta {
-          display: block;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <header class="topbar">
-      <div class="container topbar-inner">
-        <div class="lang-switch" role="group" aria-label="Language selector">
-          <button type="button" class="lang-btn is-active" id="lang-it" data-lang="it">IT</button>
-          <button type="button" class="lang-btn" id="lang-en" data-lang="en">EN</button>
+<html lang="it" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Where2Beach | Basta Vacanze Rovinate</title>
+
+    <!-- Google Fonts: Poppins for a modern, rounded, friendly look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tailwind Configuration -->
+    <script src="tailwind.config.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="text-gray-800 antialiased selection:bg-corallo selection:text-white">
+
+    <!-- Navbar -->
+    <nav id="navbar"
+        class="fixed w-full z-50 transition-all duration-300 bg-white/5 backdrop-blur-2xl border-b border-white/10 py-5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center relative min-h-[56px] md:min-h-0">
+                <!-- Mobile spacer -->
+                <div class="w-11 md:hidden"></div>
+                <!-- Logo -->
+                <div
+                    class="flex-shrink-0 flex items-center absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
+                    <a href="#" class="text-2xl font-black tracking-tighter text-white flex items-center gap-2 group"
+                        id="logo-text">
+                        <div class="relative flex items-center justify-center">
+                            <img src="W2B_Logo.png" alt="Where2Beach Logo"
+                                class="h-24 w-auto transform group-hover:scale-110 transition-transform duration-300">
+                        </div>
+                    </a>
+                </div>
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#community" class="text-white font-medium hover:text-onda transition-colors"
+                        id="link-1">La Community</a>
+                    <a href="#features" class="text-white font-medium hover:text-onda transition-colors"
+                        id="link-2">Cosa Offriamo</a>
+                    <a href="#how-it-works" class="text-white font-medium hover:text-onda transition-colors"
+                        id="link-3">Come Funziona</a>
+                    <a href="#partners" class="text-white font-medium hover:text-onda transition-colors" id="link-4">Partner</a>
+                    <a href="#team" class="text-white font-medium hover:text-onda transition-colors"
+                        id="link-5">Chi Siamo</a>
+                    <a href="#download"
+                        class="bg-corallo text-white px-6 py-2.5 rounded-full font-bold shadow-glow-corallo hover:bg-corallo-hover hover:scale-105 transition-all duration-300">
+                        Scarica l'App
+                    </a>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center z-10">
+                    <button id="mobile-menu-btn" class="text-white focus:outline-none p-2">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
-        <a href="/landing/index.html" class="brand" aria-label="Where2Beach home">
-          <img src="/waitlist/logo.png" alt="Where2Beach" />
-        </a>
-        <a class="btn secondary" href="/waitlist/index.html?src=landing" id="top-cta">Entra gratis</a>
-      </div>
-    </header>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu"
+            class="hidden md:hidden bg-white/95 backdrop-blur-xl shadow-2xl absolute w-full left-0 top-full flex flex-col items-center py-6 space-y-6 border-b border-gray-100">
+            <a href="#community"
+                class="text-gray-800 font-bold text-lg hover:text-corallo transition-colors">La Community</a>
+            <a href="#features"
+                class="text-gray-800 font-bold text-lg hover:text-corallo transition-colors">Cosa Offriamo</a>
+            <a href="#how-it-works" class="text-gray-800 font-bold text-lg hover:text-corallo transition-colors">Come
+                Funziona</a>
+            <a href="#partners" class="text-gray-800 font-bold text-lg hover:text-corallo transition-colors">Partner</a>
+            <a href="#team" class="text-gray-800 font-bold text-lg hover:text-corallo transition-colors">Chi Siamo</a>
+            <a href="#download"
+                class="bg-corallo text-white px-8 py-3 rounded-full font-bold shadow-lg w-11/12 text-center">Scarica
+                l'App</a>
+        </div>
+    </nav>
 
-    <main>
-      <section class="hero">
-        <div class="container hero-grid">
-          <div class="hero-copy reveal">
-            <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span><span id="eyebrow-text">Lista prioritaria aperta</span></span>
-            <h1 id="hero-title">Scegli spiagge e lidi con l'affollamento giusto per te.</h1>
-            <p id="hero-sub">
-              C'è chi cerca tranquillità e chi preferisce più movimento.
-              Where2Beach ti aiuta a capire prima dove andare, così arrivi subito nel posto che fa per te.
+    <!-- Hero Section -->
+    <section class="hero-gradient min-h-[100svh] flex items-center pt-32 md:pt-48 pb-20 md:pb-32 relative overflow-hidden">
+        <!-- Mobile Background Image & Overlay -->
+        <div class="absolute inset-0 z-0 md:hidden">
+            <img src="hero_image.png" alt="Sfondo Mobile" class="w-full h-full object-cover object-center">
+            <div class="absolute inset-0 bg-[#003553]/80 mix-blend-multiply"></div>
+            <!-- Solid overlay for mobile readability -->
+        </div>
+
+        <!-- Floating abstract shapes -->
+        <div
+            class="absolute top-1/4 left-10 w-72 h-72 bg-onda opacity-30 rounded-full blur-[80px] animate-blob mix-blend-screen z-0">
+        </div>
+        <div class="absolute bottom-1/4 right-10 w-96 h-96 bg-corallo opacity-30 rounded-full blur-[100px] animate-blob mix-blend-screen z-0"
+            style="animation-delay: 2s;"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <!-- Text Content -->
+                <div class="text-white text-center md:text-left space-y-8">
+                    <div
+                        class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-sm font-semibold tracking-wide border border-white/20 shadow-lg">
+                        <span class="relative flex h-3 w-3">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-corallo opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-corallo"></span>
+                        </span>
+                        Il primo ecosistema community-driven
+                    </div>
+
+                    <h1 class="text-5xl md:text-6xl lg:text-[5.5rem] font-black leading-[1.05] tracking-tighter">
+                        Basta vacanze <br />
+                        <span
+                            class="text-transparent bg-clip-text bg-gradient-to-r from-corallo to-[#FFB154]">rovinate.</span>
+                    </h1>
+
+                    <p class="text-lg md:text-xl font-normal text-onda/90 leading-relaxed max-w-lg mx-auto md:mx-0">
+                        Oggi puoi sapere tutto sul traffico o sui ristoranti. Da oggi, non arriverai mai più in spiaggia
+                        per scoprire che non c'è posto per l'asciugamano.
+                    </p>
+
+                    <!-- CTA Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-2">
+                        <!-- App Store Button -->
+                        <a href="#download"
+                            class="flex items-center justify-center gap-3 bg-white/90 backdrop-blur-lg border border-white/20 text-gray-900 px-7 py-4 rounded-[2rem] hover:bg-white transition-all hover:-translate-y-1 shadow-glass group">
+                            <svg class="w-8 h-8 fill-current group-hover:text-mare transition-colors"
+                                viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
+                            </svg>
+                            <div class="text-left">
+                                <div class="text-[10px] leading-tight text-gray-500 font-medium">Scarica su</div>
+                                <div class="text-sm font-bold leading-tight">App Store</div>
+                            </div>
+                        </a>
+                        <!-- Google Play Button -->
+                        <a href="#download"
+                            class="flex items-center justify-center gap-3 bg-gray-900/90 backdrop-blur-lg border border-gray-700 text-white px-7 py-4 rounded-[2rem] hover:bg-black transition-all hover:-translate-y-1 shadow-soft group">
+                            <svg class="w-8 h-8 fill-current group-hover:text-corallo transition-colors"
+                                viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z" />
+                            </svg>
+                            <div class="text-left">
+                                <div class="text-[10px] leading-tight text-gray-400 font-medium">Disponibile su</div>
+                                <div class="text-sm font-bold leading-tight">Google Play</div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Seasonal Urgency Countdown -->
+                    <div id="summer-countdown" class="countdown-container mt-8 relative">
+                        <div class="inline-flex flex-col items-center gap-3">
+                            <div class="flex items-center gap-2 text-onda/70 text-xs font-bold uppercase tracking-[0.2em]">
+                                <span class="w-5 h-px bg-gradient-to-r from-transparent to-onda/40"></span>
+                                <span>☀️ L'estate 2026 inizia tra</span>
+                                <span class="w-5 h-px bg-gradient-to-l from-transparent to-onda/40"></span>
+                            </div>
+                            <div class="flex gap-3" id="countdown-timer">
+                                <div class="cd-tile group">
+                                    <span id="cd-days" class="cd-value text-transparent bg-clip-text bg-gradient-to-b from-corallo to-[#FFB154]">--</span>
+                                    <span class="cd-label">giorni</span>
+                                </div>
+                                <div class="cd-separator">:</div>
+                                <div class="cd-tile group">
+                                    <span id="cd-hours" class="cd-value">--</span>
+                                    <span class="cd-label">ore</span>
+                                </div>
+                                <div class="cd-separator">:</div>
+                                <div class="cd-tile group">
+                                    <span id="cd-mins" class="cd-value">--</span>
+                                    <span class="cd-label">min</span>
+                                </div>
+                                <div class="cd-separator">:</div>
+                                <div class="cd-tile group">
+                                    <span id="cd-secs" class="cd-value cd-secs-active">--</span>
+                                    <span class="cd-label">sec</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphic / Mascot -->
+                <div class="hidden md:flex justify-center relative animate-float">
+                    <div class="w-72 h-72 lg:w-[32rem] lg:h-[32rem] relative z-10 flex items-center justify-center">
+                        <!-- Glowing aura behind image -->
+                        <div class="absolute inset-0 bg-white/10 rounded-full blur-2xl"></div>
+                        <img src="hero_image.png" alt="Cinematic Hero"
+                            class="w-full h-full object-cover rounded-[3rem] shadow-2xl hover:scale-105 transition-transform duration-700 relative z-20 border-[6px] border-white/20">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SVG Bottom Wave for smooth transition -->
+        <div class="absolute bottom-[-1px] left-0 w-full overflow-hidden leading-none z-0">
+            <svg class="relative block w-full h-[60px] md:h-[120px]" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,64 C480,120 960,8 1440,64 L1440,120 L0,120 Z" fill="#FDFBF7"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Stats / Problem Statement -->
+    <section class="py-16 md:py-24 bg-sabbia text-center px-4 relative z-20">
+        <div
+            class="reveal-scale max-w-5xl mx-auto bg-white/70 backdrop-blur-3xl rounded-[2.5rem] shadow-soft p-8 md:p-14">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8 tracking-tighter">Il paradosso del turista
+                moderno</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 divide-y md:divide-y-0 md:divide-x divide-gray-100/50">
+                <div class="space-y-3 pt-6 md:pt-0">
+                    <div class="text-5xl font-black text-corallo tracking-tighter" data-counter="80" data-suffix="%">0%
+                    </div>
+                    <p class="text-sm md:text-base text-gray-600 font-medium px-4">Dei turisti odia il sovraffollamento
+                        in spiaggia</p>
+                </div>
+                <div class="space-y-3 pt-6 md:pt-0">
+                    <div class="text-5xl font-black text-corallo tracking-tighter" data-counter="45" data-suffix="min">
+                        0<span class="text-3xl ml-1">min</span></div>
+                    <p class="text-sm md:text-base text-gray-600 font-medium px-4">Tempo perso in media per cercare un
+                        posto</p>
+                </div>
+                <div class="space-y-3 pt-6 md:pt-0">
+                    <div class="text-5xl font-black text-corallo tracking-tighter" data-counter="0" data-suffix="€">0€
+                    </div>
+                    <p class="text-sm md:text-base text-gray-600 font-medium px-4">Il costo per accedere ai dati live
+                        della community</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Proposition — Why Where2Beach -->
+    <section class="py-20 md:py-32 bg-white relative overflow-hidden">
+        <!-- Subtle decorative blobs -->
+        <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-onda/5 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-corallo/5 rounded-full blur-[100px]"></div>
+
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <!-- Header -->
+            <div class="text-center mb-16 md:mb-20">
+                <h2 class="reveal text-sm text-corallo font-bold tracking-widest uppercase mb-3">Perché Where2Beach?</h2>
+                <p class="reveal stagger-1 text-3xl md:text-5xl font-black tracking-tighter text-gray-900 max-w-3xl mx-auto">
+                    Smetti di sperare.<br class="hidden md:block"> <span class="text-mare">Inizia a sapere.</span>
+                </p>
+                <p class="reveal stagger-2 mt-5 text-lg md:text-xl text-gray-500 max-w-2xl mx-auto font-medium">
+                    In 3 secondi sai se vale la pena partire. Gratis, per sempre.
+                </p>
+            </div>
+
+            <!-- 3 Steps — How it works -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
+
+                <!-- Step 1 -->
+                <div class="reveal stagger-1 group relative bg-gradient-to-br from-white to-gray-50/80 rounded-[2.5rem] p-8 md:p-10 border border-gray-100 hover:border-mare/30 shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-2 text-center">
+                    <div class="absolute top-6 right-6 text-6xl md:text-7xl font-black text-gray-100 group-hover:text-mare/10 transition-colors select-none">1</div>
+                    <div class="w-16 h-16 mx-auto rounded-[1.5rem] bg-gradient-to-br from-mare to-mare-dark text-white flex items-center justify-center mb-6 shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 tracking-tight mb-3">Cerca la tua spiaggia</h3>
+                    <p class="text-gray-500 font-medium leading-relaxed text-sm md:text-base">Apri l'app, cerca la spiaggia dove vuoi andare o esplora quelle vicine a te sulla mappa.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="reveal stagger-2 group relative bg-gradient-to-br from-white to-gray-50/80 rounded-[2.5rem] p-8 md:p-10 border border-gray-100 hover:border-corallo/30 shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-2 text-center">
+                    <div class="absolute top-6 right-6 text-6xl md:text-7xl font-black text-gray-100 group-hover:text-corallo/10 transition-colors select-none">2</div>
+                    <div class="w-16 h-16 mx-auto rounded-[1.5rem] bg-gradient-to-br from-corallo to-corallo-hover text-white flex items-center justify-center mb-6 shadow-md group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 tracking-tight mb-3">Guarda com'è adesso</h3>
+                    <p class="text-gray-500 font-medium leading-relaxed text-sm md:text-base">Vedi in tempo reale quanto è affollata, com'è il meteo, se ci sono meduse o problemi di parcheggio.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="reveal stagger-3 group relative bg-gradient-to-br from-white to-gray-50/80 rounded-[2.5rem] p-8 md:p-10 border border-gray-100 hover:border-mare/30 shadow-sm hover:shadow-lg transition-all duration-500 hover:-translate-y-2 text-center">
+                    <div class="absolute top-6 right-6 text-6xl md:text-7xl font-black text-gray-100 group-hover:text-mare/10 transition-colors select-none">3</div>
+                    <div class="w-16 h-16 mx-auto rounded-[1.5rem] bg-gradient-to-br from-onda to-mare text-white flex items-center justify-center mb-6 shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 tracking-tight mb-3">Goditi la giornata</h3>
+                    <p class="text-gray-500 font-medium leading-relaxed text-sm md:text-base">Parti solo quando ne vale la pena. Niente stress, niente sorprese. Solo mare perfetto.</p>
+                </div>
+            </div>
+
+            <!-- Conversion Kicker -->
+            <div class="reveal stagger-4 mt-14 md:mt-20 text-center">
+                <div class="inline-flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-mare-dark to-mare text-white px-8 py-5 rounded-[1.5rem] shadow-lg shadow-mare/20 hover:shadow-xl hover:shadow-mare/30 transition-all duration-300">
+                    <p class="text-base md:text-lg font-bold tracking-tight">Unisciti a chi ha già smesso di sprecare le proprie estati.</p>
+                    <a href="#download" class="bg-white text-mare-dark px-6 py-3 rounded-full font-bold text-sm hover:bg-corallo hover:text-white transition-all duration-300 whitespace-nowrap shadow-sm">Scarica Gratis →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Section — Segnala & Aiuta -->
+    <section id="community" class="py-20 md:py-32 bg-gradient-to-b from-white via-sabbia to-sabbia relative overflow-hidden">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center">
+                
+                <!-- Left — Emotional Copy -->
+                <div class="reveal-left">
+                    <h2 class="text-sm text-corallo font-bold tracking-widest uppercase mb-3">La forza della community</h2>
+                    <p class="text-3xl md:text-5xl font-black tracking-tighter text-gray-900 leading-[1.1] mb-6">
+                        Tu segnali.<br>
+                        <span class="text-mare">Tutti ne beneficiano.</span>
+                    </p>
+                    <p class="text-lg text-gray-500 font-medium leading-relaxed mb-8">
+                        Where2Beach funziona perché <strong class="text-gray-800">le persone si aiutano a vicenda</strong>. 
+                        Ogni segnalazione che fai — sull'affollamento, le meduse, il parcheggio — 
+                        diventa un dato prezioso per migliaia di altri bagnanti che stanno decidendo 
+                        se partire o restare a casa.
+                    </p>
+                    <p class="text-lg text-gray-500 font-medium leading-relaxed">
+                        Più segnali, più la community cresce. Più la community cresce, più i dati sono precisi. 
+                        <strong class="text-gray-800">È un circolo virtuoso</strong> in cui vince chi contribuisce.
+                    </p>
+                </div>
+
+                <!-- Right — Visual Cards Stack -->
+                <div class="reveal-right space-y-5">
+                    <!-- Card 1 — Segnala -->
+                    <div class="group bg-white rounded-[2rem] p-6 md:p-8 shadow-soft border border-gray-100 hover:border-corallo/20 transition-all duration-500 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden">
+                        <!-- Subtle gradient accent -->
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-corallo via-[#FFB154] to-corallo opacity-60 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="flex items-start gap-5 mb-6">
+                            <div class="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-corallo to-corallo-hover text-white flex items-center justify-center shadow-md shadow-corallo/20 group-hover:scale-110 group-hover:rotate-3 transition-transform">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 tracking-tight mb-1">Segnala in 5 secondi</h3>
+                                <p class="text-gray-500 text-sm md:text-base font-medium leading-relaxed">Sei in spiaggia? Un tap per dire com'è. Ci metti meno tempo di un selfie.</p>
+                            </div>
+                        </div>
+                        <!-- Visual Signal Type Badges -->
+                        <div class="signal-badges-grid pl-0 md:pl-[4.75rem]">
+                            <span class="signal-badge" style="--badge-delay: 0s">
+                                <span class="signal-badge-icon bg-red-100">🏖️</span>
+                                <span class="text-red-800">Affollamento</span>
+                            </span>
+                            <span class="signal-badge" style="--badge-delay: 0.06s">
+                                <span class="signal-badge-icon bg-purple-100">🪼</span>
+                                <span class="text-purple-800">Meduse</span>
+                            </span>
+                            <span class="signal-badge" style="--badge-delay: 0.12s">
+                                <span class="signal-badge-icon bg-cyan-100">🌊</span>
+                                <span class="text-cyan-800">Mare Mosso</span>
+                            </span>
+                            <span class="signal-badge" style="--badge-delay: 0.18s">
+                                <span class="signal-badge-icon bg-amber-100">🅿️</span>
+                                <span class="text-amber-800">Parcheggio</span>
+                            </span>
+                            <span class="signal-badge" style="--badge-delay: 0.24s">
+                                <span class="signal-badge-icon bg-teal-100">💨</span>
+                                <span class="text-teal-800">Vento</span>
+                            </span>
+                            <span class="signal-badge" style="--badge-delay: 0.3s">
+                                <span class="signal-badge-icon bg-green-100">🧹</span>
+                                <span class="text-green-800">Pulizia</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 — Aiuta -->
+                    <div class="group bg-white rounded-[2rem] p-6 md:p-8 shadow-soft border border-gray-100 hover:border-mare/20 transition-all duration-500 hover:-translate-y-1 hover:shadow-lg flex items-start gap-5">
+                        <div class="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-mare to-mare-dark text-white flex items-center justify-center shadow-md group-hover:scale-110 group-hover:-rotate-3 transition-transform">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 tracking-tight mb-1">Aiuta chi sta partendo ora</h3>
+                            <p class="text-gray-500 text-sm md:text-base font-medium leading-relaxed">La tua segnalazione raggiunge istantaneamente chi sta ancora decidendo dove andare. Potresti salvare la giornata a qualcuno.</p>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 — Guadagna -->
+                    <div class="group bg-white rounded-[2rem] p-6 md:p-8 shadow-soft border border-gray-100 hover:border-onda/40 transition-all duration-500 hover:-translate-y-1 hover:shadow-lg flex items-start gap-5">
+                        <div class="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-onda to-mare text-white flex items-center justify-center shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 tracking-tight mb-1">Guadagna segnalando</h3>
+                            <p class="text-gray-500 text-sm md:text-base font-medium leading-relaxed">Ogni segnalazione verificata ti fa guadagnare punti. Più contribuisci, più sblocchi coupon e vantaggi esclusivi dai nostri partner.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section id="features" class="py-16 md:py-24 bg-sabbia">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20">
+                <h2 class="reveal text-sm text-corallo font-bold tracking-widest uppercase mb-3 drop-shadow-sm">
+                    Democratizziamo il mare</h2>
+                <p class="reveal stagger-1 text-3xl md:text-5xl font-black tracking-tighter text-gray-900">
+                    Dati Live, Zero Fuffa.
+                </p>
+                <p class="reveal stagger-2 mt-4 max-w-2xl text-lg md:text-xl text-gray-500 mx-auto">
+                    Non ti diciamo solo dove andare, ti diciamo se vale la pena partire.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div
+                    class="reveal stagger-1 card-glow bg-white/90 backdrop-blur-sm rounded-[2.5rem] p-10 shadow-sm hover:shadow-soft transition-all duration-500 border border-white group hover:-translate-y-2 relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-onda/10 rounded-bl-full -z-10 group-hover:bg-onda/20 transition-colors">
+                    </div>
+                    <div
+                        class="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-onda to-mare text-white flex items-center justify-center mb-6 shadow-md drop-shadow-sm">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 tracking-tighter">Mappe & Segnalazioni</h3>
+                    <p class="text-gray-600 leading-relaxed font-medium">
+                        Gli utenti segnalano in tempo reale l'affollamento, il vento, la presenza di meduse e lo stato
+                        di pulizia.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div
+                    class="reveal stagger-2 card-glow bg-white/90 backdrop-blur-sm rounded-[2.5rem] p-10 shadow-sm hover:shadow-soft transition-all duration-500 border border-white group hover:-translate-y-2 relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-corallo/10 rounded-bl-full -z-10 group-hover:bg-corallo/20 transition-colors">
+                    </div>
+                    <div
+                        class="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-corallo-light to-corallo text-white flex items-center justify-center mb-6 shadow-md drop-shadow-sm">
+                        <svg class="w-8 h-8 text-corallo-hover" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 tracking-tighter">Heatmaps Predittive</h3>
+                    <p class="text-gray-600 leading-relaxed font-medium">
+                        I nostri algoritmi elaborano dati storici e meteo per prevedere l'affollamento prima ancora di
+                        uscire.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div
+                    class="reveal stagger-3 card-glow bg-white/90 backdrop-blur-sm rounded-[2.5rem] p-10 shadow-sm hover:shadow-soft transition-all duration-500 border border-white group hover:-translate-y-2 relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-mare-dark/5 rounded-bl-full -z-10 group-hover:bg-mare-dark/10 transition-colors">
+                    </div>
+                    <div
+                        class="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-gray-800 to-black text-white flex items-center justify-center mb-6 shadow-md drop-shadow-sm">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 tracking-tighter">Consensus Engine 99%</h3>
+                    <p class="text-gray-600 leading-relaxed font-medium">
+                        Il sistema valida l'informazione solo se confermata dalla maggioranza. Scartiamo gli outlier in
+                        automatico.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works (Interactive Mockup Section) -->
+    <section id="how-it-works" class="py-24 bg-white overflow-hidden relative border-y border-gray-100">
+        <!-- Decorative background shapes -->
+        <div class="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-sabbia to-white -z-10"></div>
+        <div
+            class="absolute top-1/2 right-0 w-96 h-96 bg-onda/20 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+
+                <!-- Mockup Visuals -->
+                <div class="reveal-left relative mx-auto w-[280px] md:w-[320px] order-2 lg:order-1 mt-12 lg:mt-0">
+                    <div class="phone-mockup aspect-[9/19] flex flex-col bg-gray-50 relative">
+                        <!-- Notch -->
+                        <div class="phone-notch"></div>
+
+                        <!-- App UI Simulation -->
+                        <!-- App UI Simulation Image -->
+                        <div class="absolute inset-x-0 bottom-0 top-0 overflow-hidden" style="border-radius: 38px;">
+                            <img src="IMG_2092 (1).png" alt="Where2Beach App Screen"
+                                class="w-full h-full object-cover object-top">
+                        </div>
+                    </div>
+
+                    <!-- Floating UI elements -->
+                    <div class="absolute top-1/4 -left-8 md:-left-16 bg-white/90 backdrop-blur px-4 py-3 rounded-2xl shadow-xl border border-gray-100 animate-float text-sm font-bold flex items-center gap-3 z-30"
+                        style="animation-delay: 0.5s;">
+                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-gray-800">Posto Trovato!</span>
+                    </div>
+                    <div class="absolute bottom-1/3 -right-6 md:-right-12 bg-white/90 backdrop-blur px-4 py-3 rounded-2xl shadow-xl border border-gray-100 animate-float text-sm font-bold flex items-center gap-3 z-30"
+                        style="animation-delay: 1.2s;">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-gray-800 text-xs">Info Validata</span>
+                            <span class="text-mare font-black text-[10px]">95% AFFIDABILITÀ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Text content -->
+                <div class="reveal-right space-y-8 order-1 lg:order-2">
+                    <div>
+                        <h2 class="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-tight">Il
+                            "Motore della Verità" nel tuo palmo.</h2>
+                        <p class="text-lg md:text-xl text-gray-500 mt-4 leading-relaxed">
+                            La nostra forza è la community (i <em>Beach Guardians</em>). Mentre gli altri usano droni
+                            costosi, noi scaliamo grazie agli smartphone di migliaia di bagnanti.
+                        </p>
+                    </div>
+
+                    <ul class="space-y-6">
+                        <li class="flex items-start group">
+                            <div
+                                class="flex-shrink-0 w-12 h-12 rounded-2xl bg-corallo-light flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6 text-corallo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <strong class="text-gray-900 text-lg">Evita viaggi a vuoto</strong>
+                                <p class="text-gray-600 text-sm mt-1 leading-relaxed">AWT (Avoided Wasted Trips): cambia
+                                    destinazione in tempo reale dopo un alert critico, risparmiando traffico e stress.
+                                </p>
+                            </div>
+                        </li>
+                        <li class="flex items-start group">
+                            <div
+                                class="flex-shrink-0 w-12 h-12 rounded-2xl bg-onda/30 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6 text-mare" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4">
+                                    </path>
+                                </svg>
+                            </div>
+                            <div>
+                                <strong class="text-gray-900 text-lg">Filtri Anti-Frode</strong>
+                                <p class="text-gray-600 text-sm mt-1 leading-relaxed">Tracciamento passivo e auditing
+                                    rigoroso per garantire che i partner e gli utenti forniscano dati trasparenti e
+                                    reali al 100%.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start group">
+                            <div
+                                class="flex-shrink-0 w-12 h-12 rounded-2xl bg-yellow-100 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <div>
+                                <strong class="text-gray-900 text-lg">Gamification & Rewards</strong>
+                                <p class="text-gray-600 text-sm mt-1 leading-relaxed">Sistema di reward integrato che
+                                    premia chi aiuta la community con coupon e sconti esclusivi nei lidi partner.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Partners / Business Model Section -->
+    <section id="partners" class="py-24 bg-sabbia">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20">
+                <h2 class="reveal text-sm text-corallo font-bold tracking-widest uppercase mb-3 drop-shadow-sm">B2B &
+                    Stabilimenti</h2>
+                <p class="reveal stagger-1 text-3xl md:text-5xl font-black tracking-tighter text-gray-900">
+                    Una miniera di dati sul turismo
+                </p>
+                <p class="mt-4 max-w-2xl text-lg text-gray-500 mx-auto">
+                    Offriamo soluzioni avanzate per chi gestisce il territorio e le attività commerciali costiere.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Stabilimenti -->
+                <div
+                    class="reveal stagger-1 card-glow bg-white/90 backdrop-blur-sm p-10 rounded-[2.5rem] shadow-sm hover:shadow-soft transition-all duration-500 border border-gray-100 group hover:-translate-y-2">
+                    <div
+                        class="w-14 h-14 rounded-[1.5rem] bg-corallo/10 flex items-center justify-center mb-6 text-corallo shadow-sm drop-shadow-sm">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 tracking-tight">Lead Generation per i Lidi</h3>
+                    <p class="text-gray-600 mb-6 text-sm leading-relaxed">
+                        Il nostro <strong>Reward Network</strong> porta clienti direttamente al tuo stabilimento. Gli
+                        utenti sbloccano coupon inviando segnalazioni affidabili, azzerando il costo del dato.
+                    </p>
+                    <ul class="text-sm font-medium text-gray-700 space-y-3">
+                        <li class="flex items-center"><span
+                                class="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3"><svg
+                                    class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg></span> Badge "Top Partner"</li>
+                        <li class="flex items-center"><span
+                                class="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3"><svg
+                                    class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg></span> Visibilità premium</li>
+                    </ul>
+                </div>
+
+                <!-- Comuni -->
+                <div
+                    class="reveal stagger-2 card-glow bg-white p-10 rounded-[2.5rem] shadow-soft ring-1 ring-gray-900/5 transform md:-translate-y-4 relative overflow-hidden group hover:-translate-y-6 transition-transform duration-500">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-mare to-onda"></div>
+                    <div
+                        class="w-14 h-14 rounded-[1.5rem] bg-mare/10 flex items-center justify-center mb-6 text-mare shadow-sm drop-shadow-sm">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 tracking-tight">Dashboard SaaS per Enti</h3>
+                    <p class="text-gray-600 mb-6 text-sm leading-relaxed">
+                        Dati strutturati e vendibili (<strong>B2B Data Selling</strong>). Monitora i flussi turistici in
+                        tempo reale e pianifica interventi mirati su viabilità e sicurezza con la nostra dashboard.
+                    </p>
+                    <ul class="text-sm font-medium text-gray-700 space-y-3">
+                        <li class="flex items-center"><span
+                                class="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3"><svg
+                                    class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg></span> Integrazioni Smart City</li>
+                        <li class="flex items-center"><span
+                                class="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3"><svg
+                                    class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg></span> Previsioni a 7 giorni</li>
+                    </ul>
+                </div>
+
+                <!-- Anti frode -->
+                <div
+                    class="reveal stagger-3 card-glow bg-white/90 backdrop-blur-sm p-10 rounded-[2.5rem] shadow-sm hover:shadow-soft transition-all duration-500 border border-gray-100 group hover:-translate-y-2">
+                    <div
+                        class="w-14 h-14 rounded-[1.5rem] bg-gray-900/5 flex items-center justify-center mb-6 text-gray-900 shadow-sm drop-shadow-sm">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 tracking-tight">Trust & Transparency</h3>
+                    <p class="text-gray-600 mb-6 text-sm leading-relaxed">
+                        Audit anti-frode integrato. Tracciamento GPS passivo per validare la presenza reale: filtriamo
+                        transiti brevi da soste reali per garantire conversioni misurabili.
+                    </p>
+                    <ul class="text-sm font-medium text-gray-700 space-y-3">
+                        <li class="flex items-center"><span
+                                class="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3"><svg
+                                    class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg></span> Tracciamento passivo</li>
+                        <li class="flex items-center"><span
+                                class="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3"><svg
+                                    class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg></span> Reconciliation automatica</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Section -->
+    <section id="roadmap" class="py-24 bg-white border-y border-gray-100 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-24">
+                <h2 class="reveal text-sm text-corallo font-bold tracking-widest uppercase mb-3 drop-shadow-sm">Vision &
+                    Execution</h2>
+                <p class="reveal stagger-1 text-3xl md:text-5xl font-black tracking-tighter text-gray-900">
+                    La nostra Roadmap
+                </p>
+            </div>
+            <div class="relative max-w-4xl mx-auto py-10">
+                <!-- Glowing Vertical Line -->
+                <div class="absolute top-0 bottom-0 left-6 md:left-1/2 w-1 bg-gray-100 rounded-full transform md:-translate-x-1/2">
+                    <!-- Animated gradient progress line -->
+                    <div class="w-full h-2/3 bg-gradient-to-b from-corallo via-mare to-transparent rounded-full shadow-[0_0_15px_rgba(0,119,182,0.5)]"></div>
+                </div>
+
+                <div class="space-y-12 md:space-y-24 relative">
+                    <!-- Fase 1 -->
+                    <div class="reveal stagger-1 relative flex flex-col md:flex-row items-start md:items-center justify-between group">
+                        <!-- Node Mobile/Desktop -->
+                        <div class="absolute left-6 md:left-1/2 transform -translate-x-1/2 mt-6 md:mt-0 flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-corallo-light to-corallo text-white rounded-2xl md:rounded-[1.5rem] font-black shadow-glow-corallo z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform text-lg md:text-xl border-[4px] border-white backdrop-blur-sm">
+                            <svg class="w-5 h-5 md:w-7 md:h-7 text-corallo-hover" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <!-- Content -->
+                        <div class="w-full pl-20 md:pl-0 md:w-5/12 pr-4 md:pr-16 md:text-right mt-4 md:mt-0">
+                            <div class="card-glow bg-white/80 hover:bg-white backdrop-blur-xl p-6 md:p-8 rounded-[2rem] shadow-soft border border-white/60 transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-lg text-left md:text-right relative overflow-hidden">
+                                <div class="absolute -right-10 -top-10 w-32 h-32 bg-corallo/5 rounded-full blur-2xl group-hover:bg-corallo/10 transition-all"></div>
+                                <h3 class="text-xl md:text-2xl font-bold text-gray-900 tracking-tight mb-3">Lancio & Validazione</h3>
+                                <p class="text-gray-600 text-sm md:text-base leading-relaxed font-medium">Lancio chirurgico sui 3 hotspot italiani a più alta densità di stress: <strong>Sardegna, Puglia, Romagna</strong>.</p>
+                                <div class="mt-4 md:mt-5 inline-flex items-center gap-2 bg-corallo/10 text-corallo px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border border-corallo/20">
+                                    Goal: 100k validazioni
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden md:block md:w-5/12"></div>
+                    </div>
+
+                    <!-- Fase 2 -->
+                    <div class="reveal stagger-2 relative flex flex-col md:flex-row items-start md:items-center justify-between group">
+                        <!-- Node Mobile/Desktop -->
+                        <div class="absolute left-6 md:left-1/2 transform -translate-x-1/2 mt-6 md:mt-0 flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-mare to-mare-dark text-white rounded-2xl md:rounded-[1.5rem] font-black shadow-glow-mare z-10 group-hover:scale-110 group-hover:-rotate-3 transition-transform text-lg md:text-xl border-[4px] border-white backdrop-blur-sm">
+                            <svg class="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        </div>
+                        <div class="hidden md:block md:w-5/12"></div>
+                        <!-- Content -->
+                        <div class="w-full pl-20 md:pl-0 md:w-5/12 md:pl-16 text-left mt-4 md:mt-0">
+                            <div class="card-glow bg-white/80 hover:bg-white backdrop-blur-xl p-6 md:p-8 rounded-[2rem] shadow-soft border border-white/60 transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-lg relative overflow-hidden text-left">
+                                <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-mare/5 rounded-full blur-2xl group-hover:bg-mare/10 transition-all"></div>
+                                <h3 class="text-xl md:text-2xl font-bold text-gray-900 tracking-tight mb-3">Monetizzazione & SaaS</h3>
+                                <p class="text-gray-600 text-sm md:text-base leading-relaxed font-medium">Implementazione della Dashboard SaaS B2B per la gestione del territorio e attivazione partnership con lidi e tour operator.</p>
+                                <div class="mt-4 md:mt-5 inline-flex items-center gap-2 bg-mare/10 text-mare-dark px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border border-mare/20">
+                                    B2B Data Selling
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fase 3 -->
+                    <div class="reveal stagger-3 relative flex flex-col md:flex-row items-start md:items-center justify-between group">
+                        <!-- Node Mobile/Desktop -->
+                        <div class="absolute left-6 md:left-1/2 transform -translate-x-1/2 mt-6 md:mt-0 flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-gray-800 to-black text-white rounded-2xl md:rounded-[1.5rem] font-black shadow-lg z-10 group-hover:scale-110 group-hover:rotate-3 transition-transform text-lg md:text-xl border-[4px] border-white backdrop-blur-sm">
+                            <svg class="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <!-- Content -->
+                        <div class="w-full pl-20 md:pl-0 md:w-5/12 pr-4 md:pr-16 md:text-right mt-4 md:mt-0">
+                            <div class="card-glow bg-white/80 hover:bg-white backdrop-blur-xl p-6 md:p-8 rounded-[2rem] shadow-soft border border-white/60 transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-lg text-left md:text-right relative overflow-hidden">
+                                <div class="absolute -right-10 -top-10 w-32 h-32 bg-gray-900/5 rounded-full blur-2xl group-hover:bg-gray-900/10 transition-all"></div>
+                                <h3 class="text-xl md:text-2xl font-bold text-gray-900 tracking-tight mb-3">Scala Internazionale</h3>
+                                <p class="text-gray-600 text-sm md:text-base leading-relaxed font-medium">Espansione sui principali mercati costieri in UE, partendo da <strong>Spagna e Grecia</strong>. Crescita tramite AI predittiva.</p>
+                                <div class="mt-4 md:mt-5 inline-flex items-center gap-2 bg-gray-900/5 text-gray-900 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border border-gray-900/10">
+                                    Mercato Europeo
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden md:block md:w-5/12"></div>
+                    </div>
+                </div>
+            </div>
+
+                <div
+                    class="reveal stagger-4 mt-20 text-center bg-gradient-to-br from-gray-50 to-white p-8 md:p-12 rounded-[2.5rem] border border-gray-100 shadow-soft">
+                    <p
+                        class="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-mare-dark to-mare leading-tight">
+                        Entro 3 anni, Where2Beach sarà lo standard europeo per la gestione del turismo costiero.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section id="team" class="py-24 bg-sabbia">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="reveal text-3xl md:text-5xl font-black text-gray-900 mb-6 tracking-tighter">Costruiamo il futuro
+                dell'estate.</h2>
+            <p class="reveal stagger-1 text-xl text-gray-500 max-w-2xl mx-auto mb-20 font-light">
+                Un team che unisce passione per il territorio e ossessione per i dati.
             </p>
-            <ul class="hero-list">
-              <li id="hero-li-1">Vedi subito quali lidi sono tranquilli, bilanciati o più vivaci.</li>
-              <li id="hero-li-2">Eviti file, caos e cambi programma all'ultimo minuto.</li>
-              <li id="hero-li-3">Con una segnalazione aiuti anche gli altri a scegliere meglio.</li>
-            </ul>
-            <div class="hero-actions">
-              <a class="btn primary" href="/waitlist/index.html?src=landing" id="hero-cta">Voglio entrare gratis</a>
-            </div>
-            <div class="hero-proof">
-              <span class="proof-chip" id="proof-1">Iscrizione gratuita</span>
-              <span class="proof-chip" id="proof-2">Nessuna carta richiesta</span>
-              <span class="proof-chip" id="proof-3">Accesso anticipato</span>
-            </div>
-          </div>
 
-          <aside class="mockup reveal d1" aria-label="Anteprima semplice">
-            <div class="mockup-top">
-              <div class="mockup-topline">
-                <strong id="mockup-title">Esempio rapido</strong>
-                <span class="mockup-live" id="mockup-live">Aggiornato ora</span>
-              </div>
-              <div class="mockup-sub" id="mockup-sub">Guarda l'affollamento e scegli subito la zona che preferisci.</div>
+            <div class="flex flex-col md:flex-row justify-center items-center gap-16 md:gap-32">
+                <!-- Ivan -->
+                <div class="group cursor-default">
+                    <div
+                        class="w-56 h-56 mx-auto rounded-[3rem] bg-white overflow-hidden mb-8 shadow-soft transform group-hover:-translate-y-3 transition-all duration-500 border border-gray-100 relative p-2">
+                        <!-- DiceBear Avatar as Modern Placeholder -->
+                        <div
+                            class="w-full h-full rounded-[2.5rem] bg-[#f5f8ff] flex items-center justify-center overflow-hidden relative">
+                            <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Ivan&backgroundColor=e2e8f0"
+                                alt="Ivan Pantò" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <h3 class="text-3xl font-bold text-gray-900 tracking-tight">Ivan Pantò</h3>
+                    <p class="text-corallo font-bold uppercase tracking-wider text-sm mt-2">Co-Founder & CEO</p>
+                </div>
+
+                <!-- Antonela -->
+                <div class="group cursor-default">
+                    <div
+                        class="w-56 h-56 mx-auto rounded-[3rem] bg-white overflow-hidden mb-8 shadow-soft transform group-hover:-translate-y-3 transition-all duration-500 border border-gray-100 relative p-2">
+                        <!-- DiceBear Avatar as Modern Placeholder -->
+                        <div
+                            class="w-full h-full rounded-[2.5rem] bg-[#fff5f2] flex items-center justify-center overflow-hidden relative">
+                            <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Antonela&backgroundColor=fed7aa"
+                                alt="Antonela Maliqi" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <h3 class="text-3xl font-bold text-gray-900 tracking-tight">Antonela Maliqi</h3>
+                    <p class="text-corallo font-bold uppercase tracking-wider text-sm mt-2">Co-Founder & CPO</p>
+                </div>
             </div>
-            <div class="mockup-body">
-              <div class="mockup-shot-wrap mockup-shot-desktop">
-                <img
-                  class="mockup-shot"
-                  src="/landing/app-ui-desktop.png"
-                  alt="Anteprima desktop reale dell'app Where2Beach con mappa e ricerca"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div class="mockup-shot-wrap mockup-shot-mobile">
-                <img
-                  class="mockup-shot"
-                  src="/landing/app-ui-mobile.jpg"
-                  alt="Anteprima mobile reale dell'app Where2Beach con mappa, ricerca e meteo"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div class="mockup-note" id="mockup-note">Interfaccia reale dell'app in uso.</div>
-            </div>
-          </aside>
         </div>
-      </section>
+    </section>
 
-      <section>
-        <div class="container">
-          <div class="section-head reveal">
-            <span class="kicker" id="section-1-kicker">Perché funziona</span>
-            <h2 id="section-1-title">Ti fa risparmiare tempo e ti fa vivere meglio la giornata.</h2>
-            <p class="lead" id="section-1-sub">
-              Non devi più girare tra spiagge troppo piene o troppo vuote.
-              Confronti i lidi prima di partire, scegli quello con l'affollamento più adatto a te e contribuisci con segnalazioni utili alla community.
+
+
+    <!-- Download CTA Section -->
+    <section id="download" class="py-24 bg-gradient-to-br from-[#003553] via-mare-dark to-[#001f3f] relative overflow-hidden">
+        <!-- Animated glowing blobs for premium aesthetic -->
+        <div class="absolute top-1/4 right-1/4 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-corallo/20 rounded-full blur-[100px] md:blur-[120px] mix-blend-screen animate-blob z-0"></div>
+        <div class="absolute -bottom-1/4 left-1/4 w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-onda/20 rounded-full blur-[120px] md:blur-[150px] mix-blend-screen animate-blob z-0" style="animation-delay: 2s;"></div>
+        
+        <!-- Subtle noise/glass overlay -->
+        <div class="absolute inset-0 bg-black/10 backdrop-blur-[2px] z-0"></div>
+
+        <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
+            <h2 class="reveal text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter drop-shadow-sm">L'estate
+                sta arrivando.<br>Tu
+                dove sarai?</h2>
+            <p class="reveal stagger-1 text-xl text-onda mb-8 max-w-2xl mx-auto font-light">
+                Unisciti a migliaia di bagnanti e cambia le regole del turismo costiero. Fai in modo che l'ultima
+                spiaggia non sia l'unica opzione rimasta.
             </p>
-          </div>
-          <div class="cards">
-            <article class="card reveal d1">
-              <span class="card-index">1</span>
-              <h3 id="card-1-title">Se vuoi tranquillità</h3>
-              <p id="card-1-sub">Trovi rapidamente i lidi meno affollati e ti rilassi da subito.</p>
-            </article>
-            <article class="card reveal d2">
-              <span class="card-index">2</span>
-              <h3 id="card-2-title">Se vuoi più vita</h3>
-              <p id="card-2-sub">Individui subito le zone più movimentate quando cerchi energia.</p>
-            </article>
-            <article class="card reveal d3">
-              <span class="card-index">3</span>
-              <h3 id="card-3-title">La community fa la differenza</h3>
-              <p id="card-3-sub">Ogni segnalazione sull'affollamento rende la scelta più chiara per tutti.</p>
-            </article>
-          </div>
-        </div>
-      </section>
 
-      <section>
-        <div class="container">
-          <div class="section-head reveal">
-            <span class="kicker" id="section-2-kicker">Come funziona</span>
-            <h2 id="section-2-title">Come scegliere meglio e aiutare la community in meno di un minuto.</h2>
-          </div>
-          <div class="steps">
-            <div class="step reveal d1">
-              <span class="step-badge">1</span>
-              <p id="step-1">Scrivi la località o la spiaggia che ti interessa.</p>
+            <!-- Waitlist Social Proof Counter -->
+            <div class="reveal stagger-1 mb-12 waitlist-card">
+                <div class="waitlist-card-inner">
+                    <!-- Top row: avatars + counter -->
+                    <div class="flex items-center justify-center gap-5">
+                        <div class="flex -space-x-3">
+                            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-corallo to-[#FFB154] border-[3px] border-white/20 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-corallo/20 avatar-float" style="--float-delay: 0s">M</div>
+                            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-mare to-mare-dark border-[3px] border-white/20 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-mare/20 avatar-float" style="--float-delay: 0.3s">A</div>
+                            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-onda to-mare border-[3px] border-white/20 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-onda/20 avatar-float" style="--float-delay: 0.6s">L</div>
+                            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-white/20 to-white/5 border-[3px] border-white/20 flex items-center justify-center text-white text-sm font-black backdrop-blur-sm avatar-float" style="--float-delay: 0.9s">+</div>
+                        </div>
+                        <div class="w-px h-12 bg-gradient-to-b from-transparent via-white/20 to-transparent hidden sm:block"></div>
+                        <div class="text-left">
+                            <div class="text-transparent bg-clip-text bg-gradient-to-r from-white via-corallo to-white font-black text-3xl md:text-4xl tracking-tighter waitlist-number">
+                                <span data-counter="2400" data-prefix="" data-suffix="+" class="waitlist-counter">0+</span>
+                            </div>
+                            <div class="text-onda/60 text-[11px] font-bold uppercase tracking-[0.15em] mt-0.5">Già iscritti alla waitlist</div>
+                        </div>
+                    </div>
+                    <!-- Progress bar -->
+                    <div class="mt-4 w-full max-w-xs mx-auto">
+                        <div class="flex justify-between text-[10px] font-bold text-onda/50 uppercase tracking-widest mb-1.5">
+                            <span>2.400 iscritti</span>
+                            <span class="text-corallo/80">Goal: 5.000</span>
+                        </div>
+                        <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div class="waitlist-progress h-full rounded-full bg-gradient-to-r from-corallo via-[#FFB154] to-corallo" style="width: 48%"></div>
+                        </div>
+                    </div>
+                    <!-- Live indicator -->
+                    <div class="mt-4 flex items-center justify-center gap-4 text-xs">
+                        <div class="flex items-center gap-1.5">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+                            </span>
+                            <span class="text-green-300/90 font-bold">12 iscritti oggi</span>
+                        </div>
+                        <span class="text-white/15">•</span>
+                        <div class="flex items-center gap-1.5 text-onda/50 font-medium">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                            <span>+34% questa settimana</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="step reveal d2">
-              <span class="step-badge">2</span>
-              <p id="step-2">Guardi i lidi vicini e il loro livello di affollamento.</p>
+
+            <div class="reveal stagger-2 flex flex-col sm:flex-row gap-5 justify-center">
+                <!-- Apple Store -->
+                <button
+                    class="flex items-center justify-center gap-3 bg-white/90 backdrop-blur-lg border border-white/20 text-gray-900 px-8 py-4 rounded-[2rem] hover:bg-white transition-all font-bold shadow-glass hover:-translate-y-1 group">
+                    <svg class="w-7 h-7 fill-current group-hover:text-mare transition-colors" viewBox="0 0 384 512"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
+                    </svg>
+                    Scarica per iOS
+                </button>
+                <!-- Google Play -->
+                <button
+                    class="flex items-center justify-center gap-3 bg-corallo text-white px-8 py-4 rounded-[2rem] hover:bg-corallo-hover transition-all font-bold shadow-glow-corallo hover:-translate-y-1">
+                    <svg class="w-7 h-7 fill-current" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z" />
+                    </svg>
+                    Scarica per Android
+                </button>
             </div>
-            <div class="step reveal d3">
-              <span class="step-badge">3</span>
-              <p id="step-3">Se vuoi, lasci una segnalazione e aiuti gli altri a scegliere meglio.</p>
+
+            <p class="mt-8 text-sm text-onda/80 font-medium">In arrivo a breve sui principali store.<br>Lascia la tua
+                email per l'accesso anticipato.</p>
+
+            <form class="mt-6 flex flex-col sm:flex-row gap-3 max-w-md mx-auto relative z-20"
+                onsubmit="event.preventDefault();">
+                <input type="email" placeholder="La tua migliore email..." required
+                    class="email-input flex-1 bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-onda/50 px-6 py-4 rounded-[2rem] focus:outline-none focus:ring-2 focus:ring-corallo transition-all">
+                <button type="submit"
+                    class="bg-corallo text-white px-8 py-4 rounded-[2rem] font-bold shadow-glow-corallo hover:bg-corallo-hover transition-all hover:-translate-y-1">
+                    Avvisami
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-[#0A1118] text-gray-400 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 border-b border-gray-800 pb-12">
+                <!-- Brand -->
+                <div class="flex items-center gap-3 text-white font-black text-2xl tracking-tighter">
+                    <img src="W2B_Logo.png" alt="Where2Beach Logo" class="h-20 w-auto">
+                </div>
+
+                <!-- Social & Contact -->
+                <div class="flex items-center space-x-6">
+                    <a href="https://www.instagram.com/Where2Beach" target="_blank"
+                        class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-corallo hover:text-white transition-all">
+                        <span class="sr-only">Instagram</span>
+                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                        </svg>
+                    </a>
+                    <a href="#"
+                        class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-black hover:text-white transition-all">
+                        <span class="sr-only">TikTok</span>
+                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+                        </svg>
+                    </a>
+                </div>
             </div>
-          </div>
-          <div class="quote reveal d2">
-            <p id="quote">"Tu scegli meglio, la community sceglie meglio."</p>
-          </div>
-          <div class="mid-cta reveal d3">
-            <p id="mid-cta-text">Vuoi arrivare al mare già nel posto giusto?</p>
-            <a class="btn primary" href="/waitlist/index.html?src=landing" id="mid-cta-btn">Entra nella lista gratis</a>
-          </div>
+
+            <div
+                class="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium tracking-wide">
+                <p>&copy; 2026 Where2Beach. Tutti i diritti riservati.</p>
+                <div class="flex space-x-8">
+                    <a href="privacy.html" class="hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="termini.html" class="hover:text-white transition-colors">Termini di Servizio</a>
+                    <a href="mailto:hello@where2beach.it" class="hover:text-white transition-colors">Contattaci</a>
+                </div>
+            </div>
         </div>
-      </section>
+    </footer>
 
-      <section class="final">
-        <div class="container">
-          <div class="final-box reveal">
-            <span class="final-pill" id="final-pill">Accessi prioritari limitati</span>
-            <h2 id="final-title">Entra ora e scegli sempre il mare come piace a te.</h2>
-            <p id="final-sub">
-              Iscriviti gratis alla lista prioritaria: quando apriamo i prossimi accessi, entrerai prima
-              e sceglierai subito spiagge e lidi con l'affollamento giusto per te. Con le tue segnalazioni, aiuterai anche tutta la community.
-            </p>
-            <a class="btn primary" href="/waitlist/index.html?src=landing" id="final-cta">Blocca il mio accesso gratis</a>
-          </div>
-        </div>
-      </section>
-    </main>
+    <!-- Interactive JS -->
+    <script src="scripts.js"></script>
+</body>
 
-    <div class="mobile-cta">
-      <a class="btn primary" href="/waitlist/index.html?src=landing" id="mobile-cta">Entra gratis ora</a>
-    </div>
-    <script>
-      (function () {
-        document.cookie = "br_seen_landing=1; Path=/; Max-Age=2592000; SameSite=Lax";
-
-        const STORAGE_KEY = "br_landing_lang_v1";
-        const translations = {
-          it: {
-            title: "Where2Beach | Scegli il lido giusto per te",
-            description:
-              "Scegli spiagge e lidi in base all'affollamento che preferisci e aiuta la community con le tue segnalazioni. Entra gratis nella lista prioritaria di Where2Beach.",
-            topCta: "Entra gratis",
-            eyebrowText: "Lista prioritaria aperta",
-            heroTitle: "Scegli spiagge e lidi con l'affollamento giusto per te.",
-            heroSub:
-              "C'è chi cerca tranquillità e chi preferisce più movimento. Where2Beach ti aiuta a capire prima dove andare, così arrivi subito nel posto che fa per te.",
-            heroLi1: "Vedi subito quali lidi sono tranquilli, bilanciati o più vivaci.",
-            heroLi2: "Eviti file, caos e cambi programma all'ultimo minuto.",
-            heroLi3: "Con una segnalazione aiuti anche gli altri a scegliere meglio.",
-            heroCta: "Voglio entrare gratis",
-            proof1: "Iscrizione gratuita",
-            proof2: "Nessuna carta richiesta",
-            proof3: "Accesso anticipato",
-            mockupTitle: "Esempio rapido",
-            mockupLive: "Aggiornato ora",
-            mockupSub: "Guarda l'affollamento e scegli subito la zona che preferisci.",
-            mockupNote: "Interfaccia reale dell'app in uso.",
-            section1Kicker: "Perché funziona",
-            section1Title: "Ti fa risparmiare tempo e ti fa vivere meglio la giornata.",
-            section1Sub:
-              "Non devi più girare tra spiagge troppo piene o troppo vuote. Confronti i lidi prima di partire, scegli quello con l'affollamento più adatto a te e contribuisci con segnalazioni utili alla community.",
-            card1Title: "Se vuoi tranquillità",
-            card1Sub: "Trovi rapidamente i lidi meno affollati e ti rilassi da subito.",
-            card2Title: "Se vuoi più vita",
-            card2Sub: "Individui subito le zone più movimentate quando cerchi energia.",
-            card3Title: "La community fa la differenza",
-            card3Sub: "Ogni segnalazione sull'affollamento rende la scelta più chiara per tutti.",
-            section2Kicker: "Come funziona",
-            section2Title: "Come scegliere meglio e aiutare la community in meno di un minuto.",
-            step1: "Scrivi la località o la spiaggia che ti interessa.",
-            step2: "Guardi i lidi vicini e il loro livello di affollamento.",
-            step3: "Se vuoi, lasci una segnalazione e aiuti gli altri a scegliere meglio.",
-            quote: "\"Tu scegli meglio, la community sceglie meglio.\"",
-            midCtaText: "Vuoi arrivare al mare già nel posto giusto?",
-            midCtaBtn: "Entra nella lista gratis",
-            finalPill: "Accessi prioritari limitati",
-            finalTitle: "Entra ora e scegli sempre il mare come piace a te.",
-            finalSub: "Iscriviti gratis alla lista prioritaria: quando apriamo i prossimi accessi, entrerai prima e sceglierai subito spiagge e lidi con l'affollamento giusto per te. Con le tue segnalazioni, aiuterai anche tutta la community.",
-            finalCta: "Blocca il mio accesso gratis",
-            mobileCta: "Entra gratis ora",
-          },
-          en: {
-            title: "Where2Beach | Pick the right lido for you",
-            description:
-              "Choose beaches and lidos by the crowd level you prefer and help the community with your reports. Join the free priority list on Where2Beach.",
-            topCta: "Join free",
-            eyebrowText: "Priority list is open",
-            heroTitle: "Choose beaches and lidos with the crowd level that fits you.",
-            heroSub:
-              "Some days you want calm, other days you want more vibe. Where2Beach helps you decide before you go, so you arrive in the place that feels right.",
-            heroLi1: "See right away which lidos are quiet, balanced, or lively.",
-            heroLi2: "Avoid queues, chaos, and last-minute plan changes.",
-            heroLi3: "With one report, you help others choose better too.",
-            heroCta: "I want free early access",
-            proof1: "Free signup",
-            proof2: "No card required",
-            proof3: "Early access",
-            mockupTitle: "Quick preview",
-            mockupLive: "Updated now",
-            mockupSub: "Check crowd levels and quickly pick the area you prefer.",
-            mockupNote: "Real app interface while in use.",
-            section1Kicker: "Why it works",
-            section1Title: "It saves time and helps you enjoy your beach day more.",
-            section1Sub:
-              "No more wasting time between beaches that are too crowded or too empty. Compare lidos before leaving, pick the one that fits your crowd preference, and add useful reports for the community.",
-            card1Title: "When you want calm",
-            card1Sub: "Quickly find less crowded lidos and relax from the start.",
-            card2Title: "When you want energy",
-            card2Sub: "Spot livelier areas right away when you want more movement.",
-            card3Title: "The community makes it better",
-            card3Sub: "Each crowd report makes decisions clearer for everyone.",
-            section2Kicker: "How it works",
-            section2Title: "How to choose better and help the community in under a minute.",
-            step1: "Type the location or beach you want to go to.",
-            step2: "Check nearby lidos and their crowd levels.",
-            step3: "If you want, leave a report and help others choose better.",
-            quote: "\"You choose better, the community chooses better.\"",
-            midCtaText: "Want to reach the beach and already be in the right spot?",
-            midCtaBtn: "Join the free list",
-            finalPill: "Priority access is limited",
-            finalTitle: "Join now and choose the beach the way you like it.",
-            finalSub: "Join the free priority list: when the next access opens, you'll get in earlier and choose beaches and lidos with the crowd level that fits you. With your reports, you'll also help the whole community.",
-            finalCta: "Lock my free access",
-            mobileCta: "Join free now",
-          },
-        };
-
-        const targets = {
-          topCta: "top-cta",
-          eyebrowText: "eyebrow-text",
-          heroTitle: "hero-title",
-          heroSub: "hero-sub",
-          heroLi1: "hero-li-1",
-          heroLi2: "hero-li-2",
-          heroLi3: "hero-li-3",
-          heroCta: "hero-cta",
-          proof1: "proof-1",
-          proof2: "proof-2",
-          proof3: "proof-3",
-          mockupTitle: "mockup-title",
-          mockupLive: "mockup-live",
-          mockupSub: "mockup-sub",
-          mockupNote: "mockup-note",
-          section1Kicker: "section-1-kicker",
-          section1Title: "section-1-title",
-          section1Sub: "section-1-sub",
-          card1Title: "card-1-title",
-          card1Sub: "card-1-sub",
-          card2Title: "card-2-title",
-          card2Sub: "card-2-sub",
-          card3Title: "card-3-title",
-          card3Sub: "card-3-sub",
-          section2Kicker: "section-2-kicker",
-          section2Title: "section-2-title",
-          step1: "step-1",
-          step2: "step-2",
-          step3: "step-3",
-          quote: "quote",
-          midCtaText: "mid-cta-text",
-          midCtaBtn: "mid-cta-btn",
-          finalPill: "final-pill",
-          finalTitle: "final-title",
-          finalSub: "final-sub",
-          finalCta: "final-cta",
-          mobileCta: "mobile-cta",
-        };
-
-        const langButtons = {
-          it: document.getElementById("lang-it"),
-          en: document.getElementById("lang-en"),
-        };
-        const descriptionMeta = document.querySelector('meta[name="description"]');
-
-        const applyLanguage = (lang) => {
-          const content = translations[lang] || translations.it;
-          document.documentElement.lang = lang;
-          document.title = content.title;
-          if (descriptionMeta) descriptionMeta.setAttribute("content", content.description);
-
-          Object.entries(targets).forEach(([key, id]) => {
-            const node = document.getElementById(id);
-            if (!node) return;
-            node.textContent = content[key];
-          });
-
-          Object.entries(langButtons).forEach(([code, button]) => {
-            if (!button) return;
-            button.classList.toggle("is-active", code === lang);
-            button.setAttribute("aria-pressed", code === lang ? "true" : "false");
-          });
-        };
-
-        const setLanguage = (lang) => {
-          const nextLang = lang === "en" ? "en" : "it";
-          window.localStorage.setItem(STORAGE_KEY, nextLang);
-          applyLanguage(nextLang);
-        };
-
-        Object.values(langButtons).forEach((button) => {
-          if (!button) return;
-          button.addEventListener("click", () => setLanguage(button.dataset.lang || "it"));
-        });
-
-        const queryLang = new URLSearchParams(window.location.search).get("lang");
-        const savedLang = window.localStorage.getItem(STORAGE_KEY);
-        const initialLang = queryLang === "en" || queryLang === "it" ? queryLang : savedLang;
-        applyLanguage(initialLang === "en" ? "en" : "it");
-      })();
-    </script>
-  </body>
 </html>
