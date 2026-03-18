@@ -17,12 +17,17 @@
       "bundleIdentifier": "com.where2beach.mobile",
       "buildNumber": "1",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Where2Beach usa la tua posizione per mostrarti spiagge vicine e abilitare la funzione \"La mia posizione\" nella mappa."
       }
     },
     "android": {
       "package": "com.where2beach.mobile",
       "versionCode": 1,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
