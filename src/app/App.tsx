@@ -1325,9 +1325,7 @@ function App() {
     if (options?.favoriteBeachId) params.set("fav", options.favoriteBeachId);
     if (options?.beachName) params.set("beachName", options.beachName);
     if (options?.authMode === "login") params.set("mode", "login");
-    const registerPath = window.location.pathname.startsWith("/app")
-      ? "/app/register"
-      : "/register";
+    const registerPath = "/register";
 
     track("auth_gate_redirect", {
       beachId: options?.favoriteBeachId ?? selectedBeachId ?? undefined,
