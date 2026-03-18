@@ -38,7 +38,7 @@ export default function PrivacyPolicy() {
                         <h2 className="text-xl font-bold text-white mb-3">2. Dati Raccolti</h2>
                         <p className="mb-3">Raccogliamo esclusivamente i seguenti dati personali:</p>
                         <ul className="list-disc list-inside space-y-1 ml-2">
-                            <li><strong className="text-white/90">Indirizzo email</strong> — fornito volontariamente tramite il modulo di iscrizione alla lista d&apos;attesa.</li>
+                            <li><strong className="text-white/90">Indirizzo email</strong> — fornito volontariamente tramite i form presenti sul sito.</li>
                         </ul>
                         <p className="mt-3">Non raccogliamo dati di navigazione, cookie di profilazione o informazioni di pagamento.</p>
                     </section>
@@ -47,9 +47,9 @@ export default function PrivacyPolicy() {
                         <h2 className="text-xl font-bold text-white mb-3">3. Finalità del Trattamento</h2>
                         <p>I dati raccolti vengono utilizzati esclusivamente per:</p>
                         <ul className="list-disc list-inside space-y-1 ml-2 mt-2">
-                            <li>Gestire l&apos;iscrizione alla lista d&apos;attesa.</li>
-                            <li>Inviare comunicazioni relative al lancio e agli aggiornamenti del servizio Where 2 Beach.</li>
-                            <li>Contattarti in caso di accesso anticipato o promozioni dedicate.</li>
+                            <li>Gestire le richieste inviate tramite i form del sito.</li>
+                            <li>Inviare comunicazioni relative al prodotto e ai suoi aggiornamenti.</li>
+                            <li>Contattarti in caso di novità o promozioni dedicate.</li>
                         </ul>
                     </section>
 
@@ -57,7 +57,7 @@ export default function PrivacyPolicy() {
                         <h2 className="text-xl font-bold text-white mb-3">4. Base Giuridica</h2>
                         <p>
                             Il trattamento dei dati si basa sul <strong className="text-white/90">consenso</strong> dell&apos;utente,
-                            espresso al momento dell&apos;iscrizione alla lista d&apos;attesa (Art. 6, par. 1, lett. a del GDPR).
+                            espresso al momento dell&apos;invio dei form (Art. 6, par. 1, lett. a del GDPR).
                         </p>
                     </section>
 

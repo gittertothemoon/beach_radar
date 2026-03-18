@@ -37,20 +37,18 @@ export default function TermsOfService() {
                     <section>
                         <h2 className="text-xl font-bold text-white mb-3">2. Descrizione del Servizio</h2>
                         <p>
-                            Where 2 Beach è una piattaforma in fase di sviluppo che fornirà informazioni in tempo reale
+                            Where 2 Beach è una piattaforma che fornisce informazioni in tempo reale
                             sulle condizioni delle spiagge, includendo dati su meteo, affollamento, vento e onde.
-                            Attualmente il Servizio è in fase di <strong className="text-white/90">pre-lancio</strong> e
-                            offre esclusivamente la possibilità di iscriversi alla lista d&apos;attesa.
                         </p>
                     </section>
 
                     <section>
-                        <h2 className="text-xl font-bold text-white mb-3">3. Iscrizione alla Lista d&apos;Attesa</h2>
-                        <p>Iscrivendoti alla lista d&apos;attesa:</p>
+                        <h2 className="text-xl font-bold text-white mb-3">3. Account e Comunicazioni</h2>
+                        <p>Utilizzando i form del Servizio:</p>
                         <ul className="list-disc list-inside space-y-1 ml-2 mt-2">
                             <li>Confermi di avere almeno 16 anni di età.</li>
                             <li>Fornisci un indirizzo email valido e di tua proprietà.</li>
-                            <li>Acconsenti a ricevere comunicazioni relative al lancio del servizio.</li>
+                            <li>Acconsenti a ricevere comunicazioni relative agli aggiornamenti del servizio.</li>
                             <li>Puoi richiedere la cancellazione in qualsiasi momento scrivendo a{' '}
                                 <a href="mailto:info@where2beach.com" className="text-cyan-400 hover:underline">info@where2beach.com</a>.
                             </li>
