@@ -14,14 +14,14 @@
       "permanent": true
     },
     {
-      "source": "/landing",
-      "destination": "/",
+      "source": "/",
+      "destination": "/landing/",
       "permanent": false
     },
     {
-      "source": "/landing/(.*)",
-      "destination": "/",
-      "permanent": false
+      "source": "/landing",
+      "destination": "/landing/",
+      "permanent": true
     },
     {
       "source": "/app",
@@ -60,6 +60,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/landing/",
+      "destination": "/landing/index.html"
+    },
     {
       "source": "/app/",
       "has": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
