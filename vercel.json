@@ -65,6 +65,21 @@
       "permanent": true
     },
     {
+      "source": "/register",
+      "destination": "/register/",
+      "permanent": true
+    },
+    {
+      "source": "/app/register",
+      "destination": "/register/",
+      "permanent": false
+    },
+    {
+      "source": "/app/register/(.*)",
+      "destination": "/register/",
+      "permanent": false
+    },
+    {
       "source": "/privacy",
       "destination": "/privacy/",
       "permanent": true
@@ -149,6 +164,10 @@
     {
       "source": "/landing/",
       "destination": "/landing/index.html"
+    },
+    {
+      "source": "/register/",
+      "destination": "/app-shell/index.html"
     },
     {
       "source": "/privacy/",
