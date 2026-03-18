@@ -24,6 +24,16 @@
       "permanent": true
     },
     {
+      "source": "/waitlist",
+      "destination": "/landing/",
+      "permanent": true
+    },
+    {
+      "source": "/waitlist/(.*)",
+      "destination": "/landing/",
+      "permanent": true
+    },
+    {
       "source": "/app",
       "has": [{ "type": "query", "key": "key" }],
       "destination": "/api/app-access",
@@ -32,7 +42,7 @@
     {
       "source": "/app",
       "missing": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
-      "destination": "/waitlist/",
+      "destination": "/landing/",
       "permanent": false
     },
     {
@@ -55,7 +65,7 @@
     {
       "source": "/app/(.*)",
       "missing": [{ "type": "cookie", "key": "br_app_access", "value": "1" }],
-      "destination": "/waitlist/",
+      "destination": "/landing/",
       "permanent": false
     }
   ],

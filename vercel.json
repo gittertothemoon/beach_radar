@@ -56,19 +56,12 @@
     },
     {
       "source": "/waitlist",
-      "missing": [
-        {
-          "type": "cookie",
-          "key": "br_seen_landing",
-          "value": "1"
-        }
-      ],
       "destination": "/landing/",
-      "permanent": false
+      "permanent": true
     },
     {
-      "source": "/waitlist",
-      "destination": "/waitlist/",
+      "source": "/waitlist/(.*)",
+      "destination": "/landing/",
       "permanent": true
     },
     {
@@ -101,7 +94,7 @@
           "value": "1"
         }
       ],
-      "destination": "/waitlist/",
+      "destination": "/landing/",
       "permanent": false
     },
     {
@@ -140,7 +133,7 @@
           "value": "1"
         }
       ],
-      "destination": "/waitlist/",
+      "destination": "/landing/",
       "permanent": false
     }
   ],
@@ -156,10 +149,6 @@
     {
       "source": "/landing/",
       "destination": "/landing/index.html"
-    },
-    {
-      "source": "/waitlist/",
-      "destination": "/waitlist/index.html"
     },
     {
       "source": "/privacy/",

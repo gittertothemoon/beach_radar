@@ -309,12 +309,12 @@ body {
 }
 
 
-/* ===== Premium Waitlist Card ===== */
-.waitlist-card {
+/* ===== Premium Signup Card ===== */
+.signup-card {
     display: inline-block;
 }
 
-.waitlist-card-inner {
+.signup-card-inner {
     background: rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -325,7 +325,7 @@ body {
     overflow: hidden;
 }
 
-.waitlist-card-inner::before {
+.signup-card-inner::before {
     content: '';
     position: absolute;
     top: 0;
@@ -357,15 +357,15 @@ body {
     50% { transform: translateY(-3px); }
 }
 
-/* Waitlist progress bar shimmer */
-.waitlist-progress {
+/* Signup progress bar shimmer */
+.signup-progress {
     position: relative;
     overflow: hidden;
     animation: progressGrow 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     transform-origin: left;
 }
 
-.waitlist-progress::after {
+.signup-progress::after {
     content: '';
     position: absolute;
     top: 0;
@@ -390,8 +390,8 @@ body {
     100% { transform: translateX(100%); }
 }
 
-/* Waitlist gradient number shimmer */
-.waitlist-number {
+/* Signup gradient number shimmer */
+.signup-number {
     background-size: 200% auto;
     animation: numberShimmer 3s linear infinite;
 }

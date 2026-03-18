@@ -152,16 +152,16 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCountdown();
     setInterval(updateCountdown, 1000);
 
-    // ===== Waitlist Counter (reuse existing counter system) =====
-    document.querySelectorAll('.waitlist-counter').forEach(el => {
+    // ===== Community Counter (reuse existing counter system) =====
+    document.querySelectorAll('.signup-counter').forEach(el => {
         counterObserver.observe(el);
     });
 
-    // ===== Email Form Submission (Supabase waitlist via API) =====
+    // ===== Email Form Submission (Supabase signup via API) =====
     const emailForm = document.getElementById('landing-email-form');
     const feedbackEl = document.getElementById('landing-email-feedback');
     const submitBtn = document.getElementById('landing-email-submit');
-    const WAITLIST_ENDPOINT = '/api/waitlist';
+    const SIGNUP_ENDPOINT = '/api/signup';
 
     const setFeedback = (message, tone) => {
         if (!feedbackEl) return;
@@ -207,11 +207,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return out;
     };
 
-    const submitWaitlist = async (payload) => {
+    const submitSignup = async (payload) => {
         const controller = new AbortController();
         const timeoutId = window.setTimeout(() => controller.abort(), 7000);
         try {
-            const response = await fetch(WAITLIST_ENDPOINT, {
+            const response = await fetch(SIGNUP_ENDPOINT, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     version: 'landing_v2',
                 };
 
-                const result = await submitWaitlist(payload);
+                const result = await submitSignup(payload);
                 submitBtn.classList.add('bg-green-500');
                 submitBtn.classList.remove('bg-corallo');
                 submitBtn.textContent = '✓ Registrato!';
@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (result && result.already) {
                     setFeedback('Email già presente: iscrizione confermata.', 'success');
                 } else {
-                    setFeedback('Perfetto, ti avviseremo al lancio.', 'success');
+                    setFeedback('Perfetto, ti aggiorneremo presto.', 'success');
                 }
             } catch (error) {
                 const code = error && error.code ? error.code : '';
