@@ -11,14 +11,14 @@ import { WebView } from "react-native-webview";
 
 type WebSurfaceProps = {
   initialUrl: string;
-  blockWaitlistRedirect?: boolean;
-  waitlistBlockedMessage?: string;
+  blockLandingRedirect?: boolean;
+  landingBlockedMessage?: string;
 };
 
 export const WebSurface = ({
   initialUrl,
-  blockWaitlistRedirect = false,
-  waitlistBlockedMessage,
+  blockLandingRedirect = false,
+  landingBlockedMessage,
 }: WebSurfaceProps) => {
   const insets = useSafeAreaInsets();
   const statusBarOverlayHeight = Math.max(28, insets.top + 2);
@@ -35,17 +35,17 @@ export const WebSurface = ({
 
   const handleShouldStartLoadWithRequest = useCallback(
     (request: { url: string }) => {
-      if (blockWaitlistRedirect && /\/waitlist(\/|$)/i.test(request.url)) {
+      if (blockLandingRedirect && /\/landing(\/|$)/i.test(request.url)) {
         setLoading(false);
         setError(
-          waitlistBlockedMessage ??
+          landingBlockedMessage ??
             "Accesso app non autorizzato. Configura la chiave app e riprova.",
         );
         return false;
       }
       return true;
     },
-    [blockWaitlistRedirect, waitlistBlockedMessage],
+    [blockLandingRedirect, landingBlockedMessage],
   );
 
   return (

@@ -37,7 +37,7 @@ iOS (temporary while Apple team approval is pending):
 
 ## Pre-Flight
 
-1. Confirm app opens the map flow directly (no landing/waitlist screen in app nav).
+1. Confirm app opens the map flow directly (no landing screen in app nav).
 2. Confirm network is stable (Wi-Fi or 4G/5G).
 3. Clear previous app state if behavior looks stale:
    - Expo Go reload, then reopen project.
@@ -46,7 +46,7 @@ iOS (temporary while Apple team approval is pending):
 
 1. Map boot
 - Steps: Open app and wait initial render.
-- Expected: Map visible, pins visible, no waitlist.
+- Expected: Map visible and pins visible.
 
 2. Pin open/close
 - Steps: Tap a pin, open details, close details.

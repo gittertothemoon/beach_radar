@@ -35,12 +35,6 @@ npm run repo:hygiene
 npm run assets:check
 ```
 
-Optional waitlist checks:
-
-```bash
-BASE_URL=http://127.0.0.1:3000 WAITLIST_PATH=/waitlist/index.html npm run test:waitlist
-```
-
 ## Commit Guidelines
 
 - Keep commits focused and atomic.

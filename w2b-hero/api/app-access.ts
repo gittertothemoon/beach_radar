@@ -99,7 +99,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 
   const providedKey = getKeyParam(req);
   if (!providedKey || !isValidAccessKey(providedKey, accessKeyConfig)) {
-    res.writeHead(302, { Location: "/waitlist/" });
+    res.writeHead(302, { Location: "/landing/" });
     return res.end();
   }
 

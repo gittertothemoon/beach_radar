@@ -4,7 +4,7 @@ Expo mobile app for Where2Beach.
 
 Current target:
 - mobile opens the definitive `/app/` experience (map + pins + full app flow)
-- no landing/waitlist flow inside the app
+- no landing flow inside the app
 
 ## Setup
 

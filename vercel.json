@@ -154,14 +154,6 @@
   ],
   "rewrites": [
     {
-      "source": "/api/waitlist/count",
-      "destination": "/api/waitlist?action=count"
-    },
-    {
-      "source": "/api/waitlist/confirm",
-      "destination": "/api/waitlist?action=confirm"
-    },
-    {
       "source": "/landing/",
       "destination": "/landing/index.html"
     },

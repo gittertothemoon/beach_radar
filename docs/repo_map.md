@@ -29,7 +29,7 @@ This document describes where responsibilities live in the codebase.
 
 ## API (`api/`)
 
-- `api/waitlist/`: waitlist endpoints (`index`, `count`, `confirm`)
+- `api/signup.ts`: landing signup endpoint
 - `api/reports/`: crowd reports read/write endpoint
 - `api/account/`: authenticated account actions
 - `api/analytics.ts`: anonymous server-side analytics ingestion
@@ -38,8 +38,6 @@ This document describes where responsibilities live in the codebase.
 
 ## SQL Migrations (`scripts/sql/`)
 
-- `waitlist_phase1.sql`: waitlist core schema
-- `waitlist_rate_limits.sql`: waitlist rate limiter schema
 - `app_auth_favorites.sql`: auth/favorites schema
 - `app_crowd_reports.sql`: crowd reports schema
 - `app_analytics_events.sql`: anonymous analytics events schema
@@ -50,7 +48,7 @@ This document describes where responsibilities live in the codebase.
 - `scripts/seed/sync.mjs`: canonical sync from `seed/` to `src/data/`
 - `scripts/seed/validate.mjs`: integrity checks for ids/coords/schema/sync state
 - `scripts/seed/lib/sync-utils.mjs`: shared seed merge/sync utilities
-- `scripts/sync-brand-assets.mjs`: keeps duplicated brand assets aligned across app/waitlist/remotion
+- `scripts/sync-brand-assets.mjs`: keeps duplicated brand assets aligned across app/remotion
 - `scripts/repo-hygiene.mjs`: guardrail checks for root clutter, tracked generated outputs, and raw naming
 
 ## KML Intake (`data/raw/kml/`)

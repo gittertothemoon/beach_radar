@@ -9,7 +9,7 @@ export default defineConfig({
   webServer: [
     {
       command:
-        "npm --prefix w2b-hero run sync:app-shell && WAITLIST_TEST_MODE=1 REPORTS_TEST_MODE=1 APP_ACCESS_KEY=test-app-access-key npx vercel dev --listen 3000 --yes",
+        "npm --prefix w2b-hero run sync:app-shell && SIGNUP_TEST_MODE=1 REPORTS_TEST_MODE=1 APP_ACCESS_KEY=test-app-access-key npx vercel dev --listen 3000 --yes",
       url: "http://localhost:3000",
       reuseExistingServer: true,
       timeout: 120_000
@@ -28,12 +28,9 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "api-and-waitlist",
+      name: "api-and-routing",
       testDir: "tests",
       testMatch: [
-        "waitlist.api.spec.ts",
-        "waitlist.e2e.spec.ts",
-        "waitlist.smoke.spec.ts",
         "reports.api.spec.ts",
         "app.gating.spec.ts"
       ],

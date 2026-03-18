@@ -3,7 +3,7 @@
 Where2Beach is a Vite + React + TypeScript app with Vercel serverless APIs.
 The project currently includes:
 
-- public waitlist flow (`/waitlist/`)
+- public landing flow (`/landing/`)
 - gated app flow (`/app/`) with map, reports, weather, account/favorites
 - Supabase-backed APIs (`/api/*`)
 
@@ -79,16 +79,6 @@ npm --prefix w2b-hero run build    # builds Vite app + syncs assets/APIs + build
 - syncs required static files (`manifest`, favicons, `icons`, `og`)
 - syncs serverless APIs from `api/*` to `w2b-hero/api/*`
 
-Waitlist tests:
-
-```bash
-npm run test:waitlist
-npm run test:waitlist:api
-npm run test:waitlist:e2e
-npm run test:waitlist:smoke
-npm run test:waitlist:smoke:static
-```
-
 App tests:
 
 ```bash
@@ -120,7 +110,7 @@ KML intake directory: `data/raw/kml/`
 The repo includes a mobile app in `mobile/` that opens the definitive `/app/`
 experience (map + pins + full app flow) in mobile.
 
-The app does not include landing/waitlist flows in its navigation.
+The app does not include landing flows in its navigation.
 
 Run it:
 
@@ -184,7 +174,6 @@ SQL migration:
 
 - `docs/README.md`: documentation index
 - `docs/repo_map.md`: directory map and ownership boundaries
-- `docs/waitlist_ops.md`: waitlist runbook (local, CI, envs, SQL, retention)
 - `docs/mobile_qa_checklist.md`: mobile map QA checklist (manual + automated)
 - `tools/posters/README.md`: poster generation workflow
 - `CONTRIBUTING.md`: contribution and quality workflow

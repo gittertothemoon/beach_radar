@@ -10,7 +10,7 @@ export const AppWebScreen = () => {
         <View style={styles.content}>
           <Text style={styles.title}>Configurazione richiesta</Text>
           <Text style={styles.body}>
-            L&apos;app mobile apre direttamente la mappa definitiva (`/app/`) e non la waitlist.
+            L&apos;app mobile apre direttamente la mappa definitiva (`/app/`).
             Per autorizzare l&apos;accesso devi impostare `EXPO_PUBLIC_APP_ACCESS_KEY` in
             `mobile/.env`.
           </Text>
@@ -23,8 +23,8 @@ export const AppWebScreen = () => {
   return (
     <WebSurface
       initialUrl={MOBILE_APP_URL}
-      blockWaitlistRedirect
-      waitlistBlockedMessage="Chiave app non valida o scaduta. Aggiorna EXPO_PUBLIC_APP_ACCESS_KEY e riapri."
+      blockLandingRedirect
+      landingBlockedMessage="Chiave app non valida o scaduta. Aggiorna EXPO_PUBLIC_APP_ACCESS_KEY e riapri."
     />
   );
 };

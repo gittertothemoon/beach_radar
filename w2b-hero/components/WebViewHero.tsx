@@ -16,13 +16,13 @@ export default function WebViewHero() {
           La spiaggia giusta, prima di partire.
         </h2>
         <p className="mt-4 text-base font-medium leading-relaxed text-white/70">
-          Controlla affollamento, vento, onde e meteo in tempo reale. Entra ora in lista d&apos;attesa.
+          Controlla affollamento, vento, onde e meteo in tempo reale.
         </p>
         <a
-          href="#waitlist"
+          href="/app/"
           className="mt-8 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-3 text-base font-bold text-white shadow-[0_10px_30px_rgba(14,165,233,0.35)]"
         >
-          Richiedi accesso anticipato
+          Apri l&apos;app
         </a>
       </div>
     </section>

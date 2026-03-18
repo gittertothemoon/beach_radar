@@ -3,25 +3,6 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createHash, randomBytes } from "node:crypto";
 import { updateTestModeStore } from "./test-mode-store.js";
 
-/*
-SQL migration snippet (Phase 1):
-alter table public.waitlist_signups
-  add column if not exists status text not null default 'pending',
-  add column if not exists count int not null default 1,
-  add column if not exists first_seen_at timestamptz not null default now(),
-  add column if not exists last_seen_at timestamptz not null default now(),
-  add column if not exists source_quality text,
-  add column if not exists honeypot text,
-  add column if not exists confirmed_at timestamptz,
-  add column if not exists confirm_token_hash text;
-
-create index if not exists waitlist_signups_created_at_idx
-  on public.waitlist_signups(created_at);
-
-create index if not exists waitlist_signups_source_quality_idx
-  on public.waitlist_signups(source_quality);
-*/
-
 type RateEntry = {
   count: number;
   resetAt: number;
@@ -37,17 +18,17 @@ type RateLimitConfig = {
   max: number;
 };
 
-type WaitlistTestState = {
+type SignupTestState = {
   rateLimits: Record<string, RateEntry>;
   signups: Record<string, { count: number }>;
 };
 
-type WaitlistTestOutcome =
+type SignupTestOutcome =
   | { type: "rate_limited"; retryAfter: number }
   | { type: "spam" }
   | { type: "ok"; already: boolean };
 
-type WaitlistRateLimitRpcData =
+type SignupRateLimitRpcData =
   | { count?: number | null }
   | Array<{ count?: number | null }>
   | null;
@@ -56,15 +37,17 @@ type SupabaseRateLimitClient = {
   rpc: (
     fn: string,
     params?: Record<string, unknown>
-  ) => PromiseLike<{ data: WaitlistRateLimitRpcData; error: unknown }>;
+  ) => PromiseLike<{ data: SignupRateLimitRpcData; error: unknown }>;
 };
 
 const MAX_BODY_BYTES = 10 * 1024;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const DEFAULT_RATE_LIMIT_MAX = 10;
-const WAITLIST_TEST_STORE_FILE = "waitlist-state.json";
-const TEST_MODE = process.env.WAITLIST_TEST_MODE === "1";
+const SIGNUP_TEST_STORE_FILE = "signup-state.json";
+const TEST_MODE = process.env.SIGNUP_TEST_MODE === "1" || process.env.WAITLIST_TEST_MODE === "1";
 const DOUBLE_OPT_IN_ENABLED = process.env.ENABLE_DOUBLE_OPTIN === "1";
+const RATE_LIMIT_RPC_NAME = readEnv("SIGNUP_RATE_LIMIT_RPC") || "waitlist_rate_limit_touch";
+const SIGNUP_TABLE = readEnv("SIGNUP_TABLE") || "waitlist_signups";
 
 function readEnv(name: string): string | null {
   const raw = process.env[name];
@@ -94,8 +77,13 @@ function getClientIp(req: VercelRequest): string | null {
 }
 
 function getRateLimitConfig(): RateLimitConfig {
-  const max = Number(readEnv("TEST_RATE_LIMIT") || readEnv("WAITLIST_RATE_LIMIT_MAX") || DEFAULT_RATE_LIMIT_MAX);
-  const windowSec = Number(readEnv("WAITLIST_RATE_LIMIT_WINDOW_SEC"));
+  const max = Number(
+    readEnv("TEST_RATE_LIMIT") ||
+      readEnv("SIGNUP_RATE_LIMIT_MAX") ||
+      readEnv("WAITLIST_RATE_LIMIT_MAX") ||
+      DEFAULT_RATE_LIMIT_MAX,
+  );
+  const windowSec = Number(readEnv("SIGNUP_RATE_LIMIT_WINDOW_SEC") || readEnv("WAITLIST_RATE_LIMIT_WINDOW_SEC"));
   const windowMs = Number.isFinite(windowSec) && windowSec > 0
     ? windowSec * 1000
     : DEFAULT_RATE_LIMIT_WINDOW_MS;
@@ -114,23 +102,23 @@ function getRateLimitKey(ipHash: string, uaHash: string, windowStartMs: number):
   return `${ipHash}:${uaHash}:${windowStartMs}`;
 }
 
-function createWaitlistTestState(): WaitlistTestState {
+function createSignupTestState(): SignupTestState {
   return {
     rateLimits: {},
     signups: {}
   };
 }
 
-function runWaitlistTestMode(
+function runSignupTestMode(
   ip: string | null,
   userAgent: string | null,
   config: RateLimitConfig,
   honeypot: string | null,
   emailValue: string
-): WaitlistTestOutcome {
+): SignupTestOutcome {
   return updateTestModeStore(
-    WAITLIST_TEST_STORE_FILE,
-    createWaitlistTestState,
+    SIGNUP_TEST_STORE_FILE,
+    createSignupTestState,
     (state) => {
   const now = Date.now();
       for (const [key, entry] of Object.entries(state.rateLimits)) {
@@ -185,7 +173,7 @@ async function checkRateLimitDb(
   const windowStartMs = getWindowStartMs(nowMs, config.windowMs);
   const windowStartIso = new Date(windowStartMs).toISOString();
 
-  const { data, error } = await supabase.rpc("waitlist_rate_limit_touch", {
+  const { data, error } = await supabase.rpc(RATE_LIMIT_RPC_NAME, {
     ip_hash: ipHash,
     ua_hash: uaHash,
     window_start: windowStartIso
@@ -290,7 +278,7 @@ function hashToken(token: string): string {
 }
 
 function withDebug(error: { message?: string; code?: string | null; details?: string | null; hint?: string | null }) {
-  if (process.env.WAITLIST_DEBUG !== "1") return undefined;
+  if (process.env.SIGNUP_DEBUG !== "1" && process.env.WAITLIST_DEBUG !== "1") return undefined;
   return {
     message: error.message,
     code: error.code,
@@ -317,8 +305,8 @@ async function sendConfirmEmail(options: {
   const payload = {
     from: options.from,
     to: options.to,
-    subject: "Confirm your Where2Beach waitlist spot",
-    html: `<p>Confirm your email to join the Where2Beach waitlist:</p><p><a href="${url}">Confirm my spot</a></p>`
+    subject: "Confirm your Where2Beach signup",
+    html: `<p>Confirm your email to complete your Where2Beach signup:</p><p><a href="${url}">Confirm my email</a></p>`
   };
 
   const response = await fetch("https://api.resend.com/emails", {
@@ -371,7 +359,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const rateConfig = getRateLimitConfig();
 
   if (TEST_MODE) {
-    const outcome = runWaitlistTestMode(ip, userAgent, rateConfig, honeypot, emailValue);
+    const outcome = runSignupTestMode(ip, userAgent, rateConfig, honeypot, emailValue);
 
     if (outcome.type === "rate_limited") {
       return res.status(429).json({
@@ -435,7 +423,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   };
 
   const { data: existing, error: selectError } = await supabase
-    .from("waitlist_signups")
+    .from(SIGNUP_TABLE)
     .select("id, count, status, confirm_token_hash")
     .eq("email_norm", normalizedEmail)
     .maybeSingle();
@@ -451,7 +439,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (existing) {
     const nextCount = (typeof existing.count === "number" && Number.isFinite(existing.count) ? existing.count : 0) + 1;
     const { error: updateError } = await supabase
-      .from("waitlist_signups")
+      .from(SIGNUP_TABLE)
       .update({
         last_seen_at: nowIso,
         count: nextCount,
@@ -502,7 +490,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     confirm_token_hash: confirmTokenHash
   };
 
-  const { error: insertError } = await supabase.from("waitlist_signups").insert(insertPayload);
+  const { error: insertError } = await supabase.from(SIGNUP_TABLE).insert(insertPayload);
 
   if (insertError) {
     return res.status(500).json({
@@ -514,9 +502,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (DOUBLE_OPT_IN_ENABLED && confirmToken) {
     const resendApiKey = readEnv("RESEND_API_KEY");
-    const waitlistFrom = readEnv("WAITLIST_FROM");
-    const confirmUrl = readEnv("WAITLIST_CONFIRM_URL");
-    if (!resendApiKey || !waitlistFrom || !confirmUrl) {
+    const signupFrom = readEnv("SIGNUP_FROM") || readEnv("WAITLIST_FROM");
+    const confirmUrl = readEnv("SIGNUP_CONFIRM_URL") || readEnv("WAITLIST_CONFIRM_URL");
+    if (!resendApiKey || !signupFrom || !confirmUrl) {
       return res.status(500).json({ ok: false, error: "missing_email_env" });
     }
 
@@ -524,7 +512,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       to: emailValue,
       token: confirmToken,
       apiKey: resendApiKey,
-      from: waitlistFrom,
+      from: signupFrom,
       confirmUrl
     });
 

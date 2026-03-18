@@ -1,7 +1,7 @@
 # VIDEO BRIEF - Where2Beach (Handoff)
 
 ## Goal
-Promo verticale 1080x1920, 12s, obiettivo: waitlist.
+Promo verticale 1080x1920, 12s, obiettivo: awareness prodotto.
 
 ## Target
 Riviera + Bologna. Persone che decidono all'ultimo dove andare al mare e vogliono evitare spiagge piene.
@@ -12,7 +12,7 @@ Tech-summer, diretto, zero cringe.
 ## Palette
 | Hex | Uso |
 | --- | --- |
-| `#020617` | Background deep (waitlist hero) |
+| `#020617` | Background deep (hero) |
 | `#07090D` | Background app (map shell) |
 | `#0B0F16` | Surface/panel |
 | `#F8FAFC` | Testo primario/CTA light button |
@@ -35,7 +35,7 @@ Tech-summer, diretto, zero cringe.
 | Nome | Path nel repo | Note |
 | --- | --- | --- |
 | Logo principale (pin + radar) | `src/assets/logo.png` | PNG RGBA 1536x1024 |
-| Logo waitlist (duplica logo main) | `public/waitlist/logo.png` | Gia pronto in `public/` |
+| Logo variante hero | `src/assets/logo.png` | Usa il logo principale |
 | Background hero sharecard | `src/assets/sharecard-bg.png` | Texture blu con onda light |
 | Background initial | `src/assets/initial-bg.png` | Variante background |
 | Pin beach livello 1 | `src/assets/markers/pin_beach.png` | Icona umbrella base |

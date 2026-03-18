@@ -16,7 +16,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Where2Beach — La spiaggia perfetta, trovata in un istante",
-  description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire. Iscriviti alla lista d'attesa per l'accesso anticipato.",
+  description: "Dati in tempo reale su vento, onde, affollamento e meteo. Scopri dove andare prima di partire.",
   applicationName: "Where2Beach",
   keywords: [
     "where2beach",

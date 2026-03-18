@@ -7,7 +7,7 @@ const CHECK_ONLY = process.argv.includes("--check");
 const ASSET_MAP = [
   {
     source: "src/assets/logo.png",
-    targets: ["public/waitlist/logo.png", "remotion/public/video-kit/logo.png"],
+    targets: ["remotion/public/video-kit/logo.png"],
   },
   {
     source: "src/assets/initial-bg.png",

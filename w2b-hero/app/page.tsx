@@ -3,7 +3,6 @@ import Where2BeachSequence from '@/components/Where2BeachSequence'
 import FeaturesGrid from '@/components/FeaturesGrid'
 import TechShowcase from '@/components/TechShowcase'
 import HowItWorks from '@/components/HowItWorks'
-import WaitlistForm from '@/components/WaitlistForm'
 import WebViewHero from '@/components/WebViewHero'
 import { Instagram } from 'lucide-react'
 
@@ -63,7 +62,6 @@ export default function Home() {
           <TechShowcase />
         </div>
         <HowItWorks />
-        <WaitlistForm />
 
         {/* Premium Footer */}
         <footer className="wv-safe-area-bottom w-full border-t border-white/[0.06] bg-gradient-to-b from-[#000006] to-[#020210]">
@@ -96,7 +94,7 @@ export default function Home() {
                 <h4 className="text-xs font-bold text-white/60 uppercase tracking-[0.2em] mb-1">Navigazione</h4>
                 <a href="#features" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Funzionalità</a>
                 <a href="#how-it-works" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Come Funziona</a>
-                <a href="#waitlist" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Lista d&apos;Attesa</a>
+                <a href="/landing/" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Landing</a>
               </div>
 
               {/* Legal Column */}

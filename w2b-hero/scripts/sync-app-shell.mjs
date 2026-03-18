@@ -92,7 +92,6 @@ syncOptionalFile(
 syncOptionalDir(resolve(rootPublic, "icons"), resolve(heroPublic, "icons"));
 syncOptionalDir(resolve(rootPublic, "og"), resolve(heroPublic, "og"));
 syncOptionalDir(resolve(rootPublic, "landing"), resolve(heroPublic, "landing"));
-syncOptionalDir(resolve(rootPublic, "waitlist"), resolve(heroPublic, "waitlist"));
 syncOptionalDir(resolve(rootPublic, "privacy"), resolve(heroPublic, "privacy"));
 
 syncDir(resolve(repoRoot, "api"), resolve(heroRoot, "api"));

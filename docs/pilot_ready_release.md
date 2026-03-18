@@ -46,7 +46,7 @@ Scope delivered:
 
 ### Non-Goals / Preserved Behavior
 - No visible UI redesign, no routing redesign, no product feature changes.
-- Existing waitlist/app flows and access gating remain unchanged.
+- Existing app flows and access gating remain unchanged.
 
 ## Release Checklist
 
@@ -61,7 +61,7 @@ Scope delivered:
 2. CI gates
 - Confirm GitHub Actions green:
   - `App Quality` workflow
-  - Waitlist/App Playwright workflow
+  - App Playwright workflow
 
 3. Production smoke
 - Run:

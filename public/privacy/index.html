@@ -172,7 +172,7 @@
 
   <div class="page-shell">
     <nav class="top-nav" aria-label="Back navigation">
-      <a id="backLink" href="/waitlist/"><span>&larr;</span><span id="backLabel">Back to waitlist</span></a>
+      <a id="backLink" href="/landing/"><span>&larr;</span><span id="backLabel">Back to landing</span></a>
     </nav>
 
     <main class="privacy-card">
@@ -217,7 +217,7 @@
         pageTitle: "Where2Beach - Privacy",
         pageDescription: "Informativa privacy Where2Beach",
         lead:
-          "Questa pagina spiega quali dati raccogliamo per la waitlist di Where2Beach, perché li raccogliamo e come contattarci.",
+          "Questa pagina spiega quali dati raccogliamo su Where2Beach, perché li raccogliamo e come contattarci.",
         dataCollectedTitle: "Dati raccolti",
         dataCollectedItems: [
           "Indirizzo email e timestamp di iscrizione (prima/ultima registrazione).",
@@ -227,19 +227,19 @@
         ],
         purposeTitle: "Finalità",
         purposeText:
-          "Usiamo questi dati per gestire la waitlist e inviare comunicazioni legate al lancio.",
+          "Usiamo questi dati per migliorare il servizio, gestire i contatti richiesti e inviare comunicazioni legate al prodotto.",
         legalBasisTitle: "Base giuridica",
         legalBasisText:
-          "Trattiamo i dati sulla base del consenso fornito quando ti iscrivi alla waitlist.",
+          "Trattiamo i dati sulla base del consenso fornito quando compili i form o utilizzi le funzionalità del servizio.",
         retentionTitle: "Conservazione",
         retentionText:
-          "Conserviamo i dati della waitlist fino al lancio e fino a 12 mesi successivi, oppure fino alla richiesta di cancellazione.",
+          "Conserviamo i dati per il tempo necessario alle finalità indicate, oppure fino alla richiesta di cancellazione.",
         contactTitle: "Contatti",
         contactPrefix:
           "Per qualsiasi richiesta (accesso, cancellazione o chiarimenti), scrivi a",
         contactSuffix: ".",
         lastUpdated: "Ultimo aggiornamento: 28 gennaio 2026",
-        backToWaitlist: "Torna alla waitlist",
+        backToLanding: "Torna alla landing",
         backToApp: "Torna all'app",
       },
       en: {
@@ -247,7 +247,7 @@
         pageTitle: "Where2Beach - Privacy",
         pageDescription: "Where2Beach privacy information",
         lead:
-          "This page explains what data we collect for the Where2Beach waitlist, why we collect it, and how you can contact us.",
+          "This page explains what data we collect on Where2Beach, why we collect it, and how you can contact us.",
         dataCollectedTitle: "Data collected",
         dataCollectedItems: [
           "Email address and signup timestamps (first/last seen).",
@@ -257,19 +257,19 @@
         ],
         purposeTitle: "Purpose",
         purposeText:
-          "We use this data to manage the waitlist and send launch-related communications.",
+          "We use this data to improve the service, handle requested contacts, and send product-related communications.",
         legalBasisTitle: "Legal basis",
         legalBasisText:
-          "We process your data based on consent provided when you join the waitlist.",
+          "We process your data based on consent provided when you submit forms or use service features.",
         retentionTitle: "Retention",
         retentionText:
-          "We keep waitlist data until launch plus up to 12 months, or until you request deletion.",
+          "We keep data for as long as needed for the stated purposes, or until you request deletion.",
         contactTitle: "Contact",
         contactPrefix:
           "For any request (access, deletion, or questions), email",
         contactSuffix: ".",
         lastUpdated: "Last updated: January 28, 2026",
-        backToWaitlist: "Back to waitlist",
+        backToLanding: "Back to landing",
         backToApp: "Back to app",
       },
     };
@@ -312,8 +312,8 @@
     const fromParam = params.get("from");
     const backParam = params.get("back");
 
-    let fallbackHref = "/waitlist/";
-    let fallbackLabel = t.backToWaitlist;
+    let fallbackHref = "/landing/";
+    let fallbackLabel = t.backToLanding;
 
     const referrerPath = (() => {
       if (!document.referrer) return "";
@@ -344,7 +344,7 @@
             backUrl.pathname === "/register" ||
             backUrl.pathname === "/app/register"
               ? t.backToApp
-              : t.backToWaitlist;
+              : t.backToLanding;
         }
       } catch {
         // Ignore invalid back param and keep fallback values.

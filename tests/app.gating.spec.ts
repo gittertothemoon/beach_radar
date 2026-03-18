@@ -4,11 +4,11 @@ import {
 } from "./helpers/app";
 
 test.describe("app gating", () => {
-  test("/app without cookie redirects to /waitlist", async ({ request }) => {
+  test("/app without cookie redirects to /landing", async ({ request }) => {
     const response = await request.get("/app", { maxRedirects: 0 });
     expect([301, 302, 307, 308]).toContain(response.status());
     const location = response.headers().location || "";
-    expect(location === "/" || location.includes("/waitlist/")).toBe(true);
+    expect(location === "/" || location.includes("/landing/")).toBe(true);
   });
 
   test("/api/app-access?key=... sets access cookie", async ({ request }) => {

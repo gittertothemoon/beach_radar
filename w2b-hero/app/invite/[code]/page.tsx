@@ -14,8 +14,8 @@ export default function InvitePage({ params }: InvitePageProps) {
     const code = sanitizeInviteCode(params.code || '');
 
     if (!code) {
-        redirect('/#waitlist');
+        redirect('/landing/');
     }
 
-    redirect(`/?ref=${encodeURIComponent(code)}#waitlist`);
+    redirect(`/landing/?ref=${encodeURIComponent(code)}`);
 }

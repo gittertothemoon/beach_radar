@@ -45,11 +45,6 @@
       "type": "image"
     },
     {
-      "id": "waitlist_logo_main",
-      "path": "public/waitlist/logo.png",
-      "type": "image"
-    },
-    {
       "id": "bg_sharecard",
       "path": "src/assets/sharecard-bg.png",
       "type": "image"

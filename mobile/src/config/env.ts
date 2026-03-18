@@ -50,8 +50,6 @@ export const MOBILE_REPORT_ANYWHERE = readBooleanEnv(
 
 export const MOBILE_API_BASE_URL = `${MOBILE_BASE_URL}/api`;
 
-export const MOBILE_WAITLIST_URL = `${MOBILE_BASE_URL}/waitlist/index.html?utm_source=mobile&utm_medium=app&utm_campaign=mobile_waitlist_v1`;
-
 const MOBILE_APP_PATH = MOBILE_REPORT_ANYWHERE ? "/app/?report_anywhere=1" : "/app/";
 
 export const MOBILE_APP_URL = MOBILE_APP_ACCESS_KEY
