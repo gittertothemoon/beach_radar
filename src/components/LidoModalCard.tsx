@@ -48,6 +48,26 @@ const sameServices = (a?: string[], b?: string[]) => {
   return true;
 };
 
+const sameReviews = (a?: Review[], b?: Review[]) => {
+  if (a === b) return true;
+  const left = a ?? [];
+  const right = b ?? [];
+  if (left.length !== right.length) return false;
+  for (let i = 0; i < left.length; i += 1) {
+    if (
+      left[i].id !== right[i].id ||
+      left[i].beachId !== right[i].beachId ||
+      left[i].authorName !== right[i].authorName ||
+      left[i].content !== right[i].content ||
+      left[i].rating !== right[i].rating ||
+      left[i].createdAt !== right[i].createdAt
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
 const formatRainProbability = (value: number | null) =>
   value === null ? STRINGS.weather.noRainData : `${Math.round(value)}%`;
 
@@ -550,6 +570,8 @@ const lidoModalEqual = (prev: LidoModalCardProps, next: LidoModalCardProps) => {
   if (prev.isOpen !== next.isOpen) return false;
   if (prev.now !== next.now) return false;
   if (prev.isFavorite !== next.isFavorite) return false;
+  if (prev.reviewsLoading !== next.reviewsLoading) return false;
+  if (!sameReviews(prev.reviews, next.reviews)) return false;
   if (prev.weatherLoading !== next.weatherLoading) return false;
   if (prev.weatherUnavailable !== next.weatherUnavailable) return false;
   if (!sameWeather(prev.weather, next.weather)) return false;
@@ -557,6 +579,7 @@ const lidoModalEqual = (prev: LidoModalCardProps, next: LidoModalCardProps) => {
   if (prev.onToggleFavorite !== next.onToggleFavorite) return false;
   if (prev.onReport !== next.onReport) return false;
   if (prev.onShare !== next.onShare) return false;
+  if (prev.onWriteReview !== next.onWriteReview) return false;
   const a = prev.beach;
   const b = next.beach;
   return (

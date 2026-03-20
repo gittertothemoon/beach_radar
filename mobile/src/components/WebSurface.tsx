@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -27,14 +28,29 @@ export const WebSurface = ({
   const [error, setError] = useState<string | null>(null);
 
   const source = useMemo(() => ({ uri: initialUrl }), [initialUrl]);
+  const appOrigin = useMemo(() => {
+    try {
+      return new URL(initialUrl).origin;
+    } catch {
+      return null;
+    }
+  }, [initialUrl]);
 
   const handleReload = useCallback(() => {
     setError(null);
     webViewRef.current?.reload();
   }, []);
 
+  const openExternalUrl = useCallback((rawUrl: string) => {
+    setLoading(false);
+    setError(null);
+    void Linking.openURL(rawUrl).catch(() => {
+      setError("Impossibile aprire il link esterno.");
+    });
+  }, []);
+
   const handleShouldStartLoadWithRequest = useCallback(
-    (request: { url: string }) => {
+    (request: { url: string; isTopFrame?: boolean }) => {
       if (blockLandingRedirect && /\/landing(\/|$)/i.test(request.url)) {
         setLoading(false);
         setError(
@@ -43,9 +59,32 @@ export const WebSurface = ({
         );
         return false;
       }
+
+      if (request.isTopFrame === false) {
+        return true;
+      }
+
+      const rawUrl = request.url?.trim();
+      if (!rawUrl) return true;
+
+      let parsedUrl: URL | null = null;
+      try {
+        parsedUrl = new URL(rawUrl);
+      } catch {
+        parsedUrl = null;
+      }
+
+      const isHttp = parsedUrl?.protocol === "http:" || parsedUrl?.protocol === "https:";
+      const isExternalHttp =
+        isHttp && appOrigin ? parsedUrl?.origin !== appOrigin : false;
+
+      if (!isHttp || isExternalHttp) {
+        openExternalUrl(rawUrl);
+        return false;
+      }
       return true;
     },
-    [blockLandingRedirect, landingBlockedMessage],
+    [appOrigin, blockLandingRedirect, landingBlockedMessage, openExternalUrl],
   );
 
   return (
@@ -83,6 +122,12 @@ export const WebSurface = ({
           setLoading(false);
           setError(event.nativeEvent.description || "Errore sconosciuto");
         }}
+        onOpenWindow={(event) => {
+          const targetUrl = event.nativeEvent.targetUrl?.trim();
+          if (!targetUrl) return;
+          openExternalUrl(targetUrl);
+        }}
+        setSupportMultipleWindows={false}
         sharedCookiesEnabled
         thirdPartyCookiesEnabled
         javaScriptEnabled
