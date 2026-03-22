@@ -198,7 +198,7 @@ export const STRINGS = {
     forgotPasswordSubmitAction: "Invia link di reset",
     forgotPasswordSubmittingAction: "Invio in corso...",
     forgotPasswordSent:
-      "Ti abbiamo inviato una mail con il link per reimpostare la password.",
+      "Link inviato. Controlla la mail: può arrivare entro 1-2 minuti.",
     backToLoginAction: "Torna al login",
     registerHasAccountPrompt: "Hai già un account?",
     registerHasAccountAction: "Accedi",
@@ -214,6 +214,7 @@ export const STRINGS = {
     lastNamePlaceholder: "Cognome",
     passwordPlaceholder: "Almeno 10 caratteri",
     confirmPasswordPlaceholder: "Ripeti la password",
+    showPasswordsAction: "Mostra password",
     passwordHint:
       "Minimo 10 caratteri, con maiuscola, minuscola, numero e simbolo.",
     consentLabel: "Accetto termini, privacy e condizioni d'uso.",

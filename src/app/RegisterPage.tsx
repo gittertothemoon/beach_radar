@@ -19,6 +19,7 @@ const HAS_SYMBOL = /[^A-Za-z0-9]/;
 const MIN_PASSWORD_LENGTH = 10;
 
 type AuthMode = "register" | "login" | "forgot" | "reset";
+const FORGOT_PASSWORD_FAST_NOTICE_MS = 700;
 
 const RegisterPage = () => {
   const [firstName, setFirstName] = useState("");
@@ -26,6 +27,7 @@ const RegisterPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswords, setShowPasswords] = useState(false);
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -249,24 +251,55 @@ const RegisterPage = () => {
 
     try {
       if (isForgotMode) {
-        const forgotResult = await requestPasswordReset({
+        const forgotPromise = requestPasswordReset({
           email,
           redirectTo: resetPasswordRedirectTo,
         });
-        if (!forgotResult.ok) {
-          switch (forgotResult.code) {
-            case "missing_config":
-              setError(STRINGS.account.createMissingConfig);
-              return;
-            case "invalid_email":
-              setError(STRINGS.account.invalidEmail);
-              return;
-            default:
-              setError(STRINGS.account.resetPasswordRequestFailed);
-              return;
+
+        const earlyResult = await Promise.race([
+          forgotPromise.then((result) => ({ type: "result" as const, result })),
+          new Promise<{ type: "timeout" }>((resolve) => {
+            window.setTimeout(() => resolve({ type: "timeout" }), FORGOT_PASSWORD_FAST_NOTICE_MS);
+          }),
+        ]);
+
+        if (earlyResult.type === "result") {
+          const forgotResult = earlyResult.result;
+          if (!forgotResult.ok) {
+            switch (forgotResult.code) {
+              case "missing_config":
+                setError(STRINGS.account.createMissingConfig);
+                return;
+              case "invalid_email":
+                setError(STRINGS.account.invalidEmail);
+                return;
+              default:
+                setError(STRINGS.account.resetPasswordRequestFailed);
+                return;
+            }
           }
+          setNotice(STRINGS.account.forgotPasswordSent);
+          return;
         }
+
         setNotice(STRINGS.account.forgotPasswordSent);
+        void forgotPromise.then((forgotResult) => {
+          if (!forgotResult.ok) {
+            switch (forgotResult.code) {
+              case "missing_config":
+                setError(STRINGS.account.createMissingConfig);
+                break;
+              case "invalid_email":
+                setError(STRINGS.account.invalidEmail);
+                break;
+              default:
+                setError(STRINGS.account.resetPasswordRequestFailed);
+                break;
+            }
+          }
+        }).catch(() => {
+          setError(STRINGS.account.resetPasswordRequestFailed);
+        });
         return;
       }
 
@@ -482,7 +515,7 @@ const RegisterPage = () => {
                     </span>
                     <input
                       data-testid="auth-password-input"
-                      type="password"
+                      type={showPasswords ? "text" : "password"}
                       value={password}
                       onChange={(event) => {
                         setPassword(event.target.value);
@@ -502,7 +535,7 @@ const RegisterPage = () => {
                       {STRINGS.account.confirmPasswordLabel}
                     </span>
                     <input
-                      type="password"
+                      type={showPasswords ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(event) => {
                         setConfirmPassword(event.target.value);
@@ -519,6 +552,20 @@ const RegisterPage = () => {
                   <div className="col-span-full rounded-[10px] border border-white/12 bg-black/30 px-3 py-2.5 text-[11px] leading-snug br-text-tertiary">
                     {STRINGS.account.passwordHint}
                   </div>
+                ) : null}
+
+                {!isForgotMode ? (
+                  <label className="col-span-full flex items-center gap-2.5 rounded-[10px] border border-white/12 bg-black/30 px-3 py-2.5 text-[12px] leading-snug br-text-secondary">
+                    <input
+                      type="checkbox"
+                      checked={showPasswords}
+                      onChange={(event) => {
+                        setShowPasswords(event.target.checked);
+                      }}
+                      className="h-4 w-4 shrink-0 accent-sky-400"
+                    />
+                    <span>{STRINGS.account.showPasswordsAction}</span>
+                  </label>
                 ) : null}
 
                 {isRegisterMode ? (
