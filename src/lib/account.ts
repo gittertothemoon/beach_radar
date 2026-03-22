@@ -3,6 +3,7 @@ import { PUBLIC_BASE_URL } from "../config/publicUrl";
 import { getSupabaseClient } from "./supabase";
 
 const FAVORITES_TABLE = "user_favorites";
+const AUTH_REGISTER_PATH = "/register/?mode=login";
 
 export type AppAccount = {
   id: string;
@@ -91,6 +92,18 @@ const buildDeleteAccountEndpoints = (): string[] => {
     endpoints.push(`${normalizedPublicBase}/api/account/delete`);
   }
   return endpoints;
+};
+
+const buildAuthEmailRedirectUrl = (): string => {
+  if (typeof window !== "undefined") {
+    const isLocalHost =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+    if (isLocalHost) {
+      return `${window.location.origin}${AUTH_REGISTER_PATH}`;
+    }
+  }
+  return `${PUBLIC_BASE_URL}${AUTH_REGISTER_PATH}`;
 };
 
 const readUserMetadataString = (
@@ -225,6 +238,7 @@ export const registerAccount = async (input: {
     email: input.email.trim().toLowerCase(),
     password: input.password,
     options: {
+      emailRedirectTo: buildAuthEmailRedirectUrl(),
       data: {
         first_name: input.firstName.trim(),
         last_name: input.lastName.trim(),
