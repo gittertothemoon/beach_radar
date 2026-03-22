@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, type FormEvent, useEffect, useMemo, useState } from "react";
 import logo from "../assets/logo.png";
 import { STRINGS } from "../i18n/it";
 import { PUBLIC_BASE_URL } from "../config/publicUrl";
@@ -233,9 +233,13 @@ const RegisterPage = () => {
       ? STRINGS.account.signInSubmitAction
       : isForgotMode
         ? STRINGS.account.forgotPasswordSubmitAction
-        : isResetMode
+      : isResetMode
           ? STRINGS.account.resetPasswordSubmitAction
           : STRINGS.account.createAction;
+
+  const passwordFieldStyle = {
+    WebkitTextSecurity: showPasswords ? "none" : "disc",
+  } as CSSProperties;
 
   const handleSubmit = async () => {
     const validationError = validateForm();
@@ -514,8 +518,12 @@ const RegisterPage = () => {
                       {STRINGS.account.passwordLabel}
                     </span>
                     <input
+                      key={`password-${showPasswords ? "visible" : "hidden"}`}
                       data-testid="auth-password-input"
                       type={showPasswords ? "text" : "password"}
+                      autoComplete={isLoginMode ? "current-password" : "new-password"}
+                      autoCapitalize="none"
+                      spellCheck={false}
                       value={password}
                       onChange={(event) => {
                         setPassword(event.target.value);
@@ -524,6 +532,7 @@ const RegisterPage = () => {
                       }}
                       placeholder={STRINGS.account.passwordPlaceholder}
                       className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                      style={passwordFieldStyle}
                       autoFocus={isResetMode}
                     />
                   </label>
@@ -535,7 +544,11 @@ const RegisterPage = () => {
                       {STRINGS.account.confirmPasswordLabel}
                     </span>
                     <input
+                      key={`confirm-password-${showPasswords ? "visible" : "hidden"}`}
                       type={showPasswords ? "text" : "password"}
+                      autoComplete="new-password"
+                      autoCapitalize="none"
+                      spellCheck={false}
                       value={confirmPassword}
                       onChange={(event) => {
                         setConfirmPassword(event.target.value);
@@ -544,6 +557,7 @@ const RegisterPage = () => {
                       }}
                       placeholder={STRINGS.account.confirmPasswordPlaceholder}
                       className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                      style={passwordFieldStyle}
                     />
                   </label>
                 ) : null}
