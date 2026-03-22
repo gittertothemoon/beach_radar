@@ -295,6 +295,10 @@ export const STRINGS = {
     shareText: (name: string, confidence: string) =>
       `${name} • Affidabilità segnalazione ${confidence}`,
   },
+  hints: {
+    showAllPins:
+      "Stai vedendo solo questo lido. Tocca \"Mostra tutti i pin\" per rivedere l'elenco completo.",
+  },
   debug: {
     title: "Debug",
     editPositions: "Modifica posizioni spiagge",

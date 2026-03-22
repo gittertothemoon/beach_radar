@@ -253,6 +253,7 @@ function App() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [showAllPinsHint, setShowAllPinsHint] = useState(false);
   const [splashPhase, setSplashPhase] = useState<
     "visible" | "fading" | "hidden"
   >("visible");
@@ -419,6 +420,14 @@ function App() {
     }, 2000);
     return () => window.clearTimeout(timeout);
   }, [debugToast]);
+
+  useEffect(() => {
+    if (!showAllPinsHint) return;
+    const timeout = window.setTimeout(() => {
+      setShowAllPinsHint(false);
+    }, 4200);
+    return () => window.clearTimeout(timeout);
+  }, [showAllPinsHint]);
 
   useEffect(() => {
     let active = true;
@@ -712,6 +721,7 @@ function App() {
   }, []);
 
   const handleShowAllPins = useCallback(() => {
+    setShowAllPinsHint(false);
     setSoloBeachId(null);
     const map = mapRef.current;
     if (!map) return;
@@ -923,6 +933,41 @@ function App() {
   const selectedWeatherUnavailable =
     selectedWeatherEntry?.status === "error" &&
     selectedWeatherEntry.data === null;
+
+  const reframeSelectedBeachForSoloView = useCallback(() => {
+    if (!soloBeachId || !selectedBeach) return;
+    if (!Number.isFinite(selectedBeach.lat) || !Number.isFinite(selectedBeach.lng)) {
+      return;
+    }
+    const map = mapRef.current;
+    if (!map) return;
+    const zoom = map.getZoom();
+    if (!Number.isFinite(zoom)) return;
+    const size = map.getSize();
+    if (!size || size.x <= 0 || size.y <= 0) return;
+
+    // Keep marker coordinates unchanged; move map center so the selected pin
+    // lands in a clear area between top controls and bottom overlays.
+    const targetX = size.x * 0.5;
+    const topSafeY = Math.max(170, size.y * 0.24);
+    const bottomSafeY = size.y - Math.max(360, size.y * 0.34);
+    const preferredY = size.y * 0.52;
+    const targetY = Math.max(topSafeY, Math.min(bottomSafeY, preferredY));
+
+    const selectedProjected = map.project([selectedBeach.lat, selectedBeach.lng], zoom);
+    const nextCenterProjected = selectedProjected.add([
+      size.x / 2 - targetX,
+      size.y / 2 - targetY,
+    ]);
+    const nextCenter = map.unproject(nextCenterProjected, zoom);
+
+    map.flyTo(nextCenter, zoom, {
+      animate: true,
+      duration: 0.45,
+      easeLinearity: 0.25,
+    });
+  }, [selectedBeach, soloBeachId]);
+
   const beachIdSet = useMemo(
     () => new Set(beachViewsBase.map((beach) => beach.id)),
     [beachViewsBase],
@@ -1186,7 +1231,13 @@ function App() {
   const handleCloseDrawer = useCallback(() => {
     if (reportOpen) return;
     setIsLidoModalOpen(false);
-  }, [reportOpen]);
+    if (soloBeachId) {
+      setShowAllPinsHint(true);
+      window.requestAnimationFrame(() => {
+        reframeSelectedBeachForSoloView();
+      });
+    }
+  }, [reframeSelectedBeachForSoloView, reportOpen, soloBeachId]);
 
   const handleOpenWeatherDetails = useCallback(() => {
     if (reportOpen || !selectedBeach) return;
@@ -1588,13 +1639,23 @@ function App() {
           </div>
         ) : null}
         {soloBeachId ? (
-          <button
-            type="button"
-            onClick={handleShowAllPins}
-            className="br-press pointer-events-auto rounded-full border border-white/18 bg-black/35 px-4 py-2 text-[12px] font-semibold text-slate-100 backdrop-blur transition hover:border-white/28 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25"
-          >
-            {STRINGS.actions.showAllPins}
-          </button>
+          <div className="pointer-events-auto flex flex-col items-end gap-2">
+            {showAllPinsHint ? (
+              <div className="max-w-[260px] rounded-xl border border-amber-300/60 bg-amber-700/30 px-3 py-2 text-right text-[12px] font-medium text-amber-50 shadow-[0_10px_24px_rgba(0,0,0,0.45)] backdrop-blur-md">
+                {STRINGS.hints.showAllPins}
+              </div>
+            ) : null}
+            <button
+              type="button"
+              onClick={handleShowAllPins}
+              className={`br-press rounded-full border bg-black/35 px-4 py-2 text-[12px] font-semibold text-slate-100 backdrop-blur transition focus-visible:outline-none focus-visible:ring-1 ${showAllPinsHint
+                ? "border-amber-300/70 ring-1 ring-amber-300/60"
+                : "border-white/18 hover:border-white/28 focus-visible:ring-white/25"
+                }`}
+            >
+              {STRINGS.actions.showAllPins}
+            </button>
+          </div>
         ) : null}
         <button
           type="button"
