@@ -18,7 +18,6 @@
     "eas:submit:android:prod": "npx eas-cli submit --platform android --latest --profile production --wait"
   },
   "dependencies": {
-    "@react-navigation/bottom-tabs": "^7.15.6",
     "@react-navigation/native": "^7.1.33",
     "@react-navigation/native-stack": "^7.14.5",
     "expo": "~54.0.0",
