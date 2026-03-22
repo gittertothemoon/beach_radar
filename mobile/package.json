@@ -13,9 +13,12 @@
     "eas:build:android:prod": "npx eas-cli build --platform android --profile production",
     "eas:build:ios:dev": "npx eas-cli build --platform ios --profile development",
     "eas:build:ios:preview": "npx eas-cli build --platform ios --profile preview",
-    "eas:build:ios:prod": "npx eas-cli build --platform ios --profile production"
+    "eas:build:ios:prod": "npx eas-cli build --platform ios --profile production",
+    "eas:submit:ios:prod": "npx eas-cli submit --platform ios --latest --profile production --wait",
+    "eas:submit:android:prod": "npx eas-cli submit --platform android --latest --profile production --wait"
   },
   "dependencies": {
+    "@react-navigation/bottom-tabs": "^7.15.6",
     "@react-navigation/native": "^7.1.33",
     "@react-navigation/native-stack": "^7.14.5",
     "expo": "~54.0.0",

@@ -30,6 +30,8 @@ npm run android
 npm run typecheck
 npm run eas:build:android:preview
 npm run eas:build:ios:preview
+npm run eas:build:ios:prod
+npm run eas:submit:ios:prod
 ```
 
 ## Internal Builds (EAS)
@@ -52,6 +54,20 @@ npm run eas:build:android:preview
 # iOS internal build
 npm run eas:build:ios:preview
 ```
+
+## App Store (iOS) Quick Path
+
+```bash
+# 1) Build store-ready .ipa
+npm run eas:build:ios:prod
+
+# 2) Submit latest .ipa to App Store Connect / TestFlight
+npm run eas:submit:ios:prod
+```
+
+Notes:
+- `eas submit` with `--what-to-test` may require higher Expo plan; keep submit command without that flag on Free.
+- If submission fails, inspect the submission URL printed by EAS for exact Apple-side rejection reason.
 
 ## Release Prep
 

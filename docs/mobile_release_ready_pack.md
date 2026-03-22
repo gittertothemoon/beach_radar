@@ -1,6 +1,6 @@
 # Mobile Release-Ready Pack
 
-Date baseline: March 15, 2026
+Date baseline: March 22, 2026
 
 Purpose:
 - Keep all store-release prerequisites ready while waiting for account approvals.
@@ -8,10 +8,11 @@ Purpose:
 
 ## Current Status Snapshot
 
-- iOS: blocked by Apple Developer team/account validation (external dependency).
-- Android: production AAB already generated.
-  - Build ID: `09d3dca1-68f1-47b0-af36-00c9d98bb4e8`
-  - Artifact: `https://expo.dev/artifacts/eas/2doozQg3HFkfrUVCEjwEkS.aab`
+- EAS account: authenticated (`pionio`)
+- iOS: production `.ipa` builds available (latest finished build: `0199e901-8636-44cc-ae16-5cfc7a972791`, build number `8`)
+- Android: production AAB available (latest finished build: `ca3e78a4-3d79-48a3-b707-ffd222516404`, build number `3`)
+- App Store Connect API key: configured in EAS submit profile
+- iOS submission attempts: schedulable, but failed during Apple processing (check latest EAS submission URL for rejection reason/details)
 
 ## What Can Be Finalized Now
 
@@ -42,10 +43,10 @@ Purpose:
 - Encryption export compliance (`ITSAppUsesNonExemptEncryption=false` already set)
 - Content rights confirmation
 
-## iOS Day-0 Runbook (When Apple Approval Arrives)
+## iOS Submission Runbook (Current)
 
 1. Confirm access
-- Ensure Apple team is visible in EAS credentials flow.
+- Ensure `npx eas-cli whoami` works.
 - Ensure App Store Connect app record exists for bundle id `com.where2beach.mobile`.
 
 2. Validate build inputs
@@ -75,6 +76,10 @@ npx eas-cli submit --platform ios --latest --profile production
   - report submit
   - favorites auth gating
 
+6. If submit fails
+- Open the EAS submission details URL printed by CLI.
+- Read Apple processing error and fix root cause before retry (metadata/compliance/build settings).
+
 ## Android Runbook (When Play Console Is Activated)
 
 1. Create Google Play Developer account.
@@ -98,4 +103,3 @@ Highlights:
 Known limitations:
 - iOS public release timing depends on Apple account approval.
 - Android Play rollout depends on Play Console activation.
-
