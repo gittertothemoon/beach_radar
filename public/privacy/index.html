@@ -383,7 +383,9 @@
     if (lastUpdatedTextEl) lastUpdatedTextEl.textContent = t.lastUpdated;
 
     if (dataCollectedListEl) {
-      dataCollectedListEl.innerHTML = "";
+      while (dataCollectedListEl.firstChild) {
+        dataCollectedListEl.removeChild(dataCollectedListEl.firstChild);
+      }
       t.dataCollectedItems.forEach((item) => {
         const li = document.createElement("li");
         li.textContent = item;
@@ -391,9 +393,19 @@
       });
     }
 
-    const contactEmail = window.PRIVACY_CONTACT_EMAIL || "privacy@where2beach.com";
+    const contactEmailRaw = window.PRIVACY_CONTACT_EMAIL || "privacy@where2beach.com";
+    const safeContactEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmailRaw)
+      ? contactEmailRaw
+      : "privacy@where2beach.com";
     if (contactTextEl) {
-      contactTextEl.innerHTML = `${t.contactPrefix} <a id=\"privacyContact\" href=\"mailto:${contactEmail}\">${contactEmail}</a>${t.contactSuffix}`;
+      contactTextEl.textContent = "";
+      contactTextEl.append(document.createTextNode(`${t.contactPrefix} `));
+      const emailLink = document.createElement("a");
+      emailLink.id = "privacyContact";
+      emailLink.href = `mailto:${safeContactEmail}`;
+      emailLink.textContent = safeContactEmail;
+      contactTextEl.append(emailLink);
+      contactTextEl.append(document.createTextNode(t.contactSuffix));
     }
 
     if (backLinkEl) backLinkEl.setAttribute("href", fallbackHref);

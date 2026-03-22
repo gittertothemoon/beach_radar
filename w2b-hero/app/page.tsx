@@ -34,6 +34,11 @@ const structuredData = {
   ],
 }
 
+const safeStructuredDataJson = JSON.stringify(structuredData)
+  .replace(/</g, '\\u003c')
+  .replace(/\u2028/g, '\\u2028')
+  .replace(/\u2029/g, '\\u2029')
+
 function TikTokIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
@@ -47,7 +52,7 @@ export default function Home() {
     <main className="bg-[#000006] min-h-screen selection:bg-white/20 selection:text-white pb-0 md:pb-12">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{ __html: safeStructuredDataJson }}
       />
       <h1 className="sr-only">Where2Beach: scopri la spiaggia perfetta in tempo reale</h1>
 

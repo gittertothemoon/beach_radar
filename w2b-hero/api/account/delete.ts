@@ -27,6 +27,12 @@ function normalizeOrigin(value: string | null): string | null {
   return value.replace(/\/+$/, "");
 }
 
+function applySecurityHeaders(res: VercelResponse): void {
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+}
+
 function applyCors(req: VercelRequest, res: VercelResponse): void {
   const configuredBase = normalizeOrigin(readEnv("VITE_PUBLIC_BASE_URL"));
   const allowedOrigins = new Set<string>([
@@ -54,6 +60,7 @@ function applyCors(req: VercelRequest, res: VercelResponse): void {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applySecurityHeaders(res);
   applyCors(req, res);
 
   if (req.method === "OPTIONS") {

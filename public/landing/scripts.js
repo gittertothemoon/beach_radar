@@ -88,7 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function renderValue(value) {
             if (suffix === 'min') {
-                el.innerHTML = prefix + value + '<span class="text-3xl ml-1">min</span>';
+                el.textContent = `${prefix}${value}`;
+                const suffixEl = document.createElement('span');
+                suffixEl.className = 'text-3xl ml-1';
+                suffixEl.textContent = 'min';
+                el.appendChild(suffixEl);
             } else {
                 el.textContent = prefix + value + suffix;
             }
@@ -129,7 +133,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (diff <= 0) {
             const el = document.getElementById('summer-countdown');
-            if (el) el.innerHTML = '<span class="text-lg">☀️</span><span class="text-sm font-bold text-corallo">L\'estate è arrivata! Scarica l\'app!</span>';
+            if (el) {
+                el.textContent = '';
+                const icon = document.createElement('span');
+                icon.className = 'text-lg';
+                icon.textContent = '☀️';
+                const text = document.createElement('span');
+                text.className = 'text-sm font-bold text-corallo';
+                text.textContent = "L'estate è arrivata! Scarica l'app!";
+                el.append(icon, text);
+            }
             return;
         }
 

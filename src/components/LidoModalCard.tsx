@@ -417,7 +417,7 @@ const LidoModalCardComponent = ({
               <a
                 href={mapsLink}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="mt-2 inline-flex text-[12px] font-semibold br-text-primary"
               >
                 {STRINGS.actions.openInMaps}
@@ -460,7 +460,7 @@ const LidoModalCardComponent = ({
                   <a
                     href={websiteHref}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="font-semibold br-text-primary"
                   >
                     {website}

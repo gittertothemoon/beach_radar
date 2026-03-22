@@ -48,6 +48,7 @@ const TEST_MODE = process.env.SIGNUP_TEST_MODE === "1" || process.env.WAITLIST_T
 const DOUBLE_OPT_IN_ENABLED = process.env.ENABLE_DOUBLE_OPTIN === "1";
 const RATE_LIMIT_RPC_NAME = readEnv("SIGNUP_RATE_LIMIT_RPC") || "waitlist_rate_limit_touch";
 const SIGNUP_TABLE = readEnv("SIGNUP_TABLE") || "waitlist_signups";
+const SIGNUP_HASH_SALT = readEnv("SIGNUP_HASH_SALT");
 
 function readEnv(name: string): string | null {
   const raw = process.env[name];
@@ -90,8 +91,19 @@ function getRateLimitConfig(): RateLimitConfig {
   return { max, windowMs };
 }
 
-function hashValue(value: string): string {
-  return createHash("sha256").update(value).digest("hex");
+function hashValue(value: string, namespace?: "ip" | "ua"): string {
+  const payload =
+    namespace && SIGNUP_HASH_SALT
+      ? `${namespace}:${SIGNUP_HASH_SALT}:${value}`
+      : value;
+  return createHash("sha256").update(payload).digest("hex");
+}
+
+function anonymizeSource(value: string | null, namespace: "ip" | "ua"): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return `sha256:${hashValue(trimmed, namespace)}`;
 }
 
 function getWindowStartMs(nowMs: number, windowMs: number): number {
@@ -127,8 +139,8 @@ function runSignupTestMode(
         }
       }
 
-  const ipHash = hashValue(ip || "unknown");
-  const uaHash = hashValue(userAgent || "unknown");
+  const ipHash = hashValue(ip || "unknown", "ip");
+  const uaHash = hashValue(userAgent || "unknown", "ua");
   const windowStartMs = getWindowStartMs(now, config.windowMs);
   const key = getRateLimitKey(ipHash, uaHash, windowStartMs);
       const entry = state.rateLimits[key];
@@ -168,8 +180,8 @@ async function checkRateLimitDb(
   config: RateLimitConfig
 ): Promise<RateResult> {
   const nowMs = Date.now();
-  const ipHash = hashValue(ip || "unknown");
-  const uaHash = hashValue(userAgent || "unknown");
+  const ipHash = hashValue(ip || "unknown", "ip");
+  const uaHash = hashValue(userAgent || "unknown", "ua");
   const windowStartMs = getWindowStartMs(nowMs, config.windowMs);
   const windowStartIso = new Date(windowStartMs).toISOString();
 
@@ -293,6 +305,12 @@ function buildConfirmUrl(baseUrl: string, token: string): string {
   return url.toString();
 }
 
+function applySecurityHeaders(res: VercelResponse): void {
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+}
+
 async function sendConfirmEmail(options: {
   to: string;
   token: string;
@@ -326,6 +344,8 @@ async function sendConfirmEmail(options: {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applySecurityHeaders(res);
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -447,8 +467,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         utm,
         attribution,
         meta,
-        user_agent: userAgent,
-        source_ip: ip,
+        user_agent: anonymizeSource(userAgent, "ua"),
+        source_ip: anonymizeSource(ip, "ip"),
         source_quality: sourceQuality,
         honeypot: honeypot || null
       })
@@ -479,8 +499,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     utm,
     attribution,
     meta,
-    user_agent: userAgent,
-    source_ip: ip,
+    user_agent: anonymizeSource(userAgent, "ua"),
+    source_ip: anonymizeSource(ip, "ip"),
     source_quality: sourceQuality,
     status: "pending",
     count: 1,

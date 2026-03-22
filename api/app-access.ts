@@ -86,7 +86,15 @@ function isValidAccessKey(providedKey: string, config: AccessKeyConfig): boolean
   return timingSafeEqualText(providedHash, config.value);
 }
 
+function applySecurityHeaders(res: VercelResponse): void {
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+}
+
 export default function handler(req: VercelRequest, res: VercelResponse) {
+  applySecurityHeaders(res);
+
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
