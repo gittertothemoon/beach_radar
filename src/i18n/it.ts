@@ -242,7 +242,7 @@ export const STRINGS = {
       "Account già esistente, ma non riesco ad accedere con la password inserita.",
     invalidCredentials: "Email o password non corretti.",
     emailConfirmationRequired:
-      "Account creato ma non ancora attivo. Conferma la mail e poi rientra in app.",
+      "Ti abbiamo inviato una mail di conferma. Aprila, tocca \"Conferma account\" e poi accedi. Se non la vedi, controlla anche Spam.",
     favoriteSyncFailed:
       "Non riesco a sincronizzare i preferiti ora. Riprova tra poco.",
     appAccessSessionFailed:

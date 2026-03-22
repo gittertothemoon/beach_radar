@@ -20,6 +20,7 @@ const HAS_SYMBOL = /[^A-Za-z0-9]/;
 const MIN_PASSWORD_LENGTH = 10;
 
 type AuthMode = "register" | "login" | "forgot" | "reset";
+type NoticeTone = "success" | "info";
 const FORGOT_PASSWORD_FAST_NOTICE_MS = 700;
 
 const RegisterPage = () => {
@@ -33,6 +34,7 @@ const RegisterPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [noticeTone, setNoticeTone] = useState<NoticeTone>("success");
 
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
@@ -242,10 +244,21 @@ const RegisterPage = () => {
     WebkitTextSecurity: showPasswords ? "none" : "disc",
   } as CSSProperties;
 
+  const showNotice = (message: string, tone: NoticeTone = "success") => {
+    setError(null);
+    setNoticeTone(tone);
+    setNotice(message);
+  };
+
+  const showEmailConfirmationRequiredNotice = () => {
+    showNotice(STRINGS.account.emailConfirmationRequired, "info");
+  };
+
   const handleSubmit = async () => {
     const validationError = validateForm();
     if (validationError) {
       setNotice(null);
+      setNoticeTone("success");
       setError(validationError);
       return;
     }
@@ -253,6 +266,7 @@ const RegisterPage = () => {
     setSubmitting(true);
     setError(null);
     setNotice(null);
+    setNoticeTone("success");
 
     try {
       if (isForgotMode) {
@@ -283,11 +297,11 @@ const RegisterPage = () => {
                 return;
             }
           }
-          setNotice(STRINGS.account.forgotPasswordSent);
+          showNotice(STRINGS.account.forgotPasswordSent, "success");
           return;
         }
 
-        setNotice(STRINGS.account.forgotPasswordSent);
+        showNotice(STRINGS.account.forgotPasswordSent, "success");
         void forgotPromise.then((forgotResult) => {
           if (!forgotResult.ok) {
             switch (forgotResult.code) {
@@ -341,14 +355,14 @@ const RegisterPage = () => {
             return;
           }
           if (loginResult.code === "email_not_confirmed") {
-            setError(STRINGS.account.emailConfirmationRequired);
+            showEmailConfirmationRequiredNotice();
             return;
           }
           setError(STRINGS.account.loginFailed);
           return;
         }
         if (!loginResult.sessionReady) {
-          setError(STRINGS.account.emailConfirmationRequired);
+          showEmailConfirmationRequiredNotice();
           return;
         }
         accountId = loginResult.account.id;
@@ -379,7 +393,7 @@ const RegisterPage = () => {
           }
         }
         if (!registerResult.sessionReady) {
-          setError(STRINGS.account.emailConfirmationRequired);
+          showEmailConfirmationRequiredNotice();
           return;
         }
         accountId = registerResult.account.id;
@@ -398,7 +412,7 @@ const RegisterPage = () => {
       }
 
       if (isResetMode) {
-        setNotice(STRINGS.account.resetPasswordSuccess);
+        showNotice(STRINGS.account.resetPasswordSuccess, "success");
       }
 
       const target = new URL(safeReturnPath, window.location.origin);
@@ -624,7 +638,13 @@ const RegisterPage = () => {
             ) : null}
 
             {notice ? (
-              <div className="mt-3.5 rounded-[10px] border border-emerald-300/45 bg-emerald-500/15 px-3 py-2.5 text-[12px] text-emerald-50">
+              <div
+                className={`mt-3.5 rounded-[10px] px-3 py-2.5 text-[12px] ${
+                  noticeTone === "info"
+                    ? "border border-sky-300/45 bg-sky-500/15 text-sky-50"
+                    : "border border-emerald-300/45 bg-emerald-500/15 text-emerald-50"
+                }`}
+              >
                 {notice}
               </div>
             ) : null}
