@@ -50,6 +50,7 @@ This document describes where responsibilities live in the codebase.
 - `scripts/seed/lib/sync-utils.mjs`: shared seed merge/sync utilities
 - `scripts/sync-brand-assets.mjs`: keeps duplicated brand assets aligned across app/remotion
 - `scripts/repo-hygiene.mjs`: guardrail checks for root clutter, tracked generated outputs, and raw naming
+- `scripts/supabase-ops.mjs`: Supabase env checks, SQL->migration sync, and automated migration apply
 
 ## KML Intake (`data/raw/kml/`)
 

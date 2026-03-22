@@ -155,7 +155,34 @@ Optional feature flags:
 - `REPORTS_RETENTION_DAYS`
 - `ANALYTICS_RATE_LIMIT`
 - `ANALYTICS_SALT`
+- `SIGNUP_HASH_SALT`
 - `CRON_SECRET`
+
+## Supabase Automation
+
+One-command flow:
+
+```bash
+npm run supabase:auto
+```
+
+What it does:
+- normalizes `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` values in local env files (removes accidental literal `\n`)
+- runs connectivity checks (`anon` + `service_role`)
+- initializes `supabase/` config if missing
+- syncs `scripts/sql/*.sql` into `supabase/migrations/` (idempotent, source-tagged)
+- applies pending migrations when credentials for schema apply are available
+
+If schema credentials are missing, `supabase:auto` exits with non-zero status.
+
+Automation env options:
+- linked mode: `SUPABASE_ACCESS_TOKEN` + `SUPABASE_PROJECT_REF` + `SUPABASE_DB_PASSWORD`
+- db-url mode: `SUPABASE_DB_URL` (alternative to linked mode)
+
+Useful commands:
+- `npm run supabase:doctor`
+- `npm run supabase:migrations:sync`
+- `npm run supabase:migrate`
 
 ## Server Analytics (Minimal)
 
