@@ -184,6 +184,33 @@ Useful commands:
 - `npm run supabase:migrations:sync`
 - `npm run supabase:migrate`
 
+## Security Guardrails (CI)
+
+Local security checks:
+
+```bash
+npm run security:sinks       # blocks dangerous HTML sinks (allowlist-aware)
+npm run security:smoke       # checks live security headers and no-store APIs
+npm run security:advisors    # checks Supabase advisors (allowlist-aware)
+```
+
+GitHub Actions workflow: `.github/workflows/security-guardrails.yml`
+
+- runs on push/PR to `main`
+- runs weekly (`cron`) and on manual dispatch
+- enforces:
+  - dangerous sink scan (`dangerouslySetInnerHTML`, `innerHTML`, `document.write`)
+  - dependency audits (root + `w2b-hero`, high severity and above)
+  - live HTTP security smoke (`/landing/`, `/privacy/`, `/api/app-access`, `/api/signup`)
+  - Supabase advisor check with allowlist (`auth_leaked_password_protection` for Free plan)
+
+Recommended repo secrets/variables:
+
+- `SECURITY_BASE_URL` (repo variable, optional; default: `https://where2beach.com`)
+- One of:
+  - `SUPABASE_DB_URL_CI` (or `SUPABASE_DB_URL`)
+  - `SUPABASE_ACCESS_TOKEN` + `SUPABASE_PROJECT_REF` + `SUPABASE_DB_PASSWORD`
+
 ## Server Analytics (Minimal)
 
 - Endpoint: `POST /api/analytics`
