@@ -3,6 +3,7 @@ import logo from "../assets/logo.png";
 import { STRINGS } from "../i18n/it";
 import { PUBLIC_BASE_URL } from "../config/publicUrl";
 import {
+  ensureAppSession,
   loginAccount,
   registerAccount,
   requestPasswordReset,
@@ -47,7 +48,7 @@ const RegisterPage = () => {
   const isForgotMode = authMode === "forgot";
   const isResetMode = authMode === "reset";
 
-  const returnToRaw = searchParams.get("returnTo") || "/";
+  const returnToRaw = searchParams.get("returnTo") || "/app/";
   const pendingFavoriteBeachId = searchParams.get("fav");
   const beachName = searchParams.get("beachName");
 
@@ -401,6 +402,15 @@ const RegisterPage = () => {
       }
 
       const target = new URL(safeReturnPath, window.location.origin);
+      const needsAppSession =
+        target.pathname === "/app" || target.pathname.startsWith("/app/");
+      if (needsAppSession) {
+        const appSessionResult = await ensureAppSession();
+        if (!appSessionResult.ok) {
+          setError(STRINGS.account.appAccessSessionFailed);
+          return;
+        }
+      }
       target.searchParams.set("resume", "1");
       window.location.assign(`${target.pathname}${target.search}${target.hash}`);
     } catch {

@@ -82,6 +82,16 @@ export type DeleteAccountResult =
   | { ok: true }
   | { ok: false; code: DeleteAccountErrorCode };
 
+type AppSessionErrorCode =
+  | "missing_config"
+  | "unauthorized"
+  | "network"
+  | "unknown";
+
+export type AppSessionResult =
+  | { ok: true }
+  | { ok: false; code: AppSessionErrorCode };
+
 const buildDeleteAccountEndpoints = (): string[] => {
   const endpoints = ["/api/account/delete"];
   if (typeof window === "undefined") return endpoints;
@@ -90,6 +100,18 @@ const buildDeleteAccountEndpoints = (): string[] => {
   const normalizedPublicBase = PUBLIC_BASE_URL.replace(/\/+$/, "");
   if (normalizedCurrentOrigin !== normalizedPublicBase) {
     endpoints.push(`${normalizedPublicBase}/api/account/delete`);
+  }
+  return endpoints;
+};
+
+const buildAppSessionEndpoints = (): string[] => {
+  const endpoints = ["/api/app-session"];
+  if (typeof window === "undefined") return endpoints;
+
+  const normalizedCurrentOrigin = window.location.origin.replace(/\/+$/, "");
+  const normalizedPublicBase = PUBLIC_BASE_URL.replace(/\/+$/, "");
+  if (normalizedCurrentOrigin !== normalizedPublicBase) {
+    endpoints.push(`${normalizedPublicBase}/api/app-session`);
   }
   return endpoints;
 };
@@ -444,4 +466,40 @@ export const deleteCurrentAccount = async (): Promise<DeleteAccountResult> => {
     return { ok: false, code: "network" };
   }
   return { ok: false, code: "unknown" };
+};
+
+export const ensureAppSession = async (): Promise<AppSessionResult> => {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { ok: false, code: "missing_config" };
+  }
+
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !sessionData.session?.access_token) {
+    return { ok: false, code: "unauthorized" };
+  }
+
+  const endpoints = buildAppSessionEndpoints();
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        return { ok: true };
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        return { ok: false, code: "unauthorized" };
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return { ok: false, code: "network" };
 };

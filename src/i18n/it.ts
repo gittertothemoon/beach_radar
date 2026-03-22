@@ -245,6 +245,8 @@ export const STRINGS = {
       "Account creato ma non ancora attivo. Conferma la mail e poi rientra in app.",
     favoriteSyncFailed:
       "Non riesco a sincronizzare i preferiti ora. Riprova tra poco.",
+    appAccessSessionFailed:
+      "Accesso riuscito, ma non riesco ad aprire l'app ora. Riprova tra pochi secondi.",
     profileTitle: "Profilo",
     profileAction: "Apri profilo",
     profileFavoritesTitle: "Lidi preferiti",
