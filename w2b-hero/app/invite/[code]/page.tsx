@@ -1,17 +1,18 @@
 import { redirect } from 'next/navigation';
 
 type InvitePageProps = {
-    params: {
-        code: string;
-    };
+    params: Promise<{
+        code?: string;
+    }>;
 };
 
 function sanitizeInviteCode(code: string) {
     return code.toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 64);
 }
 
-export default function InvitePage({ params }: InvitePageProps) {
-    const code = sanitizeInviteCode(params.code || '');
+export default async function InvitePage({ params }: InvitePageProps) {
+    const resolvedParams = await params;
+    const code = sanitizeInviteCode(resolvedParams.code || '');
 
     if (!code) {
         redirect('/landing/');
