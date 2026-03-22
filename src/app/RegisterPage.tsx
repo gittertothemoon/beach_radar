@@ -86,7 +86,14 @@ const RegisterPage = () => {
     params.delete("error_code");
     params.delete("error_description");
     const query = params.toString();
-    return `${window.location.origin}${window.location.pathname}${query ? `?${query}` : ""}`;
+    const isLocalHost =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+    const baseUrl = (isLocalHost ? window.location.origin : PUBLIC_BASE_URL).replace(
+      /\/+$/,
+      "",
+    );
+    return `${baseUrl}/register/${query ? `?${query}` : ""}`;
   }, []);
 
   const privacyUrl = useMemo(() => {
