@@ -1,6 +1,9 @@
 import { getSupabaseClient } from "./supabase";
 import type { Review } from "./types";
 
+const sanitizeReviewText = (value: string, maxLength: number): string =>
+    value.replace(/[<>]/g, "").trim().slice(0, maxLength);
+
 export type FetchReviewsResult =
     | { ok: true; reviews: Review[] }
     | { ok: false; error: "fetch_failed" | "unauthorized" | "not_configured" };
@@ -11,7 +14,7 @@ export async function fetchBeachReviews(beachId: string): Promise<FetchReviewsRe
 
     try {
         const { data, error } = await supabase
-            .from("beach_reviews")
+            .from("beach_reviews_public")
             .select("id, beach_id, author_name, content, rating, created_at")
             .eq("beach_id", beachId)
             .order("created_at", { ascending: false });
@@ -59,6 +62,15 @@ export async function submitBeachReview(
     if (!supabase) return { ok: false, error: "not_configured" };
 
     try {
+        const authorName = sanitizeReviewText(payload.authorName, 80);
+        const content = sanitizeReviewText(payload.content, 1000);
+        const rating = Number.isFinite(payload.rating)
+            ? Math.max(1, Math.min(5, Math.round(payload.rating)))
+            : 0;
+        if (!authorName || !content || rating < 1 || rating > 5) {
+            return { ok: false, error: "submit_failed" };
+        }
+
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !sessionData.session) {
             return { ok: false, error: "unauthorized" };
@@ -69,9 +81,9 @@ export async function submitBeachReview(
             .insert({
                 beach_id: payload.beachId,
                 user_id: sessionData.session.user.id,
-                author_name: payload.authorName,
-                content: payload.content,
-                rating: payload.rating,
+                author_name: authorName,
+                content,
+                rating,
             })
             .select("id, beach_id, author_name, content, rating, created_at")
             .single();

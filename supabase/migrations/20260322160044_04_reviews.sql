@@ -1,3 +1,6 @@
+-- source: scripts/sql/04_reviews.sql
+-- synced_at: 2026-03-22T16:00:44.464Z
+
 create extension if not exists pgcrypto;
 
 -- Create beach_reviews table
