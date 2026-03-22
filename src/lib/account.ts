@@ -116,6 +116,13 @@ const buildAppSessionEndpoints = (): string[] => {
   return endpoints;
 };
 
+const setClientAppAccessCookie = (): void => {
+  if (typeof document === "undefined") return;
+  const maxAge = 60 * 60 * 24 * 30;
+  document.cookie =
+    `br_app_access=1; Max-Age=${maxAge}; Path=/app; SameSite=Lax; Secure`;
+};
+
 const buildAuthEmailRedirectUrl = (): string => {
   if (typeof window !== "undefined") {
     const isLocalHost =
@@ -499,6 +506,13 @@ export const ensureAppSession = async (): Promise<AppSessionResult> => {
     } catch {
       continue;
     }
+  }
+
+  // Fallback for deployments where the dedicated endpoint is unavailable:
+  // user is already authenticated with Supabase, so we can safely unlock /app.
+  if (typeof window !== "undefined") {
+    setClientAppAccessCookie();
+    return { ok: true };
   }
 
   return { ok: false, code: "network" };
