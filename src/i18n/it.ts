@@ -195,10 +195,10 @@ export const STRINGS = {
     signInNoAccountAction: "Registrati",
     forgotPasswordPrompt: "Password dimenticata?",
     forgotPasswordAction: "Recuperala",
-    forgotPasswordSubmitAction: "Invia link di reset",
+    forgotPasswordSubmitAction: "Invia link",
     forgotPasswordSubmittingAction: "Invio in corso...",
     forgotPasswordSent:
-      "Link inviato. Controlla la mail: può arrivare entro 1-2 minuti.",
+      "Ti abbiamo inviato il link di reset. La mail può arrivare entro 1-2 minuti.",
     backToLoginAction: "Torna al login",
     registerHasAccountPrompt: "Hai già un account?",
     registerHasAccountAction: "Accedi",
@@ -226,27 +226,26 @@ export const STRINGS = {
     resettingPasswordAction: "Aggiornamento in corso...",
     resetPasswordRequestAgainPrompt: "Link non valido o scaduto?",
     resetPasswordRequestAgainAction: "Richiedi un nuovo link",
-    createFailed: "Non riesco a completare la registrazione, riprova.",
+    createFailed: "Non riesco a completare la registrazione ora. Riprova tra poco.",
     resetPasswordRequestFailed:
-      "Non riesco a inviare il link di reset ora. Riprova tra poco.",
+      "Non riesco a inviare il link di reset in questo momento. Riprova tra poco.",
     resetPasswordInvalidLink:
-      "Il link di recupero non è valido o è scaduto. Richiedine uno nuovo.",
+      "Questo link non è valido o è scaduto. Richiedi un nuovo link di reset.",
     resetPasswordFailed:
       "Non riesco ad aggiornare la password ora. Riprova tra poco.",
     resetPasswordSuccess:
       "Password aggiornata con successo. Rientro in app in corso...",
     createMissingConfig:
-      "Registrazione non disponibile: configurazione account mancante.",
+      "Registrazione non disponibile al momento. Configurazione account incompleta.",
     emailAlreadyRegistered: "Questa email risulta già registrata.",
-    loginFailed:
-      "Account già esistente, ma non riesco ad accedere con la password inserita.",
-    invalidCredentials: "Email o password non corretti.",
+    loginFailed: "Non riesco ad accedere ora. Riprova tra poco.",
+    invalidCredentials: "Email o password non corrette. Ricontrolla e riprova.",
     emailConfirmationRequired:
-      "Ti abbiamo inviato una mail di conferma. Aprila, tocca \"Conferma account\" e poi accedi. Se non la vedi, controlla anche Spam.",
+      "Controlla la mail e conferma il tuo account. Poi torna qui e accedi. Se non la trovi, guarda anche in Spam.",
     favoriteSyncFailed:
       "Non riesco a sincronizzare i preferiti ora. Riprova tra poco.",
     appAccessSessionFailed:
-      "Accesso riuscito, ma non riesco ad aprire l'app ora. Riprova tra pochi secondi.",
+      "Accesso riuscito. Sto aprendo l'app: se non parte subito, riprova tra pochi secondi.",
     profileTitle: "Profilo",
     profileAction: "Apri profilo",
     profileFavoritesTitle: "Lidi preferiti",
