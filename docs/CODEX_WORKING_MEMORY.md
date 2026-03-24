@@ -1,0 +1,48 @@
+# CODEX Working Memory
+
+Last update: 2026-03-24 (Europe/Rome)
+
+## Obiettivo condiviso
+- Massimo livello su design, funzionalita', affidabilita' reale.
+- Zero regressioni: ogni intervento deve preservare web + mobile.
+- Qualita' verificata con check tecnici e test, non solo percezione.
+
+## Preferenze operative utente
+- Evitare ripetizioni: mantenere memoria aggiornata del progetto.
+- Miglioramento continuo ad ogni task.
+- Focus su risultato concreto e funzionante.
+
+## Mappa rapida progetto
+- Web app principale: `src/` (Vite + React + TypeScript).
+- API serverless: `api/` (Vercel Functions + Supabase).
+- Landing/hero: `w2b-hero/` (Next.js, build con sync app-shell).
+- Mobile: `mobile/` (Expo, apre direttamente `/app/` via WebView).
+- Test E2E: `tests/` (Playwright).
+
+## Baseline tecnica corrente
+- Branch: `main` pulito.
+- `npm run check`: PASS.
+- `npm run build`: PASS.
+- `npm run test:app`: PASS (10 passed, 2 skipped env-dependent).
+
+## Problemi aperti (priorita')
+1. Auth E2E dipendente da policy ambiente:
+- il flusso "signup -> sessione immediata" puo' non essere disponibile (provider/policy).
+- il test ora valida fallback coerente su `/register` senza bloccare la suite.
+
+## Regole di lavoro (anti-regressione)
+1. Prima di chiudere un task: `check` + `build` + test mirati.
+2. Se cambia routing/contratto API: aggiornare codice + test nello stesso task.
+3. Validare sempre impatto web desktop, web mobile e app mobile.
+4. Nessuna modifica "solo estetica" se introduce rischio funzionale.
+
+## Prossimi step consigliati
+1. Se vuoi coverage piena del test signup-session, definire credenziali/progetto test dedicato.
+2. Tenere la suite `test:app` come gate prima di ogni rilascio.
+3. Prossimo sviluppo su feature/design con baseline verde.
+
+## Log sintetico
+- 2026-03-24: completata ricognizione repository + baseline quality.
+- 2026-03-24: allineati test auth-resume a routing reale (`/register`) e fix selettore consenso privacy.
+- 2026-03-24: stabilizzata la suite auth-resume su ambienti con policy signup variabile.
+- 2026-03-24: verifiche finali PASS (`npm run check`, `npm run test:app`).

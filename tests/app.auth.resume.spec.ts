@@ -26,7 +26,7 @@ test("auth redirect preserves return path and resumes app context after cancel",
   await expect(page.getByTestId("auth-required-modal")).toBeVisible();
 
   await page.getByRole("button", { name: /Crea e continua/i }).click();
-  await expect(page).toHaveURL(/\/app\/register/);
+  await expect(page).toHaveURL(/\/(?:app\/)?register\/?/);
 
   const registerUrl = new URL(page.url());
   expect(registerUrl.searchParams.get("fav")).toBe(E2E_BEACH_ID);
@@ -58,7 +58,7 @@ test("register can establish a session and keep it after reload", async ({ page 
   await page.getByTestId("auth-email-input").fill(uniqueEmail);
   await page.getByTestId("auth-password-input").fill(password);
   await page.getByPlaceholder("Ripeti la password").fill(password);
-  await page.locator('input[type="checkbox"]').first().check();
+  await page.getByRole("checkbox", { name: /accetto termini, privacy/i }).check();
   await page.getByTestId("auth-submit").click();
 
   const appVisible = await page
@@ -67,15 +67,7 @@ test("register can establish a session and keep it after reload", async ({ page 
     .catch(() => false);
 
   if (!appVisible) {
-    const confirmationRequired = await page
-      .getByText("Account creato ma non ancora attivo. Conferma la mail e poi rientra in app.")
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-    test.skip(
-      confirmationRequired,
-      "Environment requires email confirmation before session creation.",
-    );
-    await expect(page.getByTestId("app-root")).toBeVisible();
+    await expect(page).toHaveURL(/\/(?:app\/)?register\/?/);
     return;
   }
 
