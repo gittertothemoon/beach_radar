@@ -46,3 +46,5 @@ Last update: 2026-03-24 (Europe/Rome)
 - 2026-03-24: allineati test auth-resume a routing reale (`/register`) e fix selettore consenso privacy.
 - 2026-03-24: stabilizzata la suite auth-resume su ambienti con policy signup variabile.
 - 2026-03-24: verifiche finali PASS (`npm run check`, `npm run test:app`).
+- 2026-03-24: implementata nav a 3 sezioni nel BottomSheet (`Mappa`, `Profilo`, `Chatbot`) con integrazione login/profilo e placeholder chatbot.
+- 2026-03-24: verifiche post-feature PASS (`npm run check`, `npm run test:app`).

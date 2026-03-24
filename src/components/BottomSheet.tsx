@@ -30,6 +30,10 @@ type BottomSheetProps = {
   now: number;
   hasLocation: boolean;
   nearbyRadiusKm: number;
+  accountName: string | null;
+  accountEmail: string | null;
+  onOpenProfile: () => void;
+  onOpenSignIn: () => void;
 };
 
 const PEEK_HEIGHT = 56;
@@ -37,6 +41,7 @@ const DRAG_THRESHOLD = 6;
 const VELOCITY_THRESHOLD = 0.45;
 const CLOSED_LIFT_PX = 34;
 const CLOSED_VISIBLE_HEIGHT = PEEK_HEIGHT + CLOSED_LIFT_PX;
+type SheetSection = "map" | "profile" | "chatbot";
 
 const stateBadge = (state: string) => {
   switch (state) {
@@ -165,6 +170,10 @@ const BottomSheetComponent = ({
   now,
   hasLocation,
   nearbyRadiusKm,
+  accountName,
+  accountEmail,
+  onOpenProfile,
+  onOpenSignIn,
 }: BottomSheetProps) => {
   const perfEnabled = isPerfEnabled();
   useRenderCounter("BottomSheet", perfEnabled);
@@ -173,6 +182,7 @@ const BottomSheetComponent = ({
   const [dragOffset, setDragOffset] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<SheetSection>("map");
   const suppressClickRef = useRef(false);
   const startYRef = useRef(0);
   const startOffsetRef = useRef(0);
@@ -286,6 +296,28 @@ const BottomSheetComponent = ({
     [favoriteBeachIds, favoriteBeaches.length, onToggleFavorite],
   );
 
+  const handleOpenMapSection = useCallback(() => {
+    setActiveSection("map");
+  }, []);
+
+  const handleOpenProfileSection = useCallback(() => {
+    setActiveSection("profile");
+  }, []);
+
+  const handleOpenChatbotSection = useCallback(() => {
+    setActiveSection("chatbot");
+  }, []);
+
+  const handleSelectFavoriteFromProfile = useCallback((beachId: string) => {
+    onSelectBeach(beachId);
+    setActiveSection("map");
+  }, [onSelectBeach]);
+
+  const profileFavoritesPreview = useMemo(
+    () => favoriteBeaches.slice(0, 4),
+    [favoriteBeaches],
+  );
+
   return (
     <div
       data-testid="bottom-sheet"
@@ -330,81 +362,223 @@ const BottomSheetComponent = ({
           </div>
           <div className="h-1 w-10 rounded-full bg-white/20" />
         </button>
+        <div className="px-6 pb-3">
+          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-[color:var(--hairline)] bg-black/25 p-1.5">
+            <button
+              type="button"
+              data-testid="sheet-nav-map"
+              onClick={handleOpenMapSection}
+              className={`br-press rounded-xl px-3 py-2 text-[12px] font-semibold transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
+                activeSection === "map"
+                  ? "bg-white/12 text-slate-100"
+                  : "br-text-tertiary hover:bg-white/6"
+              }`}
+            >
+              Mappa
+            </button>
+            <button
+              type="button"
+              data-testid="sheet-nav-profile"
+              onClick={handleOpenProfileSection}
+              className={`br-press rounded-xl px-3 py-2 text-[12px] font-semibold transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
+                activeSection === "profile"
+                  ? "bg-white/12 text-slate-100"
+                  : "br-text-tertiary hover:bg-white/6"
+              }`}
+            >
+              Profilo
+            </button>
+            <button
+              type="button"
+              data-testid="sheet-nav-chatbot"
+              onClick={handleOpenChatbotSection}
+              className={`br-press rounded-xl px-3 py-2 text-[12px] font-semibold transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
+                activeSection === "chatbot"
+                  ? "bg-white/12 text-slate-100"
+                  : "br-text-tertiary hover:bg-white/6"
+              }`}
+            >
+              Chatbot
+            </button>
+          </div>
+        </div>
         <div className="max-h-[62vh] overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-          <div className="space-y-4 pb-6">
-            <section>
-              <button
-                type="button"
-                onClick={handleToggleFavorites}
-                aria-expanded={isFavoritesOpen}
-                aria-controls={favoritesSectionId}
-                disabled={!hasFavorites}
-                className={`br-press flex w-full items-center justify-between rounded-xl px-4 py-2 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
-                  !hasFavorites ? "cursor-default opacity-75" : ""
-                }`}
-              >
-                <span className="text-[10px] font-semibold uppercase tracking-[0.11em] text-amber-100/85">
-                  {STRINGS.labels.favorites}
-                </span>
-                <span className="inline-flex items-center gap-2 text-[11px] text-amber-100/80">
-                  <span>{favoriteBeaches.length}</span>
-                  <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className={`h-4 w-4 transition-transform ${isFavoritesOpen ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </span>
-              </button>
-              <div
-                id={favoritesSectionId}
-                data-testid="favorites-list"
-                className={`${isFavoritesOpen ? "mt-2 divide-y divide-[color:var(--hairline)]" : "hidden"}`}
-              >
-                {favoriteBeaches.map((beach) => (
-                  <BeachRow
-                    key={beach.id}
-                    beach={beach}
-                    isSelected={beach.id === selectedBeachId}
-                    isFavorite={true}
-                    now={now}
-                    onSelectBeach={onSelectBeach}
-                    onToggleFavorite={handleToggleBeachFavorite}
-                  />
-                ))}
-              </div>
-            </section>
-            <section>
-              <div className="px-4 text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
-                {STRINGS.labels.nearbyBeaches}
-              </div>
-              {otherBeaches.length > 0 ? (
-                <div className="mt-2 divide-y divide-[color:var(--hairline)]">
-                  {otherBeaches.map((beach) => (
+          {activeSection === "map" ? (
+            <div className="space-y-4 pb-6">
+              <section>
+                <button
+                  type="button"
+                  onClick={handleToggleFavorites}
+                  aria-expanded={isFavoritesOpen}
+                  aria-controls={favoritesSectionId}
+                  disabled={!hasFavorites}
+                  className={`br-press flex w-full items-center justify-between rounded-xl px-4 py-2 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
+                    !hasFavorites ? "cursor-default opacity-75" : ""
+                  }`}
+                >
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.11em] text-amber-100/85">
+                    {STRINGS.labels.favorites}
+                  </span>
+                  <span className="inline-flex items-center gap-2 text-[11px] text-amber-100/80">
+                    <span>{favoriteBeaches.length}</span>
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      className={`h-4 w-4 transition-transform ${isFavoritesOpen ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </span>
+                </button>
+                <div
+                  id={favoritesSectionId}
+                  data-testid="favorites-list"
+                  className={`${isFavoritesOpen ? "mt-2 divide-y divide-[color:var(--hairline)]" : "hidden"}`}
+                >
+                  {favoriteBeaches.map((beach) => (
                     <BeachRow
                       key={beach.id}
                       beach={beach}
                       isSelected={beach.id === selectedBeachId}
-                      isFavorite={favoriteBeachIds.has(beach.id)}
+                      isFavorite={true}
                       now={now}
                       onSelectBeach={onSelectBeach}
                       onToggleFavorite={handleToggleBeachFavorite}
                     />
                   ))}
                 </div>
-              ) : (
-                <div className="mt-2 rounded-xl border border-[color:var(--hairline)] bg-black/15 px-4 py-3 text-[12px] br-text-tertiary">
-                  {hasLocation
-                    ? STRINGS.labels.noNearbyWithinRadius(nearbyRadiusKm)
-                    : STRINGS.labels.enableLocationNearby}
+              </section>
+              <section>
+                <div className="px-4 text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
+                  {STRINGS.labels.nearbyBeaches}
                 </div>
-              )}
-            </section>
-          </div>
+                {otherBeaches.length > 0 ? (
+                  <div className="mt-2 divide-y divide-[color:var(--hairline)]">
+                    {otherBeaches.map((beach) => (
+                      <BeachRow
+                        key={beach.id}
+                        beach={beach}
+                        isSelected={beach.id === selectedBeachId}
+                        isFavorite={favoriteBeachIds.has(beach.id)}
+                        now={now}
+                        onSelectBeach={onSelectBeach}
+                        onToggleFavorite={handleToggleBeachFavorite}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-2 rounded-xl border border-[color:var(--hairline)] bg-black/15 px-4 py-3 text-[12px] br-text-tertiary">
+                    {hasLocation
+                      ? STRINGS.labels.noNearbyWithinRadius(nearbyRadiusKm)
+                      : STRINGS.labels.enableLocationNearby}
+                  </div>
+                )}
+              </section>
+            </div>
+          ) : null}
+          {activeSection === "profile" ? (
+            <div className="space-y-4 pb-6">
+              <section className="rounded-2xl border border-[color:var(--hairline)] bg-black/20 p-4">
+                {accountEmail ? (
+                  <>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-cyan-100/80">
+                      {STRINGS.account.signedInAs}
+                    </div>
+                    <div className="mt-1 text-[15px] font-semibold br-text-primary">
+                      {accountName ?? "Profilo attivo"}
+                    </div>
+                    <div className="text-[12px] br-text-secondary">{accountEmail}</div>
+                    <button
+                      type="button"
+                      onClick={onOpenProfile}
+                      className="br-press mt-3 w-full rounded-xl border border-cyan-300/35 bg-cyan-500/10 px-3 py-2 text-[12px] font-semibold text-cyan-100 transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                    >
+                      {STRINGS.account.profileAction}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-amber-100/80">
+                      {STRINGS.account.title}
+                    </div>
+                    <div className="mt-1 text-[14px] br-text-secondary">
+                      {STRINGS.account.subtitle}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onOpenSignIn}
+                      className="br-press mt-3 w-full rounded-xl border border-amber-300/40 bg-amber-500/12 px-3 py-2 text-[12px] font-semibold text-amber-100 transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                    >
+                      {STRINGS.account.signInAction}
+                    </button>
+                  </>
+                )}
+              </section>
+              {accountEmail ? (
+                <section className="rounded-2xl border border-[color:var(--hairline)] bg-black/15 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
+                      {STRINGS.labels.favorites}
+                    </div>
+                    <div className="text-[11px] br-text-tertiary">{favoriteBeaches.length}</div>
+                  </div>
+                  {profileFavoritesPreview.length > 0 ? (
+                    <div className="mt-3 space-y-2">
+                      {profileFavoritesPreview.map((beach) => (
+                        <button
+                          key={beach.id}
+                          type="button"
+                          onClick={() => handleSelectFavoriteFromProfile(beach.id)}
+                          className="br-press flex w-full items-center justify-between rounded-xl border border-[color:var(--hairline)] bg-black/20 px-3 py-2 text-left transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                        >
+                          <span className="text-[12px] br-text-primary">{beach.name}</span>
+                          <span className="text-[11px] br-text-tertiary">{formatDistanceLabel(beach.distanceM)}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-3 rounded-xl border border-dashed border-[color:var(--hairline)] bg-black/10 px-3 py-2 text-[12px] br-text-tertiary">
+                      {STRINGS.account.profileFavoritesEmpty}
+                    </div>
+                  )}
+                </section>
+              ) : null}
+            </div>
+          ) : null}
+          {activeSection === "chatbot" ? (
+            <div className="space-y-4 pb-6">
+              <section className="rounded-2xl border border-[color:var(--hairline)] bg-black/20 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-sky-300/35 bg-sky-500/15 text-sky-100">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M7 9h10M7 13h6M5 20l2.4-2H18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h.6L5 20z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-sky-100/80">
+                      Chatbot Where2Beach
+                    </div>
+                    <div className="mt-1 text-[15px] font-semibold br-text-primary">
+                      In arrivo
+                    </div>
+                    <div className="mt-1 text-[12px] leading-relaxed br-text-secondary">
+                      Presto potrai chiedere consigli su spiagge, meteo e affollamento con un assistente dedicato.
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled
+                  className="mt-4 w-full cursor-not-allowed rounded-xl border border-sky-300/25 bg-sky-500/10 px-3 py-2 text-[12px] font-semibold text-sky-100/60"
+                >
+                  Prossimamente disponibile
+                </button>
+              </section>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
@@ -422,7 +596,11 @@ const bottomSheetEqual = (prev: BottomSheetProps, next: BottomSheetProps) =>
   prev.onToggle === next.onToggle &&
   prev.now === next.now &&
   prev.hasLocation === next.hasLocation &&
-  prev.nearbyRadiusKm === next.nearbyRadiusKm;
+  prev.nearbyRadiusKm === next.nearbyRadiusKm &&
+  prev.accountName === next.accountName &&
+  prev.accountEmail === next.accountEmail &&
+  prev.onOpenProfile === next.onOpenProfile &&
+  prev.onOpenSignIn === next.onOpenSignIn;
 
 const BottomSheet = memo(BottomSheetComponent, bottomSheetEqual);
 

@@ -1925,6 +1925,10 @@ function App() {
         now={now}
         hasLocation={Boolean(userLocation)}
         nearbyRadiusKm={15}
+        accountName={accountDisplayName}
+        accountEmail={account?.email ?? null}
+        onOpenProfile={handleOpenProfile}
+        onOpenSignIn={handleOpenSignIn}
       />
       {selectedBeach ? (
         <Suspense fallback={null}>
