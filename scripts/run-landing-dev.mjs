@@ -47,21 +47,10 @@ const ensureHeroProject = () => {
   }
 };
 
-const startNextDev = () => {
-  const args = [
-    "-y",
-    "node@20",
-    "./node_modules/next/dist/bin/next",
-    "dev",
-    "--hostname",
-    "0.0.0.0",
-    "--port",
-    "3000",
-  ];
-
-  console.log("[landing:dev] starting Next dev on http://127.0.0.1:3000");
-  const child = spawn("npx", args, {
-    cwd: heroDir,
+const startVercelDev = () => {
+  console.log("[landing:dev] starting Vercel dev (landing on /landing/) at http://127.0.0.1:3000");
+  const child = spawn("vercel", ["dev", "--listen", "3000", "--yes"], {
+    cwd: repoRoot,
     stdio: "inherit",
     env: process.env,
   });
@@ -80,4 +69,4 @@ removeIfExists(path.join(repoRoot, ".next"));
 removeIfExists(path.join(repoRoot, "next-env.d.ts"));
 removeIfExists(path.join(heroDir, ".next"));
 killListenPort(3000);
-startNextDev();
+startVercelDev();

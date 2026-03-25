@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon.textContent = '☀️';
                 const text = document.createElement('span');
                 text.className = 'text-sm font-bold text-corallo';
-                text.textContent = "L'estate è arrivata! Scarica l'app!";
+                text.textContent = "L'estate è arrivata! La lista prioritaria è aperta.";
                 el.append(icon, text);
             }
             return;
@@ -171,25 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ===== Email Form Submission (Supabase signup via API) =====
-    const emailForm = document.getElementById('landing-email-form');
-    const feedbackEl = document.getElementById('landing-email-feedback');
-    const submitBtn = document.getElementById('landing-email-submit');
     const SIGNUP_ENDPOINT = '/api/signup';
-
-    const setFeedback = (message, tone) => {
-        if (!feedbackEl) return;
-        feedbackEl.textContent = message;
-        feedbackEl.classList.remove('text-onda/90', 'text-green-300', 'text-red-300');
-        if (tone === 'success') {
-            feedbackEl.classList.add('text-green-300');
-            return;
-        }
-        if (tone === 'error') {
-            feedbackEl.classList.add('text-red-300');
-            return;
-        }
-        feedbackEl.classList.add('text-onda/90');
-    };
 
     const parseQueryParams = (search) => {
         const paramsObj = {};
@@ -254,13 +236,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    if (emailForm) {
-        emailForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+    const initSignupForm = (form) => {
+        const input = form.querySelector('[data-signup-input]');
+        const honeypot = form.querySelector('input[name="company"]');
+        const submitBtn = form.querySelector('[data-signup-submit]');
+        const feedbackEl = form.querySelector('[data-signup-feedback]');
+        if (!input || !submitBtn) return;
 
-            const input = document.getElementById('landing-email-input');
-            const honeypot = emailForm.querySelector('input[name="company"]');
-            if (!input || !submitBtn) return;
+        const setFeedback = (message, tone) => {
+            if (!feedbackEl) return;
+            feedbackEl.textContent = message;
+            feedbackEl.classList.remove('text-onda/90', 'text-green-300', 'text-red-300');
+            if (tone === 'success') {
+                feedbackEl.classList.add('text-green-300');
+                return;
+            }
+            if (tone === 'error') {
+                feedbackEl.classList.add('text-red-300');
+                return;
+            }
+            feedbackEl.classList.add('text-onda/90');
+        };
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
             const email = String(input.value || '').trim().toLowerCase();
             const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -306,12 +305,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await submitSignup(payload);
                 submitBtn.classList.add('bg-green-500');
                 submitBtn.classList.remove('bg-corallo');
-                submitBtn.textContent = '✓ Registrato!';
+                submitBtn.textContent = '✓ Sei in lista';
                 input.value = '';
                 if (result && result.already) {
-                    setFeedback('Email già presente: iscrizione confermata.', 'success');
+                    setFeedback('Email già presente: posizione in lista confermata.', 'success');
                 } else {
-                    setFeedback('Perfetto, ti aggiorneremo presto.', 'success');
+                    setFeedback('Perfetto. Ti avviseremo appena apriamo il lancio.', 'success');
                 }
             } catch (error) {
                 const code = error && error.code ? error.code : '';
@@ -326,11 +325,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitBtn.classList.add('bg-corallo');
                 submitBtn.textContent = originalBtnText;
             } finally {
-                if (submitBtn.textContent !== '✓ Registrato!') {
+                if (submitBtn.textContent !== '✓ Sei in lista') {
                     submitBtn.disabled = false;
                     input.disabled = false;
                 }
             }
         });
-    }
+    };
+
+    const signupForms = document.querySelectorAll('[data-signup-form]');
+    signupForms.forEach((form) => initSignupForm(form));
 });

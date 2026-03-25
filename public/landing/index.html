@@ -50,9 +50,9 @@
                     <a href="#how-it-works" class="text-white font-medium hover:text-onda transition-colors"
                         id="link-3">Come Funziona</a>
                     <a href="#partners" class="text-white font-medium hover:text-onda transition-colors" id="link-4">Partner</a>
-                    <a href="#download"
+                    <a href="#waitlist"
                         class="bg-corallo text-white px-6 py-2.5 rounded-full font-bold shadow-glow-corallo hover:bg-corallo-hover hover:scale-105 transition-all duration-300">
-                        Scarica l'App
+                        Entra in lista prioritaria
                     </a>
                 </div>
                 <!-- Mobile Menu Button -->
@@ -76,9 +76,8 @@
             <a href="#how-it-works" class="text-gray-800 font-bold text-lg hover:text-corallo transition-colors">Come
                 Funziona</a>
             <a href="#partners" class="text-gray-800 font-bold text-lg hover:text-corallo transition-colors">Partner</a>
-            <a href="#download"
-                class="bg-corallo text-white px-8 py-3 rounded-full font-bold shadow-lg w-11/12 text-center">Scarica
-                l'App</a>
+            <a href="#waitlist"
+                class="bg-corallo text-white px-8 py-3 rounded-full font-bold shadow-lg w-11/12 text-center">Entra in lista prioritaria</a>
         </div>
     </nav>
 
@@ -119,14 +118,14 @@
                     </h1>
 
                     <p class="text-lg md:text-xl font-normal text-onda/90 leading-relaxed max-w-lg mx-auto md:mx-0">
-                        Oggi puoi sapere tutto sul traffico o sui ristoranti. Da oggi, non arriverai mai più in spiaggia
-                        per scoprire che non c'è posto per l'asciugamano.
+                        Oggi puoi sapere tutto sul traffico o sui ristoranti. Presto potrai evitare di arrivare in
+                        spiaggia e scoprire che non c'è posto per l'asciugamano.
                     </p>
 
                     <!-- CTA Buttons -->
                     <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-2">
                         <!-- App Store Button -->
-                        <a href="#download"
+                        <a href="#waitlist"
                             class="flex items-center justify-center gap-3 bg-white/90 backdrop-blur-lg border border-white/20 text-gray-900 px-7 py-4 rounded-[2rem] hover:bg-white transition-all hover:-translate-y-1 shadow-glass group">
                             <svg class="w-8 h-8 fill-current group-hover:text-mare transition-colors"
                                 viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg">
@@ -134,12 +133,12 @@
                                     d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
                             </svg>
                             <div class="text-left">
-                                <div class="text-[10px] leading-tight text-gray-500 font-medium">Scarica su</div>
+                                <div class="text-[10px] leading-tight text-gray-500 font-medium">In arrivo su</div>
                                 <div class="text-sm font-bold leading-tight">App Store</div>
                             </div>
                         </a>
                         <!-- Google Play Button -->
-                        <a href="#download"
+                        <a href="#waitlist"
                             class="flex items-center justify-center gap-3 bg-gray-900/90 backdrop-blur-lg border border-gray-700 text-white px-7 py-4 rounded-[2rem] hover:bg-black transition-all hover:-translate-y-1 shadow-soft group">
                             <svg class="w-8 h-8 fill-current group-hover:text-corallo transition-colors"
                                 viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
@@ -147,10 +146,30 @@
                                     d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z" />
                             </svg>
                             <div class="text-left">
-                                <div class="text-[10px] leading-tight text-gray-400 font-medium">Disponibile su</div>
+                                <div class="text-[10px] leading-tight text-gray-400 font-medium">In arrivo su</div>
                                 <div class="text-sm font-bold leading-tight">Google Play</div>
                             </div>
                         </a>
+                    </div>
+
+                    <div class="max-w-lg mx-auto md:mx-0">
+                        <p class="text-sm text-onda/90 font-medium">
+                            L'app non è ancora disponibile: lascia la tua email e ricevi l'accesso appena apriamo iOS e
+                            Android.
+                        </p>
+                        <form id="landing-email-form-hero" data-signup-form
+                            class="mt-4 flex flex-col sm:flex-row gap-3 max-w-xl relative z-20">
+                            <input type="email" data-signup-input name="email" placeholder="La tua migliore email..." required
+                                class="email-input flex-1 bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-onda/50 px-6 py-4 rounded-[2rem] focus:outline-none focus:ring-2 focus:ring-corallo transition-all">
+                            <input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true"
+                                class="hidden">
+                            <button type="submit" data-signup-submit
+                                class="bg-corallo text-white px-8 py-4 rounded-[2rem] font-bold shadow-glow-corallo hover:bg-corallo-hover transition-all hover:-translate-y-1 whitespace-nowrap">
+                                Avvisami al lancio
+                            </button>
+                        </form>
+                        <p data-signup-feedback class="mt-3 text-sm text-onda/90 min-h-[1.25rem]" aria-live="polite"></p>
+                        <p class="text-xs text-onda/70">No spam. Solo aggiornamenti sul lancio. Disiscrizione in 1 click.</p>
                     </div>
 
                     <!-- Seasonal Urgency Countdown -->
@@ -292,7 +311,7 @@
             <div class="reveal stagger-4 mt-14 md:mt-20 text-center">
                 <div class="inline-flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-mare-dark to-mare text-white px-8 py-5 rounded-[1.5rem] shadow-lg shadow-mare/20 hover:shadow-xl hover:shadow-mare/30 transition-all duration-300">
                     <p class="text-base md:text-lg font-bold tracking-tight">Unisciti a chi ha già smesso di sprecare le proprie estati.</p>
-                    <a href="#download" class="bg-white text-mare-dark px-6 py-3 rounded-full font-bold text-sm hover:bg-corallo hover:text-white transition-all duration-300 whitespace-nowrap shadow-sm">Scarica Gratis →</a>
+                    <a href="#waitlist" class="bg-white text-mare-dark px-6 py-3 rounded-full font-bold text-sm hover:bg-corallo hover:text-white transition-all duration-300 whitespace-nowrap shadow-sm">Entra nella lista prioritaria →</a>
                 </div>
             </div>
         </div>
@@ -464,7 +483,7 @@
                             </path>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3 tracking-tighter">Consensus Engine 99%</h3>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 tracking-tighter">Consensus Engine comunitario</h3>
                     <p class="text-gray-600 leading-relaxed font-medium">
                         Il sistema valida l'informazione solo se confermata dalla maggioranza. Scartiamo gli outlier in
                         automatico.
@@ -523,7 +542,7 @@
                         </div>
                         <div class="flex flex-col">
                             <span class="text-gray-800 text-xs">Info Validata</span>
-                            <span class="text-mare font-black text-[10px]">95% AFFIDABILITÀ</span>
+                            <span class="text-mare font-black text-[10px]">DATO VERIFICATO</span>
                         </div>
                     </div>
                 </div>
@@ -567,8 +586,7 @@
                             <div>
                                 <strong class="text-gray-900 text-lg">Filtri Anti-Frode</strong>
                                 <p class="text-gray-600 text-sm mt-1 leading-relaxed">Tracciamento passivo e auditing
-                                    rigoroso per garantire che i partner e gli utenti forniscano dati trasparenti e
-                                    reali al 100%.</p>
+                                    rigoroso per mantenere dati trasparenti, coerenti e verificabili.</p>
                             </div>
                         </li>
                         <li class="flex items-start group">
@@ -800,8 +818,9 @@
         </div>
     </section>
 
-    <!-- Download CTA Section -->
-    <section id="download" class="py-24 bg-gradient-to-br from-[#003553] via-mare-dark to-[#001f3f] relative overflow-hidden">
+    <!-- Waitlist CTA Section -->
+    <section id="waitlist" class="py-24 bg-gradient-to-br from-[#003553] via-mare-dark to-[#001f3f] relative overflow-hidden">
+        <div id="download" class="hidden" aria-hidden="true"></div>
         <!-- Animated glowing blobs for premium aesthetic -->
         <div class="absolute top-1/4 right-1/4 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-corallo/20 rounded-full blur-[100px] md:blur-[120px] mix-blend-screen animate-blob z-0"></div>
         <div class="absolute -bottom-1/4 left-1/4 w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-onda/20 rounded-full blur-[120px] md:blur-[150px] mix-blend-screen animate-blob z-0" style="animation-delay: 2s;"></div>
@@ -810,12 +829,10 @@
         <div class="absolute inset-0 bg-black/10 backdrop-blur-[2px] z-0"></div>
 
         <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
-            <h2 class="reveal text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter drop-shadow-sm">L'estate
-                sta arrivando.<br>Tu
-                dove sarai?</h2>
+            <h2 class="reveal text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter drop-shadow-sm">Lancio in
+                arrivo.<br>Prenota il tuo accesso.</h2>
             <p class="reveal stagger-1 text-xl text-onda mb-8 max-w-2xl mx-auto font-light">
-                Unisciti a migliaia di bagnanti e cambia le regole del turismo costiero. Fai in modo che l'ultima
-                spiaggia non sia l'unica opzione rimasta.
+                Iscriviti alla lista prioritaria: ti avvisiamo appena l'app è disponibile su App Store e Google Play.
             </p>
 
             <!-- Community Social Proof Counter -->
@@ -854,12 +871,12 @@
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
                             </span>
-                            <span class="text-green-300/90 font-bold">12 iscritti oggi</span>
+                            <span class="text-green-300/90 font-bold">Nuove iscrizioni ogni giorno</span>
                         </div>
                         <span class="text-white/15">•</span>
                         <div class="flex items-center gap-1.5 text-onda/50 font-medium">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                            <span>+34% questa settimana</span>
+                            <span>Accesso anticipato per i primi iscritti</span>
                         </div>
                     </div>
                 </div>
@@ -874,7 +891,7 @@
                         <path
                             d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
                     </svg>
-                    Scarica per iOS
+                    In arrivo su App Store
                 </button>
                 <!-- Google Play -->
                 <button
@@ -883,24 +900,26 @@
                         <path
                             d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z" />
                     </svg>
-                    Scarica per Android
+                    In arrivo su Google Play
                 </button>
             </div>
 
-            <p class="mt-8 text-sm text-onda/80 font-medium">In arrivo a breve sui principali store.<br>Lascia la tua
-                email per ricevere aggiornamenti e novità.</p>
+            <p class="mt-8 text-sm text-onda/80 font-medium">L'app è in fase di lancio: arriverà presto su App Store e
+                Google Play.<br>Lascia la tua email per ricevere accesso anticipato e aggiornamenti reali sul rollout.</p>
 
-            <form id="landing-email-form" class="mt-6 flex flex-col sm:flex-row gap-3 max-w-md mx-auto relative z-20">
-                <input type="email" id="landing-email-input" name="email" placeholder="La tua migliore email..." required
+            <form id="landing-email-form" data-signup-form class="mt-6 flex flex-col sm:flex-row gap-3 max-w-md mx-auto relative z-20">
+                <input type="email" id="landing-email-input" data-signup-input name="email" placeholder="La tua migliore email..." required
                     class="email-input flex-1 bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-onda/50 px-6 py-4 rounded-[2rem] focus:outline-none focus:ring-2 focus:ring-corallo transition-all">
                 <input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true"
                     class="hidden">
-                <button type="submit" id="landing-email-submit"
+                <button type="submit" id="landing-email-submit" data-signup-submit
                     class="bg-corallo text-white px-8 py-4 rounded-[2rem] font-bold shadow-glow-corallo hover:bg-corallo-hover transition-all hover:-translate-y-1">
                     Avvisami
                 </button>
             </form>
-            <p id="landing-email-feedback" class="mt-3 text-sm text-onda/90 min-h-[1.25rem]" aria-live="polite"></p>
+            <p id="landing-email-feedback" data-signup-feedback class="mt-3 text-sm text-onda/90 min-h-[1.25rem]" aria-live="polite"></p>
+            <p class="mt-2 text-xs text-onda/70">Niente spam. Solo aggiornamenti sul lancio e accesso anticipato. Leggi la
+                nostra <a class="underline underline-offset-2 hover:text-white" href="privacy.html">privacy policy</a>.</p>
         </div>
     </section>
 
