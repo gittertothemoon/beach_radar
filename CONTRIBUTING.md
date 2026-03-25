@@ -30,10 +30,13 @@ vercel dev --listen 3000 --yes
 ```bash
 npm run lint
 npm run typecheck
+npm run test:app:auth
 npm run build
 npm run repo:hygiene
 npm run assets:check
 ```
+
+If your change touches auth/login/register/reset/session behavior, `npm run test:app:auth` is required and must pass.
 
 ## Commit Guidelines
 

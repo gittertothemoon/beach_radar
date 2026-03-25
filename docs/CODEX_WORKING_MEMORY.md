@@ -1,6 +1,6 @@
 # CODEX Working Memory
 
-Last update: 2026-03-24 (Europe/Rome)
+Last update: 2026-03-25 (Europe/Rome)
 
 ## Obiettivo condiviso
 - Massimo livello su design, funzionalita', affidabilita' reale.
@@ -35,6 +35,7 @@ Last update: 2026-03-24 (Europe/Rome)
 2. Se cambia routing/contratto API: aggiornare codice + test nello stesso task.
 3. Validare sempre impatto web desktop, web mobile e app mobile.
 4. Nessuna modifica "solo estetica" se introduce rischio funzionale.
+5. Dopo debug complesso risolto: aggiornare `docs/CODEX_ERROR_MEMORY.md` con errore, causa radice, regola permanente.
 
 ## Prossimi step consigliati
 1. Se vuoi coverage piena del test signup-session, definire credenziali/progetto test dedicato.
@@ -42,6 +43,7 @@ Last update: 2026-03-24 (Europe/Rome)
 3. Prossimo sviluppo su feature/design con baseline verde.
 
 ## Log sintetico
+- 2026-03-25: creato registro errori persistente `docs/CODEX_ERROR_MEMORY.md` e collegato alle regole operative.
 - 2026-03-24: completata ricognizione repository + baseline quality.
 - 2026-03-24: allineati test auth-resume a routing reale (`/register`) e fix selettore consenso privacy.
 - 2026-03-24: stabilizzata la suite auth-resume su ambienti con policy signup variabile.

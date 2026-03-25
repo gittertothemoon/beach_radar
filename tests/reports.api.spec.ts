@@ -1,6 +1,8 @@
 import { test, expect, type APIResponse } from "@playwright/test";
 
 const REPORTS_ENDPOINT = "/api/reports";
+const REPORTS_AUTH_TOKEN =
+  process.env.E2E_REPORTS_AUTH_TOKEN || "reports_api_test_user";
 
 function uniqueSuffix() {
   return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -45,6 +47,19 @@ function asReportsArray(payload: Record<string, unknown> | null): Record<string,
 }
 
 test.describe("reports api", () => {
+  test("POST without auth returns account_required", async ({ request }) => {
+    const response = await request.post(REPORTS_ENDPOINT, {
+      data: buildPayload(),
+    });
+    const body = await readJson(response);
+    if (response.status() === 500 && body?.error === "missing_env") {
+      test.skip(true, "REPORTS_TEST_MODE missing and Supabase env not configured.");
+      return;
+    }
+    expect(response.status()).toBe(403);
+    expect(body).toMatchObject({ ok: false, error: "account_required" });
+  });
+
   test("PUT /api/reports returns method_not_allowed", async ({ request }) => {
     const response = await request.put(REPORTS_ENDPOINT, { data: {} });
     expect(response.status()).toBe(405);
@@ -56,6 +71,9 @@ test.describe("reports api", () => {
 
   test("POST invalid payload returns validation error", async ({ request }) => {
     const response = await request.post(REPORTS_ENDPOINT, {
+      headers: {
+        Authorization: `Bearer ${REPORTS_AUTH_TOKEN}`,
+      },
       data: buildPayload({
         crowdLevel: 9,
       }),
@@ -63,6 +81,10 @@ test.describe("reports api", () => {
     const body = await readJson(response);
     if (response.status() === 500 && body?.error === "missing_env") {
       test.skip(true, "REPORTS_TEST_MODE missing and Supabase env not configured.");
+      return;
+    }
+    if (response.status() === 403 && body?.error === "account_required") {
+      test.skip(true, "Auth token non valido per l'ambiente reports.");
       return;
     }
     expect(response.status()).toBe(400);
@@ -74,10 +96,19 @@ test.describe("reports api", () => {
       hasJellyfish: true,
       hasAlgae: false,
     });
-    const post = await request.post(REPORTS_ENDPOINT, { data: payload });
+    const post = await request.post(REPORTS_ENDPOINT, {
+      headers: {
+        Authorization: `Bearer ${REPORTS_AUTH_TOKEN}`,
+      },
+      data: payload,
+    });
     const postBody = await readJson(post);
     if (post.status() === 500 && postBody?.error === "missing_env") {
       test.skip(true, "REPORTS_TEST_MODE missing and Supabase env not configured.");
+      return;
+    }
+    if (post.status() === 403 && postBody?.error === "account_required") {
+      test.skip(true, "Auth token non valido per l'ambiente reports.");
       return;
     }
 
@@ -116,15 +147,29 @@ test.describe("reports api", () => {
     request,
   }) => {
     const payload = buildPayload();
-    const first = await request.post(REPORTS_ENDPOINT, { data: payload });
+    const first = await request.post(REPORTS_ENDPOINT, {
+      headers: {
+        Authorization: `Bearer ${REPORTS_AUTH_TOKEN}`,
+      },
+      data: payload,
+    });
     const firstBody = await readJson(first);
     if (first.status() === 500 && firstBody?.error === "missing_env") {
       test.skip(true, "REPORTS_TEST_MODE missing and Supabase env not configured.");
       return;
     }
+    if (first.status() === 403 && firstBody?.error === "account_required") {
+      test.skip(true, "Auth token non valido per l'ambiente reports.");
+      return;
+    }
     expect(first.status()).toBe(200);
 
-    const second = await request.post(REPORTS_ENDPOINT, { data: payload });
+    const second = await request.post(REPORTS_ENDPOINT, {
+      headers: {
+        Authorization: `Bearer ${REPORTS_AUTH_TOKEN}`,
+      },
+      data: payload,
+    });
     const secondBody = await readJson(second);
     expect(second.status()).toBe(429);
     expect(secondBody).toMatchObject({ ok: false, error: "too_soon" });

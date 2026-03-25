@@ -42,7 +42,9 @@ export default defineConfig({
       name: "app-ui",
       testDir: "tests",
       testMatch: [
+        "auth.logic.spec.ts",
         "app.auth.spec.ts",
+        "app.auth.errors.spec.ts",
         "app.auth.resume.spec.ts",
         "app.map.spec.ts",
         "app.reports.spec.ts",
