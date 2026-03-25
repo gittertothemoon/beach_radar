@@ -121,7 +121,7 @@ const BottomNavComponent = ({
             className={navItemClass(activeSection === "chatbot")}
           >
             <ChatbotIcon active={activeSection === "chatbot"} />
-            <span>Chatbot</span>
+            <span>ONDA</span>
             {favoriteCount > 0 ? (
               <span className="absolute right-1 top-0.5 inline-flex min-w-[16px] items-center justify-center rounded-full border border-sky-300/40 bg-sky-500/20 px-1 text-[9px] font-bold text-sky-100">
                 {Math.min(favoriteCount, 9)}

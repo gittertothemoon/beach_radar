@@ -164,6 +164,7 @@ export const STRINGS = {
       "Segnalazione da remoto attiva. Puoi segnalare anche se lontano.",
     nearEnough: "Sei vicino alla spiaggia. Puoi segnalare.",
     tooSoon: "Hai già segnalato da poco. Riprova tra qualche minuto.",
+    accountRequired: "Per inviare segnalazioni devi accedere o registrarti.",
     submitFailed:
       "Non riesco a salvare la segnalazione ora. Riprova tra poco.",
     feedUnavailable:
@@ -178,8 +179,13 @@ export const STRINGS = {
   account: {
     requiredForFavorites:
       "Per salvare i preferiti devi creare un account. La navigazione dell'app resta libera.",
+    requiredForReports:
+      "Per inviare segnalazioni devi accedere o registrarti.",
+    profileHintGuest: "Accedi o registrati per salvare i preferiti.",
     title: "Account richiesto",
     subtitle: "Crea un account per salvare e ritrovare i tuoi lidi preferiti.",
+    subtitleReports:
+      "Accedi o registrati per inviare segnalazioni affidabili alla community.",
     continueToRegister: "Crea e continua",
     registerTitle: "Registrazione",
     registerSubtitle: "Completa la registrazione e torni subito in app.",
@@ -227,18 +233,34 @@ export const STRINGS = {
     resetPasswordRequestAgainPrompt: "Link non valido o scaduto?",
     resetPasswordRequestAgainAction: "Richiedi un nuovo link",
     createFailed: "Non riesco a completare la registrazione ora. Riprova tra poco.",
+    createNetworkFailed:
+      "Connessione assente o instabile. Verifica la rete e riprova la registrazione.",
     resetPasswordRequestFailed:
       "Non riesco a inviare il link di reset in questo momento. Riprova tra poco.",
+    resetPasswordRequestNetworkFailed:
+      "Connessione assente o instabile. Verifica la rete e riprova l'invio del link.",
+    emailDeliveryFailed:
+      "Non riesco a inviare l'email di conferma in questo momento. Riprova tra poco.",
+    emailRateLimited:
+      "Hai fatto troppi tentativi in poco tempo. Aspetta qualche minuto e riprova.",
     resetPasswordInvalidLink:
       "Questo link non è valido o è scaduto. Richiedi un nuovo link di reset.",
     resetPasswordFailed:
       "Non riesco ad aggiornare la password ora. Riprova tra poco.",
+    resetPasswordNetworkFailed:
+      "Connessione assente o instabile. Verifica la rete e riprova l'aggiornamento password.",
+    resetPasswordRateLimited:
+      "Hai fatto troppi tentativi di aggiornamento password. Attendi qualche minuto e riprova.",
     resetPasswordSuccess:
       "Password aggiornata con successo. Rientro in app in corso...",
     createMissingConfig:
       "Registrazione non disponibile al momento. Configurazione account incompleta.",
     emailAlreadyRegistered: "Questa email risulta già registrata.",
     loginFailed: "Non riesco ad accedere ora. Riprova tra poco.",
+    loginNetworkFailed:
+      "Connessione assente o instabile. Verifica la rete e riprova l'accesso.",
+    loginRateLimited:
+      "Hai fatto troppi tentativi di accesso. Aspetta qualche minuto prima di riprovare.",
     invalidCredentials: "Email o password non corrette. Ricontrolla e riprova.",
     emailConfirmationRequired:
       "Controlla la mail e conferma il tuo account. Poi torna qui e accedi. Se non la trovi, guarda anche in Spam.",
@@ -246,12 +268,18 @@ export const STRINGS = {
       "Non riesco a sincronizzare i preferiti ora. Riprova tra poco.",
     appAccessSessionFailed:
       "Accesso riuscito. Sto aprendo l'app: se non parte subito, riprova tra pochi secondi.",
+    appAccessSessionMissingConfig:
+      "Configurazione sessione non completa. Riprova più tardi o contatta supporto.",
+    appAccessSessionUnauthorized:
+      "Sessione non valida o scaduta. Accedi di nuovo per continuare.",
+    appAccessSessionNetworkFailed:
+      "Connessione assente o instabile. Non riesco ad aprire la sessione app, riprova.",
     profileTitle: "Profilo",
     profileAction: "Apri profilo",
     profileFavoritesTitle: "Lidi preferiti",
     profileFavoritesEmpty: "Non hai ancora salvato lidi nei preferiti.",
     profileOpenFavoriteAction: "Apri lido",
-    signInAction: "Accedi",
+    signInAction: "Accedi o registrati",
     signedInAs: "Accesso attivo",
     signOutAction: "Esci",
     signOutFailed: "Non riesco a uscire ora. Riprova tra poco.",
@@ -275,28 +303,29 @@ export const STRINGS = {
     created: "Account creato. Ora puoi salvare i preferiti.",
   },
   chatbot: {
-    title: "Chatbot Where2Beach",
+    title: "ONDA",
     subtitle:
-      "Chiedi supporto su mappa, meteo, segnalazioni, preferiti e account.",
+      "Chiedi a ONDA supporto su mappa, meteo, segnalazioni, preferiti e account.",
+    lockedStatus: "Accesso richiesto",
+    lockedDescription: "Per consultare ONDA devi creare un profilo o accedere.",
+    lockedAction: "Accedi o crea profilo",
     inputPlaceholder: "Scrivi la tua domanda...",
     send: "Invia",
-    sending: "Rispondo...",
-    sourceLocal: "Risposta rapida",
-    sourceAi: "Risposta AI",
-    usageLabel: (tokens: number) => `Token: ${tokens}`,
+    sending: "ONDA sta scrivendo...",
     quickQuestions: {
       report: "Come segnalo affollamento?",
       favorites: "Come salvo un preferito?",
       states: "Cosa significa stato PRED?",
     },
     welcome:
-      "Ciao, sono l'assistente Where2Beach. Posso aiutarti a usare meglio l'app.",
+      "Ciao, sono ONDA, l'assistente di Where2Beach. Posso aiutarti a usare meglio l'app.",
     errors: {
       network: "Connessione non disponibile. Riprova tra poco.",
       timeout: "La risposta sta impiegando troppo tempo. Riprova.",
       rateLimited: "Hai fatto troppe richieste. Attendi un attimo e riprova.",
       unavailable: "Servizio chatbot non disponibile al momento.",
-      notConfigured: "Chatbot non ancora configurato lato server.",
+      notConfigured: "ONDA non ancora configurata lato server.",
+      accountRequired: "Per usare ONDA devi accedere o creare un profilo.",
       generic: "Non riesco a rispondere ora. Riprova tra poco.",
     },
   },

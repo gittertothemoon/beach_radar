@@ -3,6 +3,13 @@ import logo from "../assets/logo.png";
 import { STRINGS } from "../i18n/it";
 import { PUBLIC_BASE_URL } from "../config/publicUrl";
 import {
+  getAppSessionErrorMessage,
+  getForgotPasswordErrorMessage,
+  getLoginErrorMessage,
+  getRegisterErrorMessage,
+  getResetPasswordErrorMessage,
+} from "../lib/authErrorCopy";
+import {
   ensureAppSession,
   loginAccount,
   registerAccount,
@@ -169,8 +176,8 @@ const RegisterPage = () => {
       if (password.length === 0 || confirmPassword.length === 0) {
         return STRINGS.account.requiredField;
       }
-      if (!isPasswordStrong) return STRINGS.account.weakPassword;
       if (password !== confirmPassword) return STRINGS.account.passwordMismatch;
+      if (!isPasswordStrong) return STRINGS.account.weakPassword;
       return null;
     }
 
@@ -196,11 +203,11 @@ const RegisterPage = () => {
     ) {
       return STRINGS.account.invalidName;
     }
-    if (!isPasswordStrong) {
-      return STRINGS.account.weakPassword;
-    }
     if (password !== confirmPassword) {
       return STRINGS.account.passwordMismatch;
+    }
+    if (!isPasswordStrong) {
+      return STRINGS.account.weakPassword;
     }
     if (!consentAccepted) {
       return STRINGS.account.consentRequired;
@@ -250,6 +257,12 @@ const RegisterPage = () => {
     setNotice(message);
   };
 
+  const showError = (message: string) => {
+    setNotice(null);
+    setNoticeTone("success");
+    setError(message);
+  };
+
   const showEmailConfirmationRequiredNotice = () => {
     showNotice(STRINGS.account.emailConfirmationRequired, "info");
   };
@@ -285,17 +298,8 @@ const RegisterPage = () => {
         if (earlyResult.type === "result") {
           const forgotResult = earlyResult.result;
           if (!forgotResult.ok) {
-            switch (forgotResult.code) {
-              case "missing_config":
-                setError(STRINGS.account.createMissingConfig);
-                return;
-              case "invalid_email":
-                setError(STRINGS.account.invalidEmail);
-                return;
-              default:
-                setError(STRINGS.account.resetPasswordRequestFailed);
-                return;
-            }
+            showError(getForgotPasswordErrorMessage(forgotResult.code));
+            return;
           }
           showNotice(STRINGS.account.forgotPasswordSent, "success");
           return;
@@ -304,20 +308,10 @@ const RegisterPage = () => {
         showNotice(STRINGS.account.forgotPasswordSent, "success");
         void forgotPromise.then((forgotResult) => {
           if (!forgotResult.ok) {
-            switch (forgotResult.code) {
-              case "missing_config":
-                setError(STRINGS.account.createMissingConfig);
-                break;
-              case "invalid_email":
-                setError(STRINGS.account.invalidEmail);
-                break;
-              default:
-                setError(STRINGS.account.resetPasswordRequestFailed);
-                break;
-            }
+            showError(getForgotPasswordErrorMessage(forgotResult.code));
           }
         }).catch(() => {
-          setError(STRINGS.account.resetPasswordRequestFailed);
+          showError(STRINGS.account.resetPasswordRequestNetworkFailed);
         });
         return;
       }
@@ -327,38 +321,18 @@ const RegisterPage = () => {
       if (isResetMode) {
         const resetResult = await updateAccountPassword(password);
         if (!resetResult.ok) {
-          switch (resetResult.code) {
-            case "missing_config":
-              setError(STRINGS.account.createMissingConfig);
-              return;
-            case "unauthorized":
-              setError(STRINGS.account.resetPasswordInvalidLink);
-              return;
-            case "weak_password":
-              setError(STRINGS.account.weakPassword);
-              return;
-            default:
-              setError(STRINGS.account.resetPasswordFailed);
-              return;
-          }
+          showError(getResetPasswordErrorMessage(resetResult.code));
+          return;
         }
         accountId = resetResult.account.id;
       } else if (isLoginMode) {
         const loginResult = await loginAccount({ email, password });
         if (!loginResult.ok) {
-          if (loginResult.code === "missing_config") {
-            setError(STRINGS.account.createMissingConfig);
-            return;
-          }
-          if (loginResult.code === "invalid_credentials") {
-            setError(STRINGS.account.invalidCredentials);
-            return;
-          }
           if (loginResult.code === "email_not_confirmed") {
             showEmailConfirmationRequiredNotice();
             return;
           }
-          setError(STRINGS.account.loginFailed);
+          showError(getLoginErrorMessage(loginResult.code));
           return;
         }
         if (!loginResult.sessionReady) {
@@ -374,23 +348,8 @@ const RegisterPage = () => {
           password,
         });
         if (!registerResult.ok) {
-          switch (registerResult.code) {
-            case "missing_config":
-              setError(STRINGS.account.createMissingConfig);
-              return;
-            case "email_exists":
-              setError(STRINGS.account.emailAlreadyRegistered);
-              return;
-            case "weak_password":
-              setError(STRINGS.account.weakPassword);
-              return;
-            case "invalid_email":
-              setError(STRINGS.account.invalidEmail);
-              return;
-            default:
-              setError(STRINGS.account.createFailed);
-              return;
-          }
+          showError(getRegisterErrorMessage(registerResult.code));
+          return;
         }
         if (!registerResult.sessionReady) {
           showEmailConfirmationRequiredNotice();
@@ -421,7 +380,7 @@ const RegisterPage = () => {
       if (needsAppSession) {
         const appSessionResult = await ensureAppSession();
         if (!appSessionResult.ok) {
-          setError(STRINGS.account.appAccessSessionFailed);
+          showError(getAppSessionErrorMessage(appSessionResult.code));
           return;
         }
       }
@@ -429,13 +388,13 @@ const RegisterPage = () => {
       window.location.assign(`${target.pathname}${target.search}${target.hash}`);
     } catch {
       if (isForgotMode) {
-        setError(STRINGS.account.resetPasswordRequestFailed);
+        showError(STRINGS.account.resetPasswordRequestNetworkFailed);
       } else if (isResetMode) {
-        setError(STRINGS.account.resetPasswordFailed);
+        showError(STRINGS.account.resetPasswordNetworkFailed);
       } else if (isLoginMode) {
-        setError(STRINGS.account.loginFailed);
+        showError(STRINGS.account.loginNetworkFailed);
       } else {
-        setError(STRINGS.account.createFailed);
+        showError(STRINGS.account.createNetworkFailed);
       }
     } finally {
       setSubmitting(false);

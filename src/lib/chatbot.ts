@@ -25,6 +25,7 @@ type AskChatbotError =
   | "unavailable"
   | "rate_limited"
   | "not_configured"
+  | "account_required"
   | "invalid_payload";
 
 export type AskChatbotResult =
@@ -75,6 +76,7 @@ const mapApiError = (error: string | undefined): AskChatbotError => {
   if (error === "rate_limited") return "rate_limited";
   if (error === "timeout") return "timeout";
   if (error === "not_configured") return "not_configured";
+  if (error === "account_required") return "account_required";
   if (error === "invalid_payload") return "invalid_payload";
   return "unavailable";
 };

@@ -19,6 +19,10 @@ import {
 } from "../lib/format";
 import { askChatbot, type ChatbotMessage } from "../lib/chatbot";
 import { isPerfEnabled, useRenderCounter } from "../lib/perf";
+import ondaAvatarCore from "../assets/chatbot/onda/onda-1.png";
+import ondaAvatarHero from "../assets/chatbot/onda/onda-2.png";
+import ondaAvatarWelcome from "../assets/chatbot/onda/onda-4.png";
+import ondaAvatarThinking from "../assets/chatbot/onda/onda-5.png";
 
 type BottomSheetProps = {
   beaches: BeachWithStats[];
@@ -70,8 +74,37 @@ type ChatMessageRow = {
 const MAX_CHAT_MESSAGES = 12;
 const MAX_CHAT_INPUT_CHARS = 420;
 
+const ONDA_AVATARS = {
+  core: ondaAvatarCore,
+  hero: ondaAvatarHero,
+  welcome: ondaAvatarWelcome,
+  thinking: ondaAvatarThinking,
+} as const;
+
 const createMessageId = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const resolveOndaHeaderVisual = (
+  chatSending: boolean,
+  hasConversation: boolean,
+) => {
+  if (chatSending) {
+    return {
+      image: ONDA_AVATARS.thinking,
+      statusLabel: "Sta scrivendo...",
+    };
+  }
+  if (!hasConversation) {
+    return {
+      image: ONDA_AVATARS.welcome,
+      statusLabel: "Online",
+    };
+  }
+  return {
+    image: ONDA_AVATARS.hero,
+    statusLabel: "Online",
+  };
+};
 
 type BeachRowProps = {
   beach: BeachWithStats;
@@ -391,6 +424,8 @@ const BottomSheetComponent = ({
         return STRINGS.chatbot.errors.rateLimited;
       case "not_configured":
         return STRINGS.chatbot.errors.notConfigured;
+      case "account_required":
+        return STRINGS.chatbot.errors.accountRequired;
       case "unavailable":
         return STRINGS.chatbot.errors.unavailable;
       default:
@@ -399,6 +434,10 @@ const BottomSheetComponent = ({
   }, []);
 
   const sendChatMessage = useCallback(async (raw: string) => {
+    if (!accountEmail) {
+      setChatError(STRINGS.chatbot.errors.accountRequired);
+      return;
+    }
     if (chatSending) return;
     const question = trimChatMessage(raw);
     if (!question) return;
@@ -447,6 +486,7 @@ const BottomSheetComponent = ({
       totalTokens: result.usage?.totalTokens ?? null,
     });
   }, [
+    accountEmail,
     chatContext,
     chatMessages,
     chatSending,
@@ -472,6 +512,15 @@ const BottomSheetComponent = ({
     [],
   );
 
+  const hasChatConversation = chatMessages.length > 1;
+  const hasChatAccess = Boolean(accountEmail);
+  const ondaHeaderVisual = useMemo(
+    () => resolveOndaHeaderVisual(chatSending, hasChatConversation),
+    [chatSending, hasChatConversation],
+  );
+  const isChatbotSection = activeSection === "chatbot";
+  const collapsedHeaderMinHeight = CLOSED_VISIBLE_HEIGHT;
+
   const sectionTitle = activeSection === "map"
     ? STRINGS.labels.nearbyBeaches
     : activeSection === "profile"
@@ -484,8 +533,8 @@ const BottomSheetComponent = ({
     : activeSection === "profile"
       ? (accountEmail
         ? STRINGS.account.signedInAs
-        : STRINGS.account.requiredForFavorites)
-      : STRINGS.chatbot.subtitle;
+        : STRINGS.account.profileHintGuest)
+      : `${hasChatAccess ? ondaHeaderVisual.statusLabel : STRINGS.chatbot.lockedStatus} • Tocca per aprire`;
 
   return (
     <div
@@ -499,15 +548,15 @@ const BottomSheetComponent = ({
       }}
     >
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-0 right-0 top-[-26px] h-7 bg-gradient-to-t from-[rgba(12,23,41,0.24)] to-transparent"
-      />
-      <div
         ref={sheetRef}
-        className="mx-auto max-w-screen-sm overflow-hidden rounded-t-[28px] border border-b-0 border-white/22 bg-[linear-gradient(180deg,rgba(20,34,54,0.42),rgba(12,23,41,0.42))] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-[20px]"
+        className="relative mx-auto max-w-screen-sm overflow-hidden rounded-t-[28px] border border-b-0 border-white/22 bg-[linear-gradient(180deg,rgba(20,34,54,0.68),rgba(12,23,41,0.62))] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-[20px]"
       >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-3 rounded-t-[28px] bg-[rgba(9,18,32,0.34)]"
+        />
         <button
-          className="br-press flex w-full items-center justify-between px-6 py-4 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+          className="relative z-[1] br-press flex w-full items-center justify-between px-6 py-4 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
           onClick={() => {
             if (suppressClickRef.current) {
               suppressClickRef.current = false;
@@ -521,14 +570,29 @@ const BottomSheetComponent = ({
           onPointerCancel={handlePointerUp}
           aria-expanded={isOpen}
           aria-label={STRINGS.aria.expandBeaches}
-          style={{ touchAction: isOpen ? "none" : "auto", minHeight: CLOSED_VISIBLE_HEIGHT }}
+          style={{ touchAction: isOpen ? "none" : "auto", minHeight: collapsedHeaderMinHeight }}
         >
-          <div>
-            <div className="text-[15px] font-semibold br-text-primary">
-              {sectionTitle}
-            </div>
-            <div className="text-[11px] br-text-tertiary">
-              {sectionSubtitle}
+          <div className={`min-w-0 ${isChatbotSection ? "flex items-center gap-2.5" : ""}`}>
+            {isChatbotSection ? (
+              <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-sky-300/28 bg-sky-500/12 p-0.5">
+                <img
+                  src={ONDA_AVATARS.core}
+                  alt="ONDA"
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full rounded-full object-cover object-top"
+                />
+              </div>
+            ) : null}
+            <div className="min-w-0">
+              <div className="text-[15px] font-semibold br-text-primary">
+                {sectionTitle}
+              </div>
+              {sectionSubtitle ? (
+                <div className="truncate text-[11px] br-text-tertiary">
+                  {sectionSubtitle}
+                </div>
+              ) : null}
             </div>
           </div>
           <div className="h-1 w-10 rounded-full bg-white/20" />
@@ -688,93 +752,126 @@ const BottomSheetComponent = ({
           ) : null}
           {activeSection === "chatbot" ? (
             <div className="space-y-4 pb-6">
-              <section className="rounded-2xl br-surface-soft p-4">
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-sky-300/35 bg-sky-500/15 text-sky-100">
-                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                      <path d="M7 9h10M7 13h6M5 20l2.4-2H18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h.6L5 20z" />
-                    </svg>
+              <section className="overflow-hidden rounded-[22px] border border-white/12 bg-[radial-gradient(120%_130%_at_85%_-20%,rgba(56,189,248,0.22),transparent_50%),linear-gradient(180deg,rgba(7,19,34,0.88),rgba(5,15,28,0.94))]">
+                <div className="px-4 pb-3 pt-4">
+                  <div className="flex items-center gap-3">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-sky-300/30 bg-sky-500/12 p-0.5 shadow-[0_10px_22px_rgba(14,116,144,0.25)]">
+                      <img
+                        src={ondaHeaderVisual.image}
+                        alt="ONDA"
+                        loading="lazy"
+                        decoding="async"
+                        className={`h-full w-full rounded-full object-cover object-top ${
+                          chatSending ? "animate-pulse" : ""
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <div className="text-[13px] font-semibold tracking-[0.01em] text-sky-50">
+                        ONDA
+                      </div>
+                      <div className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] text-sky-100/82">
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            hasChatAccess
+                              ? (chatSending ? "bg-sky-200 animate-pulse" : "bg-emerald-300")
+                              : "bg-amber-300"
+                          }`}
+                        />
+                        <span>{hasChatAccess ? ondaHeaderVisual.statusLabel : STRINGS.chatbot.lockedStatus}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-sky-100/80">
-                      {STRINGS.chatbot.title}
-                    </div>
-                    <div className="mt-1 text-[12px] leading-relaxed br-text-secondary">
-                      {STRINGS.chatbot.subtitle}
-                    </div>
+                  <div className="mt-3 text-[12px] leading-relaxed text-slate-200/80">
+                    {hasChatAccess
+                      ? "Supporto su mappa, meteo, segnalazioni e preferiti."
+                      : STRINGS.chatbot.lockedDescription}
                   </div>
                 </div>
-                <div
-                  ref={chatScrollRef}
-                  className="mt-4 max-h-64 space-y-2 overflow-y-auto rounded-xl br-surface p-3"
-                >
-                  {chatMessages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
+                <div className="border-t border-white/8 px-3 pb-3 pt-3">
+                  {hasChatAccess ? (
+                    <>
                       <div
-                        className={`max-w-[88%] rounded-2xl px-3 py-2 text-[12px] leading-relaxed ${
-                          message.role === "user"
-                            ? "bg-sky-500/20 text-sky-50"
-                            : "br-surface-soft br-text-primary"
-                        }`}
+                        ref={chatScrollRef}
+                        className="max-h-64 space-y-2 overflow-y-auto rounded-2xl bg-[rgba(4,12,24,0.62)] p-3"
                       >
-                        <div>{message.content}</div>
-                        {message.role === "assistant" ? (
-                          <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] br-text-tertiary">
-                            <span>
-                              {message.source === "openai"
-                                ? STRINGS.chatbot.sourceAi
-                                : STRINGS.chatbot.sourceLocal}
-                            </span>
-                            {message.totalTokens !== null ? (
-                              <span>{STRINGS.chatbot.usageLabel(message.totalTokens)}</span>
-                            ) : null}
+                        {chatMessages.map((message) => {
+                          const isAssistantMessage = message.role === "assistant";
+                          return (
+                            <div
+                              key={message.id}
+                              className={`flex ${isAssistantMessage ? "justify-start" : "justify-end"}`}
+                            >
+                              <div
+                                className={`max-w-[90%] rounded-[18px] px-3 py-2.5 text-[13px] leading-relaxed ${
+                                  isAssistantMessage
+                                    ? "bg-[rgba(12,32,52,0.84)] text-slate-100"
+                                    : "bg-sky-500/26 text-sky-50"
+                                }`}
+                              >
+                                {message.content}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {chatSending ? (
+                          <div className="flex items-center gap-2 px-1 text-[11px] text-slate-300/85">
+                            <span className="h-1.5 w-1.5 rounded-full bg-sky-200 animate-pulse" />
+                            <span>{STRINGS.chatbot.sending}</span>
                           </div>
                         ) : null}
                       </div>
+                      <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+                        {quickQuestions.map((question) => (
+                          <button
+                            key={question}
+                            type="button"
+                            onClick={() => {
+                              void sendChatMessage(question);
+                            }}
+                            disabled={chatSending}
+                            className="br-press shrink-0 rounded-full border border-sky-200/20 bg-sky-500/12 px-3 py-1.5 text-[11px] font-semibold text-sky-100 transition hover:border-sky-200/38 hover:bg-sky-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {question}
+                          </button>
+                        ))}
+                      </div>
+                      <form onSubmit={handleChatSubmit} className="mt-3 flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={chatInput}
+                          onChange={(event) => setChatInput(event.target.value)}
+                          maxLength={MAX_CHAT_INPUT_CHARS}
+                          placeholder={STRINGS.chatbot.inputPlaceholder}
+                          className="h-11 min-w-0 flex-1 rounded-xl border border-white/14 bg-[rgba(8,20,34,0.78)] px-3 text-[13px] br-text-primary placeholder:text-slate-400 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                        />
+                        <button
+                          type="submit"
+                          disabled={chatSending || trimChatMessage(chatInput).length === 0}
+                          className="br-press h-11 min-w-[82px] rounded-xl border border-sky-300/35 bg-sky-500/20 px-3 text-[12px] font-semibold text-sky-100 transition hover:bg-sky-500/28 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {STRINGS.chatbot.send}
+                        </button>
+                      </form>
+                      {chatError ? (
+                        <div className="mt-2 rounded-lg border border-rose-300/25 bg-rose-500/10 px-2.5 py-1.5 text-[11px] text-rose-200">
+                          {chatError}
+                        </div>
+                      ) : null}
+                    </>
+                  ) : (
+                    <div className="rounded-xl border border-amber-300/25 bg-amber-500/10 p-3">
+                      <div className="text-[12px] text-amber-100/88">{STRINGS.chatbot.lockedDescription}</div>
+                      <button
+                        type="button"
+                        onClick={onOpenSignIn}
+                        className="br-press mt-3 w-full rounded-xl border border-amber-300/45 bg-amber-500/14 px-3 py-2 text-[12px] font-semibold text-amber-100 transition hover:bg-amber-500/22"
+                      >
+                        {STRINGS.chatbot.lockedAction}
+                      </button>
                     </div>
-                  ))}
-                  {chatSending ? (
-                    <div className="text-[11px] br-text-tertiary">{STRINGS.chatbot.sending}</div>
-                  ) : null}
+                  )}
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {quickQuestions.map((question) => (
-                    <button
-                      key={question}
-                      type="button"
-                      onClick={() => {
-                        void sendChatMessage(question);
-                      }}
-                      disabled={chatSending}
-                      className="br-press rounded-full border border-sky-200/35 bg-sky-500/18 px-3 py-1.5 text-[11px] font-semibold text-sky-100 backdrop-blur-md transition disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {question}
-                    </button>
-                  ))}
-                </div>
-                <form onSubmit={handleChatSubmit} className="mt-3 flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(event) => setChatInput(event.target.value)}
-                    maxLength={MAX_CHAT_INPUT_CHARS}
-                    placeholder={STRINGS.chatbot.inputPlaceholder}
-                    className="h-10 min-w-0 flex-1 rounded-xl br-surface-soft px-3 text-[13px] br-text-primary placeholder:text-slate-400 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
-                  />
-                  <button
-                    type="submit"
-                    disabled={chatSending || trimChatMessage(chatInput).length === 0}
-                    className="br-press h-10 rounded-xl border border-sky-300/35 bg-sky-500/15 px-3 text-[12px] font-semibold text-sky-100 transition disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {STRINGS.chatbot.send}
-                  </button>
-                </form>
-                {chatError ? (
-                  <div className="mt-2 text-[11px] text-rose-200">{chatError}</div>
-                ) : null}
               </section>
             </div>
           ) : null}

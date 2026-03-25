@@ -95,6 +95,7 @@ const BOTTOM_NAV_FALLBACK_HEIGHT_PX = 76;
 type GeoStatus = "idle" | "loading" | "ready" | "denied" | "error";
 type WeatherStatus = "loading" | "ready" | "error";
 type ToastTone = "info" | "success" | "error";
+type AccountRequiredReason = "favorites" | "reports";
 
 type WeatherCacheEntry = {
   status: WeatherStatus;
@@ -241,6 +242,7 @@ function App() {
   const [locationToastTone, setLocationToastTone] = useState<ToastTone>("info");
   const [shareToast, setShareToast] = useState<string | null>(null);
   const [accountRequiredOpen, setAccountRequiredOpen] = useState(false);
+  const [accountRequiredReason, setAccountRequiredReason] = useState<AccountRequiredReason>("favorites");
   const [accountRequiredBeachName, setAccountRequiredBeachName] = useState<
     string | null
   >(null);
@@ -1222,13 +1224,19 @@ function App() {
 
   const handleChangeBottomSection = useCallback((section: BottomSheetSection) => {
     setActiveSheetSection(section);
-    setSheetOpen(true);
   }, []);
 
   const handleOpenReport = useCallback(() => {
+    if (!account) {
+      setAccountRequiredReason("reports");
+      setAccountRequiredBeachName(selectedBeach?.name ?? null);
+      setPendingFavoriteBeachId(null);
+      setAccountRequiredOpen(true);
+      return;
+    }
     setReportOpen(true);
     setReportError(null);
-  }, []);
+  }, [account, selectedBeach]);
 
   const handleCloseReport = useCallback(() => {
     setReportOpen(false);
@@ -1277,6 +1285,7 @@ function App() {
   const handleToggleFavorite = useCallback((beachId: string) => {
     if (!account) {
       const beach = beachViewsBase.find((item) => item.id === beachId);
+      setAccountRequiredReason("favorites");
       setAccountRequiredBeachName(beach?.name ?? null);
       setPendingFavoriteBeachId(beachId);
       setAccountRequiredOpen(true);
@@ -1311,6 +1320,7 @@ function App() {
       if (result.code === "unauthorized") {
         setAccount(null);
         const beach = beachViewsBase.find((item) => item.id === beachId);
+        setAccountRequiredReason("favorites");
         setAccountRequiredBeachName(beach?.name ?? null);
         setPendingFavoriteBeachId(beachId);
         setAccountRequiredOpen(true);
@@ -1328,6 +1338,7 @@ function App() {
 
   const handleCloseAccountRequired = useCallback(() => {
     setAccountRequiredOpen(false);
+    setAccountRequiredReason("favorites");
     setAccountRequiredBeachName(null);
     setPendingFavoriteBeachId(null);
   }, []);
@@ -1342,6 +1353,7 @@ function App() {
       setFavoriteBeachIds(new Set());
       setProfileOpen(false);
       setAccountRequiredOpen(false);
+      setAccountRequiredReason("favorites");
       setAccountRequiredBeachName(null);
       setPendingFavoriteBeachId(null);
     });
@@ -1421,11 +1433,23 @@ function App() {
   ]);
 
   const handleContinueToRegister = useCallback(() => {
+    if (accountRequiredReason === "reports") {
+      navigateToRegister({
+        beachName: accountRequiredBeachName,
+      });
+      return;
+    }
+
     navigateToRegister({
       favoriteBeachId: pendingFavoriteBeachId,
       beachName: accountRequiredBeachName,
     });
-  }, [accountRequiredBeachName, navigateToRegister, pendingFavoriteBeachId]);
+  }, [
+    accountRequiredBeachName,
+    accountRequiredReason,
+    navigateToRegister,
+    pendingFavoriteBeachId,
+  ]);
 
   const handleOpenSignIn = useCallback(() => {
     navigateToRegister({ authMode: "login" });
@@ -1452,6 +1476,14 @@ function App() {
       options?: { hasJellyfish?: boolean; hasAlgae?: boolean },
     ) => {
       if (!selectedBeach || submittingReport) return;
+      if (!account) {
+        setAccountRequiredReason("reports");
+        setAccountRequiredBeachName(selectedBeach.name);
+        setPendingFavoriteBeachId(null);
+        setAccountRequiredOpen(true);
+        setReportOpen(false);
+        return;
+      }
       if (
         !allowRemoteReports &&
         reportDistanceM !== null &&
@@ -1500,13 +1532,24 @@ function App() {
             return;
           }
 
+          if (result.code === "account_required") {
+            setAccount(null);
+            setReportOpen(false);
+            setReportError(null);
+            setAccountRequiredReason("reports");
+            setAccountRequiredBeachName(selectedBeach.name);
+            setPendingFavoriteBeachId(null);
+            setAccountRequiredOpen(true);
+            return;
+          }
+
           setReportError(STRINGS.report.submitFailed);
         })
         .finally(() => {
           setSubmittingReport(false);
         });
     },
-    [allowRemoteReports, reportDistanceM, selectedBeach, submittingReport]
+    [account, allowRemoteReports, reportDistanceM, selectedBeach, submittingReport]
   );
 
   const handleShare = useCallback(async () => {
@@ -1736,6 +1779,7 @@ function App() {
           <AccountRequiredModal
             isOpen={accountRequiredOpen}
             beachName={accountRequiredBeachName}
+            reason={accountRequiredReason}
             onClose={handleCloseAccountRequired}
             onContinue={handleContinueToRegister}
           />
@@ -1986,7 +2030,7 @@ function App() {
       {selectedBeach ? (
         <Suspense fallback={null}>
           <ReportModal
-            isOpen={reportOpen}
+            isOpen={reportOpen && Boolean(account)}
             beachName={selectedBeach.name}
             userLocation={userLocation}
             distanceM={reportDistanceM}

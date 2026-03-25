@@ -1,5 +1,16 @@
 import type { User } from "@supabase/supabase-js";
 import { PUBLIC_BASE_URL } from "../config/publicUrl";
+import {
+  isMaskedExistingUserSignUp,
+  mapLoginErrorFromSupabase,
+  mapPasswordResetRequestErrorFromSupabase,
+  mapPasswordUpdateErrorFromSupabase,
+  mapRegisterErrorFromSupabase,
+  type LoginErrorCode,
+  type PasswordResetRequestErrorCode,
+  type PasswordUpdateErrorCode,
+  type RegisterErrorCode,
+} from "./authErrorMapping";
 import { getSupabaseClient } from "./supabase";
 
 const FAVORITES_TABLE = "user_favorites";
@@ -12,45 +23,17 @@ export type AppAccount = {
   lastName: string;
 };
 
-type RegisterErrorCode =
-  | "missing_config"
-  | "email_exists"
-  | "weak_password"
-  | "invalid_email"
-  | "network"
-  | "unknown";
-
 export type RegisterResult =
   | { ok: true; account: AppAccount; sessionReady: boolean }
   | { ok: false; code: RegisterErrorCode };
-
-type LoginErrorCode =
-  | "missing_config"
-  | "invalid_credentials"
-  | "email_not_confirmed"
-  | "network"
-  | "unknown";
 
 export type LoginResult =
   | { ok: true; account: AppAccount; sessionReady: boolean }
   | { ok: false; code: LoginErrorCode };
 
-type PasswordResetRequestErrorCode =
-  | "missing_config"
-  | "invalid_email"
-  | "network"
-  | "unknown";
-
 export type PasswordResetRequestResult =
   | { ok: true }
   | { ok: false; code: PasswordResetRequestErrorCode };
-
-type PasswordUpdateErrorCode =
-  | "missing_config"
-  | "unauthorized"
-  | "weak_password"
-  | "network"
-  | "unknown";
 
 export type PasswordUpdateResult =
   | { ok: true; account: AppAccount }
@@ -160,20 +143,6 @@ const toAccount = (user: User | null): AppAccount | null => {
   };
 };
 
-const mapRegisterError = (message: string | undefined): RegisterErrorCode => {
-  const normalized = (message ?? "").toLowerCase();
-  if (
-    normalized.includes("already registered") ||
-    normalized.includes("already been registered")
-  ) {
-    return "email_exists";
-  }
-  if (normalized.includes("password")) return "weak_password";
-  if (normalized.includes("email")) return "invalid_email";
-  if (normalized.includes("network")) return "network";
-  return "unknown";
-};
-
 const mapFavoriteError = (
   code: string | undefined,
   message: string | undefined,
@@ -188,44 +157,6 @@ const mapFavoriteError = (
   ) {
     return "unauthorized";
   }
-  if (normalized.includes("network")) return "network";
-  return "unknown";
-};
-
-const mapLoginError = (message: string | undefined): LoginErrorCode => {
-  const normalized = (message ?? "").toLowerCase();
-  if (normalized.includes("invalid login credentials")) {
-    return "invalid_credentials";
-  }
-  if (normalized.includes("email not confirmed")) {
-    return "email_not_confirmed";
-  }
-  if (normalized.includes("network")) return "network";
-  return "unknown";
-};
-
-const mapPasswordResetRequestError = (
-  message: string | undefined,
-): PasswordResetRequestErrorCode => {
-  const normalized = (message ?? "").toLowerCase();
-  if (normalized.includes("email")) return "invalid_email";
-  if (normalized.includes("network")) return "network";
-  return "unknown";
-};
-
-const mapPasswordUpdateError = (
-  message: string | undefined,
-): PasswordUpdateErrorCode => {
-  const normalized = (message ?? "").toLowerCase();
-  if (
-    normalized.includes("auth session missing") ||
-    normalized.includes("invalid token") ||
-    normalized.includes("jwt") ||
-    normalized.includes("token has expired")
-  ) {
-    return "unauthorized";
-  }
-  if (normalized.includes("password")) return "weak_password";
   if (normalized.includes("network")) return "network";
   return "unknown";
 };
@@ -276,7 +207,20 @@ export const registerAccount = async (input: {
   });
 
   if (error) {
-    return { ok: false, code: mapRegisterError(error.message) };
+    return {
+      ok: false,
+      code: mapRegisterErrorFromSupabase({
+        message: error.message,
+        status: error.status,
+        code: error.code,
+      }),
+    };
+  }
+
+  if (isMaskedExistingUserSignUp(data)) {
+    // With email confirmations enabled, Supabase may mask "already registered"
+    // by returning a user payload with no identities and no session.
+    return { ok: false, code: "email_exists" };
   }
 
   const account = toAccount(data.user);
@@ -306,7 +250,14 @@ export const loginAccount = async (input: {
   });
 
   if (error) {
-    return { ok: false, code: mapLoginError(error.message) };
+    return {
+      ok: false,
+      code: mapLoginErrorFromSupabase({
+        message: error.message,
+        status: error.status,
+        code: error.code,
+      }),
+    };
   }
 
   const account = toAccount(data.user);
@@ -336,7 +287,14 @@ export const requestPasswordReset = async (input: {
   );
   if (!error) return { ok: true };
 
-  return { ok: false, code: mapPasswordResetRequestError(error.message) };
+  return {
+    ok: false,
+    code: mapPasswordResetRequestErrorFromSupabase({
+      message: error.message,
+      status: error.status,
+      code: error.code,
+    }),
+  };
 };
 
 export const updateAccountPassword = async (
@@ -351,7 +309,14 @@ export const updateAccountPassword = async (
     password: nextPassword,
   });
   if (error) {
-    return { ok: false, code: mapPasswordUpdateError(error.message) };
+    return {
+      ok: false,
+      code: mapPasswordUpdateErrorFromSupabase({
+        message: error.message,
+        status: error.status,
+        code: error.code,
+      }),
+    };
   }
 
   const account = toAccount(data.user);

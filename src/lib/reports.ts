@@ -1,4 +1,5 @@
 import type { AttributionSnapshot, CrowdLevel, Report } from "./types";
+import { getSupabaseClient } from "./supabase";
 
 type ApiErrorPayload = {
   ok: false;
@@ -20,6 +21,7 @@ type FetchReportsErrorCode = "network" | "unavailable" | "invalid_payload";
 type SubmitReportErrorCode =
   | "network"
   | "too_soon"
+  | "account_required"
   | "unavailable"
   | "invalid_payload";
 
@@ -105,6 +107,17 @@ const readJson = async (response: Response): Promise<unknown> => {
   }
 };
 
+const loadAuthToken = async (): Promise<string | null> => {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
+  } catch {
+    return null;
+  }
+};
+
 const toApiErrorPayload = (value: unknown): ApiErrorPayload | null => {
   if (!isObject(value) || value.ok !== false) return null;
   return {
@@ -155,12 +168,18 @@ export const submitSharedReport = async (input: {
   attribution?: AttributionSnapshot;
 }): Promise<SubmitReportResult> => {
   let response: Response;
+  const authToken = await loadAuthToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+
   try {
     response = await fetch("/api/reports", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(input),
     });
   } catch {
@@ -170,6 +189,15 @@ export const submitSharedReport = async (input: {
   const payload = await readJson(response);
   if (!response.ok) {
     const errorPayload = toApiErrorPayload(payload);
+    if (
+      response.status === 401 ||
+      response.status === 403 ||
+      errorPayload?.error === "account_required" ||
+      errorPayload?.error === "missing_token" ||
+      errorPayload?.error === "invalid_token"
+    ) {
+      return { ok: false, code: "account_required" };
+    }
     if (response.status === 429 || errorPayload?.error === "too_soon") {
       return {
         ok: false,

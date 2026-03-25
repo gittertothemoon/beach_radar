@@ -4,6 +4,7 @@ import { STRINGS } from "../i18n/it";
 type AccountRequiredModalProps = {
   isOpen: boolean;
   beachName: string | null;
+  reason?: "favorites" | "reports";
   onClose: () => void;
   onContinue: () => void;
 };
@@ -11,10 +12,12 @@ type AccountRequiredModalProps = {
 const AccountRequiredModal = ({
   isOpen,
   beachName,
+  reason = "favorites",
   onClose,
   onContinue,
 }: AccountRequiredModalProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const isReportReason = reason === "reports";
 
   const titleLabel = useMemo(
     () =>
@@ -23,6 +26,15 @@ const AccountRequiredModal = ({
         : STRINGS.account.title,
     [beachName],
   );
+  const subtitle = isReportReason
+    ? STRINGS.account.subtitleReports
+    : STRINGS.account.subtitle;
+  const requiredMessage = isReportReason
+    ? STRINGS.account.requiredForReports
+    : STRINGS.account.requiredForFavorites;
+  const continueLabel = isReportReason
+    ? STRINGS.account.signInAction
+    : STRINGS.account.continueToRegister;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -73,7 +85,7 @@ const AccountRequiredModal = ({
             <h3 className="text-xl font-semibold br-text-primary">
               {STRINGS.account.title}
             </h3>
-            <p className="text-sm br-text-secondary">{STRINGS.account.subtitle}</p>
+            <p className="text-sm br-text-secondary">{subtitle}</p>
           </div>
           <button
             type="button"
@@ -86,7 +98,7 @@ const AccountRequiredModal = ({
         </div>
 
         <div className="mt-4 rounded-[12px] border border-white/15 bg-black/30 px-4 py-3 text-xs br-text-secondary backdrop-blur-sm">
-          {STRINGS.account.requiredForFavorites}
+          {requiredMessage}
         </div>
         <div className="mt-4 grid grid-cols-1 gap-3">
           <button
@@ -94,7 +106,7 @@ const AccountRequiredModal = ({
             onClick={onContinue}
             className="br-press w-full rounded-[12px] border border-white/25 bg-black/50 px-4 py-3 text-[14px] font-semibold text-slate-50 shadow-[0_10px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
           >
-            {STRINGS.account.continueToRegister}
+            {continueLabel}
           </button>
         </div>
       </div>

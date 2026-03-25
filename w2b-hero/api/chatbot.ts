@@ -628,6 +628,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ ok: false, error: "invalid_payload" });
   }
 
+  if (context?.hasAccount !== true) {
+    return res.status(403).json({ ok: false, error: "account_required" });
+  }
+
   const shortcutReply = maybeShortcutReply(latestUser, context);
   if (shortcutReply) {
     return res.status(200).json({

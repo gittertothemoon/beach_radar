@@ -214,7 +214,7 @@ function getClientIp(req: VercelRequest): string | null {
   return typeof remote === "string" ? remote : null;
 }
 
-function hashValue(raw: string, namespace: "ip" | "ua"): string {
+function hashValue(raw: string, namespace: "ip" | "ua" | "reporter"): string {
   const payload = REPORTS_HASH_SALT
     ? `${namespace}:${REPORTS_HASH_SALT}:${raw}`
     : `${namespace}:${raw}`;
@@ -229,6 +229,20 @@ function anonymizeHeaderValue(
   const trimmed = value.trim();
   if (trimmed.length === 0) return null;
   return hashValue(trimmed, namespace);
+}
+
+function toReporterHash(identity: string): string {
+  return hashValue(identity, "reporter");
+}
+
+function readBearerToken(req: VercelRequest): string | null {
+  const raw = req.headers.authorization;
+  if (!raw) return null;
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (typeof value !== "string") return null;
+  if (!value.toLowerCase().startsWith("bearer ")) return null;
+  const token = value.slice("bearer ".length).trim();
+  return token.length > 0 ? token : null;
 }
 
 function toReportRow(value: unknown): ReportRow | null {
@@ -408,6 +422,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
 
+  let reporterHash: string;
+  let supabase = null as ReturnType<typeof buildSupabaseClient>;
+
+  if (TEST_MODE) {
+    const accessToken = readBearerToken(req);
+    if (!accessToken) {
+      return res.status(403).json({ ok: false, error: "account_required" });
+    }
+    reporterHash = toReporterHash(`test:${accessToken}`);
+  } else {
+    supabase = buildSupabaseClient();
+    if (!supabase) {
+      return res.status(500).json({ ok: false, error: "missing_env" });
+    }
+
+    const accessToken = readBearerToken(req);
+    if (!accessToken) {
+      return res.status(403).json({ ok: false, error: "account_required" });
+    }
+
+    const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
+    if (userError || !userData.user?.id) {
+      return res.status(403).json({ ok: false, error: "account_required" });
+    }
+    reporterHash = toReporterHash(userData.user.id);
+  }
+
   const { body, error: bodyError } = readBody(req);
   if (bodyError) {
     const status = bodyError === "payload_too_large" ? 413 : 400;
@@ -447,8 +488,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ ok: false, error: "invalid_has_algae" });
   }
 
-  const reporterHash = toSingleString(body.reporterHash);
-  if (!reporterHash || reporterHash.length > MAX_REPORTER_HASH_LENGTH) {
+  const reporterHashRaw = toSingleString(body.reporterHash);
+  if (reporterHashRaw && reporterHashRaw.length > MAX_REPORTER_HASH_LENGTH) {
     return res.status(400).json({ ok: false, error: "invalid_reporter_hash" });
   }
 
@@ -511,11 +552,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ ok: false, error: "report_invalid" });
     }
     return res.status(200).json({ ok: true, report: publicReport });
-  }
-
-  const supabase = buildSupabaseClient();
-  if (!supabase) {
-    return res.status(500).json({ ok: false, error: "missing_env" });
   }
 
   const { data: recentRows, error: rateError } = await supabase
