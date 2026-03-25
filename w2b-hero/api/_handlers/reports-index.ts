@@ -554,6 +554,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true, report: publicReport });
   }
 
+  if (!supabase) {
+    return res.status(500).json({ ok: false, error: "missing_env" });
+  }
+
   const { data: recentRows, error: rateError } = await supabase
     .from(REPORTS_TABLE)
     .select("id, created_at")
