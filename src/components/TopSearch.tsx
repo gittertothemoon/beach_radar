@@ -24,7 +24,6 @@ type TopSearchProps = {
   onSelectSuggestion: (beachId: string) => void;
   accountEmail?: string | null;
   accountName?: string | null;
-  onSignIn?: () => void;
   onOpenProfile?: () => void;
   onSignOut?: () => void;
 };
@@ -44,7 +43,6 @@ const TopSearchComponent = ({
   onSelectSuggestion,
   accountEmail = null,
   accountName = null,
-  onSignIn,
   onOpenProfile,
   onSignOut,
 }: TopSearchProps) => {
@@ -179,18 +177,9 @@ const TopSearchComponent = ({
                   inputRef.current?.focus();
                 }}
                 aria-label={STRINGS.aria.clearSearch}
-                className="br-press inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/40 text-[12px] font-semibold text-[color:var(--text-primary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                className="br-press inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/24 bg-white/12 text-[12px] font-semibold text-[color:var(--text-primary)] backdrop-blur-md focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
               >
                 {STRINGS.actions.clearSymbol}
-              </button>
-            ) : null}
-            {!accountEmail ? (
-              <button
-                type="button"
-                onClick={() => onSignIn?.()}
-                className="br-press rounded-full border border-white/20 bg-black/35 px-2.5 py-1 text-[11px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
-              >
-                {STRINGS.account.signInAction}
               </button>
             ) : null}
             {accountEmail ? (
@@ -202,7 +191,7 @@ const TopSearchComponent = ({
                 }}
                 aria-label={STRINGS.account.profileTitle}
                 aria-expanded={profileOpen}
-                className="br-press inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-white/22 bg-black/40 px-2 text-[11px] font-semibold text-[color:var(--text-primary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                className="br-press inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-white/24 bg-white/12 px-2 text-[11px] font-semibold text-[color:var(--text-primary)] backdrop-blur-md focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
               >
                 {(accountName?.trim() || accountEmail).slice(0, 1).toUpperCase()}
               </button>
@@ -230,7 +219,7 @@ const TopSearchComponent = ({
                     setProfileOpen(false);
                     onOpenProfile?.();
                   }}
-                  className="br-press mb-2 flex w-full items-center justify-center rounded-[10px] border border-white/20 bg-black/35 px-3 py-2.5 text-[13px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                  className="br-press mb-2 flex w-full items-center justify-center rounded-[10px] br-surface-soft px-3 py-2.5 text-[13px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
                 >
                   {STRINGS.account.profileAction}
                 </button>
@@ -240,7 +229,7 @@ const TopSearchComponent = ({
                     setProfileOpen(false);
                     onSignOut?.();
                   }}
-                  className="br-press flex w-full items-center justify-center rounded-[10px] border border-white/20 bg-black/35 px-3 py-2.5 text-[13px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                  className="br-press flex w-full items-center justify-center rounded-[10px] br-surface-soft px-3 py-2.5 text-[13px] font-semibold br-text-primary focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
                 >
                   {STRINGS.account.signOutAction}
                 </button>
@@ -255,12 +244,12 @@ const TopSearchComponent = ({
                     key={beach.id}
                     type="button"
                     onClick={() => handleSelect(beach.id)}
-                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[15px] text-[color:var(--text-primary)] transition-colors hover:bg-black/25 focus-visible:bg-black/30 focus-visible:outline-none"
+                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[15px] text-[color:var(--text-primary)] transition-colors hover:bg-white/8 focus-visible:bg-white/10 focus-visible:outline-none"
                   >
                     <span className="truncate font-semibold tracking-[-0.01em]">
                       {beach.name}
                     </span>
-                    <span className="shrink-0 rounded-full border border-white/20 bg-black/40 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.02em] text-[color:var(--text-secondary)]">
+                    <span className="shrink-0 rounded-full border border-white/22 bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.02em] text-[color:var(--text-secondary)]">
                       {beach.region}
                     </span>
                   </button>
@@ -289,7 +278,6 @@ const areEqual = (prev: TopSearchProps, next: TopSearchProps) =>
   prev.onSelectSuggestion === next.onSelectSuggestion &&
   prev.accountEmail === next.accountEmail &&
   prev.accountName === next.accountName &&
-  prev.onSignIn === next.onSignIn &&
   prev.onOpenProfile === next.onOpenProfile &&
   prev.onSignOut === next.onSignOut;
 

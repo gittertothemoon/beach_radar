@@ -2,7 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import type { Map as LeafletMap } from "leaflet";
 import MapView from "../components/MapView";
 import TopSearch from "../components/TopSearch";
-import BottomSheet from "../components/BottomSheet";
+import BottomSheet, { type BottomSheetSection } from "../components/BottomSheet";
 import WeatherWidget from "../components/WeatherWidget";
 import logo from "../assets/logo.png";
 import splashBg from "../assets/initial-bg.png";
@@ -90,6 +90,7 @@ const MOCK_CROWD_LEVELS: CrowdLevel[] = [1, 2, 3, 4];
 const LOCATION_FOCUS_ZOOM = 16;
 const LOCATION_REFRESH_MS = 15_000;
 const NEARBY_RADIUS_M = 15_000;
+const BOTTOM_NAV_FALLBACK_HEIGHT_PX = 76;
 
 type GeoStatus = "idle" | "loading" | "ready" | "denied" | "error";
 type WeatherStatus = "loading" | "ready" | "error";
@@ -224,6 +225,8 @@ function App() {
   const [sheetOpen, setSheetOpen] = useState(
     () => registerResumeSnapshot?.sheetOpen ?? false,
   );
+  const [activeSheetSection, setActiveSheetSection] = useState<BottomSheetSection>("map");
+  const [bottomNavHeight, setBottomNavHeight] = useState(BOTTOM_NAV_FALLBACK_HEIGHT_PX);
   const [reportOpen, setReportOpen] = useState(
     () => registerResumeSnapshot?.reportOpen ?? false,
   );
@@ -276,6 +279,26 @@ function App() {
   const reportsUnavailableToastShownRef = useRef(false);
   const reportsFeedReadyRef = useRef(false);
   const reportsFeedGraceElapsedRef = useRef(false);
+  const effectiveBottomNavHeight = Math.max(
+    bottomNavHeight,
+    BOTTOM_NAV_FALLBACK_HEIGHT_PX,
+  );
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.style.setProperty(
+      "--bottom-nav-height",
+      `${effectiveBottomNavHeight}px`,
+    );
+  }, [effectiveBottomNavHeight]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.setAttribute("data-sheet-open", sheetOpen ? "1" : "0");
+    return () => {
+      document.documentElement.removeAttribute("data-sheet-open");
+    };
+  }, [sheetOpen]);
 
   const isDebug = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -1085,6 +1108,7 @@ function App() {
       setSoloBeachId(options?.solo ? beach.id : null);
       setIsLidoModalOpen(true);
       setSheetOpen(false);
+      setActiveSheetSection("map");
       const shouldMoveMap = options?.moveMap ?? true;
       const map = mapRef.current;
       if (
@@ -1194,6 +1218,11 @@ function App() {
 
   const handleToggleSheet = useCallback(() => {
     setSheetOpen((prev) => !prev);
+  }, []);
+
+  const handleChangeBottomSection = useCallback((section: BottomSheetSection) => {
+    setActiveSheetSection(section);
+    setSheetOpen(true);
   }, []);
 
   const handleOpenReport = useCallback(() => {
@@ -1616,15 +1645,16 @@ function App() {
         onSelectSuggestion={handleSelectSuggestion}
         accountEmail={account?.email ?? null}
         accountName={accountDisplayName}
-        onSignIn={handleOpenSignIn}
         onOpenProfile={handleOpenProfile}
         onSignOut={handleSignOut}
       />
       <div
-        className="fixed z-60 flex flex-col items-end gap-3 pointer-events-none"
+        className={`fixed flex flex-col items-end gap-3 pointer-events-none ${
+          sheetOpen ? "z-[22]" : "z-[35]"
+        }`}
         style={{
           right: 'max(10px, calc((100vw - min(100vw, 640px)) / 2 + 10px))',
-          bottom: 'calc(env(safe-area-inset-bottom) + var(--mobile-bottom-lift) + 60px)'
+          bottom: "calc(var(--leaflet-attribution-bottom, 202px) + 36px)",
         }}
       >
         {selectedBeach && soloBeachId && !isLidoModalOpen && !reportOpen ? (
@@ -1641,16 +1671,16 @@ function App() {
         {soloBeachId ? (
           <div className="pointer-events-auto flex flex-col items-end gap-2">
             {showAllPinsHint ? (
-              <div className="max-w-[260px] rounded-xl border border-amber-300/60 bg-amber-700/30 px-3 py-2 text-right text-[12px] font-medium text-amber-50 shadow-[0_10px_24px_rgba(0,0,0,0.45)] backdrop-blur-md">
+              <div className="max-w-[260px] rounded-xl border border-amber-200/45 bg-amber-500/20 px-3 py-2 text-right text-[12px] font-medium text-amber-50 shadow-[0_10px_24px_rgba(0,0,0,0.35)] backdrop-blur-[18px]">
                 {STRINGS.hints.showAllPins}
               </div>
             ) : null}
             <button
               type="button"
               onClick={handleShowAllPins}
-              className={`br-press rounded-full border bg-black/35 px-4 py-2 text-[12px] font-semibold text-slate-100 backdrop-blur transition focus-visible:outline-none focus-visible:ring-1 ${showAllPinsHint
+              className={`br-press rounded-full border px-4 py-2 text-[12px] font-semibold text-slate-100 backdrop-blur-[20px] transition focus-visible:outline-none focus-visible:ring-1 ${showAllPinsHint
                 ? "border-amber-300/70 ring-1 ring-amber-300/60"
-                : "border-white/18 hover:border-white/28 focus-visible:ring-white/25"
+                : "border-white/26 bg-[linear-gradient(180deg,rgba(26,40,64,0.4),rgba(12,23,41,0.48))] hover:border-white/36 focus-visible:ring-white/25"
                 }`}
             >
               {STRINGS.actions.showAllPins}
@@ -1661,13 +1691,13 @@ function App() {
           type="button"
           onClick={handleLocateClick}
           aria-label={STRINGS.aria.myLocation}
-          className={`br-press pointer-events-auto flex h-10 w-10 items-center justify-center rounded-xl border backdrop-blur-md transition shadow-[0_8px_16px_rgba(0,0,0,0.4)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 ${geoStatus === "loading"
-            ? "border-sky-300/40 bg-sky-900/60 text-sky-200"
+          className={`br-press pointer-events-auto flex h-10 w-10 items-center justify-center rounded-xl border backdrop-blur-[20px] transition shadow-[0_8px_16px_rgba(0,0,0,0.26)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/25 ${geoStatus === "loading"
+            ? "border-sky-200/50 bg-sky-500/24 text-sky-50"
             : geoStatus === "denied" || geoStatus === "error"
-              ? "border-rose-300/30 bg-rose-900/50 text-rose-200"
+              ? "border-rose-200/45 bg-rose-500/22 text-rose-100"
               : followMode
-                ? "border-white/30 bg-white/15 text-white"
-                : "border-white/10 bg-[rgba(2,6,23,0.58)] text-slate-200"
+                ? "border-white/36 bg-white/24 text-white"
+                : "border-white/26 bg-[linear-gradient(180deg,rgba(26,40,64,0.4),rgba(12,23,41,0.48))] text-slate-100"
             }`}
         >
           <svg
@@ -1925,6 +1955,9 @@ function App() {
         now={now}
         hasLocation={Boolean(userLocation)}
         nearbyRadiusKm={15}
+        activeSection={activeSheetSection}
+        onSectionChange={handleChangeBottomSection}
+        onBottomNavHeightChange={setBottomNavHeight}
         accountName={accountDisplayName}
         accountEmail={account?.email ?? null}
         onOpenProfile={handleOpenProfile}

@@ -274,6 +274,32 @@ export const STRINGS = {
     consentRequired: "Devi accettare termini e privacy per continuare.",
     created: "Account creato. Ora puoi salvare i preferiti.",
   },
+  chatbot: {
+    title: "Chatbot Where2Beach",
+    subtitle:
+      "Chiedi supporto su mappa, meteo, segnalazioni, preferiti e account.",
+    inputPlaceholder: "Scrivi la tua domanda...",
+    send: "Invia",
+    sending: "Rispondo...",
+    sourceLocal: "Risposta rapida",
+    sourceAi: "Risposta AI",
+    usageLabel: (tokens: number) => `Token: ${tokens}`,
+    quickQuestions: {
+      report: "Come segnalo affollamento?",
+      favorites: "Come salvo un preferito?",
+      states: "Cosa significa stato PRED?",
+    },
+    welcome:
+      "Ciao, sono l'assistente Where2Beach. Posso aiutarti a usare meglio l'app.",
+    errors: {
+      network: "Connessione non disponibile. Riprova tra poco.",
+      timeout: "La risposta sta impiegando troppo tempo. Riprova.",
+      rateLimited: "Hai fatto troppe richieste. Attendi un attimo e riprova.",
+      unavailable: "Servizio chatbot non disponibile al momento.",
+      notConfigured: "Chatbot non ancora configurato lato server.",
+      generic: "Non riesco a rispondere ora. Riprova tra poco.",
+    },
+  },
   location: {
     permissionDenied: "Permesso posizione negato.",
     fetchError: "Non riesco a leggere la posizione.",

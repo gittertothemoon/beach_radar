@@ -59,7 +59,8 @@ npm run check               # lint + typecheck
 npm run build               # production build
 npm run preview             # preview dist
 npm run mobile:start        # Expo mobile app
-npm run mobile:ios          # Expo iOS target
+npm run mobile:ios          # Safe iOS dev: auto-starts local API (:3000) + web (:5173) when needed, then Expo iOS
+npm run mobile:ios:expo     # Expo iOS target only (no stack bootstrap)
 npm run mobile:android      # Expo Android target
 npm run mobile:typecheck    # TypeScript check (mobile)
 npm run mobile:build:android:preview  # EAS Android internal APK
@@ -116,6 +117,20 @@ Run it:
 
 ```bash
 npm run mobile:start
+npm run mobile:ios
+```
+
+`npm run mobile:ios` is the recommended command for local simulator work.
+When `mobile/.env` has `EXPO_PUBLIC_BASE_URL` set to `http://127.0.0.1:<port>` or `http://localhost:<port>`,
+it ensures required local services are running first:
+
+- Vercel dev API on `http://127.0.0.1:3000`
+- Vite dev frontend on `EXPO_PUBLIC_BASE_URL`
+
+Then it opens Expo iOS. If you explicitly want Expo only, use:
+
+```bash
+npm run mobile:ios:expo
 ```
 
 Optional mobile env vars (`EXPO_PUBLIC_*`) can be set in `mobile/.env`:
@@ -142,6 +157,7 @@ Most important:
 
 - frontend: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_PUBLIC_BASE_URL`
 - APIs: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `APP_ACCESS_KEY` (or `APP_ACCESS_KEY_HASH`)
+- Chatbot API: `OPENAI_API_KEY` (required), `OPENAI_CHAT_MODEL` (default `gpt-5.4-nano`)
 
 Optional feature flags:
 
@@ -155,6 +171,17 @@ Optional feature flags:
 - `REPORTS_RETENTION_DAYS`
 - `ANALYTICS_RATE_LIMIT`
 - `ANALYTICS_SALT`
+- `OPENAI_CHAT_REASONING_EFFORT`
+- `OPENAI_CHAT_MAX_OUTPUT_TOKENS`
+- `OPENAI_CHAT_MAX_OUTPUT_TOKENS_COMPLEX`
+- `OPENAI_CHAT_TIMEOUT_MS`
+- `OPENAI_CHAT_RATE_LIMIT`
+- `OPENAI_CHAT_COMPLEX_MODEL`
+- `OPENAI_CHAT_COMPLEX_ROUTING`
+- `OPENAI_CHAT_RESPONSE_CACHE_TTL_SEC`
+- `OPENAI_CHAT_RESPONSE_CACHE_MAX_ITEMS`
+- `OPENAI_CHAT_DAILY_TOKEN_BUDGET`
+- `CHATBOT_SALT`
 - `SIGNUP_HASH_SALT`
 - `CRON_SECRET`
 
@@ -223,6 +250,24 @@ Recommended repo secrets/variables:
 SQL migration:
 
 - `scripts/sql/app_analytics_events.sql`
+
+## Chatbot API (Cost-First Setup)
+
+- Endpoint: `POST /api/chatbot`
+- UI: tab `Chatbot` nel bottom sheet di `/app/`
+- Model default: `gpt-5.4-nano` (override con `OPENAI_CHAT_MODEL`)
+- Cost guardrails inclusi:
+  - output cap adattivo (`OPENAI_CHAT_MAX_OUTPUT_TOKENS`, default `180`)
+  - cap separato per richieste complesse (`OPENAI_CHAT_MAX_OUTPUT_TOKENS_COMPLEX`, default `220`)
+  - reasoning effort configurabile (default `low`)
+  - rate limit per IP+UA (`OPENAI_CHAT_RATE_LIMIT`, default `15/min`)
+  - timeout upstream (`OPENAI_CHAT_TIMEOUT_MS`, default `15000`)
+  - cache risposte con TTL + LRU (`OPENAI_CHAT_RESPONSE_CACHE_TTL_SEC`, default `43200`; `OPENAI_CHAT_RESPONSE_CACHE_MAX_ITEMS`, default `600`)
+  - deduplica richieste concorrenti identiche (single upstream call)
+  - budget token giornaliero (`OPENAI_CHAT_DAILY_TOKEN_BUDGET`, default `120000`)
+  - routing opzionale verso modello "complesso" (`OPENAI_CHAT_COMPLEX_MODEL`, `OPENAI_CHAT_COMPLEX_ROUTING`, default `0`)
+  - compattazione conversazione prima della chiamata upstream
+  - risposte locali per FAQ frequenti (evita chiamate API inutili)
 
 ## Repo Docs
 

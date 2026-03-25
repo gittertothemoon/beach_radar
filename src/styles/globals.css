@@ -24,7 +24,7 @@
   --map-bg: #c8d5e4;
   --radius-14: 12px;
   --radius-16: 14px;
-  --hairline: rgba(255, 255, 255, 0.08);
+  --hairline: rgba(255, 255, 255, 0.14);
   --surface-ultra: rgba(0, 0, 0, 0.68);
   --surface-strong: rgba(0, 0, 0, 0.6);
   --surface-elevated: rgba(0, 0, 0, 0.52);
@@ -37,6 +37,14 @@
   --focus-ring: rgba(255, 255, 255, 0.5);
   --overlay-max-width: 640px;
   --mobile-bottom-lift: 34px;
+  --bottom-nav-height: 76px;
+  --bottom-sheet-peek-height: 90px;
+  --bottom-sheet-nav-gap: 0px;
+  --bottom-controls-clearance: calc(
+    var(--bottom-nav-height) + var(--bottom-sheet-peek-height) +
+      var(--bottom-sheet-nav-gap)
+  );
+  --leaflet-attribution-bottom: calc(var(--bottom-controls-clearance) + 8px);
 }
 
 * {
@@ -61,30 +69,42 @@ body {
 
 @layer components {
   .br-surface {
-    background: var(--surface-elevated);
-    border: 1px solid var(--hairline);
-    backdrop-filter: blur(12px) saturate(1.05);
-    -webkit-backdrop-filter: blur(12px) saturate(1.05);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      0 10px 28px rgba(0, 0, 0, 0.35);
+    background: linear-gradient(
+      180deg,
+      rgba(26, 40, 64, 0.38) 0%,
+      rgba(14, 24, 41, 0.44) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(18px) saturate(1.16);
+    -webkit-backdrop-filter: blur(18px) saturate(1.16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 12px 30px rgba(2, 6, 23, 0.32);
   }
 
   .br-surface-strong {
-    background: var(--surface-strong);
-    border: 1px solid var(--hairline);
-    backdrop-filter: blur(14px) saturate(1.05);
-    -webkit-backdrop-filter: blur(14px) saturate(1.05);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 14px 34px rgba(0, 0, 0, 0.38);
+    background: linear-gradient(
+      180deg,
+      rgba(12, 22, 37, 0.48) 0%,
+      rgba(7, 15, 29, 0.56) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    backdrop-filter: blur(20px) saturate(1.18);
+    -webkit-backdrop-filter: blur(20px) saturate(1.18);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      0 16px 36px rgba(2, 6, 23, 0.36);
   }
 
   .br-surface-soft {
-    background: var(--surface-weak);
-    border: 1px solid var(--hairline);
-    backdrop-filter: blur(10px) saturate(1.05);
-    -webkit-backdrop-filter: blur(10px) saturate(1.05);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05),
-      0 8px 22px rgba(0, 0, 0, 0.32);
+    background: linear-gradient(
+      180deg,
+      rgba(26, 40, 64, 0.27) 0%,
+      rgba(13, 24, 41, 0.31) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(16px) saturate(1.14);
+    -webkit-backdrop-filter: blur(16px) saturate(1.14);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 10px 24px rgba(2, 6, 23, 0.26);
   }
 
   .br-hairline {
@@ -116,13 +136,17 @@ body {
   }
 
   .contrast-guard {
-    background: var(--surface-ultra);
-    border: 1px solid var(--hairline);
+    background: linear-gradient(
+      180deg,
+      rgba(12, 22, 37, 0.52) 0%,
+      rgba(7, 15, 29, 0.6) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.26);
     color: var(--text-primary);
-    backdrop-filter: blur(16px) saturate(1.08);
-    -webkit-backdrop-filter: blur(16px) saturate(1.08);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      0 16px 40px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(22px) saturate(1.2);
+    -webkit-backdrop-filter: blur(22px) saturate(1.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      0 18px 40px rgba(2, 6, 23, 0.36);
   }
 
   .br-press {
@@ -192,12 +216,15 @@ body {
 }
 
 .leaflet-control-zoom {
+  position: relative;
+  z-index: 34;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
   border-radius: 14px !important;
-  backdrop-filter: blur(12px) saturate(1.02);
-  -webkit-backdrop-filter: blur(12px) saturate(1.02);
-  box-shadow: 0 12px 30px rgba(2, 6, 23, 0.45);
+  backdrop-filter: blur(16px) saturate(1.18);
+  -webkit-backdrop-filter: blur(16px) saturate(1.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 12px 30px rgba(2, 6, 23, 0.32);
 }
 
 .leaflet-control-zoom a {
@@ -205,15 +232,23 @@ body {
   height: 36px !important;
   line-height: 34px !important;
   border: 0 !important;
-  background: rgba(2, 6, 23, 0.7) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(22, 38, 61, 0.5) 0%,
+    rgba(12, 23, 41, 0.58) 100%
+  ) !important;
   color: #f8fafc !important;
   font-size: 20px !important;
   transition: background-color 140ms ease, color 140ms ease;
 }
 
 .leaflet-control-zoom a:hover {
-  background: rgba(15, 23, 42, 0.92) !important;
-  color: #7dd3fc !important;
+  background: linear-gradient(
+    180deg,
+    rgba(36, 58, 90, 0.56) 0%,
+    rgba(16, 31, 54, 0.62) 100%
+  ) !important;
+  color: #c8ecff !important;
 }
 
 .leaflet-control-zoom a:focus {
@@ -226,9 +261,7 @@ body {
 
 .leaflet-bottom.leaflet-right .leaflet-control-zoom {
   margin-right: 12px !important;
-  margin-bottom: calc(
-    env(safe-area-inset-bottom) + var(--mobile-bottom-lift) + 136px
-  ) !important;
+  margin-bottom: calc(var(--bottom-controls-clearance, 194px) + 48px) !important;
 }
 
 @media (hover: none) and (pointer: coarse) {
@@ -244,15 +277,23 @@ body {
 }
 
 .leaflet-control-attribution {
+  position: relative;
+  z-index: 34;
   margin: 0 10px 10px 0 !important;
   padding: 5px 8px !important;
   border-radius: 10px !important;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(2, 6, 23, 0.58) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(
+    180deg,
+    rgba(22, 38, 61, 0.46) 0%,
+    rgba(12, 23, 41, 0.52) 100%
+  ) !important;
   color: rgba(226, 232, 240, 0.86) !important;
   font-size: 10px !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(14px) saturate(1.16);
+  -webkit-backdrop-filter: blur(14px) saturate(1.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 10px 22px rgba(2, 6, 23, 0.26);
 }
 
 .leaflet-control-attribution a {
@@ -264,9 +305,21 @@ body {
     10px,
     calc((100vw - min(100vw, var(--overlay-max-width))) / 2 + 10px)
   ) !important;
-  margin-bottom: calc(
-    env(safe-area-inset-bottom) + var(--mobile-bottom-lift) + 26px
-  ) !important;
+  margin-bottom: var(--leaflet-attribution-bottom, 202px) !important;
+}
+
+:root[data-sheet-open="1"] .leaflet-control-zoom,
+:root[data-sheet-open="1"] .leaflet-control-attribution {
+  z-index: 20;
+  pointer-events: none;
+}
+
+:root[data-sheet-open="1"] .leaflet-bottom.leaflet-right .leaflet-control-zoom {
+  margin-bottom: calc(var(--bottom-nav-height, 92px) + 16px) !important;
+}
+
+:root[data-sheet-open="1"] .leaflet-bottom.leaflet-right .leaflet-control-attribution {
+  --leaflet-attribution-bottom: calc(var(--bottom-nav-height, 92px) + 12px);
 }
 
 @media (min-width: 1024px) {

@@ -6,9 +6,10 @@ import {
   useRef,
   useState,
 } from "react";
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type { FormEvent, PointerEvent as ReactPointerEvent } from "react";
 import type { BeachWithStats } from "../lib/types";
 import { STRINGS } from "../i18n/it";
+import BottomNav from "./BottomNav";
 import {
   formatConfidenceInline,
   formatDistanceLabel,
@@ -16,6 +17,7 @@ import {
   formatReportCount,
   formatStateLabel,
 } from "../lib/format";
+import { askChatbot, type ChatbotMessage } from "../lib/chatbot";
 import { isPerfEnabled, useRenderCounter } from "../lib/perf";
 
 type BottomSheetProps = {
@@ -30,6 +32,9 @@ type BottomSheetProps = {
   now: number;
   hasLocation: boolean;
   nearbyRadiusKm: number;
+  activeSection: BottomSheetSection;
+  onSectionChange: (section: BottomSheetSection) => void;
+  onBottomNavHeightChange?: (height: number) => void;
   accountName: string | null;
   accountEmail: string | null;
   onOpenProfile: () => void;
@@ -41,7 +46,7 @@ const DRAG_THRESHOLD = 6;
 const VELOCITY_THRESHOLD = 0.45;
 const CLOSED_LIFT_PX = 34;
 const CLOSED_VISIBLE_HEIGHT = PEEK_HEIGHT + CLOSED_LIFT_PX;
-type SheetSection = "map" | "profile" | "chatbot";
+export type BottomSheetSection = "map" | "profile" | "chatbot";
 
 const stateBadge = (state: string) => {
   switch (state) {
@@ -53,6 +58,20 @@ const stateBadge = (state: string) => {
       return "bg-slate-400/25 text-slate-100 border-slate-300/50";
   }
 };
+
+type ChatMessageRow = {
+  id: string;
+  role: "assistant" | "user";
+  content: string;
+  source: "local" | "openai" | null;
+  totalTokens: number | null;
+};
+
+const MAX_CHAT_MESSAGES = 12;
+const MAX_CHAT_INPUT_CHARS = 420;
+
+const createMessageId = () =>
+  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 type BeachRowProps = {
   beach: BeachWithStats;
@@ -170,6 +189,9 @@ const BottomSheetComponent = ({
   now,
   hasLocation,
   nearbyRadiusKm,
+  activeSection,
+  onSectionChange,
+  onBottomNavHeightChange,
   accountName,
   accountEmail,
   onOpenProfile,
@@ -182,7 +204,6 @@ const BottomSheetComponent = ({
   const [dragOffset, setDragOffset] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [favoritesOpen, setFavoritesOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<SheetSection>("map");
   const suppressClickRef = useRef(false);
   const startYRef = useRef(0);
   const startOffsetRef = useRef(0);
@@ -198,9 +219,8 @@ const BottomSheetComponent = ({
 
   const translateY = useMemo(() => {
     if (dragOffset !== null) return dragOffset;
-    const closedOffset = Math.max(maxTranslate - CLOSED_LIFT_PX, 0);
-    return isOpen ? 0 : closedOffset;
-  }, [dragOffset, isOpen, maxTranslate]);
+    return 0;
+  }, [dragOffset]);
 
   useEffect(() => {
     const update = () => {
@@ -226,10 +246,11 @@ const BottomSheetComponent = ({
   const handlePointerDown = (
     event: ReactPointerEvent<HTMLButtonElement>,
   ) => {
+    if (!isOpen) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     startYRef.current = event.clientY;
-    startOffsetRef.current = isOpen ? 0 : Math.max(maxTranslate - CLOSED_LIFT_PX, 0);
+    startOffsetRef.current = 0;
     lastMoveRef.current = { y: event.clientY, t: performance.now() };
     setDragOffset(startOffsetRef.current);
     setIsDragging(true);
@@ -296,21 +317,8 @@ const BottomSheetComponent = ({
     [favoriteBeachIds, favoriteBeaches.length, onToggleFavorite],
   );
 
-  const handleOpenMapSection = useCallback(() => {
-    setActiveSection("map");
-  }, []);
-
-  const handleOpenProfileSection = useCallback(() => {
-    setActiveSection("profile");
-  }, []);
-
-  const handleOpenChatbotSection = useCallback(() => {
-    setActiveSection("chatbot");
-  }, []);
-
   const handleSelectFavoriteFromProfile = useCallback((beachId: string) => {
     onSelectBeach(beachId);
-    setActiveSection("map");
   }, [onSelectBeach]);
 
   const profileFavoritesPreview = useMemo(
@@ -318,10 +326,171 @@ const BottomSheetComponent = ({
     [favoriteBeaches],
   );
 
+  const selectedBeach = useMemo(
+    () => beaches.find((beach) => beach.id === selectedBeachId) ?? null,
+    [beaches, selectedBeachId],
+  );
+
+  const [chatMessages, setChatMessages] = useState<ChatMessageRow[]>(() => [
+    {
+      id: createMessageId(),
+      role: "assistant",
+      content: STRINGS.chatbot.welcome,
+      source: "local",
+      totalTokens: null,
+    },
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatSending, setChatSending] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const chatAbortRef = useRef<AbortController | null>(null);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
+
+  const trimChatMessage = useCallback(
+    (value: string) =>
+      value.replace(/\s+/g, " ").trim().slice(0, MAX_CHAT_INPUT_CHARS),
+    [],
+  );
+
+  const chatContext = useMemo(
+    () => ({
+      selectedBeachName: selectedBeach?.name ?? null,
+      selectedBeachRegion: selectedBeach?.region ?? null,
+      favoriteCount: favoriteBeaches.length,
+      hasAccount: !!accountEmail,
+    }),
+    [accountEmail, favoriteBeaches.length, selectedBeach],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (chatAbortRef.current) {
+        chatAbortRef.current.abort();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (activeSection !== "chatbot") return;
+    const container = chatScrollRef.current;
+    if (!container) return;
+    container.scrollTop = container.scrollHeight;
+  }, [activeSection, chatMessages, chatSending]);
+
+  const pushChatMessage = useCallback((message: ChatMessageRow) => {
+    setChatMessages((prev) => [...prev, message].slice(-MAX_CHAT_MESSAGES));
+  }, []);
+
+  const mapChatError = useCallback((error: string) => {
+    switch (error) {
+      case "network":
+        return STRINGS.chatbot.errors.network;
+      case "timeout":
+        return STRINGS.chatbot.errors.timeout;
+      case "rate_limited":
+        return STRINGS.chatbot.errors.rateLimited;
+      case "not_configured":
+        return STRINGS.chatbot.errors.notConfigured;
+      case "unavailable":
+        return STRINGS.chatbot.errors.unavailable;
+      default:
+        return STRINGS.chatbot.errors.generic;
+    }
+  }, []);
+
+  const sendChatMessage = useCallback(async (raw: string) => {
+    if (chatSending) return;
+    const question = trimChatMessage(raw);
+    if (!question) return;
+
+    const userRow: ChatMessageRow = {
+      id: createMessageId(),
+      role: "user",
+      content: question,
+      source: null,
+      totalTokens: null,
+    };
+    pushChatMessage(userRow);
+    setChatInput("");
+    setChatError(null);
+    setChatSending(true);
+
+    if (chatAbortRef.current) {
+      chatAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    chatAbortRef.current = controller;
+
+    const historyForApi: ChatbotMessage[] = [...chatMessages, userRow]
+      .slice(-8)
+      .map((row) => ({
+        role: row.role,
+        content: row.content,
+      }));
+
+    const result = await askChatbot(historyForApi, chatContext, controller.signal);
+    if (chatAbortRef.current === controller) {
+      chatAbortRef.current = null;
+    }
+    setChatSending(false);
+
+    if (!result.ok) {
+      setChatError(mapChatError(result.error));
+      return;
+    }
+
+    pushChatMessage({
+      id: createMessageId(),
+      role: "assistant",
+      content: result.reply,
+      source: result.source,
+      totalTokens: result.usage?.totalTokens ?? null,
+    });
+  }, [
+    chatContext,
+    chatMessages,
+    chatSending,
+    mapChatError,
+    pushChatMessage,
+    trimChatMessage,
+  ]);
+
+  const handleChatSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      void sendChatMessage(chatInput);
+    },
+    [chatInput, sendChatMessage],
+  );
+
+  const quickQuestions = useMemo(
+    () => [
+      STRINGS.chatbot.quickQuestions.report,
+      STRINGS.chatbot.quickQuestions.favorites,
+      STRINGS.chatbot.quickQuestions.states,
+    ],
+    [],
+  );
+
+  const sectionTitle = activeSection === "map"
+    ? STRINGS.labels.nearbyBeaches
+    : activeSection === "profile"
+      ? STRINGS.account.profileTitle
+      : STRINGS.chatbot.title;
+  const sectionSubtitle = activeSection === "map"
+    ? (hasLocation
+      ? STRINGS.labels.nearbyWithinRadius(beaches.length, nearbyRadiusKm)
+      : STRINGS.labels.enableLocationNearby)
+    : activeSection === "profile"
+      ? (accountEmail
+        ? STRINGS.account.signedInAs
+        : STRINGS.account.requiredForFavorites)
+      : STRINGS.chatbot.subtitle;
+
   return (
     <div
       data-testid="bottom-sheet"
-      className={`fixed bottom-0 left-0 right-0 z-20 ${
+      className={`fixed bottom-0 left-0 right-0 z-[24] ${
         isDragging ? "" : "transition-transform duration-300"
       }`}
       style={{
@@ -330,8 +499,12 @@ const BottomSheetComponent = ({
       }}
     >
       <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-0 right-0 top-[-26px] h-7 bg-gradient-to-t from-[rgba(12,23,41,0.24)] to-transparent"
+      />
+      <div
         ref={sheetRef}
-        className="mx-auto max-w-screen-sm rounded-t-[22px] contrast-guard"
+        className="mx-auto max-w-screen-sm overflow-hidden rounded-t-[28px] border border-b-0 border-white/22 bg-[linear-gradient(180deg,rgba(20,34,54,0.42),rgba(12,23,41,0.42))] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-[20px]"
       >
         <button
           className="br-press flex w-full items-center justify-between px-6 py-4 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
@@ -348,61 +521,26 @@ const BottomSheetComponent = ({
           onPointerCancel={handlePointerUp}
           aria-expanded={isOpen}
           aria-label={STRINGS.aria.expandBeaches}
-          style={{ touchAction: "none", minHeight: CLOSED_VISIBLE_HEIGHT }}
+          style={{ touchAction: isOpen ? "none" : "auto", minHeight: CLOSED_VISIBLE_HEIGHT }}
         >
           <div>
             <div className="text-[15px] font-semibold br-text-primary">
-              {STRINGS.labels.nearbyBeaches}
+              {sectionTitle}
             </div>
             <div className="text-[11px] br-text-tertiary">
-              {hasLocation
-                ? STRINGS.labels.nearbyWithinRadius(beaches.length, nearbyRadiusKm)
-                : STRINGS.labels.enableLocationNearby}
+              {sectionSubtitle}
             </div>
           </div>
           <div className="h-1 w-10 rounded-full bg-white/20" />
         </button>
-        <div className="px-6 pb-3">
-          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-[color:var(--hairline)] bg-black/25 p-1.5">
-            <button
-              type="button"
-              data-testid="sheet-nav-map"
-              onClick={handleOpenMapSection}
-              className={`br-press rounded-xl px-3 py-2 text-[12px] font-semibold transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
-                activeSection === "map"
-                  ? "bg-white/12 text-slate-100"
-                  : "br-text-tertiary hover:bg-white/6"
-              }`}
-            >
-              Mappa
-            </button>
-            <button
-              type="button"
-              data-testid="sheet-nav-profile"
-              onClick={handleOpenProfileSection}
-              className={`br-press rounded-xl px-3 py-2 text-[12px] font-semibold transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
-                activeSection === "profile"
-                  ? "bg-white/12 text-slate-100"
-                  : "br-text-tertiary hover:bg-white/6"
-              }`}
-            >
-              Profilo
-            </button>
-            <button
-              type="button"
-              data-testid="sheet-nav-chatbot"
-              onClick={handleOpenChatbotSection}
-              className={`br-press rounded-xl px-3 py-2 text-[12px] font-semibold transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 ${
-                activeSection === "chatbot"
-                  ? "bg-white/12 text-slate-100"
-                  : "br-text-tertiary hover:bg-white/6"
-              }`}
-            >
-              Chatbot
-            </button>
-          </div>
-        </div>
-        <div className="max-h-[62vh] overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+        <div
+          className={`overflow-hidden transition-[max-height,opacity] duration-250 ${
+            isOpen || isDragging
+              ? "max-h-[62vh] opacity-100"
+              : "max-h-0 opacity-0 pointer-events-none"
+          }`}
+        >
+          <div className="max-h-[62vh] overflow-y-auto px-6 pb-4">
           {activeSection === "map" ? (
             <div className="space-y-4 pb-6">
               <section>
@@ -470,7 +608,7 @@ const BottomSheetComponent = ({
                     ))}
                   </div>
                 ) : (
-                  <div className="mt-2 rounded-xl border border-[color:var(--hairline)] bg-black/15 px-4 py-3 text-[12px] br-text-tertiary">
+                  <div className="mt-2 rounded-xl br-surface-soft px-4 py-3 text-[12px] br-text-tertiary">
                     {hasLocation
                       ? STRINGS.labels.noNearbyWithinRadius(nearbyRadiusKm)
                       : STRINGS.labels.enableLocationNearby}
@@ -481,7 +619,7 @@ const BottomSheetComponent = ({
           ) : null}
           {activeSection === "profile" ? (
             <div className="space-y-4 pb-6">
-              <section className="rounded-2xl border border-[color:var(--hairline)] bg-black/20 p-4">
+              <section className="rounded-2xl br-surface-soft p-4">
                 {accountEmail ? (
                   <>
                     <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-cyan-100/80">
@@ -518,7 +656,7 @@ const BottomSheetComponent = ({
                 )}
               </section>
               {accountEmail ? (
-                <section className="rounded-2xl border border-[color:var(--hairline)] bg-black/15 p-4">
+                <section className="rounded-2xl br-surface-soft p-4">
                   <div className="flex items-center justify-between">
                     <div className="text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
                       {STRINGS.labels.favorites}
@@ -532,7 +670,7 @@ const BottomSheetComponent = ({
                           key={beach.id}
                           type="button"
                           onClick={() => handleSelectFavoriteFromProfile(beach.id)}
-                          className="br-press flex w-full items-center justify-between rounded-xl border border-[color:var(--hairline)] bg-black/20 px-3 py-2 text-left transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                          className="br-press flex w-full items-center justify-between rounded-xl br-surface-soft px-3 py-2 text-left transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
                         >
                           <span className="text-[12px] br-text-primary">{beach.name}</span>
                           <span className="text-[11px] br-text-tertiary">{formatDistanceLabel(beach.distanceM)}</span>
@@ -540,7 +678,7 @@ const BottomSheetComponent = ({
                       ))}
                     </div>
                   ) : (
-                    <div className="mt-3 rounded-xl border border-dashed border-[color:var(--hairline)] bg-black/10 px-3 py-2 text-[12px] br-text-tertiary">
+                    <div className="mt-3 rounded-xl border border-dashed border-white/20 bg-white/5 px-3 py-2 text-[12px] br-text-tertiary backdrop-blur-md">
                       {STRINGS.account.profileFavoritesEmpty}
                     </div>
                   )}
@@ -550,7 +688,7 @@ const BottomSheetComponent = ({
           ) : null}
           {activeSection === "chatbot" ? (
             <div className="space-y-4 pb-6">
-              <section className="rounded-2xl border border-[color:var(--hairline)] bg-black/20 p-4">
+              <section className="rounded-2xl br-surface-soft p-4">
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-sky-300/35 bg-sky-500/15 text-sky-100">
                     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -559,26 +697,97 @@ const BottomSheetComponent = ({
                   </div>
                   <div>
                     <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-sky-100/80">
-                      Chatbot Where2Beach
-                    </div>
-                    <div className="mt-1 text-[15px] font-semibold br-text-primary">
-                      In arrivo
+                      {STRINGS.chatbot.title}
                     </div>
                     <div className="mt-1 text-[12px] leading-relaxed br-text-secondary">
-                      Presto potrai chiedere consigli su spiagge, meteo e affollamento con un assistente dedicato.
+                      {STRINGS.chatbot.subtitle}
                     </div>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  disabled
-                  className="mt-4 w-full cursor-not-allowed rounded-xl border border-sky-300/25 bg-sky-500/10 px-3 py-2 text-[12px] font-semibold text-sky-100/60"
+                <div
+                  ref={chatScrollRef}
+                  className="mt-4 max-h-64 space-y-2 overflow-y-auto rounded-xl br-surface p-3"
                 >
-                  Prossimamente disponibile
-                </button>
+                  {chatMessages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[88%] rounded-2xl px-3 py-2 text-[12px] leading-relaxed ${
+                          message.role === "user"
+                            ? "bg-sky-500/20 text-sky-50"
+                            : "br-surface-soft br-text-primary"
+                        }`}
+                      >
+                        <div>{message.content}</div>
+                        {message.role === "assistant" ? (
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] br-text-tertiary">
+                            <span>
+                              {message.source === "openai"
+                                ? STRINGS.chatbot.sourceAi
+                                : STRINGS.chatbot.sourceLocal}
+                            </span>
+                            {message.totalTokens !== null ? (
+                              <span>{STRINGS.chatbot.usageLabel(message.totalTokens)}</span>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                  {chatSending ? (
+                    <div className="text-[11px] br-text-tertiary">{STRINGS.chatbot.sending}</div>
+                  ) : null}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {quickQuestions.map((question) => (
+                    <button
+                      key={question}
+                      type="button"
+                      onClick={() => {
+                        void sendChatMessage(question);
+                      }}
+                      disabled={chatSending}
+                      className="br-press rounded-full border border-sky-200/35 bg-sky-500/18 px-3 py-1.5 text-[11px] font-semibold text-sky-100 backdrop-blur-md transition disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+                <form onSubmit={handleChatSubmit} className="mt-3 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(event) => setChatInput(event.target.value)}
+                    maxLength={MAX_CHAT_INPUT_CHARS}
+                    placeholder={STRINGS.chatbot.inputPlaceholder}
+                    className="h-10 min-w-0 flex-1 rounded-xl br-surface-soft px-3 text-[13px] br-text-primary placeholder:text-slate-400 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                  />
+                  <button
+                    type="submit"
+                    disabled={chatSending || trimChatMessage(chatInput).length === 0}
+                    className="br-press h-10 rounded-xl border border-sky-300/35 bg-sky-500/15 px-3 text-[12px] font-semibold text-sky-100 transition disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {STRINGS.chatbot.send}
+                  </button>
+                </form>
+                {chatError ? (
+                  <div className="mt-2 text-[11px] text-rose-200">{chatError}</div>
+                ) : null}
               </section>
             </div>
           ) : null}
+          </div>
+        </div>
+        <div className="bg-transparent">
+          <BottomNav
+            activeSection={activeSection}
+            favoriteCount={favoriteBeaches.length}
+            accountEmail={accountEmail}
+            onChange={onSectionChange}
+            onHeightChange={onBottomNavHeightChange}
+          />
         </div>
       </div>
     </div>
@@ -597,6 +806,9 @@ const bottomSheetEqual = (prev: BottomSheetProps, next: BottomSheetProps) =>
   prev.now === next.now &&
   prev.hasLocation === next.hasLocation &&
   prev.nearbyRadiusKm === next.nearbyRadiusKm &&
+  prev.activeSection === next.activeSection &&
+  prev.onSectionChange === next.onSectionChange &&
+  prev.onBottomNavHeightChange === next.onBottomNavHeightChange &&
   prev.accountName === next.accountName &&
   prev.accountEmail === next.accountEmail &&
   prev.onOpenProfile === next.onOpenProfile &&
