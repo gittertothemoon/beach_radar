@@ -16,6 +16,9 @@ import { getSupabaseClient } from "./supabase";
 
 const FAVORITES_TABLE = "user_favorites";
 const AUTH_REGISTER_PATH = "/register/?mode=login";
+const MOBILE_AUTH_RETURN_TO_PATH = "/app/?native_shell=1";
+const MOBILE_DEEP_LINK_SCHEME = "where2beach";
+const MOBILE_DEEP_LINK_HOST = "open";
 const MOCK_FAVORITES_KEY = "where2beach-dev-mock-favorites-v1";
 
 export type AppAccount = {
@@ -135,7 +138,22 @@ const setClientAppAccessCookie = (): void => {
     `br_app_access=1; Max-Age=${maxAge}; Path=/app; SameSite=Lax; Secure`;
 };
 
-const buildAuthEmailRedirectUrl = (): string => {
+const readBooleanParam = (value: string | null): boolean | null => {
+  if (value === null) return null;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "1" || normalized === "true") return true;
+  if (normalized === "0" || normalized === "false") return false;
+  return null;
+};
+
+const hasNativeShellFlag = (params: URLSearchParams): boolean => {
+  const direct = readBooleanParam(params.get("native_shell"));
+  if (direct !== null) return direct;
+  const camelCase = readBooleanParam(params.get("nativeShell"));
+  return camelCase === true;
+};
+
+const buildWebAuthEmailRedirectUrl = (): string => {
   if (typeof window !== "undefined") {
     const isLocalHost =
       window.location.hostname === "localhost" ||
@@ -145,6 +163,46 @@ const buildAuthEmailRedirectUrl = (): string => {
     }
   }
   return `${PUBLIC_BASE_URL}${AUTH_REGISTER_PATH}`;
+};
+
+const buildMobileAuthEmailRedirectUrl = (): string => {
+  const registerParams = new URLSearchParams();
+  registerParams.set("mode", "login");
+  registerParams.set("native_shell", "1");
+  registerParams.set("returnTo", MOBILE_AUTH_RETURN_TO_PATH);
+  const registerPath = `/register/?${registerParams.toString()}`;
+  const deepLinkParams = new URLSearchParams();
+  deepLinkParams.set("path", registerPath);
+  return `${MOBILE_DEEP_LINK_SCHEME}://${MOBILE_DEEP_LINK_HOST}?${deepLinkParams.toString()}`;
+};
+
+const isNativeShellAuthContext = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const currentParams = new URLSearchParams(window.location.search);
+  if (hasNativeShellFlag(currentParams)) return true;
+
+  const returnToRaw = currentParams.get("returnTo");
+  if (!returnToRaw) return false;
+  try {
+    const returnToUrl = new URL(returnToRaw, window.location.origin);
+    return hasNativeShellFlag(returnToUrl.searchParams);
+  } catch {
+    return false;
+  }
+};
+
+const buildAuthEmailRedirectUrl = (): string => {
+  if (isNativeShellAuthContext()) return buildMobileAuthEmailRedirectUrl();
+  return buildWebAuthEmailRedirectUrl();
+};
+
+const isMobileDeepLinkRedirect = (redirectUrl: string): boolean =>
+  redirectUrl.startsWith(`${MOBILE_DEEP_LINK_SCHEME}://`);
+
+const isRedirectUrlRejectedBySupabase = (message: string | undefined): boolean => {
+  if (!message) return false;
+  const normalized = message.trim().toLowerCase();
+  return normalized.includes("redirect") && normalized.includes("not allowed");
 };
 
 const readUserMetadataString = (
@@ -264,18 +322,39 @@ export const registerAccount = async (input: {
     }
   }
 
-  const { data, error } = await supabase.auth.signUp({
-    email: input.email.trim().toLowerCase(),
+  const email = input.email.trim().toLowerCase();
+  const profileData = {
+    first_name: input.firstName.trim(),
+    last_name: input.lastName.trim(),
+    nickname: normalizedNickname,
+  };
+  const preferredRedirectUrl = buildAuthEmailRedirectUrl();
+
+  let { data, error } = await supabase.auth.signUp({
+    email,
     password: input.password,
     options: {
-      emailRedirectTo: buildAuthEmailRedirectUrl(),
-      data: {
-        first_name: input.firstName.trim(),
-        last_name: input.lastName.trim(),
-        nickname: normalizedNickname,
-      },
+      emailRedirectTo: preferredRedirectUrl,
+      data: profileData,
     },
   });
+
+  if (error && isMobileDeepLinkRedirect(preferredRedirectUrl)) {
+    if (isRedirectUrlRejectedBySupabase(error.message)) {
+      const fallbackRedirectUrl = buildWebAuthEmailRedirectUrl();
+      console.warn(
+        "Supabase rejected mobile auth redirect URL. Falling back to web auth redirect.",
+      );
+      ({ data, error } = await supabase.auth.signUp({
+        email,
+        password: input.password,
+        options: {
+          emailRedirectTo: fallbackRedirectUrl,
+          data: profileData,
+        },
+      }));
+    }
+  }
 
   if (error) {
     return {

@@ -39,6 +39,8 @@ const readNumberEnv = (
   return numeric;
 };
 
+const IS_DEV_RUNTIME = typeof __DEV__ === "boolean" ? __DEV__ : false;
+
 export const MOBILE_BASE_URL = normalizeBaseUrl(process.env.EXPO_PUBLIC_BASE_URL);
 export const MOBILE_APP_ACCESS_KEY = readAppAccessKey(
   process.env.EXPO_PUBLIC_APP_ACCESS_KEY,
@@ -54,11 +56,11 @@ export const MOBILE_REPORT_ANYWHERE = readBooleanEnv(
   false,
 );
 export const MOBILE_DEV_MOCK_AUTH = readBooleanEnv(
-  process.env.EXPO_PUBLIC_DEV_MOCK_AUTH,
+  IS_DEV_RUNTIME ? process.env.EXPO_PUBLIC_DEV_MOCK_AUTH : "0",
   false,
 );
 export const MOBILE_DEV_MOCK_EMAIL = readStringEnv(
-  process.env.EXPO_PUBLIC_DEV_MOCK_EMAIL,
+  IS_DEV_RUNTIME ? process.env.EXPO_PUBLIC_DEV_MOCK_EMAIL : undefined,
 );
 
 export const MOBILE_API_BASE_URL = `${MOBILE_BASE_URL}/api`;
