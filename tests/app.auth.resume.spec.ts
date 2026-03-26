@@ -50,7 +50,7 @@ test("register can establish a session and keep it after reload", async ({ page 
   const returnTo = appUiUrl({ beachId: E2E_BEACH_ID, reportAnywhere: "1" });
   await page.goto(withQuery("/app/register", { returnTo }));
 
-  const uniqueEmail = `w2b_e2e_${Date.now()}_${Math.random().toString(36).slice(2, 8)}@example.com`;
+  const uniqueEmail = `w2b_e2e_${Date.now()}_${Math.random().toString(36).slice(2, 8)}@mailinator.com`;
   const password = "W2bPassword!123";
 
   await page.getByPlaceholder(/^Nome$/).fill("QA");

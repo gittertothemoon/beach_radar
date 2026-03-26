@@ -201,6 +201,8 @@ function createSupabaseClient() {
   });
 }
 
+type SupabaseClientLike = NonNullable<ReturnType<typeof createSupabaseClient>>;
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -316,7 +318,7 @@ function sumCountMap(rows: Array<Record<string, unknown>>, keyName: string): Map
   return map;
 }
 
-async function loadSignalMaps(supabase: any) {
+async function loadSignalMaps(supabase: SupabaseClientLike) {
   const sinceIso = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
   const [analyticsRes, favoritesRes, reviewsRes] = await Promise.all([
@@ -792,7 +794,7 @@ async function runReviewAgent(
 }
 
 async function getExistingProfiles(
-  supabase: any,
+  supabase: SupabaseClientLike,
 ): Promise<Map<string, { verified_at: string | null }>> {
   const { data, error } = await supabase
     .from("beach_profile_current")
@@ -813,7 +815,7 @@ async function getExistingProfiles(
 }
 
 async function getProcessedToday(
-  supabase: any,
+  supabase: SupabaseClientLike,
   runDayRome: string,
 ): Promise<number> {
   const { data, error } = await supabase
@@ -835,7 +837,7 @@ async function getProcessedToday(
 }
 
 async function getLastReviewRound(
-  supabase: any,
+  supabase: SupabaseClientLike,
   beachId: string,
 ): Promise<number> {
   const { data, error } = await supabase
@@ -853,7 +855,7 @@ async function getLastReviewRound(
 }
 
 async function startRun(
-  supabase: any,
+  supabase: SupabaseClientLike,
   runDayRome: string,
   triggerSource: string,
   batchSize: number,
@@ -880,7 +882,7 @@ async function startRun(
 }
 
 async function finishRun(
-  supabase: any,
+  supabase: SupabaseClientLike,
   runId: string,
   counters: RunCounters,
   status: "completed" | "failed",
@@ -901,7 +903,7 @@ async function finishRun(
 }
 
 async function queueCandidate(
-  supabase: any,
+  supabase: SupabaseClientLike,
   input: {
     beachId: string;
     candidateId: string;
@@ -951,7 +953,7 @@ async function queueCandidate(
 }
 
 async function publishCurrentProfile(
-  supabase: any,
+  supabase: SupabaseClientLike,
   input: {
     beachId: string;
     candidate: ExtractedCandidate;
@@ -986,7 +988,7 @@ async function publishCurrentProfile(
 }
 
 async function processBeach(
-  supabase: any,
+  supabase: SupabaseClientLike,
   runId: string,
   beach: BeachCatalogItem,
   config: {

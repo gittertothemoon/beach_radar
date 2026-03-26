@@ -21,6 +21,11 @@ import {
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]{2,}$/;
 const NICKNAME_PATTERN = /^[A-Za-z0-9._-]{3,24}$/;
+const NON_DELIVERABLE_EMAIL_DOMAINS = new Set([
+  "example.com",
+  "example.net",
+  "example.org",
+]);
 const HAS_UPPERCASE = /[A-Z]/;
 const HAS_LOWERCASE = /[a-z]/;
 const HAS_NUMBER = /\d/;
@@ -30,6 +35,13 @@ const MIN_PASSWORD_LENGTH = 10;
 type AuthMode = "register" | "login" | "forgot" | "reset";
 type NoticeTone = "success" | "info";
 const FORGOT_PASSWORD_FAST_NOTICE_MS = 700;
+
+const hasNonDeliverableDomain = (emailValue: string): boolean => {
+  const atIndex = emailValue.lastIndexOf("@");
+  if (atIndex <= 0) return false;
+  const domain = emailValue.slice(atIndex + 1).toLowerCase();
+  return NON_DELIVERABLE_EMAIL_DOMAINS.has(domain);
+};
 
 const RegisterPage = () => {
   const [firstName, setFirstName] = useState("");
@@ -188,6 +200,9 @@ const RegisterPage = () => {
       return STRINGS.account.requiredField;
     }
     if (!EMAIL_PATTERN.test(normalizedEmail)) {
+      return STRINGS.account.invalidEmail;
+    }
+    if (!isLoginMode && hasNonDeliverableDomain(normalizedEmail)) {
       return STRINGS.account.invalidEmail;
     }
     if (isLoginMode) {
