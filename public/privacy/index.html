@@ -8,6 +8,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="/legal/runtime.js" defer></script>
 
   <style>
     :root {
@@ -295,6 +296,26 @@
     };
 
     const params = new URLSearchParams(window.location.search);
+    const normalizePath = (value) => (value || "/").replace(/\/+$/, "") || "/";
+    const maybeRedirectToConfiguredPrivacy = (config) => {
+      if (!config || !config.privacyUrl) return;
+      try {
+        const target = new URL(config.privacyUrl, window.location.origin);
+        const currentPath = normalizePath(window.location.pathname);
+        const targetPath = normalizePath(target.pathname);
+        if (target.origin === window.location.origin && targetPath === currentPath) return;
+        window.location.replace(target.toString());
+      } catch {
+        // Ignore invalid URLs and keep local fallback page.
+      }
+    };
+    window.addEventListener("w2b:legal-config-ready", (event) => {
+      maybeRedirectToConfiguredPrivacy(event.detail);
+    });
+    if (window.W2B_LEGAL_CONFIG) {
+      maybeRedirectToConfiguredPrivacy(window.W2B_LEGAL_CONFIG);
+    }
+
     const queryLang = (params.get("lang") || "").toLowerCase();
     const storedLang = tryReadLocalStorageLang();
     const referrerLang = tryReadReferrerLang();
@@ -393,7 +414,10 @@
       });
     }
 
-    const contactEmailRaw = window.PRIVACY_CONTACT_EMAIL || "privacy@where2beach.com";
+    const contactEmailRaw =
+      window.W2B_LEGAL_CONFIG?.contactEmail ||
+      window.PRIVACY_CONTACT_EMAIL ||
+      "privacy@where2beach.com";
     const safeContactEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmailRaw)
       ? contactEmailRaw
       : "privacy@where2beach.com";

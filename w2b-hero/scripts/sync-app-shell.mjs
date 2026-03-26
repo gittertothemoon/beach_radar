@@ -93,5 +93,8 @@ syncOptionalDir(resolve(rootPublic, "icons"), resolve(heroPublic, "icons"));
 syncOptionalDir(resolve(rootPublic, "og"), resolve(heroPublic, "og"));
 syncOptionalDir(resolve(rootPublic, "landing"), resolve(heroPublic, "landing"));
 syncOptionalDir(resolve(rootPublic, "privacy"), resolve(heroPublic, "privacy"));
+syncOptionalDir(resolve(rootPublic, "terms"), resolve(heroPublic, "terms"));
+syncOptionalDir(resolve(rootPublic, "cookie-policy"), resolve(heroPublic, "cookie-policy"));
+syncOptionalDir(resolve(rootPublic, "legal"), resolve(heroPublic, "legal"));
 
 syncDir(resolve(repoRoot, "api"), resolve(heroRoot, "api"));

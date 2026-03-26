@@ -25,6 +25,10 @@ const contentTypes = {
 function normalizePath(urlPath) {
   if (!urlPath || urlPath === "/") return "/index.html";
   if (urlPath === "/privacy" || urlPath === "/privacy/") return "/privacy/index.html";
+  if (urlPath === "/terms" || urlPath === "/terms/") return "/terms/index.html";
+  if (urlPath === "/cookie-policy" || urlPath === "/cookie-policy/") {
+    return "/cookie-policy/index.html";
+  }
   return urlPath;
 }
 

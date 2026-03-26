@@ -228,7 +228,7 @@ export const STRINGS = {
     showPasswordsAction: "Mostra password",
     passwordHint:
       "Minimo 10 caratteri, con maiuscola, minuscola, numero e simbolo.",
-    consentLabel: "Accetto termini, privacy e condizioni d'uso.",
+    consentLabel: "Accetto i documenti legali:",
     createAction: "Completa registrazione",
     creatingAction: "Creazione account...",
     signInSubmitAction: "Accedi",

@@ -24,6 +24,14 @@
         {
           "key": "Permissions-Policy",
           "value": "camera=(), microphone=(), payment=(), usb=()"
+        },
+        {
+          "key": "X-DNS-Prefetch-Control",
+          "value": "off"
+        },
+        {
+          "key": "X-Permitted-Cross-Domain-Policies",
+          "value": "none"
         }
       ]
     }
@@ -108,6 +116,26 @@
       "permanent": true
     },
     {
+      "source": "/terms",
+      "destination": "/terms/",
+      "permanent": true
+    },
+    {
+      "source": "/cookie-policy",
+      "destination": "/cookie-policy/",
+      "permanent": true
+    },
+    {
+      "source": "/landing/privacy.html",
+      "destination": "/privacy/",
+      "permanent": true
+    },
+    {
+      "source": "/landing/termini.html",
+      "destination": "/terms/",
+      "permanent": true
+    },
+    {
       "source": "/index.html",
       "destination": "/landing/",
       "permanent": false
@@ -187,6 +215,14 @@
     {
       "source": "/privacy/",
       "destination": "/privacy/index.html"
+    },
+    {
+      "source": "/terms/",
+      "destination": "/terms/index.html"
+    },
+    {
+      "source": "/cookie-policy/",
+      "destination": "/cookie-policy/index.html"
     },
     {
       "source": "/app/(.*)",

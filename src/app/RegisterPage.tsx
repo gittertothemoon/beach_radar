@@ -31,9 +31,22 @@ const HAS_LOWERCASE = /[a-z]/;
 const HAS_NUMBER = /\d/;
 const HAS_SYMBOL = /[^A-Za-z0-9]/;
 const MIN_PASSWORD_LENGTH = 10;
+const DEFAULT_LEGAL_INTERNAL_PATHS = {
+  privacy: "/privacy/",
+  terms: "/terms/",
+  cookie: "/cookie-policy/",
+} as const;
 
 type AuthMode = "register" | "login" | "forgot" | "reset";
 type NoticeTone = "success" | "info";
+type RuntimeLegalConfig = {
+  privacyUrl?: string;
+  termsUrl?: string;
+  cookieUrl?: string;
+};
+type WindowWithLegalConfig = Window & {
+  W2B_LEGAL_CONFIG?: RuntimeLegalConfig;
+};
 const FORGOT_PASSWORD_FAST_NOTICE_MS = 700;
 
 const hasNonDeliverableDomain = (emailValue: string): boolean => {
@@ -41,6 +54,18 @@ const hasNonDeliverableDomain = (emailValue: string): boolean => {
   if (atIndex <= 0) return false;
   const domain = emailValue.slice(atIndex + 1).toLowerCase();
   return NON_DELIVERABLE_EMAIL_DOMAINS.has(domain);
+};
+
+const normalizePathname = (value: string): string =>
+  value.replace(/\/+$/, "") || "/";
+
+const isExternalHref = (rawUrl: string): boolean => {
+  try {
+    const parsed = new URL(rawUrl, window.location.origin);
+    return parsed.origin !== window.location.origin;
+  } catch {
+    return false;
+  }
 };
 
 const RegisterPage = () => {
@@ -122,16 +147,96 @@ const RegisterPage = () => {
     return `${baseUrl}/register/${query ? `?${query}` : ""}`;
   }, []);
 
-  const privacyUrl = useMemo(() => {
-    const url = new URL("/privacy/", PUBLIC_BASE_URL);
+  const internalLegalUrls = useMemo(() => {
     const queryLang = searchParams.get("lang");
     const lang = queryLang === "en" ? "en" : "it";
-    url.searchParams.set("lang", lang);
-    url.searchParams.set("from", "app");
     const backPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    url.searchParams.set("back", backPath);
-    return url.toString();
+    const withContext = (pathname: string) => {
+      const url = new URL(pathname, PUBLIC_BASE_URL);
+      url.searchParams.set("lang", lang);
+      url.searchParams.set("from", "app");
+      url.searchParams.set("back", backPath);
+      return url.toString();
+    };
+    return {
+      privacy: withContext(DEFAULT_LEGAL_INTERNAL_PATHS.privacy),
+      terms: withContext(DEFAULT_LEGAL_INTERNAL_PATHS.terms),
+      cookie: withContext(DEFAULT_LEGAL_INTERNAL_PATHS.cookie),
+    };
   }, [searchParams]);
+
+  const [runtimeLegalConfig, setRuntimeLegalConfig] = useState<RuntimeLegalConfig>(() => {
+    if (typeof window === "undefined") return {};
+    const browserWindow = window as WindowWithLegalConfig;
+    return browserWindow.W2B_LEGAL_CONFIG ?? {};
+  });
+
+  useEffect(() => {
+    const handleLegalConfigReady = (event: Event) => {
+      const detail = (event as CustomEvent<RuntimeLegalConfig>).detail;
+      if (!detail || typeof detail !== "object") return;
+      setRuntimeLegalConfig(detail);
+    };
+
+    const browserWindow = window as WindowWithLegalConfig;
+    if (browserWindow.W2B_LEGAL_CONFIG) {
+      setRuntimeLegalConfig(browserWindow.W2B_LEGAL_CONFIG);
+    }
+
+    window.addEventListener(
+      "w2b:legal-config-ready",
+      handleLegalConfigReady as EventListener,
+    );
+    return () => {
+      window.removeEventListener(
+        "w2b:legal-config-ready",
+        handleLegalConfigReady as EventListener,
+      );
+    };
+  }, []);
+
+  const legalLinks = useMemo(() => {
+    const resolve = (rawValue: string | undefined, fallback: string, internalPath: string) => {
+      if (!rawValue || rawValue.trim().length === 0) return fallback;
+
+      try {
+        const parsed = new URL(rawValue, PUBLIC_BASE_URL);
+        const parsedPath = normalizePathname(parsed.pathname);
+        const normalizedInternal = normalizePathname(internalPath);
+
+        if (parsed.origin === window.location.origin && parsedPath === normalizedInternal) {
+          const fallbackUrl = new URL(fallback);
+          fallbackUrl.searchParams.forEach((value, key) => {
+            if (!parsed.searchParams.has(key)) {
+              parsed.searchParams.set(key, value);
+            }
+          });
+        }
+
+        return parsed.toString();
+      } catch {
+        return fallback;
+      }
+    };
+
+    return {
+      privacyUrl: resolve(
+        runtimeLegalConfig.privacyUrl,
+        internalLegalUrls.privacy,
+        DEFAULT_LEGAL_INTERNAL_PATHS.privacy,
+      ),
+      termsUrl: resolve(
+        runtimeLegalConfig.termsUrl,
+        internalLegalUrls.terms,
+        DEFAULT_LEGAL_INTERNAL_PATHS.terms,
+      ),
+      cookieUrl: resolve(
+        runtimeLegalConfig.cookieUrl,
+        internalLegalUrls.cookie,
+        DEFAULT_LEGAL_INTERNAL_PATHS.cookie,
+      ),
+    };
+  }, [internalLegalUrls, runtimeLegalConfig]);
 
   useEffect(() => {
     const root = document.getElementById("root");
@@ -624,10 +729,33 @@ const RegisterPage = () => {
                     <span>
                       {STRINGS.account.consentLabel}{" "}
                       <a
-                        href={privacyUrl}
+                        href={legalLinks.privacyUrl}
+                        {...(isExternalHref(legalLinks.privacyUrl)
+                          ? { target: "_blank", rel: "noopener noreferrer" }
+                          : {})}
                         className="font-semibold underline-offset-2 hover:underline"
                       >
                         Privacy
+                      </a>{" "}
+                      ·{" "}
+                      <a
+                        href={legalLinks.termsUrl}
+                        {...(isExternalHref(legalLinks.termsUrl)
+                          ? { target: "_blank", rel: "noopener noreferrer" }
+                          : {})}
+                        className="font-semibold underline-offset-2 hover:underline"
+                      >
+                        Termini
+                      </a>{" "}
+                      ·{" "}
+                      <a
+                        href={legalLinks.cookieUrl}
+                        {...(isExternalHref(legalLinks.cookieUrl)
+                          ? { target: "_blank", rel: "noopener noreferrer" }
+                          : {})}
+                        className="font-semibold underline-offset-2 hover:underline"
+                      >
+                        Cookie
                       </a>
                     </span>
                   </label>

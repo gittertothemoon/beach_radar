@@ -107,6 +107,7 @@ export default function Home() {
                 <h4 className="text-xs font-bold text-white/60 uppercase tracking-[0.2em] mb-1">Legale</h4>
                 <a href="/privacy" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Privacy Policy</a>
                 <a href="/terms" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Termini di Servizio</a>
+                <a href="/cookie-policy" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Cookie Policy</a>
                 <a href="mailto:info@where2beach.com" className="text-sm text-white/35 hover:text-white/80 transition-colors duration-200">Contattaci</a>
               </div>
 
