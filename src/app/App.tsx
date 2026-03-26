@@ -251,6 +251,7 @@ function App() {
   const [sheetOpen, setSheetOpen] = useState(
     () => registerResumeSnapshot?.sheetOpen ?? false,
   );
+  const [sheetDragActive, setSheetDragActive] = useState(false);
   const [activeSheetSection, setActiveSheetSection] = useState<BottomSheetSection>("map");
   const [bottomNavHeight, setBottomNavHeight] = useState(BOTTOM_NAV_FALLBACK_HEIGHT_PX);
   const [reportOpen, setReportOpen] = useState(
@@ -329,11 +330,14 @@ function App() {
 
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.documentElement.setAttribute("data-sheet-open", sheetOpen ? "1" : "0");
+    document.documentElement.setAttribute(
+      "data-sheet-open",
+      sheetOpen || sheetDragActive ? "1" : "0",
+    );
     return () => {
       document.documentElement.removeAttribute("data-sheet-open");
     };
-  }, [sheetOpen]);
+  }, [sheetDragActive, sheetOpen]);
 
   const isDebug = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -1416,6 +1420,10 @@ function App() {
     setSheetOpen((prev) => !prev);
   }, []);
 
+  const handleSheetDragStateChange = useCallback((active: boolean) => {
+    setSheetDragActive(active);
+  }, []);
+
   const handleChangeBottomSection = useCallback((section: BottomSheetSection) => {
     setActiveSheetSection(section);
   }, []);
@@ -1886,7 +1894,7 @@ function App() {
       />
       <div
         className={`fixed flex flex-col items-end gap-3 pointer-events-none ${
-          sheetOpen ? "z-[22]" : "z-[35]"
+          sheetOpen || sheetDragActive ? "z-[22]" : "z-[35]"
         }`}
         style={{
           right: 'max(10px, calc((100vw - min(100vw, 640px)) / 2 + 10px))',
@@ -2195,6 +2203,7 @@ function App() {
         activeSection={activeSheetSection}
         onSectionChange={handleChangeBottomSection}
         onBottomNavHeightChange={setBottomNavHeight}
+        onDragStateChange={handleSheetDragStateChange}
         accountName={accountDisplayName}
         accountEmail={account?.email ?? null}
         onOpenProfile={handleOpenProfile}

@@ -39,6 +39,7 @@ type BottomSheetProps = {
   activeSection: BottomSheetSection;
   onSectionChange: (section: BottomSheetSection) => void;
   onBottomNavHeightChange?: (height: number) => void;
+  onDragStateChange?: (active: boolean) => void;
   accountName: string | null;
   accountEmail: string | null;
   onOpenProfile: () => void;
@@ -50,6 +51,11 @@ const DRAG_THRESHOLD = 6;
 const VELOCITY_THRESHOLD = 0.45;
 const CLOSED_LIFT_PX = 34;
 const CLOSED_VISIBLE_HEIGHT = PEEK_HEIGHT + CLOSED_LIFT_PX;
+const CONTENT_MAX_VIEWPORT_RATIO = 0.62;
+const MIN_CONTENT_DRAG_RANGE_PX = 240;
+const DRAG_RANGE_OPEN_TO_CLOSE_PX = 220;
+const DRAG_RANGE_CLOSE_TO_OPEN_PX = 290;
+const OPEN_SNAP_THRESHOLD = 0.58;
 export type BottomSheetSection = "map" | "profile" | "chatbot";
 
 const stateBadge = (state: string) => {
@@ -225,6 +231,7 @@ const BottomSheetComponent = ({
   activeSection,
   onSectionChange,
   onBottomNavHeightChange,
+  onDragStateChange,
   accountName,
   accountEmail,
   onOpenProfile,
@@ -232,14 +239,21 @@ const BottomSheetComponent = ({
 }: BottomSheetProps) => {
   const perfEnabled = isPerfEnabled();
   useRenderCounter("BottomSheet", perfEnabled);
-  const sheetRef = useRef<HTMLDivElement | null>(null);
-  const [maxTranslate, setMaxTranslate] = useState(0);
-  const [dragOffset, setDragOffset] = useState<number | null>(null);
+  const [dragProgress, setDragProgress] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [contentMaxHeightPx, setContentMaxHeightPx] = useState(() => {
+    if (typeof window === "undefined") {
+      return 420;
+    }
+    return Math.max(
+      Math.round(window.innerHeight * CONTENT_MAX_VIEWPORT_RATIO),
+      MIN_CONTENT_DRAG_RANGE_PX,
+    );
+  });
   const [favoritesOpen, setFavoritesOpen] = useState(false);
   const suppressClickRef = useRef(false);
   const startYRef = useRef(0);
-  const startOffsetRef = useRef(0);
+  const startProgressRef = useRef(0);
   const lastMoveRef = useRef({ y: 0, t: 0 });
 
   const otherBeaches = useMemo(
@@ -249,60 +263,56 @@ const BottomSheetComponent = ({
   const hasFavorites = favoriteBeaches.length > 0;
   const isFavoritesOpen = favoritesOpen && hasFavorites;
   const favoritesSectionId = "br-favorites-panel";
-
-  const translateY = useMemo(() => {
-    if (dragOffset !== null) return dragOffset;
-    return 0;
-  }, [dragOffset]);
+  const effectiveProgress = dragProgress ?? (isOpen ? 1 : 0);
+  const contentVisibleHeightPx = Math.round(contentMaxHeightPx * effectiveProgress);
 
   useEffect(() => {
     const update = () => {
-      if (!sheetRef.current) return;
-      const height = sheetRef.current.getBoundingClientRect().height;
-      setMaxTranslate(Math.max(height - PEEK_HEIGHT, 0));
+      setContentMaxHeightPx(
+        Math.max(
+          Math.round(window.innerHeight * CONTENT_MAX_VIEWPORT_RATIO),
+          MIN_CONTENT_DRAG_RANGE_PX,
+        ),
+      );
     };
     update();
     window.addEventListener("resize", update);
     window.addEventListener("orientationchange", update);
-    let observer: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== "undefined" && sheetRef.current) {
-      observer = new ResizeObserver(update);
-      observer.observe(sheetRef.current);
-    }
     return () => {
       window.removeEventListener("resize", update);
       window.removeEventListener("orientationchange", update);
-      observer?.disconnect();
     };
   }, []);
 
   const handlePointerDown = (
     event: ReactPointerEvent<HTMLButtonElement>,
   ) => {
-    if (!isOpen) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     startYRef.current = event.clientY;
-    startOffsetRef.current = 0;
+    startProgressRef.current = effectiveProgress;
     lastMoveRef.current = { y: event.clientY, t: performance.now() };
-    setDragOffset(startOffsetRef.current);
+    setDragProgress(startProgressRef.current);
     setIsDragging(true);
+    onDragStateChange?.(true);
   };
 
   const handlePointerMove = (
     event: ReactPointerEvent<HTMLButtonElement>,
   ) => {
     if (!isDragging) return;
-    const closedOffset = Math.max(maxTranslate - CLOSED_LIFT_PX, 0);
     const delta = event.clientY - startYRef.current;
     if (Math.abs(delta) > DRAG_THRESHOLD) {
       suppressClickRef.current = true;
     }
-    const next = Math.min(
-      Math.max(startOffsetRef.current + delta, 0),
-      closedOffset,
+    const dragRangePx = startProgressRef.current >= 0.5
+      ? Math.max(Math.min(contentMaxHeightPx, DRAG_RANGE_OPEN_TO_CLOSE_PX), 180)
+      : Math.max(Math.min(contentMaxHeightPx, DRAG_RANGE_CLOSE_TO_OPEN_PX), 220);
+    const nextProgress = Math.min(
+      Math.max(startProgressRef.current - delta / dragRangePx, 0),
+      1,
     );
-    setDragOffset(next);
+    setDragProgress(nextProgress);
     lastMoveRef.current = { y: event.clientY, t: performance.now() };
   };
 
@@ -310,29 +320,39 @@ const BottomSheetComponent = ({
     event: ReactPointerEvent<HTMLButtonElement>,
   ) => {
     if (!isDragging) return;
-    event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
     setIsDragging(false);
 
     const now = performance.now();
-    const closedOffset = Math.max(maxTranslate - CLOSED_LIFT_PX, 0);
     const { y: lastY, t: lastT } = lastMoveRef.current;
     const dt = Math.max(now - lastT, 1);
     const velocity = (event.clientY - lastY) / dt;
-    const finalOffset = dragOffset ?? (isOpen ? 0 : closedOffset);
+    const finalProgress = dragProgress ?? (isOpen ? 1 : 0);
 
-    let shouldOpen = finalOffset < closedOffset / 2;
+    let shouldOpen = finalProgress >= OPEN_SNAP_THRESHOLD;
     if (velocity < -VELOCITY_THRESHOLD) shouldOpen = true;
     if (velocity > VELOCITY_THRESHOLD) shouldOpen = false;
 
-    setDragOffset(null);
+    setDragProgress(null);
     if (shouldOpen !== isOpen) {
       onToggle();
     }
+    window.setTimeout(() => {
+      onDragStateChange?.(false);
+    }, 120);
 
     window.setTimeout(() => {
       suppressClickRef.current = false;
     }, 150);
   };
+
+  useEffect(() => {
+    return () => {
+      onDragStateChange?.(false);
+    };
+  }, [onDragStateChange]);
 
   const handleToggleFavorites = useCallback(() => {
     if (!hasFavorites) return;
@@ -539,16 +559,9 @@ const BottomSheetComponent = ({
   return (
     <div
       data-testid="bottom-sheet"
-      className={`fixed bottom-0 left-0 right-0 z-[24] ${
-        isDragging ? "" : "transition-transform duration-300"
-      }`}
-      style={{
-        transform: `translate3d(0, ${translateY}px, 0)`,
-        willChange: "transform",
-      }}
+      className="fixed bottom-0 left-0 right-0 z-[24]"
     >
       <div
-        ref={sheetRef}
         className="relative mx-auto max-w-screen-sm overflow-hidden rounded-t-[28px] border border-b-0 border-white/22 bg-[linear-gradient(180deg,rgba(20,34,54,0.68),rgba(12,23,41,0.62))] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-[20px]"
       >
         <div
@@ -570,7 +583,7 @@ const BottomSheetComponent = ({
           onPointerCancel={handlePointerUp}
           aria-expanded={isOpen}
           aria-label={STRINGS.aria.expandBeaches}
-          style={{ touchAction: isOpen ? "none" : "auto", minHeight: collapsedHeaderMinHeight }}
+          style={{ touchAction: "none", minHeight: collapsedHeaderMinHeight }}
         >
           <div className={`min-w-0 ${isChatbotSection ? "flex items-center gap-2.5" : ""}`}>
             {isChatbotSection ? (
@@ -598,11 +611,14 @@ const BottomSheetComponent = ({
           <div className="h-1 w-10 rounded-full bg-white/20" />
         </button>
         <div
-          className={`overflow-hidden transition-[max-height,opacity] duration-250 ${
-            isOpen || isDragging
-              ? "max-h-[62vh] opacity-100"
-              : "max-h-0 opacity-0 pointer-events-none"
+          className={`overflow-hidden ${isDragging ? "" : "transition-[max-height,opacity] duration-250"} ${
+            effectiveProgress > 0 ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
+          style={{
+            maxHeight: `${contentVisibleHeightPx}px`,
+            opacity: effectiveProgress,
+            pointerEvents: isDragging ? "none" : effectiveProgress > 0 ? "auto" : "none",
+          }}
         >
           <div className="max-h-[62vh] overflow-y-auto px-6 pb-4">
           {activeSection === "map" ? (
@@ -905,6 +921,7 @@ const bottomSheetEqual = (prev: BottomSheetProps, next: BottomSheetProps) =>
   prev.activeSection === next.activeSection &&
   prev.onSectionChange === next.onSectionChange &&
   prev.onBottomNavHeightChange === next.onBottomNavHeightChange &&
+  prev.onDragStateChange === next.onDragStateChange &&
   prev.accountName === next.accountName &&
   prev.accountEmail === next.accountEmail &&
   prev.onOpenProfile === next.onOpenProfile &&
