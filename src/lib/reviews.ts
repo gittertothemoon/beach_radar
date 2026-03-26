@@ -4,6 +4,14 @@ import type { Review } from "./types";
 
 const sanitizeReviewText = (value: string, maxLength: number): string =>
     value.replace(/[<>]/g, "").trim().slice(0, maxLength);
+const NICKNAME_PATTERN = /^[A-Za-z0-9._-]{3,24}$/;
+const PUBLIC_FALLBACK_AUTHOR_NAME = "Utente";
+
+const normalizePublicAuthorName = (value: unknown): string => {
+    if (typeof value !== "string") return PUBLIC_FALLBACK_AUTHOR_NAME;
+    const normalized = sanitizeReviewText(value, 80);
+    return NICKNAME_PATTERN.test(normalized) ? normalized : PUBLIC_FALLBACK_AUTHOR_NAME;
+};
 
 export type FetchReviewsResult =
     | { ok: true; reviews: Review[] }
@@ -32,7 +40,7 @@ export async function fetchBeachReviews(beachId: string): Promise<FetchReviewsRe
         const reviews: Review[] = data.map((row) => ({
             id: row.id,
             beachId: row.beach_id,
-            authorName: row.author_name,
+            authorName: normalizePublicAuthorName(row.author_name),
             content: row.content,
             rating: row.rating,
             createdAt: Date.parse(row.created_at),
@@ -60,7 +68,7 @@ export async function submitBeachReview(
     payload: SubmitReviewPayload,
 ): Promise<SubmitReviewResult> {
     if (getDevMockAccount()) {
-        const authorName = sanitizeReviewText(payload.authorName, 80);
+        const authorName = normalizePublicAuthorName(payload.authorName);
         const content = sanitizeReviewText(payload.content, 1000);
         const rating = Number.isFinite(payload.rating)
             ? Math.max(1, Math.min(5, Math.round(payload.rating)))
@@ -85,7 +93,7 @@ export async function submitBeachReview(
     if (!supabase) return { ok: false, error: "not_configured" };
 
     try {
-        const authorName = sanitizeReviewText(payload.authorName, 80);
+        const authorName = normalizePublicAuthorName(payload.authorName);
         const content = sanitizeReviewText(payload.content, 1000);
         const rating = Number.isFinite(payload.rating)
             ? Math.max(1, Math.min(5, Math.round(payload.rating)))
@@ -125,7 +133,7 @@ export async function submitBeachReview(
             review: {
                 id: data.id,
                 beachId: data.beach_id,
-                authorName: data.author_name,
+                authorName: normalizePublicAuthorName(data.author_name),
                 content: data.content,
                 rating: data.rating,
                 createdAt: Date.parse(data.created_at),

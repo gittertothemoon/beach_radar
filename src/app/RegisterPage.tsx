@@ -479,6 +479,25 @@ const RegisterPage = () => {
                 ) : null}
 
                 {isRegisterMode ? (
+                  <label className="block">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
+                      {STRINGS.account.lastNameLabel}
+                    </span>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(event) => {
+                        setLastName(event.target.value);
+                        setError(null);
+                        setNotice(null);
+                      }}
+                      placeholder={STRINGS.account.lastNamePlaceholder}
+                      className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                    />
+                  </label>
+                ) : null}
+
+                {isRegisterMode ? (
                   <label className="col-span-full block">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
                       {STRINGS.account.nicknameLabel}
@@ -494,25 +513,6 @@ const RegisterPage = () => {
                       placeholder={STRINGS.account.nicknamePlaceholder}
                       autoCapitalize="none"
                       spellCheck={false}
-                      className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
-                    />
-                  </label>
-                ) : null}
-
-                {isRegisterMode ? (
-                  <label className="block">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
-                      {STRINGS.account.lastNameLabel}
-                    </span>
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={(event) => {
-                        setLastName(event.target.value);
-                        setError(null);
-                        setNotice(null);
-                      }}
-                      placeholder={STRINGS.account.lastNamePlaceholder}
                       className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
                     />
                   </label>

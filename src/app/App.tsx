@@ -101,6 +101,7 @@ const LOCATION_REFRESH_MS = 15_000;
 const NEARBY_RADIUS_M = 15_000;
 const BOTTOM_NAV_FALLBACK_HEIGHT_PX = 76;
 const BEACH_PROFILE_CACHE_TTL_MS = 15 * 60 * 1000;
+const PUBLIC_FALLBACK_AUTHOR_NAME = "Utente";
 
 type GeoStatus = "idle" | "loading" | "ready" | "denied" | "error";
 type WeatherStatus = "loading" | "ready" | "error";
@@ -1574,9 +1575,7 @@ function App() {
   const accountDisplayName = useMemo(() => {
     if (!account) return null;
     const normalizedNickname = account.nickname.trim();
-    if (normalizedNickname.length > 0) return normalizedNickname;
-    const fullName = `${account.firstName} ${account.lastName}`.trim();
-    return fullName.length > 0 ? fullName : null;
+    return normalizedNickname.length > 0 ? normalizedNickname : PUBLIC_FALLBACK_AUTHOR_NAME;
   }, [account]);
 
   const navigateToRegister = useCallback((options?: {
@@ -1816,9 +1815,9 @@ function App() {
   const handleSubmitReview = useCallback(
     async (content: string, rating: number) => {
       if (!selectedBeach || !account) return;
-      const authorName = account.nickname.trim().length > 0
-        ? account.nickname.trim()
-        : `${account.firstName} ${account.lastName?.charAt(0) ?? ""}`.trim();
+      const normalizedNickname = account.nickname.trim();
+      const authorName =
+        normalizedNickname.length > 0 ? normalizedNickname : PUBLIC_FALLBACK_AUTHOR_NAME;
       const result = await submitBeachReview({
         beachId: selectedBeach.id,
         authorName,
