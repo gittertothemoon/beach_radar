@@ -28,17 +28,7 @@ export default defineConfig({
   },
   build: {
     sourcemap: false,
-    minify: "terser",
-    terserOptions: {
-      compress: {
-        passes: 2,
-        drop_debugger: true,
-      },
-      mangle: true,
-      format: {
-        comments: false,
-      },
-    } as any,
+    minify: "esbuild",
     rollupOptions: {
       output: {
         manualChunks(id) {
