@@ -38,7 +38,7 @@ export default defineConfig({
       format: {
         comments: false,
       },
-    },
+    } as any,
     rollupOptions: {
       output: {
         manualChunks(id) {
