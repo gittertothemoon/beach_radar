@@ -19,7 +19,7 @@ function isAllowedHit(line) {
 }
 
 function main() {
-  const args = [
+  const baseArgs = [
     "-n",
     "-e",
     PATTERN,
@@ -32,14 +32,44 @@ function main() {
 
   let output = "";
   try {
-    output = execFileSync("rg", args, { encoding: "utf8" });
+    output = execFileSync("rg", baseArgs, { encoding: "utf8" });
   } catch (error) {
-    const status = error && typeof error.status === "number" ? error.status : null;
-    if (status === 1) {
-      console.log("✓ No dangerous HTML sinks found.");
-      return;
+    if (error && error.code === "ENOENT") {
+      try {
+        output = execFileSync(
+          "grep",
+          [
+            "-RInE",
+            PATTERN,
+            ...TARGETS,
+            "--exclude-dir=node_modules",
+            "--exclude-dir=dist",
+          ],
+          { encoding: "utf8" },
+        );
+      } catch (fallbackError) {
+        const fallbackStatus =
+          fallbackError && typeof fallbackError.status === "number"
+            ? fallbackError.status
+            : null;
+        if (fallbackStatus === 1) {
+          console.log("✓ No dangerous HTML sinks found.");
+          return;
+        }
+        throw fallbackError;
+      }
+      // Found matches with grep fallback.
+      // Continue to allowlist filtering below.
+      output = output || "";
+    } else {
+      const status = error && typeof error.status === "number" ? error.status : null;
+      if (status === 1) {
+        console.log("✓ No dangerous HTML sinks found.");
+        return;
+      }
+      throw error;
     }
-    throw error;
+
   }
 
   const lines = output
