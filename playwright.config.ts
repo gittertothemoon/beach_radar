@@ -1,26 +1,29 @@
 import { defineConfig } from "@playwright/test";
 
+const ENABLE_API_SERVER = process.env.PW_ENABLE_API_SERVER !== "0";
+
+const API_WEB_SERVER = {
+  command:
+    "npm --prefix w2b-hero run sync:app-shell && SIGNUP_TEST_MODE=1 REPORTS_TEST_MODE=1 BEACH_ENRICH_TEST_MODE=1 CRON_SECRET=test-cron-secret APP_ACCESS_KEY=test-app-access-key npx vercel dev --listen 3000 --yes",
+  url: "http://localhost:3000",
+  reuseExistingServer: true,
+  timeout: 120_000,
+} as const;
+
+const UI_WEB_SERVER = {
+  command: "npm run dev -- --host 127.0.0.1 --port 5173",
+  url: "http://127.0.0.1:5173",
+  reuseExistingServer: true,
+  timeout: 120_000,
+} as const;
+
 export default defineConfig({
   fullyParallel: false,
   timeout: 30_000,
   expect: {
     timeout: 10_000
   },
-  webServer: [
-    {
-      command:
-        "npm --prefix w2b-hero run sync:app-shell && SIGNUP_TEST_MODE=1 REPORTS_TEST_MODE=1 BEACH_ENRICH_TEST_MODE=1 CRON_SECRET=test-cron-secret APP_ACCESS_KEY=test-app-access-key npx vercel dev --listen 3000 --yes",
-      url: "http://localhost:3000",
-      reuseExistingServer: true,
-      timeout: 120_000
-    },
-    {
-      command: "npm run dev -- --host 127.0.0.1 --port 5173",
-      url: "http://127.0.0.1:5173",
-      reuseExistingServer: true,
-      timeout: 120_000
-    }
-  ],
+  webServer: ENABLE_API_SERVER ? [API_WEB_SERVER, UI_WEB_SERVER] : [UI_WEB_SERVER],
   use: {
     trace: "off",
     screenshot: "off",

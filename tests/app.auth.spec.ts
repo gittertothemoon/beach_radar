@@ -29,7 +29,9 @@ test.describe("auth form", () => {
     await page.getByTestId("auth-email-input").fill("mario.rossi@mailinator.com");
     await page.getByTestId("auth-password-input").fill("Ab1!");
     await page.getByPlaceholder("Ripeti la password").fill("Ab1!diversa");
-    await page.getByRole("checkbox", { name: /accetto termini, privacy/i }).check();
+    await page
+      .getByRole("checkbox", { name: /accetto.*(documenti legali|termini|privacy)/i })
+      .check();
     await page.getByTestId("auth-submit").click();
 
     await expect(page.getByText("Le password non coincidono.")).toBeVisible();

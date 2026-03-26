@@ -60,4 +60,6 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Auth regression tests
+        env:
+          PW_ENABLE_API_SERVER: "0"
         run: npm run test:app:auth

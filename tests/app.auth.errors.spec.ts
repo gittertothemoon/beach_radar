@@ -95,7 +95,9 @@ const fillRegisterForm = async (page: Page) => {
   await page.getByTestId("auth-email-input").fill("mario.rossi@mailinator.com");
   await page.getByTestId("auth-password-input").fill("Password!123");
   await page.getByPlaceholder("Ripeti la password").fill("Password!123");
-  await page.getByRole("checkbox", { name: /accetto termini, privacy/i }).check();
+  await page
+    .getByRole("checkbox", { name: /accetto.*(documenti legali|termini|privacy)/i })
+    .check();
 };
 
 const mockMaskedExistingSignup = async (page: Page, email: string) => {

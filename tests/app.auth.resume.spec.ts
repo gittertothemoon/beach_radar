@@ -59,7 +59,9 @@ test("register can establish a session and keep it after reload", async ({ page 
   await page.getByTestId("auth-email-input").fill(uniqueEmail);
   await page.getByTestId("auth-password-input").fill(password);
   await page.getByPlaceholder("Ripeti la password").fill(password);
-  await page.getByRole("checkbox", { name: /accetto termini, privacy/i }).check();
+  await page
+    .getByRole("checkbox", { name: /accetto.*(documenti legali|termini|privacy)/i })
+    .check();
   await page.getByTestId("auth-submit").click();
 
   const appVisible = await page

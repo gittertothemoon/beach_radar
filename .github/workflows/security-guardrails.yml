@@ -58,7 +58,7 @@ jobs:
         run: npm run security:smoke
 
   supabase-advisors:
-    if: github.event_name != 'pull_request' && (secrets.SUPABASE_DB_URL_CI != '' || secrets.SUPABASE_DB_URL != '' || (secrets.SUPABASE_ACCESS_TOKEN != '' && secrets.SUPABASE_PROJECT_REF != '' && secrets.SUPABASE_DB_PASSWORD != ''))
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -76,4 +76,15 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_ADVISORS_ALLOWLIST: auth_leaked_password_protection
-        run: npm run security:advisors
+        run: |
+          if [ -n "$SUPABASE_DB_URL" ]; then
+            npm run security:advisors
+            exit 0
+          fi
+
+          if [ -n "$SUPABASE_ACCESS_TOKEN" ] && [ -n "$SUPABASE_PROJECT_REF" ] && [ -n "$SUPABASE_DB_PASSWORD" ]; then
+            npm run security:advisors
+            exit 0
+          fi
+
+          echo "Skipping Supabase advisors guardrail: missing credentials."
