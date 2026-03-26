@@ -62,4 +62,7 @@ jobs:
       - name: Auth regression tests
         env:
           PW_ENABLE_API_SERVER: "0"
+          VITE_SUPABASE_URL: https://example.supabase.co
+          VITE_SUPABASE_ANON_KEY: test-anon-key
+          VITE_PUBLIC_BASE_URL: http://127.0.0.1:5173
         run: npm run test:app:auth

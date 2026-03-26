@@ -11,7 +11,8 @@ const API_WEB_SERVER = {
 } as const;
 
 const UI_WEB_SERVER = {
-  command: "npm run dev -- --host 127.0.0.1 --port 5173",
+  command:
+    "VITE_SUPABASE_URL=${VITE_SUPABASE_URL:-https://example.supabase.co} VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY:-test-anon-key} VITE_PUBLIC_BASE_URL=${VITE_PUBLIC_BASE_URL:-http://127.0.0.1:5173} npm run dev -- --host 127.0.0.1 --port 5173",
   url: "http://127.0.0.1:5173",
   reuseExistingServer: true,
   timeout: 120_000,
