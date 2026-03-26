@@ -20,6 +20,7 @@ import {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]{2,}$/;
+const NICKNAME_PATTERN = /^[A-Za-z0-9._-]{3,24}$/;
 const HAS_UPPERCASE = /[A-Z]/;
 const HAS_LOWERCASE = /[a-z]/;
 const HAS_NUMBER = /\d/;
@@ -33,6 +34,7 @@ const FORGOT_PASSWORD_FAST_NOTICE_MS = 700;
 const RegisterPage = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -164,6 +166,7 @@ const RegisterPage = () => {
   const validateForm = () => {
     const normalizedFirstName = firstName.trim();
     const normalizedLastName = lastName.trim();
+    const normalizedNickname = nickname.trim();
     const normalizedEmail = email.trim().toLowerCase();
 
     if (isForgotMode) {
@@ -193,6 +196,7 @@ const RegisterPage = () => {
     if (
       normalizedFirstName.length === 0 ||
       normalizedLastName.length === 0 ||
+      normalizedNickname.length === 0 ||
       confirmPassword.length === 0
     ) {
       return STRINGS.account.requiredField;
@@ -202,6 +206,9 @@ const RegisterPage = () => {
       !NAME_PATTERN.test(normalizedLastName)
     ) {
       return STRINGS.account.invalidName;
+    }
+    if (!NICKNAME_PATTERN.test(normalizedNickname)) {
+      return STRINGS.account.invalidNickname;
     }
     if (password !== confirmPassword) {
       return STRINGS.account.passwordMismatch;
@@ -344,6 +351,7 @@ const RegisterPage = () => {
         const registerResult = await registerAccount({
           firstName,
           lastName,
+          nickname,
           email: email.trim().toLowerCase(),
           password,
         });
@@ -451,6 +459,27 @@ const RegisterPage = () => {
                       placeholder={STRINGS.account.firstNamePlaceholder}
                       className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
                       autoFocus
+                    />
+                  </label>
+                ) : null}
+
+                {isRegisterMode ? (
+                  <label className="col-span-full block">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
+                      {STRINGS.account.nicknameLabel}
+                    </span>
+                    <input
+                      type="text"
+                      value={nickname}
+                      onChange={(event) => {
+                        setNickname(event.target.value);
+                        setError(null);
+                        setNotice(null);
+                      }}
+                      placeholder={STRINGS.account.nicknamePlaceholder}
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
                     />
                   </label>
                 ) : null}

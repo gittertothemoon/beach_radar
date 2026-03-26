@@ -92,6 +92,30 @@ function applySecurityHeaders(res: VercelResponse): void {
   res.setHeader("X-Content-Type-Options", "nosniff");
 }
 
+function isPrivateOrLocalHost(host: string): boolean {
+  if (!host) return false;
+  if (host === "localhost" || host === "127.0.0.1" || host === "::1") return true;
+  if (/^10\./.test(host)) return true;
+  if (/^192\.168\./.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
+  return false;
+}
+
+function shouldUseSecureCookie(req: VercelRequest): boolean {
+  const forwardedProtoHeader = req.headers["x-forwarded-proto"];
+  const forwardedProto = Array.isArray(forwardedProtoHeader)
+    ? forwardedProtoHeader[0]
+    : forwardedProtoHeader;
+  if (typeof forwardedProto === "string" && forwardedProto.trim()) {
+    return forwardedProto.trim().toLowerCase() === "https";
+  }
+
+  const hostHeader = req.headers.host;
+  const hostValue = Array.isArray(hostHeader) ? hostHeader[0] : hostHeader;
+  const hostname = typeof hostValue === "string" ? hostValue.split(":")[0].toLowerCase() : "";
+  return !isPrivateOrLocalHost(hostname);
+}
+
 export default function handler(req: VercelRequest, res: VercelResponse) {
   applySecurityHeaders(res);
 
@@ -112,10 +136,17 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const nextPath = sanitizeAppPath(getPathParam(req));
-  res.setHeader(
-    "Set-Cookie",
-    `${ACCESS_COOKIE}=${ACCESS_COOKIE_VALUE}; Max-Age=2592000; Path=/app; HttpOnly; SameSite=Lax; Secure`
-  );
+  const cookieParts = [
+    `${ACCESS_COOKIE}=${ACCESS_COOKIE_VALUE}`,
+    "Max-Age=2592000",
+    "Path=/app",
+    "HttpOnly",
+    "SameSite=Lax",
+  ];
+  if (shouldUseSecureCookie(req)) {
+    cookieParts.push("Secure");
+  }
+  res.setHeader("Set-Cookie", cookieParts.join("; "));
   res.writeHead(302, { Location: nextPath });
   return res.end();
 }

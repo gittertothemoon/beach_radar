@@ -55,6 +55,7 @@ test("register can establish a session and keep it after reload", async ({ page 
 
   await page.getByPlaceholder(/^Nome$/).fill("QA");
   await page.getByPlaceholder(/^Cognome$/).fill("Tester");
+  await page.getByPlaceholder("es. onda_93").fill(`qa.tester.${Date.now().toString().slice(-6)}`);
   await page.getByTestId("auth-email-input").fill(uniqueEmail);
   await page.getByTestId("auth-password-input").fill(password);
   await page.getByPlaceholder("Ripeti la password").fill(password);

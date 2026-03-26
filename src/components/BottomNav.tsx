@@ -4,7 +4,6 @@ type BottomSheetSection = "map" | "profile" | "chatbot";
 
 type BottomNavProps = {
   activeSection: BottomSheetSection;
-  favoriteCount: number;
   accountEmail: string | null;
   onChange: (section: BottomSheetSection) => void;
   onHeightChange?: (height: number) => void;
@@ -70,7 +69,6 @@ const ProfileIcon = ({ active }: { active: boolean }) => (
 
 const BottomNavComponent = ({
   activeSection,
-  favoriteCount,
   accountEmail,
   onChange,
   onHeightChange,
@@ -122,11 +120,6 @@ const BottomNavComponent = ({
           >
             <ChatbotIcon active={activeSection === "chatbot"} />
             <span>ONDA</span>
-            {favoriteCount > 0 ? (
-              <span className="absolute right-1 top-0.5 inline-flex min-w-[16px] items-center justify-center rounded-full border border-sky-300/40 bg-sky-500/20 px-1 text-[9px] font-bold text-sky-100">
-                {Math.min(favoriteCount, 9)}
-              </span>
-            ) : null}
           </button>
           <button
             type="button"
@@ -135,10 +128,15 @@ const BottomNavComponent = ({
             className={navItemClass(activeSection === "profile")}
           >
             <ProfileIcon active={activeSection === "profile"} />
-            <span>Profilo</span>
-            {accountEmail ? (
-              <span className="absolute right-1.5 top-1 inline-flex h-1.5 w-1.5 rounded-full bg-emerald-300" />
-            ) : null}
+            <span className="inline-flex items-center gap-1.5">
+              <span>Profilo</span>
+              {accountEmail ? (
+                <span
+                  className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_0_1px_rgba(16,185,129,0.28),0_0_7px_rgba(16,185,129,0.32)]"
+                  aria-hidden="true"
+                />
+              ) : null}
+            </span>
           </button>
         </div>
       </nav>
@@ -148,7 +146,6 @@ const BottomNavComponent = ({
 
 const bottomNavEqual = (prev: BottomNavProps, next: BottomNavProps) =>
   prev.activeSection === next.activeSection &&
-  prev.favoriteCount === next.favoriteCount &&
   prev.accountEmail === next.accountEmail &&
   prev.onChange === next.onChange &&
   prev.onHeightChange === next.onHeightChange;

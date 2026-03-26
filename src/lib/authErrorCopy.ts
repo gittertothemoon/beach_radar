@@ -18,6 +18,8 @@ export const getRegisterErrorMessage = (code: RegisterErrorCode): string => {
       return STRINGS.account.createMissingConfig;
     case "email_exists":
       return STRINGS.account.emailAlreadyRegistered;
+    case "nickname_exists":
+      return STRINGS.account.nicknameAlreadyInUse;
     case "weak_password":
       return STRINGS.account.weakPassword;
     case "invalid_email":

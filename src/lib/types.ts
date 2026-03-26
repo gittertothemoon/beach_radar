@@ -26,6 +26,27 @@ export type Beach = {
   services?: string[];
 };
 
+export type BeachProfileSource = {
+  label: string;
+  url: string;
+  sourceType: "official" | "google" | "search" | "source";
+};
+
+export type BeachProfileStatus = "published" | "needs_review" | "stale";
+
+export type BeachProfile = {
+  beachId: string;
+  hours: string | null;
+  services: string[];
+  phone: string | null;
+  website: string | null;
+  priceBand: "low" | "mid" | "high" | "premium" | "unknown";
+  confidence: number;
+  verifiedAt: string | null;
+  status: BeachProfileStatus;
+  sources: BeachProfileSource[];
+};
+
 export type Report = {
   id: string;
   beachId: string;

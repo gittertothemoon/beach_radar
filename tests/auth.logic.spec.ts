@@ -25,6 +25,12 @@ test.describe("auth error mapping", () => {
 
     expect(
       mapRegisterErrorFromSupabase({
+        message: "Nickname already in use.",
+      }),
+    ).toBe("nickname_exists");
+
+    expect(
+      mapRegisterErrorFromSupabase({
         message: "Error sending confirmation email",
       }),
     ).toBe("email_send_failed");
@@ -164,6 +170,7 @@ test.describe("auth error copy", () => {
   test("returns clear register copy for every error code", async () => {
     expect(getRegisterErrorMessage("missing_config")).toBe(STRINGS.account.createMissingConfig);
     expect(getRegisterErrorMessage("email_exists")).toBe(STRINGS.account.emailAlreadyRegistered);
+    expect(getRegisterErrorMessage("nickname_exists")).toBe(STRINGS.account.nicknameAlreadyInUse);
     expect(getRegisterErrorMessage("weak_password")).toBe(STRINGS.account.weakPassword);
     expect(getRegisterErrorMessage("invalid_email")).toBe(STRINGS.account.invalidEmail);
     expect(getRegisterErrorMessage("email_send_failed")).toBe(STRINGS.account.emailDeliveryFailed);

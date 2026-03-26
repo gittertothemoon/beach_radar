@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "./supabase";
+import { getDevMockAccount } from "./devMockAuth";
 import type { Review } from "./types";
 
 const sanitizeReviewText = (value: string, maxLength: number): string =>
@@ -58,6 +59,28 @@ export type SubmitReviewResult =
 export async function submitBeachReview(
     payload: SubmitReviewPayload,
 ): Promise<SubmitReviewResult> {
+    if (getDevMockAccount()) {
+        const authorName = sanitizeReviewText(payload.authorName, 80);
+        const content = sanitizeReviewText(payload.content, 1000);
+        const rating = Number.isFinite(payload.rating)
+            ? Math.max(1, Math.min(5, Math.round(payload.rating)))
+            : 0;
+        if (!authorName || !content || rating < 1 || rating > 5) {
+            return { ok: false, error: "submit_failed" };
+        }
+        return {
+            ok: true,
+            review: {
+                id: `mock-review-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                beachId: payload.beachId,
+                authorName,
+                content,
+                rating,
+                createdAt: Date.now(),
+            },
+        };
+    }
+
     const supabase = getSupabaseClient();
     if (!supabase) return { ok: false, error: "not_configured" };
 

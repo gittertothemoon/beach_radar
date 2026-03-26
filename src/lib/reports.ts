@@ -1,4 +1,5 @@
 import type { AttributionSnapshot, CrowdLevel, Report } from "./types";
+import { getDevMockAccount } from "./devMockAuth";
 import { getSupabaseClient } from "./supabase";
 
 type ApiErrorPayload = {
@@ -130,6 +131,26 @@ const toApiErrorPayload = (value: unknown): ApiErrorPayload | null => {
   };
 };
 
+const buildMockReport = (input: {
+  beachId: string;
+  crowdLevel: CrowdLevel;
+  waterCondition?: import("./types").WaterLevel;
+  beachCondition?: import("./types").BeachLevel;
+  hasJellyfish?: boolean;
+  hasAlgae?: boolean;
+  attribution?: AttributionSnapshot;
+}): Report => ({
+  id: `mock-report-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+  beachId: input.beachId,
+  crowdLevel: input.crowdLevel,
+  waterCondition: input.waterCondition,
+  beachCondition: input.beachCondition,
+  hasJellyfish: input.hasJellyfish,
+  hasAlgae: input.hasAlgae,
+  createdAt: Date.now(),
+  attribution: input.attribution,
+});
+
 export const fetchSharedReports = async (
   signal?: AbortSignal,
 ): Promise<FetchReportsResult> => {
@@ -167,6 +188,10 @@ export const submitSharedReport = async (input: {
   reporterHash: string;
   attribution?: AttributionSnapshot;
 }): Promise<SubmitReportResult> => {
+  if (getDevMockAccount()) {
+    return { ok: true, report: buildMockReport(input) };
+  }
+
   let response: Response;
   const authToken = await loadAuthToken();
   const headers: Record<string, string> = {

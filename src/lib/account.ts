@@ -1,5 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { PUBLIC_BASE_URL } from "../config/publicUrl";
+import { clearDevMockAuth, getDevMockAccount } from "./devMockAuth";
 import {
   isMaskedExistingUserSignUp,
   mapLoginErrorFromSupabase,
@@ -15,12 +16,14 @@ import { getSupabaseClient } from "./supabase";
 
 const FAVORITES_TABLE = "user_favorites";
 const AUTH_REGISTER_PATH = "/register/?mode=login";
+const MOCK_FAVORITES_KEY = "where2beach-dev-mock-favorites-v1";
 
 export type AppAccount = {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
+  nickname: string;
 };
 
 export type RegisterResult =
@@ -74,6 +77,32 @@ type AppSessionErrorCode =
 export type AppSessionResult =
   | { ok: true }
   | { ok: false; code: AppSessionErrorCode };
+
+const readMockFavoriteBeachIds = (accountId: string): string[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(`${MOCK_FAVORITES_KEY}:${accountId}`);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((value) => (typeof value === "string" ? value.trim() : ""))
+      .filter((value) => value.length > 0);
+  } catch {
+    return [];
+  }
+};
+
+const writeMockFavoriteBeachIds = (accountId: string, ids: string[]): void => {
+  if (typeof window === "undefined") return;
+  const unique = Array.from(new Set(ids));
+  window.localStorage.setItem(`${MOCK_FAVORITES_KEY}:${accountId}`, JSON.stringify(unique));
+};
+
+const clearMockFavoriteBeachIds = (accountId: string): void => {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(`${MOCK_FAVORITES_KEY}:${accountId}`);
+};
 
 const buildDeleteAccountEndpoints = (): string[] => {
   const endpoints = ["/api/account/delete"];
@@ -133,6 +162,24 @@ const readUserMetadataString = (
   return "";
 };
 
+const readNicknameAvailability = (value: unknown): boolean | null => {
+  if (typeof value === "boolean") return value;
+  if (Array.isArray(value)) {
+    const first = value[0];
+    if (typeof first === "boolean") return first;
+    if (first && typeof first === "object" && "available" in first) {
+      const maybeAvailable = (first as { available?: unknown }).available;
+      return typeof maybeAvailable === "boolean" ? maybeAvailable : null;
+    }
+    return null;
+  }
+  if (value && typeof value === "object" && "available" in value) {
+    const maybeAvailable = (value as { available?: unknown }).available;
+    return typeof maybeAvailable === "boolean" ? maybeAvailable : null;
+  }
+  return null;
+};
+
 const toAccount = (user: User | null): AppAccount | null => {
   if (!user?.id || !user.email) return null;
   return {
@@ -140,6 +187,7 @@ const toAccount = (user: User | null): AppAccount | null => {
     email: user.email,
     firstName: readUserMetadataString(user, "first_name", "firstName"),
     lastName: readUserMetadataString(user, "last_name", "lastName"),
+    nickname: readUserMetadataString(user, "nickname", "user_name", "username"),
   };
 };
 
@@ -162,6 +210,8 @@ const mapFavoriteError = (
 };
 
 export const getCurrentAccount = async (): Promise<AppAccount | null> => {
+  const mockAccount = getDevMockAccount();
+  if (mockAccount) return mockAccount;
   const supabase = getSupabaseClient();
   if (!supabase) return null;
   const { data, error } = await supabase.auth.getUser();
@@ -172,6 +222,11 @@ export const getCurrentAccount = async (): Promise<AppAccount | null> => {
 export const subscribeAccountChanges = (
   onChange: (account: AppAccount | null) => void,
 ): (() => void) => {
+  const mockAccount = getDevMockAccount();
+  if (mockAccount) {
+    onChange(mockAccount);
+    return () => {};
+  }
   const supabase = getSupabaseClient();
   if (!supabase) {
     onChange(null);
@@ -186,12 +241,27 @@ export const subscribeAccountChanges = (
 export const registerAccount = async (input: {
   firstName: string;
   lastName: string;
+  nickname: string;
   email: string;
   password: string;
 }): Promise<RegisterResult> => {
   const supabase = getSupabaseClient();
   if (!supabase) {
     return { ok: false, code: "missing_config" };
+  }
+
+  const normalizedNickname = input.nickname.trim();
+  if (normalizedNickname.length > 0) {
+    const { data: nicknameAvailability, error: nicknameAvailabilityError } =
+      await supabase.rpc("is_nickname_available", {
+        nickname_input: normalizedNickname,
+      });
+    if (!nicknameAvailabilityError) {
+      const available = readNicknameAvailability(nicknameAvailability);
+      if (available === false) {
+        return { ok: false, code: "nickname_exists" };
+      }
+    }
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -202,6 +272,7 @@ export const registerAccount = async (input: {
       data: {
         first_name: input.firstName.trim(),
         last_name: input.lastName.trim(),
+        nickname: normalizedNickname,
       },
     },
   });
@@ -331,6 +402,10 @@ export const loadFavoriteBeachIds = async (
   accountId: string | null,
 ): Promise<string[]> => {
   if (!accountId) return [];
+  const mockAccount = getDevMockAccount();
+  if (mockAccount && accountId === mockAccount.id) {
+    return readMockFavoriteBeachIds(accountId);
+  }
   const supabase = getSupabaseClient();
   if (!supabase) return [];
 
@@ -352,6 +427,16 @@ export const setFavoriteBeach = async (
   beachId: string,
   shouldFavorite: boolean,
 ): Promise<FavoriteSyncResult> => {
+  const mockAccount = getDevMockAccount();
+  if (mockAccount && accountId === mockAccount.id) {
+    const current = readMockFavoriteBeachIds(accountId);
+    const next = shouldFavorite
+      ? [...current, beachId]
+      : current.filter((id) => id !== beachId);
+    writeMockFavoriteBeachIds(accountId, next);
+    return { ok: true };
+  }
+
   const supabase = getSupabaseClient();
   if (!supabase) {
     return { ok: false, code: "missing_config" };
@@ -381,6 +466,10 @@ export const setFavoriteBeach = async (
 };
 
 export const signOutAccount = async (): Promise<SignOutResult> => {
+  if (getDevMockAccount()) {
+    clearDevMockAuth();
+    return { ok: true };
+  }
   const supabase = getSupabaseClient();
   if (!supabase) {
     return { ok: false, code: "missing_config" };
@@ -397,6 +486,12 @@ export const signOutAccount = async (): Promise<SignOutResult> => {
 };
 
 export const deleteCurrentAccount = async (): Promise<DeleteAccountResult> => {
+  const mockAccount = getDevMockAccount();
+  if (mockAccount) {
+    clearMockFavoriteBeachIds(mockAccount.id);
+    clearDevMockAuth();
+    return { ok: true };
+  }
   const supabase = getSupabaseClient();
   if (!supabase) {
     return { ok: false, code: "missing_config" };
@@ -441,6 +536,9 @@ export const deleteCurrentAccount = async (): Promise<DeleteAccountResult> => {
 };
 
 export const ensureAppSession = async (): Promise<AppSessionResult> => {
+  if (getDevMockAccount()) {
+    return { ok: true };
+  }
   const supabase = getSupabaseClient();
   if (!supabase) {
     return { ok: false, code: "missing_config" };

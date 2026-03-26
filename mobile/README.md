@@ -20,6 +20,8 @@ npm run start
 - `EXPO_PUBLIC_APP_ACCESS_KEY`: required app gate key for `/app/` access
 - `EXPO_PUBLIC_API_TIMEOUT_MS`: timeout for mobile API calls in ms (default `12000`)
 - `EXPO_PUBLIC_REPORT_ANYWHERE`: QA-only flag (`1`) to enable remote report submit without geofence
+- `EXPO_PUBLIC_DEV_MOCK_AUTH`: dev-only flag (`1`) to force a mock authenticated session in WebView
+- `EXPO_PUBLIC_DEV_MOCK_EMAIL`: optional mock account email shown in profile when dev mock auth is enabled
 
 ## Scripts
 

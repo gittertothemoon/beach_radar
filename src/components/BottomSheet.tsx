@@ -880,7 +880,6 @@ const BottomSheetComponent = ({
         <div className="bg-transparent">
           <BottomNav
             activeSection={activeSection}
-            favoriteCount={favoriteBeaches.length}
             accountEmail={accountEmail}
             onChange={onSectionChange}
             onHeightChange={onBottomNavHeightChange}

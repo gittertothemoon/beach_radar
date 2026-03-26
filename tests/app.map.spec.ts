@@ -4,6 +4,7 @@ import {
   E2E_BEACH_ID,
   grantAppAccess,
   mockAnalyticsApi,
+  mockBeachProfileApi,
   mockGeolocation,
   mockReportsFeed,
   mockWeatherApi,
@@ -15,6 +16,7 @@ test("app map loads and opens deterministic beach modal", async ({ page }) => {
   await mockGeolocation(page.context());
   await mockWeatherApi(page);
   await mockReportsFeed(page, []);
+  await mockBeachProfileApi(page, null);
 
   await page.goto(appUiUrl({ beachId: E2E_BEACH_ID, reportAnywhere: "1" }));
 

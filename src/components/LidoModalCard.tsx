@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef } from "react";
-import type { BeachWithStats, Review } from "../lib/types";
+import type { BeachProfile, BeachWithStats, Review } from "../lib/types";
 import { STRINGS } from "../i18n/it";
 import {
   crowdLevelLabel,
@@ -12,6 +12,8 @@ import { isPerfEnabled, useRenderCounter } from "../lib/perf";
 
 type LidoModalCardProps = {
   beach: BeachWithStats;
+  profile?: BeachProfile | null;
+  profileLoading?: boolean;
   isOpen: boolean;
   now: number;
   isFavorite: boolean;
@@ -68,12 +70,44 @@ const sameReviews = (a?: Review[], b?: Review[]) => {
   return true;
 };
 
+const sameProfileSources = (
+  a?: BeachProfile["sources"],
+  b?: BeachProfile["sources"],
+) => {
+  const left = a ?? [];
+  const right = b ?? [];
+  if (left.length !== right.length) return false;
+  for (let i = 0; i < left.length; i += 1) {
+    if (
+      left[i].label !== right[i].label ||
+      left[i].url !== right[i].url ||
+      left[i].sourceType !== right[i].sourceType
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
 const formatRainProbability = (value: number | null) =>
   value === null ? STRINGS.weather.noRainData : `${Math.round(value)}%`;
 
 const formatWind = (windKmh: number, windDirectionLabel: string | null) => {
   const speed = `${Math.round(windKmh)} km/h`;
   return windDirectionLabel ? `${speed} · ${windDirectionLabel}` : speed;
+};
+
+const formatVerifiedAt = (value: string | null): string => {
+  if (!value) return STRINGS.empty.notAvailable;
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return STRINGS.empty.notAvailable;
+  return date.toLocaleString("it-IT", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const sameNextHours = (
@@ -121,6 +155,8 @@ const sameWeather = (
 
 const LidoModalCardComponent = ({
   beach,
+  profile = null,
+  profileLoading = false,
   isOpen,
   now,
   isFavorite,
@@ -187,6 +223,7 @@ const LidoModalCardComponent = ({
   const phone = beach.phone?.trim();
   const website = beach.website?.trim();
   const services = beach.services?.filter(Boolean);
+  const profileSources = profile?.sources ?? [];
   const hasCoords = Number.isFinite(beach.lat) && Number.isFinite(beach.lng);
   const mapsLink = hasCoords
     ? `https://www.google.com/maps?q=${beach.lat},${beach.lng}`
@@ -490,6 +527,57 @@ const LidoModalCardComponent = ({
                 </p>
               )}
             </div>
+            <div className="mt-4 border-t border-white/10 pt-3">
+              <div className="text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
+                {STRINGS.labels.profileData}
+              </div>
+              {profileLoading ? (
+                <p className="mt-2 text-[12px] br-text-secondary">
+                  {STRINGS.empty.profileLoading}
+                </p>
+              ) : profile ? (
+                <div className="mt-2 grid gap-2 text-[12px] br-text-primary">
+                  <div className="flex items-center justify-between">
+                    <span className="br-text-tertiary">{STRINGS.labels.verifiedAt}</span>
+                    <span className="font-semibold">
+                      {formatVerifiedAt(profile.verifiedAt)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="br-text-tertiary">{STRINGS.labels.confidence}</span>
+                    <span className="font-semibold">{Math.round(profile.confidence * 100)}%</span>
+                  </div>
+                  <div className="mt-1">
+                    <div className="mb-2 text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
+                      {STRINGS.labels.sources}
+                    </div>
+                    {profileSources.length > 0 ? (
+                      <div className="grid gap-1">
+                        {profileSources.slice(0, 2).map((source) => (
+                          <a
+                            key={`${source.url}-${source.sourceType}`}
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="truncate text-[12px] font-semibold text-sky-300 hover:text-sky-200"
+                          >
+                            {source.label}
+                          </a>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[12px] br-text-tertiary">
+                        {STRINGS.empty.notAvailable}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-2 text-[12px] br-text-tertiary">
+                  {STRINGS.empty.profilePending}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 backdrop-blur-sm">
@@ -571,6 +659,12 @@ const lidoModalEqual = (prev: LidoModalCardProps, next: LidoModalCardProps) => {
   if (prev.now !== next.now) return false;
   if (prev.isFavorite !== next.isFavorite) return false;
   if (prev.reviewsLoading !== next.reviewsLoading) return false;
+  if (prev.profileLoading !== next.profileLoading) return false;
+  if (prev.profile?.beachId !== next.profile?.beachId) return false;
+  if (prev.profile?.verifiedAt !== next.profile?.verifiedAt) return false;
+  if (prev.profile?.confidence !== next.profile?.confidence) return false;
+  if (prev.profile?.status !== next.profile?.status) return false;
+  if (!sameProfileSources(prev.profile?.sources, next.profile?.sources)) return false;
   if (!sameReviews(prev.reviews, next.reviews)) return false;
   if (prev.weatherLoading !== next.weatherLoading) return false;
   if (prev.weatherUnavailable !== next.weatherUnavailable) return false;

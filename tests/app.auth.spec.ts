@@ -25,6 +25,7 @@ test.describe("auth form", () => {
 
     await page.getByPlaceholder(/^Nome$/).fill("Mario");
     await page.getByPlaceholder(/^Cognome$/).fill("Rossi");
+    await page.getByPlaceholder("es. onda_93").fill("mario.rossi");
     await page.getByTestId("auth-email-input").fill("mario.rossi@example.com");
     await page.getByTestId("auth-password-input").fill("Ab1!");
     await page.getByPlaceholder("Ripeti la password").fill("Ab1!diversa");

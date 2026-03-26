@@ -9,7 +9,7 @@ export default defineConfig({
   webServer: [
     {
       command:
-        "npm --prefix w2b-hero run sync:app-shell && SIGNUP_TEST_MODE=1 REPORTS_TEST_MODE=1 APP_ACCESS_KEY=test-app-access-key npx vercel dev --listen 3000 --yes",
+        "npm --prefix w2b-hero run sync:app-shell && SIGNUP_TEST_MODE=1 REPORTS_TEST_MODE=1 BEACH_ENRICH_TEST_MODE=1 CRON_SECRET=test-cron-secret APP_ACCESS_KEY=test-app-access-key npx vercel dev --listen 3000 --yes",
       url: "http://localhost:3000",
       reuseExistingServer: true,
       timeout: 120_000
@@ -32,7 +32,9 @@ export default defineConfig({
       testDir: "tests",
       testMatch: [
         "reports.api.spec.ts",
-        "app.gating.spec.ts"
+        "app.gating.spec.ts",
+        "beach.enrich.api.spec.ts",
+        "beach.enrich.logic.spec.ts"
       ],
       use: {
         baseURL: "http://localhost:3000"
@@ -47,6 +49,7 @@ export default defineConfig({
         "app.auth.errors.spec.ts",
         "app.auth.resume.spec.ts",
         "app.map.spec.ts",
+        "app.beach-profile.spec.ts",
         "app.reports.spec.ts",
         "app.favorites.spec.ts"
       ],

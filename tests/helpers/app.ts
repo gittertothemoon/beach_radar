@@ -75,6 +75,22 @@ export const mockReportsFeed = async (page: Page, reports: unknown[] = []) => {
   });
 };
 
+export const mockBeachProfileApi = async (
+  page: Page,
+  profile: Record<string, unknown> | null,
+) => {
+  await page.route("**/api/beach-profile?*", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        profile,
+      }),
+    });
+  });
+};
+
 export const mockAnalyticsApi = async (page: Page) => {
   await page.route("**/api/analytics", async (route) => {
     await route.fulfill({

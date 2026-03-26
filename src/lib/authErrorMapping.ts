@@ -1,6 +1,7 @@
 export type RegisterErrorCode =
   | "missing_config"
   | "email_exists"
+  | "nickname_exists"
   | "weak_password"
   | "invalid_email"
   | "email_send_failed"
@@ -72,6 +73,13 @@ export const mapRegisterErrorFromSupabase = (
     normalized.includes("already been registered")
   ) {
     return "email_exists";
+  }
+  if (
+    normalized.includes("nickname already in use") ||
+    normalized.includes("nickname already taken") ||
+    (normalized.includes("duplicate") && normalized.includes("nickname"))
+  ) {
+    return "nickname_exists";
   }
   if (
     normalized.includes("error sending confirmation email") ||

@@ -51,7 +51,7 @@ const buildAuthUser = (email: string) => {
     confirmed_at: nowIso,
     last_sign_in_at: nowIso,
     app_metadata: { provider: "email", providers: ["email"] },
-    user_metadata: { first_name: "Mario", last_name: "Rossi" },
+    user_metadata: { first_name: "Mario", last_name: "Rossi", nickname: "mario.rossi" },
     identities: [
       {
         identity_id: "00000000-0000-4000-8000-000000000010",
@@ -91,6 +91,7 @@ const mockAuthLoginSuccess = async (page: Page, email: string) => {
 const fillRegisterForm = async (page: Page) => {
   await page.getByPlaceholder(/^Nome$/).fill("Mario");
   await page.getByPlaceholder(/^Cognome$/).fill("Rossi");
+  await page.getByPlaceholder("es. onda_93").fill("mario.rossi");
   await page.getByTestId("auth-email-input").fill("mario.rossi@example.com");
   await page.getByTestId("auth-password-input").fill("Password!123");
   await page.getByPlaceholder("Ripeti la password").fill("Password!123");
@@ -134,6 +135,17 @@ test.describe("auth error handling ui", () => {
     await fillRegisterForm(page);
     await page.getByTestId("auth-submit").click();
     await expect(page.getByText("Questa email risulta già registrata.")).toBeVisible();
+  });
+
+  test("register shows clear message for nickname already used", async ({ page }) => {
+    await mockAuthError(page, SUPABASE_AUTH_SIGNUP, {
+      status: 400,
+      message: "Nickname already in use.",
+    });
+    await page.goto(withQuery("/app/register", { returnTo: "/app/" }));
+    await fillRegisterForm(page);
+    await page.getByTestId("auth-submit").click();
+    await expect(page.getByText("Questo nickname è già in uso. Scegline un altro.")).toBeVisible();
   });
 
   test("register handles Supabase masked-existing-user response", async ({ page }) => {

@@ -12,6 +12,12 @@ const readAppAccessKey = (rawValue: string | undefined): string | null => {
   return trimmed.length > 0 ? trimmed : null;
 };
 
+const readStringEnv = (rawValue: string | undefined): string | null => {
+  if (!rawValue) return null;
+  const trimmed = rawValue.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
 const readBooleanEnv = (rawValue: string | undefined, fallback = false): boolean => {
   if (!rawValue) return fallback;
   const normalized = rawValue.trim().toLowerCase();
@@ -47,10 +53,28 @@ export const MOBILE_REPORT_ANYWHERE = readBooleanEnv(
   process.env.EXPO_PUBLIC_REPORT_ANYWHERE,
   false,
 );
+export const MOBILE_DEV_MOCK_AUTH = readBooleanEnv(
+  process.env.EXPO_PUBLIC_DEV_MOCK_AUTH,
+  false,
+);
+export const MOBILE_DEV_MOCK_EMAIL = readStringEnv(
+  process.env.EXPO_PUBLIC_DEV_MOCK_EMAIL,
+);
 
 export const MOBILE_API_BASE_URL = `${MOBILE_BASE_URL}/api`;
 
-const MOBILE_APP_PATH = MOBILE_REPORT_ANYWHERE ? "/app/?report_anywhere=1" : "/app/";
+const mobileAppPathParams = new URLSearchParams();
+mobileAppPathParams.set("native_shell", "1");
+if (MOBILE_REPORT_ANYWHERE) {
+  mobileAppPathParams.set("report_anywhere", "1");
+}
+if (MOBILE_DEV_MOCK_AUTH) {
+  mobileAppPathParams.set("mock_auth", "1");
+  if (MOBILE_DEV_MOCK_EMAIL) {
+    mobileAppPathParams.set("mock_email", MOBILE_DEV_MOCK_EMAIL);
+  }
+}
+const MOBILE_APP_PATH = `/app/${mobileAppPathParams.toString() ? `?${mobileAppPathParams.toString()}` : ""}`;
 
 export const MOBILE_APP_URL = MOBILE_APP_ACCESS_KEY
   ? `${MOBILE_BASE_URL}/api/app-access?key=${encodeURIComponent(

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Linking,
   Pressable,
   StyleSheet,
@@ -25,6 +26,7 @@ export const WebSurface = ({
   const statusBarOverlayHeight = Math.max(28, insets.top + 2);
   const webViewRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const source = useMemo(() => ({ uri: initialUrl }), [initialUrl]);
@@ -117,9 +119,11 @@ export const WebSurface = ({
         }}
         onLoadEnd={() => {
           setLoading(false);
+          setHasLoadedOnce(true);
         }}
         onError={(event) => {
           setLoading(false);
+          setHasLoadedOnce(true);
           setError(event.nativeEvent.description || "Errore sconosciuto");
         }}
         onOpenWindow={(event) => {
@@ -133,11 +137,16 @@ export const WebSurface = ({
         javaScriptEnabled
         domStorageEnabled
         geolocationEnabled
-        startInLoadingState
+        style={styles.webview}
       />
 
-      {loading ? (
+      {loading && !hasLoadedOnce && !error ? (
         <View style={styles.loadingLayer} pointerEvents="none">
+          <Image
+            source={require("../../assets/splash-icon.png")}
+            style={styles.loadingLogo}
+            resizeMode="contain"
+          />
           <ActivityIndicator size="large" color="#22d3ee" />
           <Text style={styles.loadingLabel}>Caricamento</Text>
         </View>
@@ -159,6 +168,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(2, 6, 23, 0.52)",
     zIndex: 5,
   },
+  webview: {
+    flex: 1,
+    backgroundColor: "#020617",
+  },
   loadingLayer: {
     position: "absolute",
     left: 0,
@@ -167,7 +180,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(2, 6, 23, 0.35)",
+    backgroundColor: "#020617",
+  },
+  loadingLogo: {
+    width: 232,
+    height: 232,
+    marginBottom: 18,
   },
   loadingLabel: {
     marginTop: 8,

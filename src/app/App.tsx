@@ -32,6 +32,7 @@ import {
   getCurrentAccount,
   type AppAccount,
 } from "../lib/account";
+import { getDevMockAccount } from "../lib/devMockAuth";
 import { getReporterHash } from "../lib/storage";
 import {
   ANALYTICS_UPDATE_EVENT,
@@ -53,13 +54,21 @@ import {
   subscribePerf,
   useRenderCounter,
 } from "../lib/perf";
+import { normalizeSearchText } from "../lib/search";
 import {
   fetchBeachWeather,
   type BeachWeatherSnapshot,
 } from "../lib/weather";
+import { fetchBeachProfile } from "../lib/beachProfiles";
 import { fetchSharedReports, submitSharedReport } from "../lib/reports";
 import { fetchBeachReviews, submitBeachReview } from "../lib/reviews";
-import type { BeachWithStats, CrowdLevel, Report, Review } from "../lib/types";
+import type {
+  BeachProfile,
+  BeachWithStats,
+  CrowdLevel,
+  Report,
+  Review,
+} from "../lib/types";
 import type { LatLng, UserLocation } from "../lib/geo";
 import type { BeachOverrides } from "../lib/overrides";
 import { FEATURE_FLAGS } from "../config/features";
@@ -91,6 +100,7 @@ const LOCATION_FOCUS_ZOOM = 16;
 const LOCATION_REFRESH_MS = 15_000;
 const NEARBY_RADIUS_M = 15_000;
 const BOTTOM_NAV_FALLBACK_HEIGHT_PX = 76;
+const BEACH_PROFILE_CACHE_TTL_MS = 15 * 60 * 1000;
 
 type GeoStatus = "idle" | "loading" | "ready" | "denied" | "error";
 type WeatherStatus = "loading" | "ready" | "error";
@@ -101,6 +111,12 @@ type WeatherCacheEntry = {
   status: WeatherStatus;
   data: BeachWeatherSnapshot | null;
   expiresAt: number;
+};
+
+type BeachProfileCacheEntry = {
+  status: "idle" | "loading" | "ready" | "error";
+  data: BeachProfile | null;
+  fetchedAt: number;
 };
 
 type RegisterResumeMapView = {
@@ -189,10 +205,18 @@ const consumeRegisterResumeSnapshot = (): RegisterResumeSnapshot | null => {
 };
 
 function App() {
+  const shouldSkipInitialSplash = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    return (
+      readQueryBooleanFlag(params, "native_shell", "nativeShell") === true
+    );
+  }, []);
   const registerResumeSnapshot = useMemo(() => consumeRegisterResumeSnapshot(), []);
+  const devMockAccount = useMemo(() => getDevMockAccount(), []);
   const [search, setSearch] = useState(() => registerResumeSnapshot?.search ?? "");
   const [reports, setReports] = useState<Report[]>([]);
-  const [account, setAccount] = useState<AppAccount | null>(null);
+  const [account, setAccount] = useState<AppAccount | null>(devMockAccount);
   const [favoriteBeachIds, setFavoriteBeachIds] = useState<Set<string>>(() =>
     typeof window === "undefined" ? new Set<string>() : new Set(),
   );
@@ -261,10 +285,13 @@ function App() {
   const [showAllPinsHint, setShowAllPinsHint] = useState(false);
   const [splashPhase, setSplashPhase] = useState<
     "visible" | "fading" | "hidden"
-  >("visible");
+  >(() => (shouldSkipInitialSplash ? "hidden" : "visible"));
   const [mapReady, setMapReady] = useState(false);
   const [weatherByKey, setWeatherByKey] = useState<
     Record<string, WeatherCacheEntry>
+  >({});
+  const [beachProfilesById, setBeachProfilesById] = useState<
+    Record<string, BeachProfileCacheEntry>
   >({});
   const mapRef = useRef<LeafletMap | null>(null);
   const resumeMapViewRef = useRef<RegisterResumeMapView | null>(
@@ -277,6 +304,7 @@ function App() {
   const lastSelectedBeachIdRef = useRef<string | null>(null);
   const selectionSourceRef = useRef<AnalyticsSource | null>(null);
   const reportOpenRef = useRef(false);
+  const beachProfilesByIdRef = useRef<Record<string, BeachProfileCacheEntry>>({});
   const deepLinkProcessedRef = useRef(false);
   const reportsUnavailableToastShownRef = useRef(false);
   const reportsFeedReadyRef = useRef(false);
@@ -285,6 +313,10 @@ function App() {
     bottomNavHeight,
     BOTTOM_NAV_FALLBACK_HEIGHT_PX,
   );
+
+  useEffect(() => {
+    beachProfilesByIdRef.current = beachProfilesById;
+  }, [beachProfilesById]);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -365,6 +397,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (shouldSkipInitialSplash) return;
     const fadeTimeout = window.setTimeout(() => {
       setSplashPhase("fading");
     }, 2100);
@@ -375,7 +408,7 @@ function App() {
       window.clearTimeout(fadeTimeout);
       window.clearTimeout(hideTimeout);
     };
-  }, []);
+  }, [shouldSkipInitialSplash]);
 
   useEffect(() => {
     console.info(`Loaded spots: ${SPOTS.length}`);
@@ -455,6 +488,11 @@ function App() {
   }, [showAllPinsHint]);
 
   useEffect(() => {
+    if (devMockAccount) {
+      setAccount(devMockAccount);
+      return () => {};
+    }
+
     let active = true;
     void getCurrentAccount().then((nextAccount) => {
       if (!active) return;
@@ -470,7 +508,7 @@ function App() {
       active = false;
       unsubscribe();
     };
-  }, []);
+  }, [devMockAccount]);
 
   useEffect(() => {
     let active = true;
@@ -492,6 +530,62 @@ function App() {
       active = false;
     };
   }, [selectedBeachId, isLidoModalOpen]);
+
+  useEffect(() => {
+    if (!selectedBeachId || !isLidoModalOpen) return;
+
+    let active = true;
+    const cached = beachProfilesByIdRef.current[selectedBeachId];
+    if (cached?.status === "loading") {
+      return () => {
+        active = false;
+      };
+    }
+    if (
+      cached?.status === "error" &&
+      Date.now() - cached.fetchedAt < 60_000
+    ) {
+      return () => {
+        active = false;
+      };
+    }
+    const isFresh =
+      cached?.status === "ready" &&
+      Date.now() - cached.fetchedAt < BEACH_PROFILE_CACHE_TTL_MS;
+
+    if (isFresh) {
+      return () => {
+        active = false;
+      };
+    }
+
+    setBeachProfilesById((prev) => ({
+      ...prev,
+      [selectedBeachId]: {
+        status: "loading",
+        data: prev[selectedBeachId]?.data ?? null,
+        fetchedAt: prev[selectedBeachId]?.fetchedAt ?? 0,
+      },
+    }));
+
+    const controller = new AbortController();
+    void fetchBeachProfile(selectedBeachId, controller.signal).then((result) => {
+      if (!active) return;
+      setBeachProfilesById((prev) => ({
+        ...prev,
+        [selectedBeachId]: {
+          status: result.ok ? "ready" : "error",
+          data: result.ok ? result.profile : prev[selectedBeachId]?.data ?? null,
+          fetchedAt: Date.now(),
+        },
+      }));
+    });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [isLidoModalOpen, selectedBeachId]);
 
   useEffect(() => {
     let active = true;
@@ -923,9 +1017,30 @@ function App() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [beachViewsBase, favoriteBeachIds]);
 
-  const selectedBeach = beachViewsBase.find(
+  const selectedBeachBase = beachViewsBase.find(
     (beach) => beach.id === selectedBeachId,
   );
+  const selectedBeachProfileEntry = selectedBeachId
+    ? beachProfilesById[selectedBeachId]
+    : undefined;
+  const selectedBeachProfile = selectedBeachProfileEntry?.data ?? null;
+  const selectedBeachProfileLoading = selectedBeachProfileEntry?.status === "loading";
+  const selectedBeach = useMemo(() => {
+    if (!selectedBeachBase) return undefined;
+    if (!selectedBeachProfile || selectedBeachProfile.status !== "published") {
+      return selectedBeachBase;
+    }
+    return {
+      ...selectedBeachBase,
+      hours: selectedBeachProfile.hours ?? selectedBeachBase.hours,
+      phone: selectedBeachProfile.phone ?? selectedBeachBase.phone,
+      website: selectedBeachProfile.website ?? selectedBeachBase.website,
+      services:
+        selectedBeachProfile.services.length > 0
+          ? selectedBeachProfile.services
+          : selectedBeachBase.services,
+    };
+  }, [selectedBeachBase, selectedBeachProfile]);
   const selectedBeachIsFavorite =
     !!selectedBeachId && favoriteBeachIds.has(selectedBeachId);
   const selectedBeachLat = selectedBeach?.lat ?? null;
@@ -1199,6 +1314,84 @@ function App() {
     [focusBeach],
   );
 
+  const handleSubmitSearchQuery = useCallback(
+    (query: string) => {
+      const normalizedQuery = normalizeSearchText(query);
+      if (!normalizedQuery) return;
+
+      const normalizedEntries = beachViewsBase.map((beach) => ({
+        beach,
+        nameNorm: normalizeSearchText(beach.name),
+        regionNorm: normalizeSearchText(beach.region),
+      }));
+
+      const matches = normalizedEntries
+        .filter(
+          ({ nameNorm, regionNorm }) =>
+            nameNorm.includes(normalizedQuery) || regionNorm.includes(normalizedQuery),
+        )
+        .map(({ beach }) => beach);
+
+      if (matches.length === 0) return;
+
+      const exactNameMatch = normalizedEntries.find(
+        ({ nameNorm }) => nameNorm === normalizedQuery,
+      )?.beach;
+      if (exactNameMatch) {
+        selectionSourceRef.current = "search";
+        focusBeach(exactNameMatch.id, { updateSearch: true, solo: true });
+        return;
+      }
+
+      const exactRegionMatches = normalizedEntries
+        .filter(({ regionNorm }) => regionNorm === normalizedQuery)
+        .map(({ beach }) => beach);
+
+      const panoramaTargets =
+        exactRegionMatches.length > 0
+          ? exactRegionMatches
+          : matches.length > 1
+            ? matches
+            : null;
+
+      if (!panoramaTargets || panoramaTargets.length === 0) {
+        selectionSourceRef.current = "search";
+        focusBeach(matches[0].id, { updateSearch: true, solo: true });
+        return;
+      }
+
+      if (panoramaTargets.length === 1) {
+        selectionSourceRef.current = "search";
+        focusBeach(panoramaTargets[0].id, { updateSearch: true, solo: true });
+        return;
+      }
+
+      const map = mapRef.current;
+      if (!map) return;
+
+      const points: [number, number][] = panoramaTargets
+        .filter(
+          (beach) => Number.isFinite(beach.lat) && Number.isFinite(beach.lng),
+        )
+        .map((beach) => [beach.lat, beach.lng]);
+      if (points.length === 0) return;
+
+      setSoloBeachId(null);
+      setSelectedBeachId(null);
+      setIsLidoModalOpen(false);
+      setSheetOpen(false);
+      setActiveSheetSection("map");
+
+      map.fitBounds(points, {
+        animate: true,
+        maxZoom: 13,
+        paddingTopLeft: [16, 96],
+        paddingBottomRight: [16, Math.max(140, effectiveBottomNavHeight + 56)],
+      });
+    },
+    [beachViewsBase, effectiveBottomNavHeight, focusBeach],
+  );
+
   const handleMapReady = useCallback((map: LeafletMap) => {
     mapRef.current = map;
     const resumeView = resumeMapViewRef.current;
@@ -1380,6 +1573,8 @@ function App() {
 
   const accountDisplayName = useMemo(() => {
     if (!account) return null;
+    const normalizedNickname = account.nickname.trim();
+    if (normalizedNickname.length > 0) return normalizedNickname;
     const fullName = `${account.firstName} ${account.lastName}`.trim();
     return fullName.length > 0 ? fullName : null;
   }, [account]);
@@ -1621,7 +1816,9 @@ function App() {
   const handleSubmitReview = useCallback(
     async (content: string, rating: number) => {
       if (!selectedBeach || !account) return;
-      const authorName = `${account.firstName} ${account.lastName?.charAt(0) ?? ""}`.trim();
+      const authorName = account.nickname.trim().length > 0
+        ? account.nickname.trim()
+        : `${account.firstName} ${account.lastName?.charAt(0) ?? ""}`.trim();
       const result = await submitBeachReview({
         beachId: selectedBeach.id,
         authorName,
@@ -1686,10 +1883,7 @@ function App() {
         notice={liveDataNotice}
         beaches={searchBeaches}
         onSelectSuggestion={handleSelectSuggestion}
-        accountEmail={account?.email ?? null}
-        accountName={accountDisplayName}
-        onOpenProfile={handleOpenProfile}
-        onSignOut={handleSignOut}
+        onSubmitQuery={handleSubmitSearchQuery}
       />
       <div
         className={`fixed flex flex-col items-end gap-3 pointer-events-none ${
@@ -2011,6 +2205,8 @@ function App() {
         <Suspense fallback={null}>
           <LidoModalCard
             beach={selectedBeach}
+            profile={selectedBeachProfile}
+            profileLoading={selectedBeachProfileLoading}
             isOpen={isLidoModalOpen}
             now={now}
             isFavorite={selectedBeachIsFavorite}
@@ -2050,7 +2246,7 @@ function App() {
           <ReviewModal
             isOpen={reviewOpen}
             beachName={selectedBeach.name}
-            authorName={account ? `${account.firstName} ${account.lastName?.charAt(0) ?? ""}`.trim() : null}
+            authorName={account ? accountDisplayName : null}
             onClose={handleCloseReview}
             onSubmit={handleSubmitReview}
           />
