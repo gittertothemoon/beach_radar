@@ -34,6 +34,12 @@ jobs:
       - name: Hero dependency audit (high+)
         run: npm --prefix w2b-hero audit --omit=dev --audit-level=high
 
+      - name: Production build
+        run: npm run build
+
+      - name: Security artifact check
+        run: npm run security:artifacts
+
   headers-smoke:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest

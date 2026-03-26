@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { applyApiSecurityHeaders, readEnv } from "./_lib/security.js";
 
 const ANALYTICS_TABLE = "analytics_events";
 const MAX_BODY_BYTES = 12 * 1024;
@@ -45,19 +46,6 @@ type AnalyticsInsert = {
 };
 
 const rateLimits = new Map<string, RateEntry>();
-
-function readEnv(name: string): string | null {
-  const raw = process.env[name];
-  if (!raw) return null;
-  const trimmed = raw.trim();
-  if (
-    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-  return trimmed;
-}
 
 function readIntEnv(name: string, fallback: number, min: number, max: number): number {
   const raw = readEnv(name);
@@ -304,6 +292,8 @@ async function resolveUserId(
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyApiSecurityHeaders(res, { noStore: true });
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });

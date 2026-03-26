@@ -1,21 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import {
+  applyApiSecurityHeaders,
+  readBearerToken,
+  readEnv,
+  safeEqualSecret,
+} from "../_lib/security.js";
 
 const REPORTS_TABLE = "beach_reports";
 const DEFAULT_RETENTION_DAYS = 30;
-
-function readEnv(name: string): string | null {
-  const raw = process.env[name];
-  if (!raw) return null;
-  const trimmed = raw.trim();
-  if (
-    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-  return trimmed;
-}
 
 function readIntEnv(
   name: string,
@@ -31,28 +24,18 @@ function readIntEnv(
   return value;
 }
 
-function readBearerToken(req: VercelRequest): string | null {
-  const raw = req.headers.authorization;
-  if (!raw) return null;
-  const value = Array.isArray(raw) ? raw[0] : raw;
-  if (typeof value !== "string") return null;
-  if (!value.startsWith("Bearer ")) return null;
-  const token = value.slice("Bearer ".length).trim();
-  return token.length > 0 ? token : null;
-}
-
 function isAuthorized(req: VercelRequest): boolean {
   const token = readBearerToken(req);
   if (!token) return false;
 
   const cronSecret = readEnv("CRON_SECRET");
   if (cronSecret) {
-    return token === cronSecret;
+    return safeEqualSecret(token, cronSecret);
   }
 
   const pruneToken = readEnv("REPORTS_PRUNE_TOKEN");
   if (!pruneToken) return false;
-  return token === pruneToken;
+  return safeEqualSecret(token, pruneToken);
 }
 
 function buildSupabaseClient() {
@@ -65,6 +48,8 @@ function buildSupabaseClient() {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyApiSecurityHeaders(res, { noStore: true });
+
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });

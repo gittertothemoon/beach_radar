@@ -13,6 +13,12 @@ import {
   type FieldEvidence,
   type ReviewedCandidate,
 } from "../_lib/beach-enrichment.js";
+import {
+  applyApiSecurityHeaders,
+  readBearerToken,
+  readEnv,
+  safeEqualSecret,
+} from "../_lib/security.js";
 import { updateTestModeStore } from "./test-mode-store.js";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
@@ -128,19 +134,6 @@ function createTestStore(): TestStoreState {
   };
 }
 
-function readEnv(name: string): string | null {
-  const raw = process.env[name];
-  if (!raw) return null;
-  const trimmed = raw.trim();
-  if (
-    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-  return trimmed;
-}
-
 function readIntEnv(name: string, fallback: number, min: number, max: number): number {
   const raw = readEnv(name);
   if (!raw) return fallback;
@@ -175,21 +168,11 @@ function toSingleString(value: unknown): string | null {
   return null;
 }
 
-function readBearerToken(req: VercelRequest): string | null {
-  const raw = req.headers.authorization;
-  if (!raw) return null;
-  const value = Array.isArray(raw) ? raw[0] : raw;
-  if (typeof value !== "string") return null;
-  if (!value.startsWith("Bearer ")) return null;
-  const token = value.slice("Bearer ".length).trim();
-  return token.length > 0 ? token : null;
-}
-
 function isAuthorized(req: VercelRequest): { ok: boolean; missingConfig: boolean } {
   const cronSecret = readEnv("CRON_SECRET");
   if (!cronSecret) return { ok: false, missingConfig: true };
   const token = readBearerToken(req);
-  return { ok: token === cronSecret, missingConfig: false };
+  return { ok: Boolean(token && safeEqualSecret(token, cronSecret)), missingConfig: false };
 }
 
 function createSupabaseClient() {
@@ -1240,6 +1223,8 @@ async function runTestMode(
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyApiSecurityHeaders(res, { noStore: true });
+
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });

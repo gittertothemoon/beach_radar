@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { readTestModeStore } from "./test-mode-store.js";
+import { applyApiSecurityHeaders, readEnv } from "../_lib/security.js";
 
 const CACHE_SECONDS = 300;
 const TEST_MODE = process.env.BEACH_ENRICH_TEST_MODE === "1";
@@ -26,19 +27,6 @@ type TestStoreState = {
 
 function createTestStore(): TestStoreState {
   return { current: {} };
-}
-
-function readEnv(name: string): string | null {
-  const raw = process.env[name];
-  if (!raw) return null;
-  const trimmed = raw.trim();
-  if (
-    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-  return trimmed;
 }
 
 function toSingleString(value: unknown): string | null {
@@ -110,6 +98,8 @@ function createSupabaseClient() {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyApiSecurityHeaders(res);
+
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });

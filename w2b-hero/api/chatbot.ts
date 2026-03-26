@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { applyApiSecurityHeaders, readEnv } from "./_lib/security.js";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const MAX_BODY_BYTES = 16 * 1024;
@@ -84,19 +85,6 @@ const SYSTEM_INSTRUCTIONS = [
   "Rispondi in italiano semplice e breve (massimo 90 parole).",
   "Quando possibile, chiudi con un'azione concreta dentro l'app.",
 ].join("\n");
-
-function readEnv(name: string): string | null {
-  const raw = process.env[name];
-  if (!raw) return null;
-  const trimmed = raw.trim();
-  if (
-    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-  return trimmed;
-}
 
 function readIntEnv(name: string, fallback: number, min: number, max: number): number {
   const raw = readEnv(name);
@@ -595,6 +583,8 @@ async function callOpenAI(
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyApiSecurityHeaders(res, { noStore: true });
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });

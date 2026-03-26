@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createHash, timingSafeEqual } from "node:crypto";
+import { applyApiSecurityHeaders, readEnv } from "./_lib/security.js";
 
 const ACCESS_COOKIE = "br_app_access";
 const ACCESS_COOKIE_VALUE = "1";
@@ -9,19 +10,6 @@ const SHA256_HEX_RE = /^[a-f0-9]{64}$/;
 type AccessKeyConfig =
   | { mode: "raw"; value: string }
   | { mode: "sha256"; value: string };
-
-function readEnv(name: string): string | null {
-  const raw = process.env[name];
-  if (!raw) return null;
-  const trimmed = raw.trim();
-  if (
-    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-  return trimmed;
-}
 
 function getKeyParam(req: VercelRequest): string | null {
   const raw = req.query.key;
@@ -86,12 +74,6 @@ function isValidAccessKey(providedKey: string, config: AccessKeyConfig): boolean
   return timingSafeEqualText(providedHash, config.value);
 }
 
-function applySecurityHeaders(res: VercelResponse): void {
-  res.setHeader("Cache-Control", "no-store");
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-}
-
 function isPrivateOrLocalHost(host: string): boolean {
   if (!host) return false;
   if (host === "localhost" || host === "127.0.0.1" || host === "::1") return true;
@@ -117,7 +99,7 @@ function shouldUseSecureCookie(req: VercelRequest): boolean {
 }
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
-  applySecurityHeaders(res);
+  applyApiSecurityHeaders(res, { noStore: true });
 
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -141,7 +123,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     "Max-Age=2592000",
     "Path=/app",
     "HttpOnly",
-    "SameSite=Lax",
+    "SameSite=Strict",
   ];
   if (shouldUseSecureCookie(req)) {
     cookieParts.push("Secure");

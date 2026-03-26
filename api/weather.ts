@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { applyApiSecurityHeaders } from "./_lib/security.js";
 
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
 const CACHE_SECONDS = 900;
@@ -99,6 +100,8 @@ function pickNextHours(
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyApiSecurityHeaders(res);
+
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });

@@ -1,36 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-
-function readEnv(name: string): string | null {
-  const raw = process.env[name];
-  if (!raw) return null;
-  const trimmed = raw.trim();
-  if (
-    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-  return trimmed;
-}
-
-function readBearerToken(req: VercelRequest): string | null {
-  const header = req.headers.authorization;
-  if (!header || typeof header !== "string") return null;
-  if (!header.toLowerCase().startsWith("bearer ")) return null;
-  const token = header.slice(7).trim();
-  return token.length > 0 ? token : null;
-}
+import { applyApiSecurityHeaders, readBearerToken, readEnv } from "../_lib/security.js";
 
 function normalizeOrigin(value: string | null): string | null {
   if (!value) return null;
   return value.replace(/\/+$/, "");
-}
-
-function applySecurityHeaders(res: VercelResponse): void {
-  res.setHeader("Cache-Control", "no-store");
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("X-Content-Type-Options", "nosniff");
 }
 
 function applyCors(req: VercelRequest, res: VercelResponse): void {
@@ -60,7 +34,7 @@ function applyCors(req: VercelRequest, res: VercelResponse): void {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  applySecurityHeaders(res);
+  applyApiSecurityHeaders(res, { noStore: true });
   applyCors(req, res);
 
   if (req.method === "OPTIONS") {

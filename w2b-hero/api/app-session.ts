@@ -1,39 +1,36 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
+import { applyApiSecurityHeaders, readBearerToken, readEnv } from "./_lib/security.js";
 
 const ACCESS_COOKIE = "br_app_access";
 const ACCESS_COOKIE_VALUE = "1";
 
-function readEnv(name: string): string | null {
-  const raw = process.env[name];
-  if (!raw) return null;
-  const trimmed = raw.trim();
-  if (
-    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
+function isPrivateOrLocalHost(host: string): boolean {
+  if (!host) return false;
+  if (host === "localhost" || host === "127.0.0.1" || host === "::1") return true;
+  if (/^10\./.test(host)) return true;
+  if (/^192\.168\./.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
+  return false;
+}
+
+function shouldUseSecureCookie(req: VercelRequest): boolean {
+  const forwardedProtoHeader = req.headers["x-forwarded-proto"];
+  const forwardedProto = Array.isArray(forwardedProtoHeader)
+    ? forwardedProtoHeader[0]
+    : forwardedProtoHeader;
+  if (typeof forwardedProto === "string" && forwardedProto.trim()) {
+    return forwardedProto.trim().toLowerCase() === "https";
   }
-  return trimmed;
-}
 
-function applySecurityHeaders(res: VercelResponse): void {
-  res.setHeader("Cache-Control", "no-store");
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-}
-
-function readBearerToken(req: VercelRequest): string | null {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || typeof authHeader !== "string") return null;
-  const [scheme, token] = authHeader.split(" ");
-  if (!scheme || !token) return null;
-  if (scheme.toLowerCase() !== "bearer") return null;
-  return token.trim() || null;
+  const hostHeader = req.headers.host;
+  const hostValue = Array.isArray(hostHeader) ? hostHeader[0] : hostHeader;
+  const hostname = typeof hostValue === "string" ? hostValue.split(":")[0].toLowerCase() : "";
+  return !isPrivateOrLocalHost(hostname);
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  applySecurityHeaders(res);
+  applyApiSecurityHeaders(res, { noStore: true });
 
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -59,9 +56,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ ok: false, error: "invalid_token" });
   }
 
-  res.setHeader(
-    "Set-Cookie",
-    `${ACCESS_COOKIE}=${ACCESS_COOKIE_VALUE}; Max-Age=2592000; Path=/app; HttpOnly; SameSite=Lax; Secure`,
-  );
+  const cookieParts = [
+    `${ACCESS_COOKIE}=${ACCESS_COOKIE_VALUE}`,
+    "Max-Age=2592000",
+    "Path=/app",
+    "HttpOnly",
+    "SameSite=Strict",
+  ];
+  if (shouldUseSecureCookie(req)) {
+    cookieParts.push("Secure");
+  }
+  res.setHeader("Set-Cookie", cookieParts.join("; "));
   return res.status(200).json({ ok: true });
 }

@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createHash, randomBytes } from "node:crypto";
 import { updateTestModeStore } from "./test-mode-store.js";
+import { applyApiSecurityHeaders, readEnv } from "../_lib/security.js";
 
 type RateEntry = {
   count: number;
@@ -49,19 +50,6 @@ const DOUBLE_OPT_IN_ENABLED = process.env.ENABLE_DOUBLE_OPTIN === "1";
 const RATE_LIMIT_RPC_NAME = readEnv("SIGNUP_RATE_LIMIT_RPC") || "waitlist_rate_limit_touch";
 const SIGNUP_TABLE = readEnv("SIGNUP_TABLE") || "waitlist_signups";
 const SIGNUP_HASH_SALT = readEnv("SIGNUP_HASH_SALT");
-
-function readEnv(name: string): string | null {
-  const raw = process.env[name];
-  if (!raw) return null;
-  const trimmed = raw.trim();
-  if (
-    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-  return trimmed;
-}
 
 function getClientIp(req: VercelRequest): string | null {
   const forwarded = req.headers["x-forwarded-for"];
@@ -305,12 +293,6 @@ function buildConfirmUrl(baseUrl: string, token: string): string {
   return url.toString();
 }
 
-function applySecurityHeaders(res: VercelResponse): void {
-  res.setHeader("Cache-Control", "no-store");
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-}
-
 async function sendConfirmEmail(options: {
   to: string;
   token: string;
@@ -344,7 +326,7 @@ async function sendConfirmEmail(options: {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  applySecurityHeaders(res);
+  applyApiSecurityHeaders(res, { noStore: true });
 
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");

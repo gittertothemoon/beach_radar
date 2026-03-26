@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { readTestModeStore, updateTestModeStore } from "./test-mode-store.js";
+import { applyApiSecurityHeaders, readBearerToken, readEnv } from "../_lib/security.js";
 
 const REPORTS_TABLE = "beach_reports";
 const MAX_BODY_BYTES = 8 * 1024;
@@ -62,19 +63,6 @@ type ReportsTestStore = {
 
 function createReportsTestStore(): ReportsTestStore {
   return { reports: [] };
-}
-
-function readEnv(name: string): string | null {
-  const raw = process.env[name];
-  if (!raw) return null;
-  const trimmed = raw.trim();
-  if (
-    (trimmed.startsWith("\"") && trimmed.endsWith("\"")) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-  return trimmed;
 }
 
 function readIntEnv(
@@ -235,16 +223,6 @@ function toReporterHash(identity: string): string {
   return hashValue(identity, "reporter");
 }
 
-function readBearerToken(req: VercelRequest): string | null {
-  const raw = req.headers.authorization;
-  if (!raw) return null;
-  const value = Array.isArray(raw) ? raw[0] : raw;
-  if (typeof value !== "string") return null;
-  if (!value.toLowerCase().startsWith("bearer ")) return null;
-  const token = value.slice("bearer ".length).trim();
-  return token.length > 0 ? token : null;
-}
-
 function toReportRow(value: unknown): ReportRow | null {
   if (!isObject(value)) return null;
   const id = typeof value.id === "string" ? value.id : null;
@@ -367,6 +345,8 @@ function sendTooSoon(res: VercelResponse) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  applyApiSecurityHeaders(res);
+
   if (req.method === "GET") {
     const lookbackIso = getLookbackIso();
 
@@ -421,6 +401,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader("Allow", "GET, POST");
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
+  applyApiSecurityHeaders(res, { noStore: true });
 
   let reporterHash: string;
   let supabase = null as ReturnType<typeof buildSupabaseClient>;
