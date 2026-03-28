@@ -1,6 +1,6 @@
 # CODEX Error Memory
 
-Last update: 2026-03-25 (Europe/Rome)
+Last update: 2026-03-28 (Europe/Rome)
 
 ## Scopo
 - Tenere una memoria operativa degli errori commessi durante debug complessi.
@@ -12,6 +12,7 @@ Last update: 2026-03-25 (Europe/Rome)
 2. Durante debug: annotare ipotesi, prove e segnali scartati.
 3. Dopo la risoluzione: aggiungere una nuova voce nella sezione `Lessons`.
 4. Prima di chiudere task: verificare che sia presente una `Regola permanente` azionabile.
+5. Chiusura task valida solo dopo sync memoria secondo `docs/CODEX_MEMORY_PROTOCOL.md`.
 
 ## Template nuova voce
 ```md

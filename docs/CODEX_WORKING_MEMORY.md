@@ -1,6 +1,6 @@
 # CODEX Working Memory
 
-Last update: 2026-03-25 (Europe/Rome)
+Last update: 2026-03-28 (Europe/Rome)
 
 ## Obiettivo condiviso
 - Massimo livello su design, funzionalita', affidabilita' reale.
@@ -11,6 +11,9 @@ Last update: 2026-03-25 (Europe/Rome)
 - Evitare ripetizioni: mantenere memoria aggiornata del progetto.
 - Miglioramento continuo ad ogni task.
 - Focus su risultato concreto e funzionante.
+- Per i rilasci mobile: Codex gestisce il flusso tecnico completo senza far ripetere istruzioni.
+- Fonte ufficiale regole release: `docs/CODEX_RELEASE_MEMORY.md`.
+- Regola autorita suprema: aggiornare sempre le memorie a fine task (`docs/CODEX_MEMORY_PROTOCOL.md`).
 
 ## Mappa rapida progetto
 - Web app principale: `src/` (Vite + React + TypeScript).
@@ -36,6 +39,7 @@ Last update: 2026-03-25 (Europe/Rome)
 3. Validare sempre impatto web desktop, web mobile e app mobile.
 4. Nessuna modifica "solo estetica" se introduce rischio funzionale.
 5. Dopo debug complesso risolto: aggiornare `docs/CODEX_ERROR_MEMORY.md` con errore, causa radice, regola permanente.
+6. Ogni task termina solo dopo aggiornamento memoria obbligatorio, come da `docs/CODEX_MEMORY_PROTOCOL.md`.
 
 ## Prossimi step consigliati
 1. Se vuoi coverage piena del test signup-session, definire credenziali/progetto test dedicato.
@@ -43,6 +47,8 @@ Last update: 2026-03-25 (Europe/Rome)
 3. Prossimo sviluppo su feature/design con baseline verde.
 
 ## Log sintetico
+- 2026-03-28: introdotta regola autorita suprema di aggiornamento memoria a fine task (`docs/CODEX_MEMORY_PROTOCOL.md`).
+- 2026-03-28: aggiunta memoria persistente release mobile in `docs/CODEX_RELEASE_MEMORY.md` con regole vincolanti OTA vs store.
 - 2026-03-25: creato registro errori persistente `docs/CODEX_ERROR_MEMORY.md` e collegato alle regole operative.
 - 2026-03-24: completata ricognizione repository + baseline quality.
 - 2026-03-24: allineati test auth-resume a routing reale (`/register`) e fix selettore consenso privacy.
