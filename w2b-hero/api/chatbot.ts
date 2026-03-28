@@ -32,6 +32,8 @@ type ChatContext = {
   selectedBeachRegion: string | null;
   favoriteCount: number | null;
   hasAccount: boolean | null;
+  preferredLanguage: "it" | "en" | null;
+  interests: string[] | null;
 };
 
 type RateEntry = {
@@ -199,11 +201,27 @@ function parseContext(value: unknown): ChatContext | null {
       ? Math.max(0, Math.min(1000, Math.round(value.favoriteCount)))
       : null;
   const hasAccount = typeof value.hasAccount === "boolean" ? value.hasAccount : null;
+  const preferredLanguage =
+    typeof value.preferredLanguage === "string"
+      ? value.preferredLanguage.trim().toLowerCase() === "en"
+        ? "en"
+        : "it"
+      : null;
+  const interestsRaw = Array.isArray(value.interests) ? value.interests : [];
+  const interests = Array.from(
+    new Set(
+      interestsRaw
+        .map((entry) => sanitizeText(entry, 32))
+        .filter((entry): entry is string => Boolean(entry)),
+    ),
+  ).slice(0, 8);
   return {
     selectedBeachName,
     selectedBeachRegion,
     favoriteCount,
     hasAccount,
+    preferredLanguage,
+    interests: interests.length > 0 ? interests : null,
   };
 }
 
@@ -347,6 +365,12 @@ function buildDynamicContext(context: ChatContext | null): string | null {
   if (context.hasAccount !== null) {
     lines.push(`Utente autenticato: ${context.hasAccount ? "si" : "no"}`);
   }
+  if (context.preferredLanguage) {
+    lines.push(`Lingua preferita: ${context.preferredLanguage}`);
+  }
+  if (context.interests && context.interests.length > 0) {
+    lines.push(`Interessi utente: ${context.interests.join(", ")}`);
+  }
   if (lines.length === 0) return null;
   return `Contesto app corrente:\n${lines.join("\n")}`;
 }
@@ -450,6 +474,8 @@ function getCacheKey(messages: ChatMessage[], context: ChatContext | null, model
   const beach = normalizeForKey(context?.selectedBeachName ?? "-");
   const region = normalizeForKey(context?.selectedBeachRegion ?? "-");
   const account = context?.hasAccount === true ? "1" : "0";
+  const language = normalizeForKey(context?.preferredLanguage ?? "-");
+  const interests = normalizeForKey(context?.interests?.join(",") ?? "-");
   const contextFavoriteCount = context?.favoriteCount ?? null;
   const favorites =
     contextFavoriteCount === null
@@ -457,7 +483,7 @@ function getCacheKey(messages: ChatMessage[], context: ChatContext | null, model
       : contextFavoriteCount <= 0
         ? "0"
         : "1+";
-  const signature = `v2|${model}|${beach}|${region}|${account}|${favorites}|${userTurns}`;
+  const signature = `v3|${model}|${beach}|${region}|${account}|${language}|${interests}|${favorites}|${userTurns}`;
   return createHash("sha256").update(signature).digest("hex");
 }
 

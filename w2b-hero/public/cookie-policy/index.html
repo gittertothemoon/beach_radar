@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Cookie policy Where2Beach" />
+  <title>Where2Beach - Cookie Policy</title>
+  <script src="/legal/runtime.js" defer></script>
+  <style>
+    :root {
+      --bg: #020617;
+      --card: rgba(15, 23, 42, 0.74);
+      --border: rgba(148, 163, 184, 0.22);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, #0f172a 0%, #020617 58%);
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+
+    .card {
+      width: min(720px, 100%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: linear-gradient(145deg, var(--card), rgba(2, 6, 23, 0.84));
+      box-shadow: 0 24px 60px rgba(2, 6, 23, 0.55);
+      padding: 26px 22px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 1.9rem;
+      letter-spacing: 0.01em;
+    }
+
+    p {
+      margin: 0;
+      line-height: 1.58;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.75);
+      color: var(--text);
+      padding: 9px 14px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      border-color: rgba(34, 211, 238, 0.6);
+      color: #cffafe;
+    }
+
+    .hint {
+      margin-top: 18px;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Cookie Policy</h1>
+    <div class="stack">
+      <p>
+        Questa pagina ti permette di consultare la cookie policy ufficiale e riaprire il pannello preferenze cookie.
+      </p>
+      <p>
+        Se iubenda è configurato, il banner/consent manager viene caricato automaticamente sul sito.
+      </p>
+    </div>
+
+    <div class="actions">
+      <a class="btn" data-legal-link="cookie" href="/cookie-policy/">Apri cookie policy</a>
+      <a class="btn" href="#" data-legal-open-preferences>Gestisci preferenze cookie</a>
+      <a class="btn" data-legal-link="privacy" href="/privacy/">Privacy</a>
+    </div>
+
+    <p class="hint">Contatti legali: <a data-legal-contact data-legal-contact-text href="mailto:privacy@where2beach.com">privacy@where2beach.com</a></p>
+  </main>
+
+  <script>
+    (function () {
+      function normalizePath(path) {
+        return (path || "/").replace(/\/+$/, "") || "/";
+      }
+
+      function maybeRedirect(config) {
+        if (!config || !config.cookieUrl) return;
+
+        var target;
+        try {
+          target = new URL(config.cookieUrl, window.location.origin);
+        } catch {
+          return;
+        }
+
+        var currentPath = normalizePath(window.location.pathname);
+        var targetPath = normalizePath(target.pathname);
+        var sameOrigin = target.origin === window.location.origin;
+        if (sameOrigin && targetPath === currentPath) return;
+
+        window.location.replace(target.toString());
+      }
+
+      window.addEventListener("w2b:legal-config-ready", function (event) {
+        maybeRedirect(event.detail);
+      });
+
+      if (window.W2B_LEGAL_CONFIG) {
+        maybeRedirect(window.W2B_LEGAL_CONFIG);
+      }
+    })();
+  </script>
+</body>
+</html>

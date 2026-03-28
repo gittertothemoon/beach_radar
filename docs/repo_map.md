@@ -30,6 +30,7 @@ This document describes where responsibilities live in the codebase.
 ## API (`api/`)
 
 - `api/signup.ts`: landing signup endpoint
+- `api/business-request.ts`: business partnership lead endpoint
 - `api/reports/`: crowd reports read/write endpoint
 - `api/account/`: authenticated account actions
 - `api/analytics.ts`: anonymous server-side analytics ingestion
@@ -41,6 +42,7 @@ This document describes where responsibilities live in the codebase.
 - `app_auth_favorites.sql`: auth/favorites schema
 - `app_crowd_reports.sql`: crowd reports schema
 - `app_analytics_events.sql`: anonymous analytics events schema
+- `12_business_requests.sql`: business partnership lead schema
 
 ## Seed Flow (`scripts/seed/`)
 

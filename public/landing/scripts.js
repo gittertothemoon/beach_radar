@@ -172,6 +172,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== Email Form Submission (Supabase signup via API) =====
     const SIGNUP_ENDPOINT = '/api/signup';
+    const BUSINESS_REQUEST_ENDPOINT = '/api/business-request';
+    const ACCOUNT_PREFS_STORAGE_KEY = 'w2b-account-prefs-v1';
 
     const parseQueryParams = (search) => {
         const paramsObj = {};
@@ -200,6 +202,34 @@ document.addEventListener('DOMContentLoaded', () => {
             if (paramsObj[key]) out[key] = paramsObj[key];
         });
         return out;
+    };
+
+    const readAccountPrefs = () => {
+        try {
+            const raw = localStorage.getItem(ACCOUNT_PREFS_STORAGE_KEY);
+            if (!raw) return {};
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === 'object' ? parsed : {};
+        } catch (_) {
+            return {};
+        }
+    };
+
+    const readPreferredLanguage = (paramsObj) => {
+        if (paramsObj.lang === 'en' || paramsObj.lang === 'it') {
+            return paramsObj.lang;
+        }
+        const prefs = readAccountPrefs();
+        return prefs.language === 'en' ? 'en' : 'it';
+    };
+
+    const readPreferredInterests = () => {
+        const prefs = readAccountPrefs();
+        if (!Array.isArray(prefs.interests)) return [];
+        return prefs.interests
+            .filter((entry) => typeof entry === 'string' && entry.trim().length > 0)
+            .map((entry) => entry.trim().slice(0, 32))
+            .slice(0, 8);
     };
 
     const submitSignup = async (payload) => {
@@ -285,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const payload = {
                     email,
-                    lang: 'it',
+                    lang: readPreferredLanguage(params),
                     page: window.location.pathname,
                     referrer: document.referrer || null,
                     tz: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
@@ -300,6 +330,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     attribution: buildAttribution(params),
                     project: 'where2beach',
                     version: 'landing_v2',
+                    meta: {
+                        interests: readPreferredInterests(),
+                        source: params.from || 'landing',
+                    },
                 };
 
                 const result = await submitSignup(payload);
@@ -335,4 +369,147 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const signupForms = document.querySelectorAll('[data-signup-form]');
     signupForms.forEach((form) => initSignupForm(form));
+
+    const submitBusinessRequest = async (payload) => {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 8000);
+        try {
+            const response = await fetch(BUSINESS_REQUEST_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify(payload),
+                keepalive: true,
+                signal: controller.signal,
+            });
+
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (_) {
+                data = null;
+            }
+
+            if (!response.ok) {
+                const error = new Error('request_failed');
+                error.code = data && data.error ? data.error : 'request_failed';
+                throw error;
+            }
+
+            return data || { ok: true, already: false, notified: false };
+        } finally {
+            window.clearTimeout(timeoutId);
+        }
+    };
+
+    const initBusinessRequestForm = (form) => {
+        const businessType = form.querySelector('[data-business-type]');
+        const companyName = form.querySelector('[data-business-company]');
+        const city = form.querySelector('[data-business-city]');
+        const contactName = form.querySelector('[data-business-contact]');
+        const role = form.querySelector('[data-business-role]');
+        const email = form.querySelector('[data-business-email]');
+        const phone = form.querySelector('[data-business-phone]');
+        const message = form.querySelector('[data-business-message]');
+        const honeypot = form.querySelector('[data-business-hp]');
+        const consent = form.querySelector('[data-business-consent]');
+        const submitBtn = form.querySelector('[data-business-submit]');
+        const feedbackEl = form.querySelector('[data-business-feedback]');
+
+        if (!businessType || !companyName || !city || !contactName || !role || !email || !consent || !submitBtn) {
+            return;
+        }
+
+        const setFeedback = (text, tone) => {
+            if (!feedbackEl) return;
+            feedbackEl.textContent = text;
+            feedbackEl.classList.remove('text-red-500', 'text-emerald-600', 'text-gray-500');
+            if (tone === 'error') {
+                feedbackEl.classList.add('text-red-500');
+                return;
+            }
+            if (tone === 'success') {
+                feedbackEl.classList.add('text-emerald-600');
+                return;
+            }
+            feedbackEl.classList.add('text-gray-500');
+        };
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const emailValue = String(email.value || '').trim().toLowerCase();
+            const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
+            if (!emailValid) {
+                setFeedback('Inserisci un indirizzo email valido.', 'error');
+                return;
+            }
+            if (!consent.checked) {
+                setFeedback('Devi accettare la privacy per inviare la richiesta.', 'error');
+                return;
+            }
+
+            const params = parseQueryParams(window.location.search);
+            const utm = {};
+            Object.keys(params).forEach((key) => {
+                if (key.toLowerCase().startsWith('utm_')) utm[key] = params[key];
+            });
+
+            const initialText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Invio...';
+            setFeedback('Invio richiesta in corso.', 'neutral');
+
+            try {
+                const payload = {
+                    businessType: String(businessType.value || '').trim(),
+                    companyName: String(companyName.value || '').trim(),
+                    city: String(city.value || '').trim(),
+                    contactName: String(contactName.value || '').trim(),
+                    role: String(role.value || '').trim(),
+                    email: emailValue,
+                    phone: phone ? String(phone.value || '').trim() : '',
+                    message: message ? String(message.value || '').trim() : '',
+                    lang: readPreferredLanguage(params),
+                    hp: honeypot ? String(honeypot.value || '').trim() : '',
+                    utm,
+                    attribution: buildAttribution(params),
+                    meta: {
+                        page: window.location.pathname,
+                        referrer: document.referrer || null,
+                        source: params.src || params.from || 'landing',
+                        interests: readPreferredInterests(),
+                    },
+                };
+
+                const result = await submitBusinessRequest(payload);
+                if (result && result.already) {
+                    setFeedback('Richiesta già ricevuta di recente. Ti ricontattiamo a breve.', 'success');
+                } else {
+                    setFeedback('Perfetto, richiesta inviata. Il team business ti contatterà presto.', 'success');
+                }
+                submitBtn.textContent = 'Richiesta inviata ✓';
+                form.reset();
+                submitBtn.disabled = false;
+                window.setTimeout(() => {
+                    submitBtn.textContent = initialText || 'Invia richiesta partnership';
+                }, 1800);
+            } catch (error) {
+                const code = error && error.code ? error.code : '';
+                if (code === 'rate_limited') {
+                    setFeedback('Troppi tentativi ravvicinati. Riprova tra poco.', 'error');
+                } else if (code === 'invalid_email') {
+                    setFeedback('Email non valida.', 'error');
+                } else {
+                    setFeedback('Errore temporaneo. Riprova tra qualche minuto.', 'error');
+                }
+                submitBtn.disabled = false;
+                submitBtn.textContent = initialText || 'Invia richiesta partnership';
+            }
+        });
+    };
+
+    const businessRequestForms = document.querySelectorAll('[data-business-request-form]');
+    businessRequestForms.forEach((form) => initBusinessRequestForm(form));
 });

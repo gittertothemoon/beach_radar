@@ -6,7 +6,11 @@ import {
   useRef,
   useState,
 } from "react";
-import type { FormEvent, PointerEvent as ReactPointerEvent } from "react";
+import type {
+  FormEvent,
+  PointerEvent as ReactPointerEvent,
+  ReactNode,
+} from "react";
 import type { BeachWithStats } from "../lib/types";
 import { STRINGS } from "../i18n/it";
 import BottomNav from "./BottomNav";
@@ -19,6 +23,15 @@ import {
 } from "../lib/format";
 import { askChatbot, type ChatbotMessage } from "../lib/chatbot";
 import { isPerfEnabled, useRenderCounter } from "../lib/perf";
+import {
+  INTEREST_OPTIONS,
+  type InterestId,
+  type PreferredLanguage,
+  readInterests,
+  readPreferredLanguage,
+  writeInterests,
+  writePreferredLanguage,
+} from "../lib/accountPreferences";
 import ondaAvatarCore from "../assets/chatbot/onda/onda-1.png";
 import ondaAvatarHero from "../assets/chatbot/onda/onda-2.png";
 import ondaAvatarWelcome from "../assets/chatbot/onda/onda-4.png";
@@ -79,6 +92,12 @@ type ChatMessageRow = {
 
 const MAX_CHAT_MESSAGES = 12;
 const MAX_CHAT_INPUT_CHARS = 420;
+const PRIVACY_URL = "/privacy/";
+const LANDING_URL = "/landing/";
+const SUPPORT_EMAIL = "info@where2beach.com";
+const SHARE_APP_URL = "https://where2beach.com/";
+const DEFAULT_REVIEW_URL = "https://apps.apple.com/it/search?term=where2beach";
+const APP_REVIEW_URL = import.meta.env.VITE_APP_REVIEW_URL?.trim() || DEFAULT_REVIEW_URL;
 
 const ONDA_AVATARS = {
   core: ondaAvatarCore,
@@ -216,6 +235,48 @@ const beachRowEqual = (prev: BeachRowProps, next: BeachRowProps) => {
 
 const BeachRow = memo(BeachRowComponent, beachRowEqual);
 
+type SettingsRowProps = {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  badge?: string;
+  testId?: string;
+};
+
+const SettingsRow = ({ icon, label, onClick, badge, testId }: SettingsRowProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    data-testid={testId}
+    className="br-press flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+  >
+    <span className="flex min-w-0 items-center gap-3">
+      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center br-text-tertiary">
+        {icon}
+      </span>
+      <span className="truncate text-[14px] font-semibold br-text-primary">{label}</span>
+      {badge ? (
+        <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-sky-100/85">
+          {badge}
+        </span>
+      ) : null}
+    </span>
+    <span className="shrink-0 br-text-tertiary" aria-hidden="true">
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M9 6l6 6-6 6" />
+      </svg>
+    </span>
+  </button>
+);
+
 const BottomSheetComponent = ({
   beaches,
   favoriteBeaches,
@@ -237,6 +298,8 @@ const BottomSheetComponent = ({
   onOpenProfile,
   onOpenSignIn,
 }: BottomSheetProps) => {
+  type SettingsPanel = "language" | "interests" | null;
+
   const perfEnabled = isPerfEnabled();
   useRenderCounter("BottomSheet", perfEnabled);
   const [dragProgress, setDragProgress] = useState<number | null>(null);
@@ -251,6 +314,11 @@ const BottomSheetComponent = ({
     );
   });
   const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [settingsPanel, setSettingsPanel] = useState<SettingsPanel>(null);
+  const [preferredLanguage, setPreferredLanguage] = useState<PreferredLanguage>(() =>
+    readPreferredLanguage(),
+  );
+  const [interestIds, setInterestIds] = useState<InterestId[]>(() => readInterests());
   const suppressClickRef = useRef(false);
   const startYRef = useRef(0);
   const startProgressRef = useRef(0);
@@ -359,6 +427,112 @@ const BottomSheetComponent = ({
     setFavoritesOpen((prev) => !prev);
   }, [hasFavorites]);
 
+  const openUrl = useCallback((href: string) => {
+    if (!href) return;
+    if (href.startsWith("mailto:")) {
+      window.location.href = href;
+      return;
+    }
+    if (href.startsWith("http://") || href.startsWith("https://")) {
+      window.open(href, "_blank", "noopener,noreferrer");
+      return;
+    }
+    window.location.assign(href);
+  }, []);
+
+  const updatePreferredLanguage = useCallback((nextLanguage: PreferredLanguage) => {
+    setPreferredLanguage(nextLanguage);
+    writePreferredLanguage(nextLanguage);
+  }, []);
+
+  const toggleInterest = useCallback((interestId: InterestId) => {
+    setInterestIds((prev) => {
+      const exists = prev.includes(interestId);
+      const next = exists
+        ? prev.filter((item) => item !== interestId)
+        : [...prev, interestId];
+      writeInterests(next);
+      return next;
+    });
+  }, []);
+
+  const buildLegalUrl = useCallback((basePath: string) => {
+    const params = new URLSearchParams();
+    params.set("lang", preferredLanguage);
+    params.set("from", "app");
+    params.set("back", "/app/");
+    return `${basePath}?${params.toString()}`;
+  }, [preferredLanguage]);
+
+  const businessRequestUrl = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set("from", "app");
+    params.set("src", "account");
+    params.set("lang", preferredLanguage);
+    if (interestIds.length > 0) {
+      params.set("interests", interestIds.join(","));
+    }
+    return `${LANDING_URL}?${params.toString()}#business-request`;
+  }, [interestIds, preferredLanguage]);
+
+  const handleOpenSavedBeaches = useCallback(() => {
+    setFavoritesOpen(true);
+    setSettingsPanel(null);
+    onSectionChange("map");
+  }, [onSectionChange]);
+
+  const handleOpenLanguageSettings = useCallback(() => {
+    setSettingsPanel((prev) => (prev === "language" ? null : "language"));
+  }, []);
+
+  const handleOpenInterests = useCallback(() => {
+    setSettingsPanel((prev) => (prev === "interests" ? null : "interests"));
+  }, []);
+
+  const handleOpenReview = useCallback(() => {
+    const isValidHttp = /^https?:\/\//i.test(APP_REVIEW_URL);
+    if (isValidHttp) {
+      openUrl(APP_REVIEW_URL);
+      return;
+    }
+    openUrl(`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Recensione Where2Beach")}`);
+  }, [openUrl]);
+
+  const handleOpenSupport = useCallback(() => {
+    openUrl(
+      `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Supporto Where2Beach")}&body=${encodeURIComponent(
+        `Ciao team Where2Beach,%0D%0A`,
+      )}`,
+    );
+  }, [openUrl]);
+
+  const handleShareApp = useCallback(async () => {
+    const sharePayload = {
+      title: STRINGS.appName,
+      text: STRINGS.account.settingsShareText,
+      url: SHARE_APP_URL,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(sharePayload);
+        return;
+      } catch {
+        // User cancelled or platform rejected share.
+      }
+    }
+
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(SHARE_APP_URL);
+      } catch {
+        // Clipboard may be unavailable in some browsers or contexts.
+      }
+    }
+
+    openUrl(SHARE_APP_URL);
+  }, [openUrl]);
+
   const handleToggleBeachFavorite = useCallback(
     (beachId: string) => {
       const isLastFavorite = favoriteBeachIds.has(beachId) && favoriteBeaches.length === 1;
@@ -411,8 +585,10 @@ const BottomSheetComponent = ({
       selectedBeachRegion: selectedBeach?.region ?? null,
       favoriteCount: favoriteBeaches.length,
       hasAccount: !!accountEmail,
+      preferredLanguage,
+      interests: interestIds,
     }),
-    [accountEmail, favoriteBeaches.length, selectedBeach],
+    [accountEmail, favoriteBeaches.length, interestIds, preferredLanguage, selectedBeach],
   );
 
   useEffect(() => {
@@ -699,69 +875,307 @@ const BottomSheetComponent = ({
           ) : null}
           {activeSection === "profile" ? (
             <div className="space-y-4 pb-6">
-              <section className="rounded-2xl br-surface-soft p-4">
-                {accountEmail ? (
-                  <>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-cyan-100/80">
-                      {STRINGS.account.signedInAs}
-                    </div>
-                    <div className="mt-1 text-[15px] font-semibold br-text-primary">
-                      {accountName ?? "Profilo attivo"}
-                    </div>
-                    <div className="text-[12px] br-text-secondary">{accountEmail}</div>
-                    <button
-                      type="button"
-                      onClick={onOpenProfile}
-                      className="br-press mt-3 w-full rounded-xl border border-cyan-300/35 bg-cyan-500/10 px-3 py-2 text-[12px] font-semibold text-cyan-100 transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
-                    >
-                      {STRINGS.account.profileAction}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] text-amber-100/80">
-                      {STRINGS.account.title}
-                    </div>
-                    <div className="mt-1 text-[14px] br-text-secondary">
-                      {STRINGS.account.subtitle}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={onOpenSignIn}
-                      className="br-press mt-3 w-full rounded-xl border border-amber-300/40 bg-amber-500/12 px-3 py-2 text-[12px] font-semibold text-amber-100 transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
-                    >
-                      {STRINGS.account.signInAction}
-                    </button>
-                  </>
-                )}
+              <section>
+                <div className="px-1 text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
+                  {STRINGS.account.settingsTitle}
+                </div>
+                <div className="mt-2 overflow-hidden rounded-2xl border border-white/16 bg-white/7 divide-y divide-[color:var(--hairline)] backdrop-blur-md">
+                  <SettingsRow
+                    icon={(
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M10 17v-2a4 4 0 0 1 4-4h5" />
+                        <path d="M17 7l2 2-2 2" />
+                        <path d="M8 7H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+                      </svg>
+                    )}
+                    label={accountEmail ? STRINGS.account.settingsProfileLabel : STRINGS.account.settingsLoginLabel}
+                    onClick={accountEmail ? onOpenProfile : onOpenSignIn}
+                    testId="settings-login-row"
+                    badge={
+                      accountEmail
+                        ? (accountName?.trim() || STRINGS.account.settingsLoggedBadge)
+                        : undefined
+                    }
+                  />
+                  <SettingsRow
+                    icon={(
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1Z" />
+                      </svg>
+                    )}
+                    label={STRINGS.account.settingsSavedLabel}
+                    onClick={handleOpenSavedBeaches}
+                    testId="settings-saved-row"
+                  />
+                  <SettingsRow
+                    icon={(
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M4 5h16" />
+                        <path d="M4 9h10" />
+                        <path d="M4 13h7" />
+                        <path d="M4 17h12" />
+                      </svg>
+                    )}
+                    label={STRINGS.account.settingsLanguageLabel}
+                    onClick={handleOpenLanguageSettings}
+                    testId="settings-language-row"
+                    badge={preferredLanguage.toUpperCase()}
+                  />
+                  <SettingsRow
+                    icon={(
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="8" cy="9" r="2.5" />
+                        <circle cx="16" cy="8" r="2.5" />
+                        <path d="M3.5 18.5a4.5 4.5 0 0 1 9 0" />
+                        <path d="M11.5 18.5a4.5 4.5 0 0 1 9 0" />
+                      </svg>
+                    )}
+                    label={STRINGS.account.settingsInterestsLabel}
+                    onClick={handleOpenInterests}
+                    testId="settings-interests-row"
+                    badge={interestIds.length > 0 ? String(interestIds.length) : undefined}
+                  />
+                  <SettingsRow
+                    icon={(
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 3l7 4v5c0 5.2-3 8.6-7 9-4-.4-7-3.8-7-9V7l7-4Z" />
+                        <path d="M9.5 12.2l1.8 1.8 3.2-3.2" />
+                      </svg>
+                    )}
+                    label={STRINGS.account.settingsPrivacyLabel}
+                    onClick={() => openUrl(buildLegalUrl(PRIVACY_URL))}
+                    testId="settings-privacy-row"
+                  />
+                </div>
               </section>
-              {accountEmail ? (
-                <section className="rounded-2xl br-surface-soft p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
-                      {STRINGS.labels.favorites}
-                    </div>
-                    <div className="text-[11px] br-text-tertiary">{favoriteBeaches.length}</div>
+
+              {settingsPanel === "language" ? (
+                <section className="rounded-2xl border border-white/16 bg-white/8 p-3 backdrop-blur-md">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.1em] br-text-tertiary">
+                    Lingua comunicazioni
                   </div>
-                  {profileFavoritesPreview.length > 0 ? (
-                    <div className="mt-3 space-y-2">
-                      {profileFavoritesPreview.map((beach) => (
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      type="button"
+                      data-testid="settings-language-it"
+                      onClick={() => updatePreferredLanguage("it")}
+                      className={`br-press rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
+                        preferredLanguage === "it"
+                          ? "border-cyan-300/80 bg-cyan-500/20 text-cyan-100"
+                          : "border-white/18 bg-white/5 br-text-secondary"
+                      }`}
+                    >
+                      Italiano
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="settings-language-en"
+                      onClick={() => updatePreferredLanguage("en")}
+                      className={`br-press rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
+                        preferredLanguage === "en"
+                          ? "border-cyan-300/80 bg-cyan-500/20 text-cyan-100"
+                          : "border-white/18 bg-white/5 br-text-secondary"
+                      }`}
+                    >
+                      English
+                    </button>
+                  </div>
+                </section>
+              ) : null}
+
+              {settingsPanel === "interests" ? (
+                <section className="rounded-2xl border border-white/16 bg-white/8 p-3 backdrop-blur-md">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.1em] br-text-tertiary">
+                    Interessi profilo
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {INTEREST_OPTIONS.map((option) => {
+                      const active = interestIds.includes(option.id);
+                      return (
                         <button
-                          key={beach.id}
+                          key={option.id}
                           type="button"
-                          onClick={() => handleSelectFavoriteFromProfile(beach.id)}
-                          className="br-press flex w-full items-center justify-between rounded-xl br-surface-soft px-3 py-2 text-left transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                          data-testid={`settings-interest-${option.id}`}
+                          onClick={() => toggleInterest(option.id)}
+                          className={`br-press rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
+                            active
+                              ? "border-cyan-300/80 bg-cyan-500/20 text-cyan-100"
+                              : "border-white/18 bg-white/5 br-text-secondary"
+                          }`}
                         >
-                          <span className="text-[12px] br-text-primary">{beach.name}</span>
-                          <span className="text-[11px] br-text-tertiary">{formatDistanceLabel(beach.distanceM)}</span>
+                          {option.label}
                         </button>
-                      ))}
+                      );
+                    })}
+                  </div>
+                </section>
+              ) : null}
+
+              <section>
+                <div className="px-1 text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
+                  {STRINGS.account.settingsFeedbackTitle}
+                </div>
+                <div className="mt-2 overflow-hidden rounded-2xl border border-white/16 bg-white/7 divide-y divide-[color:var(--hairline)] backdrop-blur-md">
+                  <SettingsRow
+                    icon={(
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 3.2l2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8 2.5-5Z" />
+                      </svg>
+                    )}
+                    label={STRINGS.account.settingsReviewLabel}
+                    onClick={handleOpenReview}
+                    testId="settings-review-row"
+                  />
+                  <SettingsRow
+                    icon={(
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
+                        <path d="M7.5 12h4" />
+                        <path d="M15.5 12h1" />
+                      </svg>
+                    )}
+                    label={STRINGS.account.settingsTalkToUsLabel}
+                    onClick={handleOpenSupport}
+                    testId="settings-support-row"
+                  />
+                  <SettingsRow
+                    icon={(
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 16V4" />
+                        <path d="M8 8l4-4 4 4" />
+                        <rect x="5" y="14" width="14" height="6" rx="1.5" />
+                      </svg>
+                    )}
+                    label={STRINGS.account.settingsShareLabel}
+                    onClick={() => {
+                      void handleShareApp();
+                    }}
+                    testId="settings-share-row"
+                  />
+                </div>
+              </section>
+
+              <section className="overflow-hidden rounded-2xl border border-sky-200/24 bg-[radial-gradient(130%_140%_at_100%_0%,rgba(56,189,248,0.3),transparent_55%),linear-gradient(180deg,#1d4d80,#1e4a77)] px-4 py-3">
+                <button
+                  type="button"
+                  data-testid="settings-business-cta"
+                  onClick={() => openUrl(businessRequestUrl)}
+                  className="br-press flex w-full items-center justify-between gap-3 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                >
+                  <div className="min-w-0">
+                    <div className="inline-flex rounded-md bg-emerald-300/24 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.09em] text-emerald-50">
+                      {STRINGS.account.settingsBusinessBadge}
                     </div>
-                  ) : (
-                    <div className="mt-3 rounded-xl border border-dashed border-white/20 bg-white/5 px-3 py-2 text-[12px] br-text-tertiary backdrop-blur-md">
-                      {STRINGS.account.profileFavoritesEmpty}
+                    <div className="mt-2 text-[26px] leading-none text-sky-100">
+                      {STRINGS.account.settingsBusinessEmoji}
                     </div>
-                  )}
+                    <div className="mt-2 text-[22px] font-semibold leading-tight text-white">
+                      {STRINGS.account.settingsBusinessTitle}
+                    </div>
+                    <div className="mt-1 text-[13px] font-medium text-sky-100/85">
+                      {STRINGS.account.settingsBusinessSubtitle}
+                    </div>
+                  </div>
+                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-sky-200/26 bg-sky-300/14 text-sky-100">
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M9 6l6 6-6 6" />
+                    </svg>
+                  </span>
+                </button>
+              </section>
+
+              {accountEmail && profileFavoritesPreview.length > 0 ? (
+                <section className="rounded-2xl border border-white/12 bg-white/5 p-3">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
+                    {STRINGS.account.profileFavoritesTitle}
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    {profileFavoritesPreview.map((beach) => (
+                      <button
+                        key={beach.id}
+                        type="button"
+                        onClick={() => handleSelectFavoriteFromProfile(beach.id)}
+                        className="br-press flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-left transition focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
+                      >
+                        <span className="text-[12px] br-text-primary">{beach.name}</span>
+                        <span className="text-[11px] br-text-tertiary">
+                          {formatDistanceLabel(beach.distanceM)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </section>
               ) : null}
             </div>

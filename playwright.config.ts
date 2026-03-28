@@ -35,8 +35,10 @@ export default defineConfig({
       name: "api-and-routing",
       testDir: "tests",
       testMatch: [
+        "business-request.api.spec.ts",
         "reports.api.spec.ts",
         "app.gating.spec.ts",
+        "landing.business-request.spec.ts",
         "beach.enrich.api.spec.ts",
         "beach.enrich.logic.spec.ts"
       ],
@@ -52,6 +54,7 @@ export default defineConfig({
         "app.auth.spec.ts",
         "app.auth.errors.spec.ts",
         "app.auth.resume.spec.ts",
+        "app.account.spec.ts",
         "app.map.spec.ts",
         "app.beach-profile.spec.ts",
         "app.reports.spec.ts",

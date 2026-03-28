@@ -122,11 +122,16 @@ npm run mobile:ios
 ```
 
 `npm run mobile:ios` is the recommended command for local simulator work.
-When `mobile/.env` has `EXPO_PUBLIC_BASE_URL` set to `http://127.0.0.1:<port>` or `http://localhost:<port>`,
-it ensures required local services are running first:
+When `mobile/.env` has `EXPO_PUBLIC_BASE_URL` set to a local URL
+(`127.0.0.1`, `localhost`, or private LAN IP like `192.168.x.x`), it ensures
+required local services are running first:
 
 - Vercel dev API on `http://127.0.0.1:3000`
 - Vite dev frontend on `EXPO_PUBLIC_BASE_URL`
+
+For simulator reliability it auto-selects a reachable local host
+(loopback or LAN, based on your current network), exports that host to Expo,
+and primes iOS `RCT_jsLocation`.
 
 Then it opens Expo iOS. If you explicitly want Expo only, use:
 
@@ -157,6 +162,7 @@ See `.env.example` for the full list.
 Most important:
 
 - frontend: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_PUBLIC_BASE_URL`
+- frontend account links: `VITE_APP_REVIEW_URL` (optional store review URL)
 - APIs: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `APP_ACCESS_KEY` (or `APP_ACCESS_KEY_HASH`)
 - Chatbot API: `OPENAI_API_KEY` (required), `OPENAI_CHAT_MODEL` (default `gpt-5.4-nano`)
 - Legal/iubenda: `LEGAL_PRIVACY_URL`, `LEGAL_TERMS_URL`, `LEGAL_COOKIE_URL`, `IUBENDA_SITE_ID`, `IUBENDA_COOKIE_POLICY_ID`
@@ -185,6 +191,12 @@ Optional feature flags:
 - `OPENAI_CHAT_DAILY_TOKEN_BUDGET`
 - `CHATBOT_SALT`
 - `SIGNUP_HASH_SALT`
+- `BUSINESS_REQUEST_TABLE`
+- `BUSINESS_RATE_LIMIT_MAX`
+- `BUSINESS_RATE_LIMIT_WINDOW_SEC`
+- `BUSINESS_LEADS_NOTIFY_TO`
+- `BUSINESS_FROM`
+- `BUSINESS_REPLY_TO`
 - `CRON_SECRET`
 
 ## Legal Compliance Setup (iubenda)
@@ -274,6 +286,27 @@ Recommended repo secrets/variables:
 SQL migration:
 
 - `scripts/sql/app_analytics_events.sql`
+
+## Business Request API (Landing + App Account)
+
+- Endpoint: `POST /api/business-request`
+- Used by:
+  - landing section `#business-request`
+  - app account CTA `Business` (`/landing/?from=app&src=account#business-request`)
+- Behavior:
+  - validates payload and applies anti-spam/rate-limit
+  - stores lead in `public.business_requests`
+  - deduplicates by `email_norm + company_name_norm` in a 30-day window
+  - attempts internal notification via Resend (non-blocking for lead storage)
+
+Related env:
+- `BUSINESS_REQUEST_TABLE` (default `business_requests`)
+- `BUSINESS_RATE_LIMIT_MAX`
+- `BUSINESS_RATE_LIMIT_WINDOW_SEC`
+- `BUSINESS_LEADS_NOTIFY_TO` (default `info@where2beach.com`)
+- `BUSINESS_FROM`
+- `BUSINESS_REPLY_TO`
+- `RESEND_API_KEY`
 
 ## Chatbot API (Cost-First Setup)
 

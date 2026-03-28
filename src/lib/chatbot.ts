@@ -10,6 +10,8 @@ export type ChatbotContext = {
   selectedBeachRegion?: string | null;
   favoriteCount?: number | null;
   hasAccount?: boolean | null;
+  preferredLanguage?: "it" | "en" | null;
+  interests?: string[] | null;
 };
 
 type ChatbotUsage = {
