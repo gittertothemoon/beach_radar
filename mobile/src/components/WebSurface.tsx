@@ -22,6 +22,7 @@ type WebSurfaceProps = {
   landingBlockedMessage?: string;
   firstRunTutorialEnabled?: boolean;
   onCompleteFirstRunTutorial?: () => void;
+  onInitialLoadSettled?: () => void;
 };
 
 type TutorialRect = {
@@ -550,6 +551,7 @@ export const WebSurface = ({
   landingBlockedMessage,
   firstRunTutorialEnabled = false,
   onCompleteFirstRunTutorial,
+  onInitialLoadSettled,
 }: WebSurfaceProps) => {
   const insets = useSafeAreaInsets();
   const statusBarOverlayHeight = Math.max(28, insets.top + 2);
@@ -590,8 +592,14 @@ export const WebSurface = ({
   const tutorialAutoAdvanceScheduledKeyRef = useRef<string | null>(null);
   const tutorialAvatarHasPositionRef = useRef(false);
   const tutorialSpotlightHasRectRef = useRef(false);
+  const initialLoadSettledRef = useRef(false);
 
   const source = useMemo(() => ({ uri: currentUrl }), [currentUrl]);
+  const notifyInitialLoadSettled = useCallback(() => {
+    if (initialLoadSettledRef.current) return;
+    initialLoadSettledRef.current = true;
+    onInitialLoadSettled?.();
+  }, [onInitialLoadSettled]);
   const appOrigin = useMemo(() => {
     try {
       return new URL(currentUrl).origin;
@@ -971,6 +979,7 @@ export const WebSurface = ({
           landingBlockedMessage ??
             "Accesso app non autorizzato. Configura la chiave app e riprova.",
         );
+        notifyInitialLoadSettled();
         return false;
       }
 
@@ -998,7 +1007,14 @@ export const WebSurface = ({
       }
       return true;
     },
-    [appOrigin, blockLandingRedirect, hasLoadedOnce, landingBlockedMessage, openExternalUrl],
+    [
+      appOrigin,
+      blockLandingRedirect,
+      hasLoadedOnce,
+      landingBlockedMessage,
+      notifyInitialLoadSettled,
+      openExternalUrl,
+    ],
   );
 
   const handleWebError = useCallback(
@@ -1037,8 +1053,9 @@ export const WebSurface = ({
       setLoading(false);
       setHasLoadedOnce(true);
       setError(nativeError.description || "Errore sconosciuto");
+      notifyInitialLoadSettled();
     },
-    [currentUrl, isLocalSource],
+    [currentUrl, isLocalSource, notifyInitialLoadSettled],
   );
 
   const handleWebHttpError = useCallback(
@@ -1072,8 +1089,9 @@ export const WebSurface = ({
       setLoading(false);
       setHasLoadedOnce(true);
       setTutorialDomReady(false);
+      notifyInitialLoadSettled();
     },
-    [],
+    [notifyInitialLoadSettled],
   );
 
   const handleWebMessage = useCallback(
@@ -2049,6 +2067,7 @@ export const WebSurface = ({
           setLoading(false);
           setHasLoadedOnce(true);
           retryAttemptRef.current = 0;
+          notifyInitialLoadSettled();
         }}
         onError={handleWebError}
         onHttpError={handleWebHttpError}

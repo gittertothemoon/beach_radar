@@ -14,6 +14,9 @@ import {
 } from "../services/onboarding";
 
 const MOBILE_SCHEME = "where2beach:";
+type AppWebScreenProps = {
+  onInitialWebReady?: () => void;
+};
 
 const normalizePathValue = (value: string): string | null => {
   const trimmed = value.trim();
@@ -77,7 +80,7 @@ const resolveDeepLinkTarget = (rawUrl: string): string | null => {
   }
 };
 
-export const AppWebScreen = () => {
+export const AppWebScreen = ({ onInitialWebReady }: AppWebScreenProps) => {
   const [currentUrl, setCurrentUrl] = useState(MOBILE_APP_URL);
   const [showFirstRunTutorial, setShowFirstRunTutorial] = useState<boolean | null>(
     null,
@@ -146,6 +149,7 @@ export const AppWebScreen = () => {
       landingBlockedMessage="Chiave app non valida o configurazione backend incompleta. Verifica EXPO_PUBLIC_APP_ACCESS_KEY su mobile e APP_ACCESS_KEY/APP_ACCESS_KEY_HASH sulle API."
       firstRunTutorialEnabled={showFirstRunTutorial === true}
       onCompleteFirstRunTutorial={handleCompleteTutorial}
+      onInitialLoadSettled={onInitialWebReady}
     />
   );
 };
