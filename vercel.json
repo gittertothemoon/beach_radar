@@ -205,6 +205,22 @@
   ],
   "rewrites": [
     {
+      "source": "/api/analytics",
+      "destination": "/api/reports?action=analytics"
+    },
+    {
+      "source": "/api/legal-config",
+      "destination": "/api/reports?action=legal-config"
+    },
+    {
+      "source": "/api/reports-prune",
+      "destination": "/api/reports?action=prune"
+    },
+    {
+      "source": "/api/beach-enrich/run",
+      "destination": "/api/reports?action=beach-enrich-run"
+    },
+    {
       "source": "/landing/",
       "destination": "/landing/index.html"
     },
