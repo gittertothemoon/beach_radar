@@ -391,6 +391,32 @@ const sendLeadNotification = async (input: {
   }
 };
 
+const isMissingTableError = (error: unknown): boolean => {
+  if (!error || typeof error !== "object") return false;
+  const maybe = error as { code?: unknown; message?: unknown };
+  const code = typeof maybe.code === "string" ? maybe.code : "";
+  const message = typeof maybe.message === "string" ? maybe.message : "";
+  return code === "PGRST205" || /could not find the table/i.test(message);
+};
+
+const notifyLeadWithoutStorage = async (
+  payload: BusinessRequestBody,
+): Promise<{ notified: boolean }> => {
+  const notifyFrom =
+    readEnv("BUSINESS_FROM") || readEnv("SIGNUP_FROM") || readEnv("WAITLIST_FROM");
+  if (!notifyFrom) return { notified: false };
+
+  const notifyTo = readEnv("BUSINESS_LEADS_NOTIFY_TO") || "info@where2beach.com";
+  const notifyReplyTo = readEnv("BUSINESS_REPLY_TO") || payload.email;
+  const notification = await sendLeadNotification({
+    to: notifyTo,
+    from: notifyFrom,
+    replyTo: notifyReplyTo,
+    payload,
+  });
+  return { notified: notification.ok };
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   applyApiSecurityHeaders(res, { noStore: true });
 
@@ -493,6 +519,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .maybeSingle();
 
   if (existingError) {
+    if (isMissingTableError(existingError)) {
+      const fallback = await notifyLeadWithoutStorage(payload);
+      return res.status(200).json({
+        ok: true,
+        already: false,
+        notified: fallback.notified,
+      });
+    }
     return res.status(500).json({ ok: false, error: "db_select_failed" });
   }
 
