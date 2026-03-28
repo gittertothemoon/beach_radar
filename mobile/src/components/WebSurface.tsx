@@ -593,13 +593,22 @@ export const WebSurface = ({
   const tutorialAvatarHasPositionRef = useRef(false);
   const tutorialSpotlightHasRectRef = useRef(false);
   const initialLoadSettledRef = useRef(false);
+  const initialLoadProbeTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const source = useMemo(() => ({ uri: currentUrl }), [currentUrl]);
+  const clearInitialLoadProbeTimers = useCallback(() => {
+    if (initialLoadProbeTimersRef.current.length === 0) return;
+    for (const timer of initialLoadProbeTimersRef.current) {
+      clearTimeout(timer);
+    }
+    initialLoadProbeTimersRef.current = [];
+  }, []);
   const notifyInitialLoadSettled = useCallback(() => {
     if (initialLoadSettledRef.current) return;
     initialLoadSettledRef.current = true;
+    clearInitialLoadProbeTimers();
     onInitialLoadSettled?.();
-  }, [onInitialLoadSettled]);
+  }, [clearInitialLoadProbeTimers, onInitialLoadSettled]);
   const appOrigin = useMemo(() => {
     try {
       return new URL(currentUrl).origin;
@@ -968,6 +977,22 @@ export const WebSurface = ({
     webViewRef.current?.injectJavaScript(script);
   }, []);
 
+  const armInitialLoadSettlementProbe = useCallback(() => {
+    if (initialLoadSettledRef.current) return;
+    clearInitialLoadProbeTimers();
+    const runProbe = () => {
+      probeTutorialReady();
+    };
+    runProbe();
+    initialLoadProbeTimersRef.current = [
+      setTimeout(runProbe, 180),
+      setTimeout(runProbe, 640),
+      setTimeout(() => {
+        notifyInitialLoadSettled();
+      }, 2400),
+    ];
+  }, [clearInitialLoadProbeTimers, notifyInitialLoadSettled, probeTutorialReady]);
+
   const handleShouldStartLoadWithRequest = useCallback(
     (request: { url: string; isTopFrame?: boolean }) => {
       const isTopFrameRequest = request.isTopFrame !== false;
@@ -1105,6 +1130,9 @@ export const WebSurface = ({
 
       if (isTutorialReadyBridgeMessage(parsed)) {
         setTutorialDomReady(parsed.ready);
+        if (parsed.ready) {
+          notifyInitialLoadSettled();
+        }
         return;
       }
 
@@ -1164,6 +1192,7 @@ export const WebSurface = ({
       setTutorialAnchorRect(normalizedRect);
     },
     [
+      notifyInitialLoadSettled,
       tutorialActiveCompletionSelector,
       tutorialActiveSelector,
       tutorialCompletionMode,
@@ -1461,6 +1490,12 @@ export const WebSurface = ({
       tutorialAutoAdvanceScheduledKeyRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      clearInitialLoadProbeTimers();
+    };
+  }, [clearInitialLoadProbeTimers]);
 
   useEffect(() => {
     if (!tutorialActive || !hasLoadedOnce || loading || Boolean(error)) return;
@@ -2067,6 +2102,10 @@ export const WebSurface = ({
           setLoading(false);
           setHasLoadedOnce(true);
           retryAttemptRef.current = 0;
+          if (!initialLoadSettledRef.current) {
+            armInitialLoadSettlementProbe();
+            return;
+          }
           notifyInitialLoadSettled();
         }}
         onError={handleWebError}
