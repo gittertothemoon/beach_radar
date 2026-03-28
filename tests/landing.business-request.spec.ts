@@ -53,3 +53,81 @@ test.describe("landing business request form", () => {
     );
   });
 });
+
+test.describe("landing conversion safeguards", () => {
+  test("has SEO metadata and no placeholder hash links", async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on("pageerror", (error) => {
+      pageErrors.push(String(error?.message || error));
+    });
+
+    await page.goto("/landing/");
+
+    await expect(page.locator('meta[name="description"]')).toHaveCount(1);
+    await expect(page.locator('meta[property="og:title"]')).toHaveCount(1);
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveCount(1);
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+    await expect(page.locator('a[href="#"]')).toHaveCount(0);
+
+    await page.locator("#logo-text").click();
+    await expect(pageErrors).toEqual([]);
+  });
+
+  test("waitlist store CTA scrolls and focuses the email input", async ({ page }) => {
+    await page.goto("/landing/");
+
+    await page.locator('[data-cta-id="waitlist_store_ios"]').click();
+    await expect(page.locator("#landing-email-input")).toBeFocused();
+  });
+
+  test("does not request radar frames before section enters viewport", async ({ page }) => {
+    const sequenceRequests: string[] = [];
+    page.on("request", (request) => {
+      const url = request.url();
+      if (url.includes("/sequence/")) {
+        sequenceRequests.push(url);
+      }
+    });
+
+    await page.goto("/landing/");
+    await page.waitForTimeout(1200);
+    expect(sequenceRequests.length).toBe(0);
+
+    await page.locator("#radar-sequence").scrollIntoViewIfNeeded();
+    await page.waitForTimeout(2000);
+    expect(sequenceRequests.length).toBeGreaterThan(0);
+  });
+
+  test("tracks core funnel analytics events", async ({ page }) => {
+    const trackedEvents: string[] = [];
+
+    await page.route("**/api/analytics", async (route) => {
+      const payload = route.request().postDataJSON() as { eventName?: string };
+      if (payload?.eventName) trackedEvents.push(payload.eventName);
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true }),
+      });
+    });
+
+    await page.route("**/api/signup", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true, already: false }),
+      });
+    });
+
+    await page.goto("/landing/?utm_source=test&utm_medium=e2e&utm_campaign=landing");
+    await page.locator('[data-cta-id="nav_waitlist"]').click();
+    await page.locator("#landing-email-input").fill("qa.landing@example.org");
+    await page.locator("#landing-email-submit").click();
+    await page.waitForTimeout(400);
+
+    expect(trackedEvents).toContain("landing_view");
+    expect(trackedEvents).toContain("cta_click");
+    expect(trackedEvents).toContain("signup_submit");
+    expect(trackedEvents).toContain("signup_success");
+  });
+});

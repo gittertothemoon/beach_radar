@@ -5,6 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Where2Beach | Basta Vacanze Rovinate</title>
+    <meta name="description" content="Controlla affollamento, meteo e segnalazioni della community prima di partire. Iscriviti alla lista prioritaria di Where2Beach per l'accesso anticipato.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://where2beach.com/landing/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Where2Beach | Basta Vacanze Rovinate">
+    <meta property="og:description" content="Scopri in anticipo se la spiaggia vale il viaggio. Affollamento, meteo e segnalazioni live della community.">
+    <meta property="og:url" content="https://where2beach.com/landing/">
+    <meta property="og:image" content="https://where2beach.com/og/og-default.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Where2Beach | Basta Vacanze Rovinate">
+    <meta name="twitter:description" content="Iscriviti alla lista prioritaria e ricevi l'accesso anticipato a Where2Beach.">
+    <meta name="twitter:image" content="https://where2beach.com/og/og-default.jpg">
 
     <!-- Google Fonts: Poppins for a modern, rounded, friendly look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,6 +32,16 @@
     <script src="/legal/runtime.js" defer></script>
 
     <link rel="stylesheet" href="styles.css">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Where2Beach",
+            "url": "https://where2beach.com/landing/",
+            "inLanguage": "it-IT",
+            "description": "Pianifica la giornata al mare con dati live su affollamento, meteo e segnalazioni community."
+        }
+    </script>
 </head>
 
 <body class="text-gray-800 antialiased selection:bg-corallo selection:text-white">
@@ -34,7 +56,7 @@
                 <!-- Logo -->
                 <div
                     class="flex-shrink-0 flex items-center absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
-                    <a href="#" class="text-2xl font-black tracking-tighter text-white flex items-center gap-2 group"
+                    <a href="#hero" class="text-2xl font-black tracking-tighter text-white flex items-center gap-2 group"
                         id="logo-text">
                         <div class="relative flex items-center justify-center">
                             <img src="W2B_Logo.png" alt="Where2Beach Logo"
@@ -50,8 +72,11 @@
                         id="link-2">Cosa Offriamo</a>
                     <a href="#how-it-works" class="text-white font-medium hover:text-onda transition-colors"
                         id="link-3">Come Funziona</a>
-                    <a href="#partners" class="text-white font-medium hover:text-onda transition-colors" id="link-4">Partner</a>
+                    <a href="#partners" class="text-white/80 font-medium hover:text-onda transition-colors" id="link-4">Per aziende</a>
                     <a href="#waitlist"
+                        data-cta-id="nav_waitlist"
+                        data-cta-section="nav"
+                        data-cta-variant="primary"
                         class="bg-corallo text-white px-6 py-2.5 rounded-full font-bold shadow-glow-corallo hover:bg-corallo-hover hover:scale-105 transition-all duration-300">
                         Entra in lista prioritaria
                     </a>
@@ -76,14 +101,17 @@
                 class="text-gray-800 font-bold text-lg hover:text-corallo transition-colors">Cosa Offriamo</a>
             <a href="#how-it-works" class="text-gray-800 font-bold text-lg hover:text-corallo transition-colors">Come
                 Funziona</a>
-            <a href="#partners" class="text-gray-800 font-bold text-lg hover:text-corallo transition-colors">Partner</a>
+            <a href="#partners" class="text-gray-700 font-bold text-lg hover:text-corallo transition-colors">Per aziende</a>
             <a href="#waitlist"
+                data-cta-id="mobile_nav_waitlist"
+                data-cta-section="nav"
+                data-cta-variant="primary"
                 class="bg-corallo text-white px-8 py-3 rounded-full font-bold shadow-lg w-11/12 text-center">Entra in lista prioritaria</a>
         </div>
 </nav>
 
     <!-- Hero Section -->
-    <section class="hero-gradient min-h-[100svh] flex items-center pt-32 md:pt-48 pb-20 md:pb-32 relative overflow-hidden">
+    <section id="hero" class="hero-gradient min-h-[100svh] flex items-center pt-32 md:pt-48 pb-20 md:pb-32 relative overflow-hidden">
         <!-- Mobile Background Image & Overlay -->
         <div class="absolute inset-0 z-0 md:hidden">
             <img src="hero_image.png" alt="Sfondo Mobile" class="w-full h-full object-cover object-center">
@@ -119,14 +147,17 @@
                     </h1>
 
                     <p class="text-lg md:text-xl font-normal text-onda/90 leading-relaxed max-w-lg mx-auto md:mx-0">
-                        Oggi puoi sapere tutto sul traffico o sui ristoranti. Presto potrai evitare di arrivare in
-                        spiaggia e scoprire che non c'è posto per l'asciugamano.
+                        Controlla in anticipo affollamento, meteo e segnalazioni della community. Parti solo quando la
+                        spiaggia è davvero quella giusta per te.
                     </p>
 
                     <!-- CTA Buttons -->
                     <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-2">
                         <!-- App Store Button -->
                         <a href="#waitlist"
+                            data-cta-id="hero_store_ios"
+                            data-cta-section="hero"
+                            data-cta-variant="secondary"
                             class="flex items-center justify-center gap-3 bg-white/90 backdrop-blur-lg border border-white/20 text-gray-900 px-7 py-4 rounded-[2rem] hover:bg-white transition-all hover:-translate-y-1 shadow-glass group">
                             <svg class="w-8 h-8 fill-current group-hover:text-mare transition-colors"
                                 viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg">
@@ -140,6 +171,9 @@
                         </a>
                         <!-- Google Play Button -->
                         <a href="#waitlist"
+                            data-cta-id="hero_store_android"
+                            data-cta-section="hero"
+                            data-cta-variant="secondary"
                             class="flex items-center justify-center gap-3 bg-gray-900/90 backdrop-blur-lg border border-gray-700 text-white px-7 py-4 rounded-[2rem] hover:bg-black transition-all hover:-translate-y-1 shadow-soft group">
                             <svg class="w-8 h-8 fill-current group-hover:text-corallo transition-colors"
                                 viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
@@ -165,6 +199,9 @@
                             <input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true"
                                 class="hidden">
                             <button type="submit" data-signup-submit
+                                data-cta-id="hero_signup_submit"
+                                data-cta-section="hero"
+                                data-cta-variant="primary"
                                 class="bg-corallo text-white px-8 py-4 rounded-[2rem] font-bold shadow-glow-corallo hover:bg-corallo-hover transition-all hover:-translate-y-1 whitespace-nowrap">
                                 Avvisami al lancio
                             </button>
@@ -174,7 +211,7 @@
                     </div>
 
                     <!-- Seasonal Urgency Countdown -->
-                    <div id="summer-countdown" class="countdown-container mt-8 relative">
+                    <div id="summer-countdown" class="countdown-container mt-8 relative hidden lg:block">
                         <div class="inline-flex flex-col items-center gap-3">
                             <div class="flex items-center gap-2 text-onda/70 text-xs font-bold uppercase tracking-[0.2em]">
                                 <span class="w-5 h-px bg-gradient-to-r from-transparent to-onda/40"></span>
@@ -312,7 +349,7 @@
             <div class="reveal stagger-4 mt-14 md:mt-20 text-center">
                 <div class="inline-flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-mare-dark to-mare text-white px-8 py-5 rounded-[1.5rem] shadow-lg shadow-mare/20 hover:shadow-xl hover:shadow-mare/30 transition-all duration-300">
                     <p class="text-base md:text-lg font-bold tracking-tight">Unisciti a chi ha già smesso di sprecare le proprie estati.</p>
-                    <a href="#waitlist" class="bg-white text-mare-dark px-6 py-3 rounded-full font-bold text-sm hover:bg-corallo hover:text-white transition-all duration-300 whitespace-nowrap shadow-sm">Entra nella lista prioritaria →</a>
+                    <a href="#waitlist" data-cta-id="midpage_waitlist" data-cta-section="value_prop" data-cta-variant="primary" class="bg-white text-mare-dark px-6 py-3 rounded-full font-bold text-sm hover:bg-corallo hover:text-white transition-all duration-300 whitespace-nowrap shadow-sm">Entra nella lista prioritaria →</a>
                 </div>
             </div>
         </div>
@@ -484,10 +521,10 @@
                             </path>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3 tracking-tighter">Consensus Engine comunitario</h3>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 tracking-tighter">Dati verificati dalla community</h3>
                     <p class="text-gray-600 leading-relaxed font-medium">
-                        Il sistema valida l'informazione solo se confermata dalla maggioranza. Scartiamo gli outlier in
-                        automatico.
+                        Le segnalazioni sono confrontate tra loro per ridurre errori e rumor: vedi solo informazioni
+                        utili quando devi decidere dove andare.
                     </p>
                 </div>
             </div>
@@ -551,8 +588,8 @@
                 <!-- Text content -->
                 <div class="reveal-right space-y-8 order-1 lg:order-2">
                     <div>
-                        <h2 class="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-tight">Il
-                            "Motore della Verità" nel tuo palmo.</h2>
+                        <h2 class="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-tight">La
+                            spiaggia giusta, prima di uscire di casa.</h2>
                         <p class="text-lg md:text-xl text-gray-500 mt-4 leading-relaxed">
                             La nostra forza è la community (i <em>Beach Guardians</em>). Mentre gli altri usano droni
                             costosi, noi scaliamo grazie agli smartphone di migliaia di bagnanti.
@@ -570,8 +607,8 @@
                             </div>
                             <div>
                                 <strong class="text-gray-900 text-lg">Evita viaggi a vuoto</strong>
-                                <p class="text-gray-600 text-sm mt-1 leading-relaxed">AWT (Avoided Wasted Trips): cambia
-                                    destinazione in tempo reale dopo un alert critico, risparmiando traffico e stress.
+                                <p class="text-gray-600 text-sm mt-1 leading-relaxed">Ricevi segnali utili prima di partire
+                                    e scegli in tempo la spiaggia con le condizioni migliori.
                                 </p>
                             </div>
                         </li>
@@ -1000,45 +1037,22 @@
             <!-- Community Social Proof Counter -->
             <div class="reveal stagger-1 mb-12 signup-card">
                 <div class="signup-card-inner">
-                    <!-- Top row: avatars + counter -->
-                    <div class="flex items-center justify-center gap-5">
-                        <div class="flex -space-x-3">
-                            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-corallo to-[#FFB154] border-[3px] border-white/20 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-corallo/20 avatar-float" style="--float-delay: 0s">M</div>
-                            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-mare to-mare-dark border-[3px] border-white/20 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-mare/20 avatar-float" style="--float-delay: 0.3s">A</div>
-                            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-onda to-mare border-[3px] border-white/20 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-onda/20 avatar-float" style="--float-delay: 0.6s">L</div>
-                            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-white/20 to-white/5 border-[3px] border-white/20 flex items-center justify-center text-white text-sm font-black backdrop-blur-sm avatar-float" style="--float-delay: 0.9s">+</div>
-                        </div>
-                        <div class="w-px h-12 bg-gradient-to-b from-transparent via-white/20 to-transparent hidden sm:block"></div>
-                        <div class="text-left">
-                            <div class="text-transparent bg-clip-text bg-gradient-to-r from-white via-corallo to-white font-black text-3xl md:text-4xl tracking-tighter signup-number">
-                                <span data-counter="2400" data-prefix="" data-suffix="+" class="signup-counter">0+</span>
-                            </div>
-                            <div class="text-onda/60 text-[11px] font-bold uppercase tracking-[0.15em] mt-0.5">Già iscritti alla community</div>
-                        </div>
+                    <div class="text-center">
+                        <p class="text-white font-black text-2xl md:text-3xl tracking-tight">Accesso anticipato</p>
+                        <p class="mt-2 text-onda/80 text-sm md:text-base">Ricevi per primo l'invito quando apriamo iOS e Android.</p>
                     </div>
-                    <!-- Progress bar -->
-                    <div class="mt-4 w-full max-w-xs mx-auto">
-                        <div class="flex justify-between text-[10px] font-bold text-onda/50 uppercase tracking-widest mb-1.5">
-                            <span>2.400 iscritti</span>
-                            <span class="text-corallo/80">Goal: 5.000 membri</span>
-                        </div>
-                        <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                            <div class="signup-progress h-full rounded-full bg-gradient-to-r from-corallo via-[#FFB154] to-corallo" style="width: 48%"></div>
-                        </div>
-                    </div>
-                    <!-- Live indicator -->
                     <div class="mt-4 flex items-center justify-center gap-4 text-xs">
                         <div class="flex items-center gap-1.5">
                             <span class="relative flex h-2 w-2">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
                             </span>
-                            <span class="text-green-300/90 font-bold">Nuove iscrizioni ogni giorno</span>
+                            <span class="text-green-300/90 font-bold">Lista prioritaria sempre aperta</span>
                         </div>
                         <span class="text-white/15">•</span>
                         <div class="flex items-center gap-1.5 text-onda/50 font-medium">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                            <span>Accesso anticipato per i primi iscritti</span>
+                            <span>Ti avvisiamo noi appena è disponibile</span>
                         </div>
                     </div>
                 </div>
@@ -1047,6 +1061,12 @@
             <div class="reveal stagger-2 flex flex-col sm:flex-row gap-5 justify-center">
                 <!-- Apple Store -->
                 <button
+                    type="button"
+                    data-scroll-target="#landing-email-form"
+                    data-focus-target="#landing-email-input"
+                    data-cta-id="waitlist_store_ios"
+                    data-cta-section="waitlist"
+                    data-cta-variant="secondary"
                     class="flex items-center justify-center gap-3 bg-white/90 backdrop-blur-lg border border-white/20 text-gray-900 px-8 py-4 rounded-[2rem] hover:bg-white transition-all font-bold shadow-glass hover:-translate-y-1 group">
                     <svg class="w-7 h-7 fill-current group-hover:text-mare transition-colors" viewBox="0 0 384 512"
                         xmlns="http://www.w3.org/2000/svg">
@@ -1057,6 +1077,12 @@
                 </button>
                 <!-- Google Play -->
                 <button
+                    type="button"
+                    data-scroll-target="#landing-email-form"
+                    data-focus-target="#landing-email-input"
+                    data-cta-id="waitlist_store_android"
+                    data-cta-section="waitlist"
+                    data-cta-variant="secondary"
                     class="flex items-center justify-center gap-3 bg-corallo text-white px-8 py-4 rounded-[2rem] hover:bg-corallo-hover transition-all font-bold shadow-glow-corallo hover:-translate-y-1">
                     <svg class="w-7 h-7 fill-current" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -1075,6 +1101,9 @@
                 <input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true"
                     class="hidden">
                 <button type="submit" id="landing-email-submit" data-signup-submit
+                    data-cta-id="waitlist_signup_submit"
+                    data-cta-section="waitlist"
+                    data-cta-variant="primary"
                     class="bg-corallo text-white px-8 py-4 rounded-[2rem] font-bold shadow-glow-corallo hover:bg-corallo-hover transition-all hover:-translate-y-1">
                     Avvisami
                 </button>
@@ -1104,7 +1133,7 @@
                                 d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                         </svg>
                     </a>
-                    <a href="#"
+                    <a href="https://www.tiktok.com/@where2beach" target="_blank" rel="noopener noreferrer"
                         class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-black hover:text-white transition-all">
                         <span class="sr-only">TikTok</span>
                         <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">

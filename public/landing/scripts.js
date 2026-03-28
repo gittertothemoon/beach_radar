@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.cookie = 'br_seen_landing=1; Path=/; Max-Age=2592000; SameSite=Lax';
 
     const navbar = document.getElementById('navbar');
-    const logoSpan = document.getElementById('logo-span');
     const link1 = document.getElementById('link-1');
     const link2 = document.getElementById('link-2');
     const link3 = document.getElementById('link-3');
@@ -16,8 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
             navbar.classList.add('glass-nav');
             navbar.classList.remove('py-5');
             navbar.classList.add('py-3');
-            logoSpan?.classList.remove('text-transparent', 'bg-clip-text', 'bg-gradient-to-r', 'from-white', 'to-onda');
-            logoSpan?.classList.add('text-gray-900');
             link1?.classList.remove('text-white'); link1?.classList.add('text-gray-600', 'hover:text-corallo');
             link2?.classList.remove('text-white'); link2?.classList.add('text-gray-600', 'hover:text-corallo');
             link3?.classList.remove('text-white'); link3?.classList.add('text-gray-600', 'hover:text-corallo');
@@ -27,8 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
             navbar.classList.remove('glass-nav');
             navbar.classList.add('py-5');
             navbar.classList.remove('py-3');
-            logoSpan?.classList.add('text-transparent', 'bg-clip-text', 'bg-gradient-to-r', 'from-white', 'to-onda');
-            logoSpan?.classList.remove('text-gray-900');
             link1?.classList.add('text-white'); link1?.classList.remove('text-gray-600', 'hover:text-corallo');
             link2?.classList.add('text-white'); link2?.classList.remove('text-gray-600', 'hover:text-corallo');
             link3?.classList.add('text-white'); link3?.classList.remove('text-gray-600', 'hover:text-corallo');
@@ -114,13 +109,53 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(update);
     }
 
+    const querySelectorSafe = (selector) => {
+        if (!selector || selector === '#') return null;
+        try {
+            return document.querySelector(selector);
+        } catch (_) {
+            return null;
+        }
+    };
+
+    const focusFieldSafe = (selector) => {
+        const field = querySelectorSafe(selector);
+        if (!field || typeof field.focus !== 'function') return;
+        window.setTimeout(() => {
+            field.focus({ preventScroll: true });
+        }, 350);
+    };
+
     // ===== Smooth Scroll for anchor links =====
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
         anchor.addEventListener('click', function (e) {
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
+            const href = this.getAttribute('href') || '';
+            if (href === '#') {
                 e.preventDefault();
+                return;
+            }
+            const target = querySelectorSafe(href);
+            if (!target) return;
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const focusTarget = this.getAttribute('data-focus-target');
+            if (focusTarget) {
+                focusFieldSafe(focusTarget);
+            }
+        });
+    });
+
+    // ===== Scroll+Focus Buttons =====
+    document.querySelectorAll('[data-scroll-target]').forEach((node) => {
+        node.addEventListener('click', () => {
+            const targetSelector = node.getAttribute('data-scroll-target');
+            const target = querySelectorSafe(targetSelector);
+            if (target) {
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            const focusTarget = node.getAttribute('data-focus-target');
+            if (focusTarget) {
+                focusFieldSafe(focusTarget);
             }
         });
     });
@@ -172,20 +207,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const progressEl = document.getElementById('radar-sequence-progress');
         const indicator = document.getElementById('radar-sequence-indicator');
         const beatNodes = [...document.querySelectorAll('[data-sequence-beat]')];
-
-        if (!stage || !canvas || beatNodes.length === 0) {
-            return;
-        }
+        if (!stage || !canvas || beatNodes.length === 0) return;
 
         const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            return;
-        }
+        if (!ctx) return;
 
         const clamp01 = (value) => Math.min(1, Math.max(0, value));
         const PROGRESS_EPSILON = 0.0001;
         const DESKTOP_COUNT = 120;
         const MOBILE_COUNT = 240;
+        const DESKTOP_INITIAL_FRAMES = 4;
+        const MOBILE_INITIAL_FRAMES = 6;
 
         let isMobileView = window.innerWidth < 768;
         let frames = [];
@@ -198,6 +230,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let rafId = 0;
         let pendingResize = false;
         let loadVersion = 0;
+        let sequenceActivated = false;
+        let progressiveLoadStarted = false;
+        let listenersBound = false;
 
         const beats = beatNodes.map((node) => ({
             node,
@@ -206,6 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 .map((entry) => Number(entry.trim()))
                 .filter((entry) => Number.isFinite(entry)),
         })).filter((item) => item.range.length === 4);
+
+        const getActiveFrameCount = () => (isMobileView ? MOBILE_COUNT : DESKTOP_COUNT);
+        const getInitialFrameCount = () => (isMobileView ? MOBILE_INITIAL_FRAMES : DESKTOP_INITIAL_FRAMES);
+        const getSequencePath = () => (isMobileView ? '/sequence/mobile' : '/sequence');
 
         const resolveFrameForDirection = (frameList, targetIndex, direction, fallbackIndex) => {
             const direct = frameList[targetIndex];
@@ -235,9 +274,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const setLoaderProgress = () => {
             if (!progressEl) return;
-            const readyTarget = isMobileView ? 12 : 8;
+            const readyTarget = getInitialFrameCount();
             const percent = Math.round((Math.min(loadedCount, readyTarget) / readyTarget) * 100);
             progressEl.textContent = `${percent}%`;
+        };
+
+        const showLoader = () => {
+            if (!loader) return;
+            loader.style.display = '';
+            loader.classList.remove('opacity-0', 'pointer-events-none');
         };
 
         const hideLoader = () => {
@@ -309,14 +354,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 scrollDirection,
                 lastDrawnFrameIndex,
             );
-            if (!image) {
-                return;
-            }
+            if (!image) return;
 
             const drawKey = `${isMobileView ? 'm' : 'd'}-${index}-${canvas.width}x${canvas.height}`;
-            if (!resized && drawKey === lastDrawKey) {
-                return;
-            }
+            if (!resized && drawKey === lastDrawKey) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -379,7 +420,100 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        const loadFrameRange = async ({ version, start, end, concurrency, sequencePath }) => {
+            let nextIndex = start;
+
+            const loadSingle = (index) => new Promise((resolve) => {
+                if (version !== loadVersion) {
+                    resolve();
+                    return;
+                }
+                if (frames[index]) {
+                    resolve();
+                    return;
+                }
+
+                const image = new Image();
+                image.decoding = 'async';
+                image.src = `${sequencePath}/frame_${index}.webp`;
+                image.onload = () => {
+                    if (version === loadVersion && !frames[index]) {
+                        frames[index] = image;
+                        loadedCount += 1;
+                        setLoaderProgress();
+                        requestTick();
+                    }
+                    resolve();
+                };
+                image.onerror = () => {
+                    resolve();
+                };
+            });
+
+            const worker = async () => {
+                while (version === loadVersion) {
+                    const index = nextIndex;
+                    nextIndex += 1;
+                    if (index >= end) return;
+                    await loadSingle(index);
+                }
+            };
+
+            const workers = Array.from({ length: concurrency }, () => worker());
+            await Promise.all(workers);
+        };
+
+        const loadInitialFrames = async () => {
+            loadVersion += 1;
+            const version = loadVersion;
+
+            const activeCount = getActiveFrameCount();
+            const sequencePath = getSequencePath();
+            const initialCount = Math.min(getInitialFrameCount(), activeCount);
+            progressiveLoadStarted = false;
+            loadedCount = 0;
+            frames = Array.from({ length: activeCount }, () => null);
+            lastDrawKey = '';
+            lastDrawnFrameIndex = 0;
+
+            setLoaderProgress();
+            showLoader();
+
+            await loadFrameRange({
+                version,
+                start: 0,
+                end: initialCount,
+                concurrency: isMobileView ? 3 : 2,
+                sequencePath,
+            });
+
+            if (version !== loadVersion) return;
+            hideLoader();
+            drawFrame();
+            applyBeatStyles();
+        };
+
+        const loadRemainingFrames = async () => {
+            if (progressiveLoadStarted || !sequenceActivated || frames.length === 0) return;
+            progressiveLoadStarted = true;
+            const version = loadVersion;
+            const activeCount = getActiveFrameCount();
+            const initialCount = Math.min(getInitialFrameCount(), activeCount);
+            const sequencePath = getSequencePath();
+            await loadFrameRange({
+                version,
+                start: initialCount,
+                end: activeCount,
+                concurrency: 2,
+                sequencePath,
+            });
+            drawFrame();
+            applyBeatStyles();
+        };
+
         const updateTargetProgress = () => {
+            if (!sequenceActivated) return;
+
             const maxScroll = stage.offsetHeight - window.innerHeight;
             const rect = stage.getBoundingClientRect();
             const nextProgress = maxScroll <= 0 ? 0 : clamp01((-rect.top) / maxScroll);
@@ -392,81 +526,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
             targetProgress = nextProgress;
             requestTick();
+
+            if (nextProgress > 0.015) {
+                void loadRemainingFrames();
+            }
         };
 
-        const loadFrames = async () => {
-            loadVersion += 1;
-            const version = loadVersion;
-
-            loadedCount = 0;
-            setLoaderProgress();
-            if (loader) {
-                loader.style.display = '';
-                loader.classList.remove('opacity-0', 'pointer-events-none');
-            }
-
-            const activeCount = isMobileView ? MOBILE_COUNT : DESKTOP_COUNT;
-            const sequencePath = isMobileView ? '/sequence/mobile' : '/sequence';
-            const concurrency = isMobileView ? 6 : 4;
-            const readyThreshold = isMobileView ? 12 : 8;
-
-            frames = Array.from({ length: activeCount }, () => null);
-            lastDrawKey = '';
-            lastDrawnFrameIndex = 0;
-
-            let nextIndex = 0;
-            let readyRaised = false;
-
-            const markLoaded = () => {
-                if (version !== loadVersion) return;
-                loadedCount += 1;
-                setLoaderProgress();
+        const activateSequence = () => {
+            if (sequenceActivated) return;
+            sequenceActivated = true;
+            void loadInitialFrames().then(() => {
+                updateTargetProgress();
                 requestTick();
-                if (!readyRaised && loadedCount >= readyThreshold) {
-                    readyRaised = true;
-                    hideLoader();
-                    drawFrame();
-                    applyBeatStyles();
-                }
-            };
-
-            const loadSingle = (index) => new Promise((resolve) => {
-                const image = new Image();
-                image.decoding = 'async';
-                image.src = `${sequencePath}/frame_${index}.webp`;
-                image.onload = () => {
-                    if (version === loadVersion) {
-                        frames[index] = image;
-                    }
-                    markLoaded();
-                    resolve();
-                };
-                image.onerror = () => {
-                    markLoaded();
-                    resolve();
-                };
             });
+        };
 
-            const worker = async () => {
-                while (version === loadVersion) {
-                    const index = nextIndex;
-                    nextIndex += 1;
-                    if (index >= activeCount) {
-                        return;
-                    }
-                    await loadSingle(index);
-                }
-            };
-
-            await Promise.all(Array.from({ length: concurrency }, () => worker()));
-
-            if (version !== loadVersion) {
-                return;
-            }
-
-            hideLoader();
-            drawFrame();
-            applyBeatStyles();
+        const bindListeners = () => {
+            if (listenersBound) return;
+            listenersBound = true;
+            window.addEventListener('scroll', updateTargetProgress, { passive: true });
+            window.addEventListener('resize', handleViewportChange);
+            window.addEventListener('orientationchange', handleViewportChange);
+            stage.addEventListener('pointerdown', () => { void loadRemainingFrames(); }, { passive: true });
+            stage.addEventListener('touchstart', () => { void loadRemainingFrames(); }, { passive: true });
+            stage.addEventListener('wheel', () => { void loadRemainingFrames(); }, { passive: true });
         };
 
         const handleViewportChange = () => {
@@ -474,34 +557,42 @@ document.addEventListener('DOMContentLoaded', () => {
             pendingResize = true;
             if (nextMobileView !== isMobileView) {
                 isMobileView = nextMobileView;
-                void loadFrames();
+                if (sequenceActivated) {
+                    void loadInitialFrames().then(() => {
+                        updateTargetProgress();
+                        requestTick();
+                    });
+                }
             } else {
                 requestTick();
             }
             updateTargetProgress();
         };
 
-        window.addEventListener('scroll', updateTargetProgress, { passive: true });
-        window.addEventListener('resize', handleViewportChange);
-        window.addEventListener('orientationchange', handleViewportChange);
-
-        void loadFrames().then(() => {
-            updateTargetProgress();
-            requestTick();
+        bindListeners();
+        const activationObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                activationObserver.unobserve(stage);
+                activateSequence();
+            });
+        }, {
+            threshold: 0.01,
+            rootMargin: '300px 0px',
         });
+        activationObserver.observe(stage);
     };
 
     initRadarSequence();
 
-    // ===== Community Counter (reuse existing counter system) =====
-    document.querySelectorAll('.signup-counter').forEach(el => {
-        counterObserver.observe(el);
-    });
-
     // ===== Email Form Submission (Supabase signup via API) =====
     const SIGNUP_ENDPOINT = '/api/signup';
     const BUSINESS_REQUEST_ENDPOINT = '/api/business-request';
+    const ANALYTICS_ENDPOINT = '/api/analytics';
     const ACCOUNT_PREFS_STORAGE_KEY = 'w2b-account-prefs-v1';
+    const ANALYTICS_SESSION_KEY = 'w2b_landing_session_v1';
+    const SIGNUP_REQUEST_TIMEOUT_MS = 10000;
+    const SIGNUP_REQUEST_RETRIES = 1;
     const RESERVED_EMAIL_DOMAIN_SUFFIXES = ['.example', '.invalid', '.localhost', '.local', '.test'];
     const BLOCKED_EMAIL_DOMAINS = new Set([
         'example.com',
@@ -523,6 +614,67 @@ document.addEventListener('DOMContentLoaded', () => {
             paramsObj[key] = value;
         }
         return paramsObj;
+    };
+
+    const createAnalyticsEventId = () => {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+            return window.crypto.randomUUID();
+        }
+        return '';
+    };
+
+    const getLandingSessionId = () => {
+        const existing = window.sessionStorage.getItem(ANALYTICS_SESSION_KEY);
+        if (existing && existing.length >= 8) return existing;
+        const next = (window.crypto && typeof window.crypto.randomUUID === 'function')
+            ? window.crypto.randomUUID()
+            : `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+        window.sessionStorage.setItem(ANALYTICS_SESSION_KEY, next);
+        return next;
+    };
+
+    const analyticsOnce = new Set();
+    const trackLandingEvent = (eventName, props = {}, options = {}) => {
+        if (!eventName) return;
+        const onceKey = options.onceKey || '';
+        if (onceKey && analyticsOnce.has(onceKey)) return;
+
+        const params = parseQueryParams(window.location.search);
+        const payload = {
+            eventName,
+            ts: new Date().toISOString(),
+            sessionId: getLandingSessionId(),
+            path: `${window.location.pathname}${window.location.search}`,
+            eventId: createAnalyticsEventId() || undefined,
+            utm_source: params.utm_source || undefined,
+            utm_medium: params.utm_medium || undefined,
+            utm_campaign: params.utm_campaign || undefined,
+            utm_content: params.utm_content || undefined,
+            utm_term: params.utm_term || undefined,
+            src: params.src || params.from || 'landing',
+            props,
+        };
+
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 1800);
+        fetch(ANALYTICS_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            body: JSON.stringify(payload),
+            keepalive: true,
+            signal: controller.signal,
+        }).catch(() => {
+            // Fail silent: analytics must never block conversion.
+        }).finally(() => {
+            window.clearTimeout(timeoutId);
+        });
+
+        if (onceKey) {
+            analyticsOnce.add(onceKey);
+        }
     };
 
     const buildAttribution = (paramsObj) => {
@@ -591,20 +743,72 @@ document.addEventListener('DOMContentLoaded', () => {
         return '';
     };
 
-    const submitSignup = async (payload) => {
+    trackLandingEvent('landing_view', {
+        section: 'landing',
+        variant: 'landing_v2',
+    }, { onceKey: 'landing_view' });
+
+    let scrollMilestoneRaf = 0;
+    const trackScrollMilestones = () => {
+        const doc = document.documentElement;
+        const body = document.body;
+        const scrollHeight = Math.max(doc.scrollHeight, body ? body.scrollHeight : 0);
+        const maxScrollable = Math.max(scrollHeight - window.innerHeight, 1);
+        const depth = clampDepth(window.scrollY / maxScrollable);
+
+        if (depth >= 0.5) {
+            trackLandingEvent('scroll_50', { section: 'landing', depth: 0.5 }, { onceKey: 'scroll_50' });
+        }
+        if (depth >= 0.9) {
+            trackLandingEvent('scroll_90', { section: 'landing', depth: 0.9 }, { onceKey: 'scroll_90' });
+        }
+    };
+    const clampDepth = (value) => Math.min(1, Math.max(0, value));
+    window.addEventListener('scroll', () => {
+        if (scrollMilestoneRaf) return;
+        scrollMilestoneRaf = window.requestAnimationFrame(() => {
+            scrollMilestoneRaf = 0;
+            trackScrollMilestones();
+        });
+    }, { passive: true });
+    trackScrollMilestones();
+
+    document.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const ctaNode = target.closest('[data-cta-id]');
+        if (!ctaNode) return;
+        trackLandingEvent('cta_click', {
+            section: ctaNode.getAttribute('data-cta-section') || 'unknown',
+            cta_id: ctaNode.getAttribute('data-cta-id') || 'unknown',
+            variant: ctaNode.getAttribute('data-cta-variant') || 'default',
+        });
+    });
+
+    const waitMs = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+    const submitSignupAttempt = async (payload) => {
         const controller = new AbortController();
-        const timeoutId = window.setTimeout(() => controller.abort(), 7000);
+        const timeoutId = window.setTimeout(() => controller.abort(), SIGNUP_REQUEST_TIMEOUT_MS);
         try {
-            const response = await fetch(SIGNUP_ENDPOINT, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                },
-                body: JSON.stringify(payload),
-                keepalive: true,
-                signal: controller.signal,
-            });
+            let response;
+            try {
+                response = await fetch(SIGNUP_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                    keepalive: true,
+                    signal: controller.signal,
+                });
+            } catch (fetchError) {
+                const error = new Error('request_failed');
+                error.code = 'request_failed';
+                error.reason = fetchError && fetchError.name === 'AbortError' ? 'timeout' : 'network';
+                throw error;
+            }
 
             let data = null;
             try {
@@ -616,6 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 const error = new Error('request_failed');
                 error.code = data && data.error ? data.error : 'request_failed';
+                error.reason = 'http';
                 throw error;
             }
 
@@ -623,6 +828,23 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             window.clearTimeout(timeoutId);
         }
+    };
+
+    const submitSignup = async (payload) => {
+        let attempt = 0;
+        while (attempt <= SIGNUP_REQUEST_RETRIES) {
+            try {
+                return await submitSignupAttempt(payload);
+            } catch (error) {
+                const retryable = error && error.code === 'request_failed' && (error.reason === 'timeout' || error.reason === 'network');
+                if (!retryable || attempt >= SIGNUP_REQUEST_RETRIES) {
+                    throw error;
+                }
+                attempt += 1;
+                await waitMs(250 * attempt);
+            }
+        }
+        throw new Error('request_failed');
     };
 
     const initSignupForm = (form) => {
@@ -662,6 +884,12 @@ document.addEventListener('DOMContentLoaded', () => {
             input.disabled = true;
             submitBtn.textContent = 'Invio...';
             setFeedback('Stiamo salvando la tua iscrizione.', 'neutral');
+            const section = form.id === 'landing-email-form-hero' ? 'hero' : 'waitlist';
+            trackLandingEvent('signup_submit', {
+                section,
+                cta_id: form.id || 'signup_form',
+                variant: 'landing_v2',
+            });
 
             try {
                 const params = parseQueryParams(window.location.search);
@@ -705,6 +933,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     setFeedback('Perfetto. Ti avviseremo appena apriamo il lancio.', 'success');
                 }
+                trackLandingEvent('signup_success', {
+                    section,
+                    cta_id: form.id || 'signup_form',
+                    variant: result && result.already ? 'already' : 'new',
+                });
             } catch (error) {
                 const code = error && error.code ? error.code : '';
                 if (code === 'invalid_email') {
@@ -714,6 +947,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     setFeedback('Errore temporaneo. Riprova tra qualche secondo.', 'error');
                 }
+                trackLandingEvent('signup_error', {
+                    section,
+                    cta_id: form.id || 'signup_form',
+                    variant: code || 'request_failed',
+                });
                 submitBtn.classList.remove('bg-green-500');
                 submitBtn.classList.add('bg-corallo');
                 submitBtn.textContent = originalBtnText;

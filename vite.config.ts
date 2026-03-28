@@ -56,7 +56,7 @@ const devRoutingPlugin = () => ({
 
       if (pathname === '/') {
         res.statusCode = 307
-        res.setHeader('Location', '/landing/')
+        res.setHeader('Location', IS_LANDING_DEV_SERVER ? '/landing/' : '/app/')
         res.end()
         return
       }
