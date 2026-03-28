@@ -54,6 +54,10 @@ function syncOptionalDir(sourcePath, destinationPath) {
   syncDir(sourcePath, destinationPath);
 }
 
+function removeIfExists(path) {
+  rmSync(path, { recursive: true, force: true });
+}
+
 const rootNodeModules = resolve(repoRoot, "node_modules");
 if (!existsSync(rootNodeModules)) {
   run("npm", ["ci", "--include=dev", "--no-audit", "--no-fund"], repoRoot);
@@ -98,3 +102,9 @@ syncOptionalDir(resolve(rootPublic, "cookie-policy"), resolve(heroPublic, "cooki
 syncOptionalDir(resolve(rootPublic, "legal"), resolve(heroPublic, "legal"));
 
 syncDir(resolve(repoRoot, "api"), resolve(heroRoot, "api"));
+
+// Keep hobby deployments within Vercel's 12 Serverless Functions limit.
+removeIfExists(resolve(heroRoot, "api", "analytics.ts"));
+removeIfExists(resolve(heroRoot, "api", "legal-config.ts"));
+removeIfExists(resolve(heroRoot, "api", "reports-prune.ts"));
+removeIfExists(resolve(heroRoot, "api", "beach-enrich", "run.ts"));
