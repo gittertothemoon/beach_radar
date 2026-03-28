@@ -232,6 +232,7 @@ export const WebSurface = ({
       <WebView
         ref={webViewRef}
         source={source}
+        injectedJavaScriptBeforeContentLoaded={"window.__W2B_NATIVE_SHELL = true; true;"}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
         onLoadStart={() => {
           setLoading(true);

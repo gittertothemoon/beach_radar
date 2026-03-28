@@ -1120,10 +1120,13 @@ const BottomSheetComponent = ({
               </section>
 
               <section className="overflow-hidden rounded-2xl border border-sky-200/24 bg-[radial-gradient(130%_140%_at_100%_0%,rgba(56,189,248,0.3),transparent_55%),linear-gradient(180deg,#1d4d80,#1e4a77)] px-4 py-3">
-                <button
-                  type="button"
+                <a
+                  href={businessRequestUrl}
                   data-testid="settings-business-cta"
-                  onClick={() => openUrl(businessRequestUrl)}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    openUrl(businessRequestUrl);
+                  }}
                   className="br-press flex w-full items-center justify-between gap-3 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
                 >
                   <div className="min-w-0">
@@ -1153,7 +1156,7 @@ const BottomSheetComponent = ({
                       <path d="M9 6l6 6-6 6" />
                     </svg>
                   </span>
-                </button>
+                </a>
               </section>
 
               {accountEmail && profileFavoritesPreview.length > 0 ? (

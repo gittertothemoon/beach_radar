@@ -48,6 +48,22 @@
     return fallback;
   }
 
+  function isNativeShellContext() {
+    if (window.__W2B_NATIVE_SHELL === true) return true;
+
+    try {
+      var params = new URLSearchParams(window.location.search || "");
+      var nativeShell = toNonEmptyString(params.get("native_shell"));
+      if (nativeShell && (nativeShell === "1" || nativeShell.toLowerCase() === "true")) {
+        return true;
+      }
+      var from = toNonEmptyString(params.get("from"));
+      return !!from && from.toLowerCase() === "app";
+    } catch {
+      return false;
+    }
+  }
+
   function isExternalUrl(rawUrl) {
     try {
       var parsed = new URL(rawUrl, window.location.origin);
@@ -160,6 +176,8 @@
   }
 
   function initIubenda(config) {
+    if (isNativeShellContext()) return;
+
     var iubendaConfig = config.iubenda;
     if (!iubendaConfig) return;
     if (!iubendaConfig.siteId || !iubendaConfig.cookiePolicyId) return;
