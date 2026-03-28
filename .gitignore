@@ -42,3 +42,11 @@ w2b-hero/public/assets/
 w2b-hero/public/landing/
 w2b-hero/public/privacy/
 w2b-hero/public/waitlist/
+
+# Local generated artifacts in this repo
+.playwright-cli/
+public/app-shell/
+scripts/bin/
+public/assets/*
+!public/assets/og/
+!public/assets/og/**
