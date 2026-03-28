@@ -3,11 +3,14 @@ import {
   Animated,
   Easing,
   Image,
+  Keyboard,
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
+  type KeyboardEvent as RNKeyboardEvent,
   type LayoutChangeEvent,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -564,6 +567,7 @@ export const WebSurface = ({
   const [tutorialDomReady, setTutorialDomReady] = useState(false);
   const [tutorialCompletionReady, setTutorialCompletionReady] = useState(false);
   const [tutorialSearchValueLength, setTutorialSearchValueLength] = useState(0);
+  const [tutorialKeyboardInset, setTutorialKeyboardInset] = useState(0);
   const [tutorialCelebrationVisible, setTutorialCelebrationVisible] = useState(false);
   const [avatarPose, setAvatarPose] = useState<AvatarPose>("idle");
   const [previousAvatarPose, setPreviousAvatarPose] = useState<AvatarPose | null>(
@@ -740,6 +744,13 @@ export const WebSurface = ({
       : safeTutorialStepIndex === tutorialStepsCount - 1
         ? "Inizia a esplorare"
         : "Continua";
+  const tutorialCardBottomOffset = useMemo(() => {
+    const baseOffset = Math.max(insets.bottom + 16, 18);
+    if (tutorialStep?.id !== "search" || tutorialKeyboardInset <= 0) {
+      return baseOffset;
+    }
+    return baseOffset + tutorialKeyboardInset + 8;
+  }, [insets.bottom, tutorialKeyboardInset, tutorialStep?.id]);
 
   const resetConnectionState = useCallback(() => {
     retryAttemptRef.current = 0;
@@ -1310,6 +1321,39 @@ export const WebSurface = ({
     if (initialUrl === currentUrl) return;
     applySourceUrl(initialUrl);
   }, [applySourceUrl, currentUrl, initialUrl]);
+
+  useEffect(() => {
+    if (!tutorialVisible) {
+      setTutorialKeyboardInset(0);
+      return;
+    }
+
+    const updateKeyboardInset = (event?: RNKeyboardEvent) => {
+      const keyboardHeight = event?.endCoordinates?.height ?? 0;
+      const adjustedInset = Math.max(0, keyboardHeight - insets.bottom);
+      setTutorialKeyboardInset(adjustedInset);
+    };
+
+    const handleHide = () => {
+      setTutorialKeyboardInset(0);
+    };
+
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const changeFrameEvent = Platform.OS === "ios" ? "keyboardWillChangeFrame" : undefined;
+
+    const showSub = Keyboard.addListener(showEvent, updateKeyboardInset);
+    const hideSub = Keyboard.addListener(hideEvent, handleHide);
+    const frameSub = changeFrameEvent
+      ? Keyboard.addListener(changeFrameEvent, updateKeyboardInset)
+      : null;
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+      frameSub?.remove();
+    };
+  }, [insets.bottom, tutorialVisible]);
 
   useEffect(() => {
     if (!tutorialVisible) return;
@@ -2023,7 +2067,7 @@ export const WebSurface = ({
         style={styles.webview}
       />
 
-      {loading && !hasLoadedOnce && !error ? (
+      {loading && hasLoadedOnce && !error ? (
         <View style={styles.loadingLayer} pointerEvents="none">
           <View style={styles.loadingBadge}>
             <Image
@@ -2209,7 +2253,7 @@ export const WebSurface = ({
                   tutorialCardTransform,
                   tutorialCardAtTop
                     ? { top: Math.max(statusBarOverlayHeight + 14, 20) }
-                    : { bottom: Math.max(insets.bottom + 16, 18) },
+                    : { bottom: tutorialCardBottomOffset },
                 ]}
               >
                 {tutorialIsDoneStep ? (
