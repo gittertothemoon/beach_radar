@@ -309,18 +309,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 scrollDirection,
                 lastDrawnFrameIndex,
             );
-            const drawKey = `${isMobileView ? 'm' : 'd'}-${index}-${canvas.width}x${canvas.height}`;
-
-            if (!resized && drawKey === lastDrawKey) {
-                return;
-            }
-            lastDrawKey = drawKey;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             if (!image) {
                 return;
             }
+
+            const drawKey = `${isMobileView ? 'm' : 'd'}-${index}-${canvas.width}x${canvas.height}`;
+            if (!resized && drawKey === lastDrawKey) {
+                return;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             lastDrawnFrameIndex = index;
             const canvasAspect = canvas.width / canvas.height;
@@ -355,6 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+            lastDrawKey = drawKey;
         };
 
         const requestTick = () => {
@@ -422,6 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (version !== loadVersion) return;
                 loadedCount += 1;
                 setLoaderProgress();
+                requestTick();
                 if (!readyRaised && loadedCount >= readyThreshold) {
                     readyRaised = true;
                     hideLoader();
