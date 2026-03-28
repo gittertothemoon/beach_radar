@@ -502,6 +502,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const SIGNUP_ENDPOINT = '/api/signup';
     const BUSINESS_REQUEST_ENDPOINT = '/api/business-request';
     const ACCOUNT_PREFS_STORAGE_KEY = 'w2b-account-prefs-v1';
+    const RESERVED_EMAIL_DOMAIN_SUFFIXES = ['.example', '.invalid', '.localhost', '.local', '.test'];
+    const BLOCKED_EMAIL_DOMAINS = new Set([
+        'example.com',
+        'example.org',
+        'example.net',
+        'mailinator.com',
+        'guerrillamail.com',
+        '10minutemail.com',
+        'tempmail.com',
+        'yopmail.com',
+        'sharklasers.com',
+        'trashmail.com',
+    ]);
 
     const parseQueryParams = (search) => {
         const paramsObj = {};
@@ -558,6 +571,24 @@ document.addEventListener('DOMContentLoaded', () => {
             .filter((entry) => typeof entry === 'string' && entry.trim().length > 0)
             .map((entry) => entry.trim().slice(0, 32))
             .slice(0, 8);
+    };
+
+    const getEmailDomain = (email) => {
+        const separator = email.lastIndexOf('@');
+        if (separator <= 0 || separator >= email.length - 1) return '';
+        return email.slice(separator + 1).toLowerCase();
+    };
+
+    const getBusinessEmailClientError = (email) => {
+        const domain = getEmailDomain(email);
+        if (!domain || !domain.includes('.')) return 'invalid_email';
+        if (RESERVED_EMAIL_DOMAIN_SUFFIXES.some((suffix) => domain.endsWith(suffix))) {
+            return 'invalid_email_domain';
+        }
+        if (BLOCKED_EMAIL_DOMAINS.has(domain)) {
+            return 'disposable_email_domain';
+        }
+        return '';
     };
 
     const submitSignup = async (payload) => {
@@ -770,7 +801,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const emailValue = String(email.value || '').trim().toLowerCase();
             const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
             if (!emailValid) {
-                setFeedback('Inserisci un indirizzo email valido.', 'error');
+                setFeedback('Inserisci un indirizzo email valido (es. nome@azienda.it).', 'error');
+                return;
+            }
+            const clientEmailError = getBusinessEmailClientError(emailValue);
+            if (clientEmailError === 'invalid_email_domain') {
+                setFeedback('Il dominio email non è valido. Usa un indirizzo reale (es. nome@azienda.it).', 'error');
+                return;
+            }
+            if (clientEmailError === 'disposable_email_domain') {
+                setFeedback('Email temporanee non accettate. Inserisci un indirizzo reale, preferibilmente aziendale.', 'error');
                 return;
             }
             if (!consent.checked) {
@@ -828,7 +868,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (code === 'rate_limited') {
                     setFeedback('Troppi tentativi ravvicinati. Riprova tra poco.', 'error');
                 } else if (code === 'invalid_email') {
-                    setFeedback('Email non valida.', 'error');
+                    setFeedback('Email non valida. Inserisci un indirizzo completo (es. nome@azienda.it).', 'error');
+                } else if (code === 'invalid_email_domain') {
+                    setFeedback('Dominio email non trovato. Controlla eventuali errori di battitura nel dominio.', 'error');
+                } else if (code === 'disposable_email_domain') {
+                    setFeedback('Email temporanee non accettate. Usa un indirizzo reale, preferibilmente aziendale.', 'error');
                 } else {
                     setFeedback('Errore temporaneo. Riprova tra qualche minuto.', 'error');
                 }

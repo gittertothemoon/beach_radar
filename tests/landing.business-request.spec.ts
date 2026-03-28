@@ -18,7 +18,7 @@ test.describe("landing business request form", () => {
     await page.locator("[data-business-city]").fill("Rimini");
     await page.locator("[data-business-contact]").fill("Mario Rossi");
     await page.locator("[data-business-role]").fill("Titolare");
-    await page.locator("[data-business-email]").fill("mario.rossi@example.org");
+    await page.locator("[data-business-email]").fill("mario.rossi@bagni-aurora.it");
     await page.locator("[data-business-phone]").fill("+39 333 1111111");
     await page.locator("[data-business-message]").fill("Vorrei informazioni sui lead partner.");
     await page.locator("[data-business-consent]").check();
@@ -44,7 +44,7 @@ test.describe("landing business request form", () => {
     await page.locator("[data-business-city]").fill("Riccione");
     await page.locator("[data-business-contact]").fill("Luca Bianchi");
     await page.locator("[data-business-role]").fill("Direttore");
-    await page.locator("[data-business-email]").fill("luca.bianchi@example.org");
+    await page.locator("[data-business-email]").fill("luca.bianchi@hotelmareblu.it");
     await page.locator("[data-business-consent]").check();
     await page.locator("[data-business-submit]").click();
 
@@ -53,4 +53,3 @@ test.describe("landing business request form", () => {
     );
   });
 });
-

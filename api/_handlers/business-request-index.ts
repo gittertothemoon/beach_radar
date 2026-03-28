@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { promises as dns } from "node:dns";
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { applyApiSecurityHeaders, readEnv } from "../_lib/security.js";
@@ -33,7 +34,13 @@ const MAX_BODY_BYTES = 24 * 1024;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const DEFAULT_RATE_LIMIT_MAX = 8;
 const DEDUP_WINDOW_DAYS = 30;
+const EMAIL_DOMAIN_CHECK_TIMEOUT_MS = 2200;
+const EMAIL_DOMAIN_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const rateLimits = new Map<string, RateEntry>();
+const emailDomainValidationCache = new Map<
+  string,
+  { ok: boolean; checkedAt: number }
+>();
 const BUSINESS_REQUEST_TEST_STORE_FILE = "business-requests-state.json";
 const TEST_MODE =
   process.env.BUSINESS_REQUEST_TEST_MODE === "1" ||
@@ -46,6 +53,25 @@ const ALLOWED_BUSINESS_TYPES = new Set([
   "hotel",
   "agency",
   "other",
+]);
+const RESERVED_EMAIL_DOMAIN_SUFFIXES = [
+  ".example",
+  ".invalid",
+  ".localhost",
+  ".local",
+  ".test",
+];
+const BLOCKED_EMAIL_DOMAINS = new Set([
+  "example.com",
+  "example.org",
+  "example.net",
+  "mailinator.com",
+  "guerrillamail.com",
+  "10minutemail.com",
+  "tempmail.com",
+  "yopmail.com",
+  "sharklasers.com",
+  "trashmail.com",
 ]);
 
 const readIntEnv = (name: string, fallback: number, min: number, max: number): number => {
@@ -124,6 +150,117 @@ const emailLooksValid = (email: string): boolean =>
 
 const phoneLooksValid = (phone: string): boolean =>
   /^[+0-9()\-.\s]{6,32}$/.test(phone);
+
+const getEmailDomain = (email: string): string | null => {
+  const separator = email.lastIndexOf("@");
+  if (separator <= 0 || separator >= email.length - 1) return null;
+  return email.slice(separator + 1).toLowerCase();
+};
+
+const isReservedEmailDomain = (domain: string): boolean =>
+  RESERVED_EMAIL_DOMAIN_SUFFIXES.some((suffix) => domain.endsWith(suffix));
+
+const getCachedDomainValidation = (domain: string): boolean | null => {
+  const cached = emailDomainValidationCache.get(domain);
+  if (!cached) return null;
+  if (Date.now() - cached.checkedAt > EMAIL_DOMAIN_CACHE_TTL_MS) {
+    emailDomainValidationCache.delete(domain);
+    return null;
+  }
+  return cached.ok;
+};
+
+const setCachedDomainValidation = (domain: string, ok: boolean): void => {
+  emailDomainValidationCache.set(domain, { ok, checkedAt: Date.now() });
+};
+
+const withTimeout = async <T>(task: Promise<T>, timeoutMs: number): Promise<T> =>
+  await Promise.race([
+    task,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error("dns_timeout")), timeoutMs);
+    }),
+  ]);
+
+const classifyDnsError = (error: unknown): "not_found" | "unknown" => {
+  if (!error || typeof error !== "object") return "unknown";
+  const maybe = error as { code?: unknown };
+  const code = typeof maybe.code === "string" ? maybe.code : "";
+  if (code === "ENOTFOUND" || code === "ENODATA") return "not_found";
+  return "unknown";
+};
+
+const hasAnyDnsRecord = async (domain: string): Promise<boolean | null> => {
+  const cached = getCachedDomainValidation(domain);
+  if (cached !== null) return cached;
+
+  let mxStatus: "found" | "not_found" | "unknown" = "unknown";
+  try {
+    const mxRecords = await withTimeout(dns.resolveMx(domain), EMAIL_DOMAIN_CHECK_TIMEOUT_MS);
+    mxStatus = mxRecords.length > 0 ? "found" : "not_found";
+  } catch (error) {
+    mxStatus = classifyDnsError(error);
+  }
+  if (mxStatus === "found") {
+    setCachedDomainValidation(domain, true);
+    return true;
+  }
+
+  let addressStatus: "found" | "not_found" | "unknown" = "unknown";
+  try {
+    const [v4, v6] = await withTimeout(
+      Promise.allSettled([dns.resolve4(domain), dns.resolve6(domain)]),
+      EMAIL_DOMAIN_CHECK_TIMEOUT_MS,
+    );
+    const hasV4 = v4.status === "fulfilled" && v4.value.length > 0;
+    const hasV6 = v6.status === "fulfilled" && v6.value.length > 0;
+    if (hasV4 || hasV6) {
+      addressStatus = "found";
+    } else {
+      const v4NotFound = v4.status === "rejected" && classifyDnsError(v4.reason) === "not_found";
+      const v6NotFound = v6.status === "rejected" && classifyDnsError(v6.reason) === "not_found";
+      addressStatus = v4NotFound && v6NotFound ? "not_found" : "unknown";
+    }
+  } catch {
+    addressStatus = "unknown";
+  }
+
+  if (addressStatus === "found") {
+    setCachedDomainValidation(domain, true);
+    return true;
+  }
+  if (mxStatus === "not_found" && addressStatus === "not_found") {
+    setCachedDomainValidation(domain, false);
+    return false;
+  }
+  return null;
+};
+
+const validateEmailQuality = async (
+  email: string,
+  options: { testMode: boolean },
+): Promise<{ ok: true } | { ok: false; error: "invalid_email_domain" | "disposable_email_domain" }> => {
+  const domain = getEmailDomain(email);
+  if (!domain || domain.length < 4 || !domain.includes(".")) {
+    return { ok: false, error: "invalid_email_domain" };
+  }
+
+  if (isReservedEmailDomain(domain)) {
+    return { ok: false, error: "invalid_email_domain" };
+  }
+  if (BLOCKED_EMAIL_DOMAINS.has(domain)) {
+    return { ok: false, error: "disposable_email_domain" };
+  }
+
+  // Keep tests deterministic and fast; in real traffic, enforce DNS-backed validation.
+  if (options.testMode) return { ok: true };
+
+  const hasDns = await hasAnyDnsRecord(domain);
+  if (hasDns === false) {
+    return { ok: false, error: "invalid_email_domain" };
+  }
+  return { ok: true };
+};
 
 const readBody = (
   req: VercelRequest,
@@ -448,13 +585,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const parsed = parsePayload(body);
-  if (!parsed.ok) {
+  if (parsed.ok === false) {
     return res.status(400).json({ ok: false, error: parsed.error });
   }
   const payload = parsed.payload;
 
   if (payload.hp) {
     return res.status(200).json({ ok: true, already: false, notified: false });
+  }
+
+  const emailQuality = await validateEmailQuality(payload.email, { testMode });
+  if (emailQuality.ok === false) {
+    return res.status(400).json({ ok: false, error: emailQuality.error });
   }
 
   const companyNameNorm = normalizeValue(payload.companyName);

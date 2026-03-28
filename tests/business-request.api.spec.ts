@@ -22,7 +22,7 @@ const buildPayload = (suffix: string, overrides: Partial<Record<string, unknown>
   companyName: `Bagni QA ${suffix}`,
   contactName: "Mario Rossi",
   role: "Titolare",
-  email: `qa.business.${suffix}@example.org`,
+  email: `qa.business.${suffix}@gmail.com`,
   phone: "+39 333 0000000",
   city: "Rimini",
   message: "Vorrei info su partnership e lead locali.",
@@ -64,6 +64,38 @@ test.describe("business request api", () => {
     expect(response.status()).toBe(400);
     expect(body?.ok).toBe(false);
     expect(typeof body?.error).toBe("string");
+  });
+
+  test("reserved email domain returns invalid_email_domain", async ({ request }) => {
+    const response = await request.post(BUSINESS_REQUEST_ENDPOINT, {
+      headers: TEST_MODE_HEADERS,
+      data: buildPayload(`${Date.now()}_reserved`, {
+        email: `qa.reserved.${Date.now()}@foo.invalid`,
+      }),
+    });
+    const body = await readJson(response);
+    if (response.status() === 500 && body?.error === "missing_env") {
+      test.skip(true, "Supabase env non configurato.");
+      return;
+    }
+    expect(response.status()).toBe(400);
+    expect(body).toMatchObject({ ok: false, error: "invalid_email_domain" });
+  });
+
+  test("disposable email domain returns disposable_email_domain", async ({ request }) => {
+    const response = await request.post(BUSINESS_REQUEST_ENDPOINT, {
+      headers: TEST_MODE_HEADERS,
+      data: buildPayload(`${Date.now()}_disposable`, {
+        email: `qa.disposable.${Date.now()}@mailinator.com`,
+      }),
+    });
+    const body = await readJson(response);
+    if (response.status() === 500 && body?.error === "missing_env") {
+      test.skip(true, "Supabase env non configurato.");
+      return;
+    }
+    expect(response.status()).toBe(400);
+    expect(body).toMatchObject({ ok: false, error: "disposable_email_domain" });
   });
 
   test("honeypot request is accepted with spam-safe response", async ({ request }) => {
@@ -123,7 +155,7 @@ test.describe("business request api", () => {
       headers,
       data: buildPayload(`${Date.now()}_first`, {
         companyName: "Bagni Limiter First",
-        email: `qa.rate.${Date.now()}_first@example.org`,
+        email: `qa.rate.${Date.now()}_first@gmail.com`,
       }),
     });
     const firstBody = await readJson(first);
@@ -137,7 +169,7 @@ test.describe("business request api", () => {
       headers,
       data: buildPayload(`${Date.now()}_second`, {
         companyName: "Bagni Limiter Second",
-        email: `qa.rate.${Date.now()}_second@example.org`,
+        email: `qa.rate.${Date.now()}_second@gmail.com`,
       }),
     });
     const secondBody = await readJson(second);
