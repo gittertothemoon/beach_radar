@@ -1,6 +1,6 @@
 # CODEX Working Memory
 
-Last update: 2026-03-28 (Europe/Rome)
+Last update: 2026-03-28 18:22 (Europe/Rome)
 
 ## Obiettivo condiviso
 - Massimo livello su design, funzionalita', affidabilita' reale.
@@ -47,6 +47,23 @@ Last update: 2026-03-28 (Europe/Rome)
 3. Prossimo sviluppo su feature/design con baseline verde.
 
 ## Log sintetico
+- 2026-03-28: stabilizzato bootstrap iOS debug contro errore `No script URL provided`: porta Metro dinamica + sync `RCT_jsLocation` in `scripts/run-mobile-ios-dev.mjs`, fallback esplicito bundle URL in `mobile/ios/Where2Beach/AppDelegate.swift`; validato con build iOS riuscita e avvio app su simulator senza red screen.
+- 2026-03-28: introdotto tutorial lock completo (niente tap diretti sulla WebView durante onboarding) con interazioni solo via card: step ricerca con input citta guidato interno, step ONDA con azioni controllate (`Apri ONDA` + nuovo step `Torna a Mappa`) e aggiornamento sequenza step/pose in `mobile/src/components/WebSurface.tsx`.
+- 2026-03-28: affinata logica step interattivi tutorial ONDA: rimosso auto-advance immediato su tap (search/ONDA ora completano lo step ma richiedono pressione esplicita di `Continua`), con copy hint aggiornato per evitare salti percepiti come confusi in `mobile/src/components/WebSurface.tsx`.
+- 2026-03-28: fix interazione step ricerca tutorial ONDA (overlay root `pointerEvents=\"box-none\"`, rimozione touch-blocker fullscreen) + hardening listener interazione (`pointerdown`/`touchstart`) e sequenza pose per-step senza duplicati consecutivi (`profile -> idle`) in `mobile/src/components/WebSurface.tsx`.
+- 2026-03-28: upgrade tutorial ONDA "premium": step interattivi con completamento reale (search + ONDA), auto-advance controllato, spotlight con scroll guidato verso target fuori viewport e finale rinforzato con CTA "Inizia a esplorare" in `mobile/src/components/WebSurface.tsx`.
+- 2026-03-28: fix bootstrap mobile quando `/api/app-access` risponde `missing_env`: in base URL locale bypass del gate server-side (apertura diretta `/app/?native_shell=1`) + gestione `onHttpError` con messaggio esplicito backend in `WebSurface` (`mobile/src/config/env.ts`, `mobile/src/screens/AppWebScreen.tsx`, `mobile/src/components/WebSurface.tsx`).
+- 2026-03-28: aggiunto gate "DOM ready" prima di mostrare il tutorial ONDA (bridge `w2b-tour-ready` via WebView) e alleggerito il dim overlay per evitare percezione schermo vuoto/nero durante gli step (`mobile/src/components/WebSurface.tsx`).
+- 2026-03-28: fix overlay tutorial per visibilita' reale della WebView sotto spotlight (backdrop segmentato con "hole" trasparente), aggiunti stili mancanti `tutorialBackdrop*` e rimosso riempimento blu interno del focus in `mobile/src/components/WebSurface.tsx`.
+- 2026-03-28: corretto timing tutorial ONDA per mostrarlo solo quando la WebView e' realmente pronta (`hasLoadedOnce && !loading`) e ridotta opacita' backdrop per mantenere visibile l'app sotto durante gli step in `mobile/src/components/WebSurface.tsx`.
+- 2026-03-28: fix errore console ripetuto `Style property 'width' is not supported by native animated module` nella transizione tutorial (animazione pulse spostata su `useNativeDriver: false`) in `mobile/src/components/WebSurface.tsx`.
+- 2026-03-28: fix warning/error ripetuti nella transizione step tutorial (rimosso doppio `translateY` sull'avatar ONDA con merge via `Animated.add`) in `mobile/src/components/WebSurface.tsx`.
+- 2026-03-28: semplificata la riga header del tutorial da testo descrittivo a progressivo neutro (`Passo X di 6`) e alleggerito lo stile per ridurre effetto “chip” in `mobile/src/components/WebSurface.tsx`.
+- 2026-03-28: riscritto il copy del tutorial ONDA in tono piu user-friendly e inclusivo (obiettivo app esplicito, linguaggio semplice per tutte le eta, CTA piu chiare e coinvolgenti) in `mobile/src/components/WebSurface.tsx`.
+- 2026-03-28: rimossi aura/cerchio attorno a ONDA nel tutorial e rifinito scontorno PNG `onda-*` con despill per eliminare residui bianchi sui bordi (`mobile/src/components/WebSurface.tsx`, `mobile/assets/tutorial/`).
+- 2026-03-28: refactor avatar tutorial mobile a pose-per-step con crossfade (no frame-loop), nuovo set ONDA dedicato trasparente (`onda-*`) e target dinamico anti-collisione con card (`mobile/src/components/WebSurface.tsx`, `mobile/assets/tutorial/`).
+- 2026-03-28: restyling ONDA tutorial mobile con avatar hero multi-frame, movimento dinamico per step e composizione senza box fisso (`mobile/src/components/WebSurface.tsx`, `mobile/assets/tutorial/onda-1..5.png`).
+- 2026-03-28: implementato onboarding mobile first-run guidato da avatar ONDA con spotlight animato su WebView, step interattivi e persistenza completamento (`mobile/src/components/WebSurface.tsx`, `mobile/src/screens/AppWebScreen.tsx`, `mobile/src/services/onboarding.ts`).
 - 2026-03-28: introdotta regola autorita suprema di aggiornamento memoria a fine task (`docs/CODEX_MEMORY_PROTOCOL.md`).
 - 2026-03-28: aggiunta memoria persistente release mobile in `docs/CODEX_RELEASE_MEMORY.md` con regole vincolanti OTA vs store.
 - 2026-03-25: creato registro errori persistente `docs/CODEX_ERROR_MEMORY.md` e collegato alle regole operative.

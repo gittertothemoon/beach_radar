@@ -1,24 +1,250 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Animated,
+  Easing,
   Image,
   Linking,
   Pressable,
   StyleSheet,
   Text,
   View,
+  type LayoutChangeEvent,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { WebView } from "react-native-webview";
+import { WebView, type WebViewMessageEvent } from "react-native-webview";
 
 type WebSurfaceProps = {
   initialUrl: string;
   blockLandingRedirect?: boolean;
   landingBlockedMessage?: string;
+  firstRunTutorialEnabled?: boolean;
+  onCompleteFirstRunTutorial?: () => void;
+};
+
+type TutorialRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+type TutorialStepId =
+  | "intro"
+  | "search"
+  | "map-overview"
+  | "onda"
+  | "onda-close"
+  | "return-map";
+
+type AvatarPose =
+  | "idle"
+  | "pointSearch"
+  | "pointMap"
+  | "pointNav"
+  | "celebrate";
+
+type AvatarTarget = {
+  x: number;
+  y: number;
+  tilt: number;
+};
+
+type TutorialStep = {
+  id: TutorialStepId;
+  title: string;
+  body: string;
+  selector?: string;
+  completionMode?: "none" | "search-input" | "target-touch";
+  completionSelector?: string;
+  interactionHint?: string;
+  autoAdvanceOnComplete?: boolean;
+  compactCard?: boolean;
+  fallback: (
+    surfaceWidth: number,
+    surfaceHeight: number,
+    topInset: number,
+    bottomInset: number,
+  ) => TutorialRect;
+};
+
+type TutorialBridgeMessage = {
+  type: "w2b-tour-anchor";
+  selector: string;
+  found: boolean;
+  rect?: TutorialRect;
+};
+
+type TutorialReadyBridgeMessage = {
+  type: "w2b-tour-ready";
+  ready: boolean;
+};
+
+type TutorialSearchBridgeMessage = {
+  type: "w2b-tour-search";
+  selector: string;
+  valueLength: number;
+};
+
+type TutorialTargetBridgeMessage = {
+  type: "w2b-tour-target";
+  selector: string;
+  activated: boolean;
+};
+
+type TutorialSpotlightProfile = {
+  padX: number;
+  padY: number;
+  radius: number;
+  pulseRadius: number;
+  minWidth?: number;
+  minHeight?: number;
 };
 
 const AUTO_RELOAD_MAX_ATTEMPTS = 2;
 const AUTO_RELOAD_DELAY_MS = 700;
 const PROD_FALLBACK_ORIGIN = "https://where2beach.com";
+const TUTORIAL_HIGHLIGHT_PADDING_X = 12;
+const TUTORIAL_HIGHLIGHT_PADDING_Y = 10;
+const TUTORIAL_DEFAULT_MIN_WIDTH = 100;
+const TUTORIAL_DEFAULT_MIN_HEIGHT = 44;
+const TUTORIAL_SPOTLIGHT_RADIUS = 20;
+const TUTORIAL_SPOTLIGHT_PULSE_RADIUS = 24;
+const TUTORIAL_CARD_TRANSITION_MS = 300;
+const TUTORIAL_SPOTLIGHT_TRANSITION_MS = 320;
+const TUTORIAL_TRANSITION_EASING = Easing.bezier(0.22, 1, 0.36, 1);
+const TUTORIAL_AVATAR_SIZE = 152;
+const TUTORIAL_AVATAR_EDGE_GAP = 10;
+const TUTORIAL_AVATAR_MOVE_MS = 330;
+const TUTORIAL_AVATAR_CROSSFADE_MS = 200;
+const TUTORIAL_AUTO_ADVANCE_DELAY_MS = 220;
+const TUTORIAL_CARD_TRANSITION_FROM = 0.84;
+const TUTORIAL_CARD_ESTIMATED_HEIGHT = 268;
+
+const ONDA_POSE_ASSETS: Record<AvatarPose, number> = {
+  idle: require("../../assets/tutorial/onda-idle.png"),
+  pointSearch: require("../../assets/tutorial/onda-point-search.png"),
+  pointMap: require("../../assets/tutorial/onda-point-map.png"),
+  pointNav: require("../../assets/tutorial/onda-point-nav.png"),
+  celebrate: require("../../assets/tutorial/onda-celebrate.png"),
+};
+
+const STEP_AVATAR_POSE: Record<TutorialStepId, AvatarPose> = {
+  intro: "idle",
+  search: "pointSearch",
+  "map-overview": "pointMap",
+  onda: "pointNav",
+  "onda-close": "pointNav",
+  "return-map": "pointMap",
+};
+
+const FIRST_RUN_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    id: "intro",
+    title: "Benvenuto, ci sono io: ONDA",
+    body:
+      "Tranquillo: in meno di un minuto ti mostro come funziona Where2Beach. Obiettivo? Trovare la spiaggia giusta, in modo semplice e veloce.",
+    fallback: (surfaceWidth, surfaceHeight, _topInset, _bottomInset) => ({
+      x: surfaceWidth * 0.18,
+      y: surfaceHeight * 0.26,
+      width: surfaceWidth * 0.64,
+      height: 84,
+    }),
+  },
+  {
+    id: "search",
+    title: "Dimmi dove vuoi andare",
+    body:
+      "Scrivi il nome della spiaggia o della citta nella barra in alto. Anche poche lettere bastano per trovare subito il posto giusto.",
+    selector: '[data-testid="search-input"]',
+    completionMode: "search-input",
+    completionSelector: '[data-testid="search-input"]',
+    interactionHint: "Scrivi almeno 2 lettere nella barra evidenziata, poi premi Continua.",
+    fallback: (surfaceWidth, _surfaceHeight, topInset, _bottomInset) => ({
+      x: 16,
+      y: topInset + 18,
+      width: Math.max(220, surfaceWidth - 32),
+      height: 58,
+    }),
+  },
+  {
+    id: "map-overview",
+    title: "Guarda la mappa in tempo reale",
+    body:
+      "Ogni pin rappresenta una spiaggia. Toccalo per vedere informazioni utili come affluenza, meteo e segnalazioni della community.",
+    selector: '[data-testid="map-container"]',
+    fallback: (surfaceWidth, surfaceHeight, topInset, _bottomInset) => ({
+      x: 22,
+      y: Math.max(topInset + 110, surfaceHeight * 0.28),
+      width: Math.max(230, surfaceWidth - 44),
+      height: Math.min(250, surfaceHeight * 0.34),
+    }),
+  },
+  {
+    id: "onda",
+    title: "Apri ONDA dal menu in basso",
+    body:
+      "Tocca ONDA per aprire il chatbot e vedere la sezione dedicata.",
+    selector: '[data-testid="bottom-nav-chatbot"]',
+    completionMode: "target-touch",
+    completionSelector: '[data-testid="bottom-nav-chatbot"]',
+    interactionHint: "Tocca ONDA: si apre la tab con il chatbot.",
+    autoAdvanceOnComplete: true,
+    compactCard: true,
+    fallback: (surfaceWidth, surfaceHeight, _topInset, bottomInset) => {
+      const width = Math.min(138, surfaceWidth * 0.34);
+      return {
+        x: surfaceWidth / 2 - width / 2,
+        y: surfaceHeight - bottomInset - 88,
+        width,
+        height: 52,
+      };
+    },
+  },
+  {
+    id: "onda-close",
+    title: "Chiudi ONDA dalla barra superiore",
+    body:
+      "Ora che ONDA e visibile, tocca la barra superiore della tab ONDA per richiuderla.",
+    selector: '[data-testid="bottom-sheet-header-toggle"]',
+    completionMode: "target-touch",
+    completionSelector: '[data-testid="bottom-sheet-header-toggle"]',
+    interactionHint: "Tocca la barra superiore della tab ONDA per chiuderla.",
+    autoAdvanceOnComplete: true,
+    compactCard: true,
+    fallback: (surfaceWidth, surfaceHeight, _topInset, bottomInset) => {
+      const width = Math.max(220, surfaceWidth - 32);
+      return {
+        x: (surfaceWidth - width) / 2,
+        y: surfaceHeight - bottomInset - 236,
+        width,
+        height: 42,
+      };
+    },
+  },
+  {
+    id: "return-map",
+    title: "Perfetto, ora torna su Mappa",
+    body:
+      "Ultimo passaggio: tocca Mappa in basso a sinistra per rientrare alla vista principale.",
+    selector: '[data-testid="bottom-nav-map"]',
+    completionMode: "target-touch",
+    completionSelector: '[data-testid="bottom-nav-map"]',
+    interactionHint: "Tocca Mappa per concludere il tutorial.",
+    autoAdvanceOnComplete: true,
+    fallback: (surfaceWidth, surfaceHeight, _topInset, bottomInset) => {
+      const width = Math.min(138, surfaceWidth * 0.34);
+      return {
+        x: 16,
+        y: surfaceHeight - bottomInset - 88,
+        width,
+        height: 52,
+      };
+    },
+  },
+];
+
+const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value));
 
 const isLocalLikeHost = (host: string): boolean => {
   const value = host.toLowerCase();
@@ -61,10 +287,266 @@ const withFallbackOrigin = (rawUrl: string, fallbackOrigin: string): string | nu
   }
 };
 
+const isTutorialBridgeMessage = (value: unknown): value is TutorialBridgeMessage => {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+  return (
+    record.type === "w2b-tour-anchor" &&
+    typeof record.selector === "string" &&
+    typeof record.found === "boolean"
+  );
+};
+
+const isTutorialReadyBridgeMessage = (value: unknown): value is TutorialReadyBridgeMessage => {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+  return record.type === "w2b-tour-ready" && typeof record.ready === "boolean";
+};
+
+const isTutorialSearchBridgeMessage = (value: unknown): value is TutorialSearchBridgeMessage => {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+  return (
+    record.type === "w2b-tour-search" &&
+    typeof record.selector === "string" &&
+    typeof record.valueLength === "number"
+  );
+};
+
+const isTutorialTargetBridgeMessage = (value: unknown): value is TutorialTargetBridgeMessage => {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+  return (
+    record.type === "w2b-tour-target" &&
+    typeof record.selector === "string" &&
+    typeof record.activated === "boolean"
+  );
+};
+
+const getTutorialSpotlightProfile = (
+  stepId: TutorialStepId | null | undefined,
+): TutorialSpotlightProfile => {
+  switch (stepId) {
+    case "search":
+      return { padX: 8, padY: 7, radius: TUTORIAL_SPOTLIGHT_RADIUS, pulseRadius: TUTORIAL_SPOTLIGHT_PULSE_RADIUS };
+    case "map-overview":
+      return { padX: 14, padY: 14, radius: TUTORIAL_SPOTLIGHT_RADIUS, pulseRadius: TUTORIAL_SPOTLIGHT_PULSE_RADIUS };
+    case "onda":
+      return { padX: 9, padY: 6, radius: TUTORIAL_SPOTLIGHT_RADIUS, pulseRadius: TUTORIAL_SPOTLIGHT_PULSE_RADIUS };
+    case "onda-close":
+      return {
+        padX: 6,
+        padY: 6,
+        radius: TUTORIAL_SPOTLIGHT_RADIUS,
+        pulseRadius: TUTORIAL_SPOTLIGHT_PULSE_RADIUS,
+        minWidth: 34,
+        minHeight: 34,
+      };
+    case "return-map":
+      return { padX: 9, padY: 6, radius: TUTORIAL_SPOTLIGHT_RADIUS, pulseRadius: TUTORIAL_SPOTLIGHT_PULSE_RADIUS };
+    default:
+      return {
+        padX: TUTORIAL_HIGHLIGHT_PADDING_X,
+        padY: TUTORIAL_HIGHLIGHT_PADDING_Y,
+        radius: TUTORIAL_SPOTLIGHT_RADIUS,
+        pulseRadius: TUTORIAL_SPOTLIGHT_PULSE_RADIUS,
+      };
+  }
+};
+
+const normalizeTutorialRect = (
+  rect: TutorialRect,
+  surfaceWidth: number,
+  surfaceHeight: number,
+  options?: {
+    minWidth?: number;
+    minHeight?: number;
+  },
+): TutorialRect => {
+  const minWidth = options?.minWidth ?? TUTORIAL_DEFAULT_MIN_WIDTH;
+  const minHeight = options?.minHeight ?? TUTORIAL_DEFAULT_MIN_HEIGHT;
+  const width = clamp(rect.width, minWidth, Math.max(minWidth, surfaceWidth - 20));
+  const height = clamp(
+    rect.height,
+    minHeight,
+    Math.max(minHeight, surfaceHeight - 20),
+  );
+  const x = clamp(rect.x, 10, Math.max(10, surfaceWidth - width - 10));
+  const y = clamp(rect.y, 10, Math.max(10, surfaceHeight - height - 10));
+  return { x, y, width, height };
+};
+
+const prepareAnchorRect = (
+  stepId: TutorialStepId,
+  rect: TutorialRect,
+  surfaceWidth: number,
+  surfaceHeight: number,
+): TutorialRect => {
+  const spotlightProfile = getTutorialSpotlightProfile(stepId);
+  const expanded: TutorialRect = {
+    x: rect.x - spotlightProfile.padX,
+    y: rect.y - spotlightProfile.padY,
+    width: rect.width + spotlightProfile.padX * 2,
+    height: rect.height + spotlightProfile.padY * 2,
+  };
+
+  if (stepId === "map-overview") {
+    const focusHeight = Math.min(260, surfaceHeight * 0.36);
+    const mapRect: TutorialRect = {
+      x: expanded.x + 12,
+      y: expanded.y + expanded.height * 0.25,
+      width: expanded.width - 24,
+      height: focusHeight,
+    };
+    return normalizeTutorialRect(mapRect, surfaceWidth, surfaceHeight, {
+      minWidth: spotlightProfile.minWidth,
+      minHeight: spotlightProfile.minHeight,
+    });
+  }
+
+  return normalizeTutorialRect(expanded, surfaceWidth, surfaceHeight, {
+    minWidth: spotlightProfile.minWidth,
+    minHeight: spotlightProfile.minHeight,
+  });
+};
+
+const intersects = (a: TutorialRect, b: TutorialRect): boolean =>
+  a.x < b.x + b.width &&
+  a.x + a.width > b.x &&
+  a.y < b.y + b.height &&
+  a.y + a.height > b.y;
+
+const estimateTutorialCardRect = (
+  surfaceWidth: number,
+  surfaceHeight: number,
+  topInset: number,
+  bottomInset: number,
+  cardAtTop: boolean,
+): TutorialRect => {
+  const width = Math.max(220, surfaceWidth - 28);
+  const x = 14;
+  const y = cardAtTop
+    ? Math.max(topInset + 14, 20)
+    : surfaceHeight - Math.max(bottomInset + 16, 18) - TUTORIAL_CARD_ESTIMATED_HEIGHT;
+  return { x, y, width, height: TUTORIAL_CARD_ESTIMATED_HEIGHT };
+};
+
+const resolveAvatarTarget = (
+  step: TutorialStep | null,
+  spotlightRect: TutorialRect | null,
+  cardRect: TutorialRect,
+  surfaceWidth: number,
+  surfaceHeight: number,
+  topInset: number,
+  bottomInset: number,
+): AvatarTarget => {
+  const topSafe = Math.max(8, topInset + 4);
+  const bottomSafe = Math.max(8, bottomInset + 8);
+  const minX = TUTORIAL_AVATAR_EDGE_GAP;
+  const maxX = Math.max(
+    TUTORIAL_AVATAR_EDGE_GAP,
+    surfaceWidth - TUTORIAL_AVATAR_SIZE - TUTORIAL_AVATAR_EDGE_GAP,
+  );
+  const minY = topSafe;
+  const maxY = Math.max(topSafe, surfaceHeight - TUTORIAL_AVATAR_SIZE - bottomSafe);
+
+  if (!step || !spotlightRect) {
+    const fallbackX = clamp(surfaceWidth - TUTORIAL_AVATAR_SIZE - 18, minX, maxX);
+    const fallbackY = clamp(cardRect.y - TUTORIAL_AVATAR_SIZE - 18, minY, maxY);
+    return { x: fallbackX, y: fallbackY, tilt: -0.3 };
+  }
+
+  const candidates: AvatarTarget[] = [
+    { x: spotlightRect.x - TUTORIAL_AVATAR_SIZE * 0.82, y: spotlightRect.y - 24, tilt: -0.7 },
+    {
+      x: spotlightRect.x + spotlightRect.width - TUTORIAL_AVATAR_SIZE * 0.18,
+      y: spotlightRect.y - 24,
+      tilt: 0.7,
+    },
+    {
+      x: spotlightRect.x + spotlightRect.width - TUTORIAL_AVATAR_SIZE * 0.25,
+      y: spotlightRect.y + spotlightRect.height + 12,
+      tilt: 0.45,
+    },
+    {
+      x: spotlightRect.x - TUTORIAL_AVATAR_SIZE * 0.75,
+      y: spotlightRect.y + spotlightRect.height + 12,
+      tilt: -0.45,
+    },
+  ].map((target) => ({
+    ...target,
+    x: clamp(target.x, minX, maxX),
+    y: clamp(target.y, minY, maxY),
+  }));
+
+  let bestTarget = candidates[0];
+  let bestScore = Number.POSITIVE_INFINITY;
+  const spotlightCenterX = spotlightRect.x + spotlightRect.width / 2;
+  const spotlightCenterY = spotlightRect.y + spotlightRect.height / 2;
+
+  for (const candidate of candidates) {
+    const candidateRect: TutorialRect = {
+      x: candidate.x,
+      y: candidate.y,
+      width: TUTORIAL_AVATAR_SIZE,
+      height: TUTORIAL_AVATAR_SIZE,
+    };
+    const dx = candidate.x + TUTORIAL_AVATAR_SIZE / 2 - spotlightCenterX;
+    const dy = candidate.y + TUTORIAL_AVATAR_SIZE / 2 - spotlightCenterY;
+    const distanceScore = Math.sqrt(dx * dx + dy * dy);
+    const collisionPenalty = intersects(candidateRect, cardRect) ? 240 : 0;
+    const topPenalty = candidate.y < topSafe + 4 ? 40 : 0;
+    const score = distanceScore + collisionPenalty + topPenalty;
+    if (score < bestScore) {
+      bestScore = score;
+      bestTarget = candidate;
+    }
+  }
+
+  if (step.id === "search") {
+    return {
+      x: clamp(surfaceWidth - TUTORIAL_AVATAR_SIZE - 12, minX, maxX),
+      y: clamp(cardRect.y - TUTORIAL_AVATAR_SIZE - 14, minY, maxY),
+      tilt: 0.22,
+    };
+  }
+  if (step.id === "map-overview") {
+    return {
+      x: clamp(surfaceWidth - TUTORIAL_AVATAR_SIZE - 14, minX, maxX),
+      y: clamp(topSafe + 6, minY, maxY),
+      tilt: -0.16,
+    };
+  }
+  if (step.id === "onda") {
+    return {
+      x: clamp(surfaceWidth * 0.5 - TUTORIAL_AVATAR_SIZE / 2, minX, maxX),
+      y: clamp(spotlightRect.y - TUTORIAL_AVATAR_SIZE - 14, minY, maxY),
+      tilt: 0,
+    };
+  }
+  if (step.id === "onda-close") {
+    return {
+      x: clamp(surfaceWidth - TUTORIAL_AVATAR_SIZE - 10, minX, maxX),
+      y: clamp(spotlightRect.y - TUTORIAL_AVATAR_SIZE - 8, minY, maxY),
+      tilt: 0.2,
+    };
+  }
+  if (step.id === "return-map") {
+    return {
+      x: clamp(12, minX, maxX),
+      y: clamp(spotlightRect.y - TUTORIAL_AVATAR_SIZE - 10, minY, maxY),
+      tilt: -0.28,
+    };
+  }
+  return bestTarget;
+};
+
 export const WebSurface = ({
   initialUrl,
   blockLandingRedirect = false,
   landingBlockedMessage,
+  firstRunTutorialEnabled = false,
+  onCompleteFirstRunTutorial,
 }: WebSurfaceProps) => {
   const insets = useSafeAreaInsets();
   const statusBarOverlayHeight = Math.max(28, insets.top + 2);
@@ -75,6 +557,35 @@ export const WebSurface = ({
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentUrl, setCurrentUrl] = useState(initialUrl);
+  const [surfaceSize, setSurfaceSize] = useState({ width: 0, height: 0 });
+  const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
+  const [tutorialAnchorFound, setTutorialAnchorFound] = useState(false);
+  const [tutorialAnchorRect, setTutorialAnchorRect] = useState<TutorialRect | null>(null);
+  const [tutorialDomReady, setTutorialDomReady] = useState(false);
+  const [tutorialCompletionReady, setTutorialCompletionReady] = useState(false);
+  const [tutorialSearchValueLength, setTutorialSearchValueLength] = useState(0);
+  const [tutorialCelebrationVisible, setTutorialCelebrationVisible] = useState(false);
+  const [avatarPose, setAvatarPose] = useState<AvatarPose>("idle");
+  const [previousAvatarPose, setPreviousAvatarPose] = useState<AvatarPose | null>(
+    null,
+  );
+
+  const tutorialSpotlightX = useRef(new Animated.Value(24)).current;
+  const tutorialSpotlightY = useRef(new Animated.Value(120)).current;
+  const tutorialSpotlightWidth = useRef(new Animated.Value(220)).current;
+  const tutorialSpotlightHeight = useRef(new Animated.Value(66)).current;
+  const tutorialCardProgress = useRef(new Animated.Value(1)).current;
+  const tutorialCelebrationProgress = useRef(new Animated.Value(0)).current;
+  const tutorialAvatarFloat = useRef(new Animated.Value(0)).current;
+  const tutorialAvatarX = useRef(new Animated.Value(110)).current;
+  const tutorialAvatarY = useRef(new Animated.Value(36)).current;
+  const tutorialAvatarTilt = useRef(new Animated.Value(0)).current;
+  const tutorialAvatarPoseBlend = useRef(new Animated.Value(1)).current;
+  const tutorialPulse = useRef(new Animated.Value(0)).current;
+  const tutorialAutoAdvanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tutorialAutoAdvanceScheduledKeyRef = useRef<string | null>(null);
+  const tutorialAvatarHasPositionRef = useRef(false);
+  const tutorialSpotlightHasRectRef = useRef(false);
 
   const source = useMemo(() => ({ uri: currentUrl }), [currentUrl]);
   const appOrigin = useMemo(() => {
@@ -92,6 +603,143 @@ export const WebSurface = ({
       return false;
     }
   }, [currentUrl]);
+
+  const tutorialActive = firstRunTutorialEnabled && !Boolean(error);
+  const tutorialVisible = tutorialActive && hasLoadedOnce && !loading && tutorialDomReady;
+  const tutorialStepsCount = FIRST_RUN_TUTORIAL_STEPS.length;
+  const safeTutorialStepIndex = clamp(
+    tutorialStepIndex,
+    0,
+    Math.max(0, tutorialStepsCount - 1),
+  );
+  const tutorialStep = tutorialActive
+    ? FIRST_RUN_TUTORIAL_STEPS[safeTutorialStepIndex]
+    : null;
+  const tutorialStepOverlayVisible =
+    tutorialVisible && Boolean(tutorialStep) && !tutorialCelebrationVisible;
+  const tutorialCompletionMode = tutorialStep?.completionMode ?? "none";
+  const tutorialActiveSelector = tutorialStep?.selector ?? null;
+  const tutorialActiveCompletionSelector =
+    tutorialCompletionMode === "search-input" || tutorialCompletionMode === "target-touch"
+      ? tutorialStep?.completionSelector ?? null
+      : null;
+  const tutorialStepRequiresInteraction = tutorialCompletionMode !== "none";
+  const tutorialCanAdvance =
+    tutorialCompletionMode === "none"
+      ? true
+      : tutorialCompletionMode === "search-input"
+        ? tutorialSearchValueLength >= 2
+        : tutorialCompletionReady;
+  const tutorialStepCompleted = tutorialStepRequiresInteraction && tutorialCanAdvance;
+  const tutorialAutoAdvanceOnComplete = tutorialStep?.autoAdvanceOnComplete === true;
+  const tutorialCompactCard = tutorialStep?.compactCard === true;
+  const tutorialShouldForceOndaPanelOpen =
+    (tutorialStep?.id === "onda" && tutorialStepCompleted) ||
+    (tutorialStep?.id === "onda-close" && !tutorialStepCompleted);
+  const tutorialOndaPanelPriority = tutorialShouldForceOndaPanelOpen;
+  const tutorialInteractionHintText =
+    tutorialStep?.interactionHint ?? "Completa l'azione evidenziata per continuare.";
+  const tutorialBodyText = tutorialStep?.body ?? "";
+  const tutorialIsDoneStep = false;
+  const tutorialUsesSyntheticTargetTap =
+    tutorialCompletionMode === "target-touch";
+
+  const tutorialFallbackRect = useMemo(() => {
+    if (!tutorialActiveSelector || !tutorialStep) return null;
+    const width = surfaceSize.width > 0 ? surfaceSize.width : 390;
+    const height = surfaceSize.height > 0 ? surfaceSize.height : 844;
+    return normalizeTutorialRect(
+      tutorialStep.fallback(width, height, statusBarOverlayHeight, insets.bottom),
+      width,
+      height,
+    );
+  }, [
+    tutorialActiveSelector,
+    insets.bottom,
+    statusBarOverlayHeight,
+    surfaceSize.height,
+    surfaceSize.width,
+    tutorialStep,
+  ]);
+
+  const tutorialSpotlightRect = useMemo(() => {
+    if (!tutorialActiveSelector || !tutorialStep) return null;
+    const width = surfaceSize.width > 0 ? surfaceSize.width : 390;
+    const height = surfaceSize.height > 0 ? surfaceSize.height : 844;
+
+    if (tutorialAnchorFound && tutorialAnchorRect) {
+      return prepareAnchorRect(tutorialStep.id, tutorialAnchorRect, width, height);
+    }
+
+    return tutorialFallbackRect;
+  }, [
+    surfaceSize.height,
+    surfaceSize.width,
+    tutorialActiveSelector,
+    tutorialAnchorFound,
+    tutorialAnchorRect,
+    tutorialFallbackRect,
+    tutorialStep,
+  ]);
+
+  const tutorialSpotlightVisible = Boolean(tutorialActiveSelector && tutorialSpotlightRect);
+  const tutorialSpotlightProfile = useMemo(
+    () => getTutorialSpotlightProfile(tutorialStep?.id ?? null),
+    [tutorialStep?.id],
+  );
+  const tutorialCardAtTop = Boolean(
+    (tutorialStep?.id === "onda" || tutorialStep?.id === "onda-close") ||
+      (tutorialActiveSelector &&
+        tutorialSpotlightRect &&
+        tutorialSpotlightRect.y > (surfaceSize.height > 0 ? surfaceSize.height : 844) * 0.55),
+  );
+  const tutorialCardRect = useMemo(() => {
+    const width = surfaceSize.width > 0 ? surfaceSize.width : 390;
+    const height = surfaceSize.height > 0 ? surfaceSize.height : 844;
+    return estimateTutorialCardRect(
+      width,
+      height,
+      statusBarOverlayHeight,
+      insets.bottom,
+      tutorialCardAtTop,
+    );
+  }, [
+    insets.bottom,
+    statusBarOverlayHeight,
+    surfaceSize.height,
+    surfaceSize.width,
+    tutorialCardAtTop,
+  ]);
+  const tutorialAvatarTarget = useMemo(() => {
+    const width = surfaceSize.width > 0 ? surfaceSize.width : 390;
+    const height = surfaceSize.height > 0 ? surfaceSize.height : 844;
+    return resolveAvatarTarget(
+      tutorialStep,
+      tutorialSpotlightRect,
+      tutorialCardRect,
+      width,
+      height,
+      statusBarOverlayHeight,
+      insets.bottom,
+    );
+  }, [
+    insets.bottom,
+    statusBarOverlayHeight,
+    surfaceSize.height,
+    surfaceSize.width,
+    tutorialCardRect,
+    tutorialSpotlightRect,
+    tutorialStep,
+  ]);
+  const effectiveAvatarPose = tutorialStep ? STEP_AVATAR_POSE[tutorialStep.id] : "idle";
+  const currentAvatarAsset = ONDA_POSE_ASSETS[avatarPose];
+
+  const tutorialPrimaryLabel =
+    safeTutorialStepIndex === 0
+      ? "Partiamo"
+      : safeTutorialStepIndex === tutorialStepsCount - 1
+        ? "Inizia a esplorare"
+        : "Continua";
 
   const resetConnectionState = useCallback(() => {
     retryAttemptRef.current = 0;
@@ -121,6 +769,184 @@ export const WebSurface = ({
     void Linking.openURL(rawUrl).catch(() => {
       setError("Impossibile aprire il link esterno.");
     });
+  }, []);
+
+  const probeTutorialAnchor = useCallback((selector: string) => {
+    const selectorLiteral = JSON.stringify(selector);
+    const script = `
+      (function() {
+        try {
+          var selector = ${selectorLiteral};
+          var element = document.querySelector(selector);
+          var payload = { type: "w2b-tour-anchor", selector: selector, found: Boolean(element) };
+          var isOndaCloseSelector =
+            selector.indexOf("bottom-sheet-chat-close") !== -1 ||
+            selector.indexOf("bottom-sheet-header-toggle") !== -1;
+          if (!element && isOndaCloseSelector) {
+            var headerToggle =
+              document.querySelector('[data-testid="bottom-sheet-header-toggle"][aria-expanded="true"]') ||
+              document.querySelector('[data-testid="bottom-sheet"] > div > button[aria-expanded="true"]');
+            if (headerToggle) {
+              var headerRect = headerToggle.getBoundingClientRect();
+              payload.found = true;
+              payload.rect = {
+                x: headerRect.left + 10,
+                y: headerRect.top + 2,
+                width: Math.max(80, headerRect.width - 20),
+                height: Math.max(32, headerRect.height - 4)
+              };
+            }
+          }
+          if (element) {
+            var rect = element.getBoundingClientRect();
+            payload.rect = { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+          }
+          if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+            window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+          }
+        } catch (_error) {
+          // Ignore DOM bridge errors.
+        }
+      })();
+      true;
+    `;
+    webViewRef.current?.injectJavaScript(script);
+  }, []);
+
+  const ensureTutorialAnchorVisible = useCallback((selector: string) => {
+    const selectorLiteral = JSON.stringify(selector);
+    const script = `
+      (function() {
+        try {
+          var element = document.querySelector(${selectorLiteral});
+          if (!element || typeof element.scrollIntoView !== "function") return;
+          var rect = element.getBoundingClientRect();
+          var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+          var margin = 96;
+          var needsScroll = rect.top < margin || rect.bottom > (viewportHeight - margin);
+          if (needsScroll) {
+            element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+          }
+        } catch (_error) {
+          // Ignore DOM bridge errors.
+        }
+      })();
+      true;
+    `;
+    webViewRef.current?.injectJavaScript(script);
+  }, []);
+
+  const armTutorialSearchProgress = useCallback((selector: string) => {
+    const selectorLiteral = JSON.stringify(selector);
+    const script = `
+      (function() {
+        try {
+          var selector = ${selectorLiteral};
+          var element = document.querySelector(selector);
+          if (!element) return;
+          var post = function() {
+            var value = "";
+            if (typeof element.value === "string") value = element.value;
+            var length = value.trim().length;
+            if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: "w2b-tour-search",
+                selector: selector,
+                valueLength: length
+              }));
+            }
+          };
+          post();
+          if (element.__w2bTourSearchArmed) return;
+          element.__w2bTourSearchArmed = true;
+          element.addEventListener("input", post, { passive: true });
+          element.addEventListener("change", post, { passive: true });
+          element.addEventListener("keyup", post, { passive: true });
+          element.addEventListener("focus", post, { passive: true });
+        } catch (_error) {
+          // Ignore DOM bridge errors.
+        }
+      })();
+      true;
+    `;
+    webViewRef.current?.injectJavaScript(script);
+  }, []);
+
+  const armTutorialTargetProgress = useCallback((selector: string) => {
+    const selectorLiteral = JSON.stringify(selector);
+    const script = `
+      (function() {
+        try {
+          var selector = ${selectorLiteral};
+          var element = document.querySelector(selector);
+          if (!element) return;
+          element.__w2bTourTargetDone = false;
+          var notify = function() {
+            if (element.__w2bTourTargetDone) return;
+            var isNavTarget = selector.indexOf("bottom-nav-") !== -1;
+            var isActivated = true;
+            if (isNavTarget) {
+              var className = typeof element.className === "string" ? element.className : "";
+              isActivated =
+                className.indexOf("border-white/38") !== -1 ||
+                element.getAttribute("aria-pressed") === "true" ||
+                element.getAttribute("aria-current") === "page";
+            }
+            if (!isActivated) return;
+            element.__w2bTourTargetDone = true;
+            if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: "w2b-tour-target",
+                selector: selector,
+                activated: true
+              }));
+            }
+          };
+          if (element.__w2bTourTargetArmed) return;
+          element.__w2bTourTargetArmed = true;
+          element.addEventListener("click", function() {
+            setTimeout(notify, 90);
+          }, { passive: true });
+          element.addEventListener("keydown", function(event) {
+            if (event && (event.key === "Enter" || event.key === " ")) {
+              setTimeout(notify, 90);
+            }
+          });
+        } catch (_error) {
+          // Ignore DOM bridge errors.
+        }
+      })();
+      true;
+    `;
+    webViewRef.current?.injectJavaScript(script);
+  }, []);
+
+  const probeTutorialReady = useCallback(() => {
+    const script = `
+      (function() {
+        try {
+          var selectors = [
+            '[data-testid="search-input"]',
+            '[data-testid="map-container"]',
+            '[data-testid="bottom-nav-map"]',
+            '[data-testid="bottom-nav-chatbot"]',
+            '[data-testid="bottom-nav-profile"]'
+          ];
+          var domReady = document.readyState === "interactive" || document.readyState === "complete";
+          var hasAnchor = selectors.some(function(selector) {
+            return Boolean(document.querySelector(selector));
+          });
+          var payload = { type: "w2b-tour-ready", ready: Boolean(domReady && hasAnchor) };
+          if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+            window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+          }
+        } catch (_error) {
+          // Ignore DOM bridge errors.
+        }
+      })();
+      true;
+    `;
+    webViewRef.current?.injectJavaScript(script);
   }, []);
 
   const handleShouldStartLoadWithRequest = useCallback(
@@ -204,13 +1030,949 @@ export const WebSurface = ({
     [currentUrl, isLocalSource],
   );
 
+  const handleWebHttpError = useCallback(
+    (event: {
+      nativeEvent: {
+        statusCode: number;
+        description?: string;
+        url?: string;
+      };
+    }) => {
+      const nativeEvent = event.nativeEvent;
+      const statusCode = nativeEvent?.statusCode;
+      const description = nativeEvent?.description;
+      const rawUrl = nativeEvent?.url ?? "";
+
+      let pathname = "";
+      try {
+        pathname = rawUrl ? new URL(rawUrl).pathname : "";
+      } catch {
+        pathname = "";
+      }
+
+      if (statusCode >= 500 && pathname === "/api/app-access") {
+        setError(
+          "Configurazione accesso app mancante sul backend (APP_ACCESS_KEY / APP_ACCESS_KEY_HASH).",
+        );
+      } else if (statusCode >= 400) {
+        setError(description || `Errore server (${statusCode})`);
+      }
+
+      setLoading(false);
+      setHasLoadedOnce(true);
+      setTutorialDomReady(false);
+    },
+    [],
+  );
+
+  const handleWebMessage = useCallback(
+    (event: WebViewMessageEvent) => {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(event.nativeEvent.data);
+      } catch {
+        return;
+      }
+
+      if (isTutorialReadyBridgeMessage(parsed)) {
+        setTutorialDomReady(parsed.ready);
+        return;
+      }
+
+      if (
+        isTutorialSearchBridgeMessage(parsed) &&
+        tutorialVisible &&
+        tutorialCompletionMode === "search-input" &&
+        tutorialActiveCompletionSelector &&
+        parsed.selector === tutorialActiveCompletionSelector
+      ) {
+        setTutorialSearchValueLength(parsed.valueLength);
+        return;
+      }
+
+      if (
+        isTutorialTargetBridgeMessage(parsed) &&
+        tutorialVisible &&
+        parsed.activated
+      ) {
+        if (
+          tutorialCompletionMode === "target-touch" &&
+          tutorialActiveCompletionSelector &&
+          parsed.selector === tutorialActiveCompletionSelector
+        ) {
+          setTutorialCompletionReady(true);
+          return;
+        }
+        return;
+      }
+
+      if (!tutorialVisible || !tutorialActiveSelector) return;
+
+      if (!isTutorialBridgeMessage(parsed)) return;
+      if (parsed.selector !== tutorialActiveSelector) return;
+
+      if (!parsed.found || !parsed.rect) {
+        setTutorialAnchorFound(false);
+        setTutorialAnchorRect(null);
+        return;
+      }
+
+      const rect = parsed.rect;
+      const normalizedRect: TutorialRect = {
+        x: typeof rect.x === "number" ? rect.x : 0,
+        y: typeof rect.y === "number" ? rect.y : 0,
+        width: typeof rect.width === "number" ? rect.width : 0,
+        height: typeof rect.height === "number" ? rect.height : 0,
+      };
+
+      if (normalizedRect.width <= 0 || normalizedRect.height <= 0) {
+        setTutorialAnchorFound(false);
+        setTutorialAnchorRect(null);
+        return;
+      }
+
+      setTutorialAnchorFound(true);
+      setTutorialAnchorRect(normalizedRect);
+    },
+    [
+      tutorialActiveCompletionSelector,
+      tutorialActiveSelector,
+      tutorialCompletionMode,
+      tutorialVisible,
+    ],
+  );
+
+  const handleSurfaceLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setSurfaceSize({ width, height });
+  }, []);
+
+  const showTutorialCelebration = useCallback(() => {
+    setTutorialCelebrationVisible(true);
+    setTutorialAnchorFound(false);
+    setTutorialAnchorRect(null);
+    setTutorialCompletionReady(false);
+    setTutorialSearchValueLength(0);
+  }, []);
+
+  const handleFinishTutorial = useCallback(() => {
+    setTutorialCelebrationVisible(false);
+    onCompleteFirstRunTutorial?.();
+  }, [onCompleteFirstRunTutorial]);
+
+  const dismissTutorialSearchDropdown = useCallback(() => {
+    const script = `
+      (function() {
+        try {
+          var input = document.querySelector('[data-testid="search-input"]');
+          if (input) {
+            var descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement && window.HTMLInputElement.prototype, "value");
+            if (descriptor && typeof descriptor.set === "function") {
+              descriptor.set.call(input, "");
+            } else {
+              input.value = "";
+            }
+            if (typeof Event === "function") {
+              input.dispatchEvent(new Event("input", { bubbles: true }));
+              input.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+          }
+          var evtInit = { bubbles: true, cancelable: true };
+          if (input && typeof KeyboardEvent === "function") {
+            input.dispatchEvent(new KeyboardEvent("keydown", Object.assign({ key: "Escape", code: "Escape" }, evtInit)));
+            input.dispatchEvent(new KeyboardEvent("keyup", Object.assign({ key: "Escape", code: "Escape" }, evtInit)));
+          }
+          if (input && typeof input.blur === "function") {
+            input.blur();
+          }
+          var active = document.activeElement;
+          if (active && active !== document.body && typeof active.blur === "function") {
+            active.blur();
+          }
+        } catch (_error) {
+          // Ignore DOM bridge errors.
+        }
+      })();
+      true;
+    `;
+    webViewRef.current?.injectJavaScript(script);
+  }, []);
+
+  const triggerTutorialTargetTap = useCallback((selector: string) => {
+    const selectorLiteral = JSON.stringify(selector);
+    const script = `
+      (function() {
+        try {
+          var selector = ${selectorLiteral};
+          var element = document.querySelector(selector);
+          if (
+            !element &&
+            (selector.indexOf("bottom-sheet-chat-close") !== -1 ||
+              selector.indexOf("bottom-sheet-header-toggle") !== -1)
+          ) {
+            var headerToggle =
+              document.querySelector('[data-testid="bottom-sheet-header-toggle"][aria-expanded="true"]') ||
+              document.querySelector('[data-testid="bottom-sheet"] > div > button[aria-expanded="true"]');
+            if (headerToggle && typeof headerToggle.click === "function") {
+              headerToggle.click();
+              if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: "w2b-tour-target",
+                  selector: selector,
+                  activated: true
+                }));
+              }
+            }
+            return;
+          }
+          if (!element) return;
+          if (typeof element.focus === "function") {
+            element.focus();
+          }
+          if (typeof element.click === "function") {
+            element.click();
+            return;
+          }
+          if (typeof MouseEvent === "function" && typeof element.dispatchEvent === "function") {
+            element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+          }
+        } catch (_error) {
+          // Ignore DOM bridge errors.
+        }
+      })();
+      true;
+    `;
+    webViewRef.current?.injectJavaScript(script);
+  }, []);
+
+  const ensureTutorialOndaPanelVisible = useCallback(() => {
+    const script = `
+      (function() {
+        try {
+          var chatbotNav = document.querySelector('[data-testid="bottom-nav-chatbot"]');
+          var chatbotClass = chatbotNav && typeof chatbotNav.className === "string" ? chatbotNav.className : "";
+          var chatbotActive = chatbotClass.indexOf("border-white/38") !== -1;
+          if (chatbotNav && !chatbotActive && typeof chatbotNav.click === "function") {
+            chatbotNav.click();
+          }
+          var headerToggle = document.querySelector('[data-testid="bottom-sheet"] > div > button[aria-expanded]');
+          if (headerToggle && headerToggle.getAttribute("aria-expanded") !== "true" && typeof headerToggle.click === "function") {
+            headerToggle.click();
+          }
+        } catch (_error) {
+          // Ignore DOM bridge errors.
+        }
+      })();
+      true;
+    `;
+    webViewRef.current?.injectJavaScript(script);
+  }, []);
+
+  const advanceTutorialStep = useCallback(() => {
+    setTutorialStepIndex((prev) => clamp(prev + 1, 0, tutorialStepsCount - 1));
+    setTutorialAnchorFound(false);
+    setTutorialAnchorRect(null);
+  }, [tutorialStepsCount]);
+
+  const handleNextTutorialStep = useCallback(() => {
+    if (!tutorialActive) return;
+    if (tutorialCelebrationVisible) return;
+    if (!tutorialCanAdvance) return;
+    if (safeTutorialStepIndex >= tutorialStepsCount - 1) {
+      showTutorialCelebration();
+      return;
+    }
+    if (tutorialStep?.id === "search") {
+      dismissTutorialSearchDropdown();
+    }
+    advanceTutorialStep();
+  }, [
+    advanceTutorialStep,
+    dismissTutorialSearchDropdown,
+    safeTutorialStepIndex,
+    tutorialActive,
+    tutorialCanAdvance,
+    tutorialCelebrationVisible,
+    tutorialStep,
+    tutorialStepsCount,
+    showTutorialCelebration,
+  ]);
+
+  const handlePrevTutorialStep = useCallback(() => {
+    if (!tutorialActive) return;
+    if (tutorialCelebrationVisible) return;
+    setTutorialStepIndex((prev) => clamp(prev - 1, 0, tutorialStepsCount - 1));
+    setTutorialAnchorFound(false);
+    setTutorialAnchorRect(null);
+  }, [tutorialActive, tutorialCelebrationVisible, tutorialStepsCount]);
+
   useEffect(() => {
     if (initialUrl === currentUrl) return;
     applySourceUrl(initialUrl);
   }, [applySourceUrl, currentUrl, initialUrl]);
 
+  useEffect(() => {
+    if (!tutorialVisible) return;
+    setTutorialStepIndex(0);
+    setTutorialAnchorFound(false);
+    setTutorialAnchorRect(null);
+    setTutorialCompletionReady(false);
+    setTutorialSearchValueLength(0);
+    setTutorialCelebrationVisible(false);
+    setPreviousAvatarPose(null);
+    setAvatarPose("idle");
+    tutorialAvatarPoseBlend.setValue(1);
+    tutorialAvatarHasPositionRef.current = false;
+    tutorialSpotlightHasRectRef.current = false;
+  }, [tutorialAvatarPoseBlend, tutorialVisible]);
+
+  useEffect(() => {
+    if (!tutorialVisible) return;
+    setTutorialCompletionReady(false);
+    setTutorialSearchValueLength(0);
+  }, [safeTutorialStepIndex, tutorialVisible]);
+
+  useEffect(() => {
+    if (
+      !tutorialVisible ||
+      tutorialCelebrationVisible ||
+      !tutorialStep ||
+      !tutorialAutoAdvanceOnComplete
+    ) {
+      tutorialAutoAdvanceScheduledKeyRef.current = null;
+      if (tutorialAutoAdvanceTimerRef.current) {
+        clearTimeout(tutorialAutoAdvanceTimerRef.current);
+        tutorialAutoAdvanceTimerRef.current = null;
+      }
+      return;
+    }
+    const stepKey = `${safeTutorialStepIndex}:${tutorialStep.id}`;
+    if (!tutorialCanAdvance) {
+      if (tutorialAutoAdvanceScheduledKeyRef.current === stepKey) {
+        tutorialAutoAdvanceScheduledKeyRef.current = null;
+      }
+      if (tutorialAutoAdvanceTimerRef.current) {
+        clearTimeout(tutorialAutoAdvanceTimerRef.current);
+        tutorialAutoAdvanceTimerRef.current = null;
+      }
+      return;
+    }
+    if (tutorialAutoAdvanceScheduledKeyRef.current === stepKey) {
+      return;
+    }
+    tutorialAutoAdvanceScheduledKeyRef.current = stepKey;
+    if (tutorialAutoAdvanceTimerRef.current) {
+      clearTimeout(tutorialAutoAdvanceTimerRef.current);
+      tutorialAutoAdvanceTimerRef.current = null;
+    }
+    tutorialAutoAdvanceTimerRef.current = setTimeout(() => {
+      tutorialAutoAdvanceTimerRef.current = null;
+      tutorialAutoAdvanceScheduledKeyRef.current = null;
+      if (safeTutorialStepIndex >= tutorialStepsCount - 1) {
+        showTutorialCelebration();
+        return;
+      }
+      if (tutorialStep.id === "search") {
+        dismissTutorialSearchDropdown();
+      }
+      advanceTutorialStep();
+    }, TUTORIAL_AUTO_ADVANCE_DELAY_MS);
+  }, [
+    advanceTutorialStep,
+    dismissTutorialSearchDropdown,
+    safeTutorialStepIndex,
+    tutorialAutoAdvanceOnComplete,
+    tutorialCanAdvance,
+    tutorialCelebrationVisible,
+    tutorialStep,
+    tutorialStepsCount,
+    tutorialVisible,
+    showTutorialCelebration,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      if (tutorialAutoAdvanceTimerRef.current) {
+        clearTimeout(tutorialAutoAdvanceTimerRef.current);
+        tutorialAutoAdvanceTimerRef.current = null;
+      }
+      tutorialAutoAdvanceScheduledKeyRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!tutorialActive || !hasLoadedOnce || loading || Boolean(error)) return;
+    probeTutorialReady();
+    const firstProbe = setTimeout(() => probeTutorialReady(), 180);
+    const secondProbe = setTimeout(() => probeTutorialReady(), 700);
+    const readyFallback = setTimeout(() => {
+      setTutorialDomReady(true);
+    }, 2200);
+    return () => {
+      clearTimeout(firstProbe);
+      clearTimeout(secondProbe);
+      clearTimeout(readyFallback);
+    };
+  }, [currentUrl, error, hasLoadedOnce, loading, probeTutorialReady, tutorialActive]);
+
+  useEffect(() => {
+    if (!tutorialStepOverlayVisible || !tutorialActiveSelector) return;
+    ensureTutorialAnchorVisible(tutorialActiveSelector);
+    probeTutorialAnchor(tutorialActiveSelector);
+    const firstProbe = setTimeout(() => {
+      probeTutorialAnchor(tutorialActiveSelector);
+    }, 120);
+    const secondProbe = setTimeout(() => {
+      probeTutorialAnchor(tutorialActiveSelector);
+    }, 460);
+    const lateProbe = setTimeout(() => {
+      probeTutorialAnchor(tutorialActiveSelector);
+    }, 980);
+    return () => {
+      clearTimeout(firstProbe);
+      clearTimeout(secondProbe);
+      clearTimeout(lateProbe);
+    };
+  }, [
+    ensureTutorialAnchorVisible,
+    hasLoadedOnce,
+    probeTutorialAnchor,
+    tutorialActiveSelector,
+    tutorialStepOverlayVisible,
+    currentUrl,
+  ]);
+
+  useEffect(() => {
+    if (!tutorialStepOverlayVisible) return;
+    if (tutorialCompletionMode === "search-input" && tutorialActiveCompletionSelector) {
+      armTutorialSearchProgress(tutorialActiveCompletionSelector);
+      const retry = setTimeout(() => {
+        armTutorialSearchProgress(tutorialActiveCompletionSelector);
+      }, 360);
+      return () => {
+        clearTimeout(retry);
+      };
+    }
+    if (tutorialCompletionMode === "target-touch" && tutorialActiveCompletionSelector) {
+      armTutorialTargetProgress(tutorialActiveCompletionSelector);
+      const retry = setTimeout(() => {
+        armTutorialTargetProgress(tutorialActiveCompletionSelector);
+      }, 360);
+      const lateRetry = setTimeout(() => {
+        armTutorialTargetProgress(tutorialActiveCompletionSelector);
+      }, 980);
+      return () => {
+        clearTimeout(retry);
+        clearTimeout(lateRetry);
+      };
+    }
+    return;
+  }, [
+    armTutorialSearchProgress,
+    armTutorialTargetProgress,
+    tutorialActiveCompletionSelector,
+    tutorialCompletionMode,
+    tutorialStepOverlayVisible,
+  ]);
+
+  useEffect(() => {
+    if (!tutorialStepOverlayVisible) return;
+    if (!tutorialShouldForceOndaPanelOpen) return;
+    ensureTutorialOndaPanelVisible();
+    const retry = setTimeout(() => {
+      ensureTutorialOndaPanelVisible();
+    }, 200);
+    return () => {
+      clearTimeout(retry);
+    };
+  }, [
+    ensureTutorialOndaPanelVisible,
+    tutorialShouldForceOndaPanelOpen,
+    tutorialStepOverlayVisible,
+  ]);
+
+  useEffect(() => {
+    if (!tutorialStepOverlayVisible) return;
+    let cancelled = false;
+    let animation: Animated.CompositeAnimation | null = null;
+    tutorialCardProgress.stopAnimation((currentValue) => {
+      if (cancelled) return;
+      const fromValue = clamp(
+        currentValue * 0.9,
+        TUTORIAL_CARD_TRANSITION_FROM,
+        1,
+      );
+      tutorialCardProgress.setValue(fromValue);
+      animation = Animated.timing(tutorialCardProgress, {
+        toValue: 1,
+        duration: TUTORIAL_CARD_TRANSITION_MS,
+        easing: TUTORIAL_TRANSITION_EASING,
+        useNativeDriver: true,
+      });
+      animation.start();
+    });
+    return () => {
+      cancelled = true;
+      if (animation) {
+        animation.stop();
+      }
+    };
+  }, [safeTutorialStepIndex, tutorialCardProgress, tutorialStepOverlayVisible]);
+
+  useEffect(() => {
+    if (!tutorialVisible || !tutorialCelebrationVisible) {
+      tutorialCelebrationProgress.setValue(0);
+      return;
+    }
+    tutorialCelebrationProgress.setValue(0);
+    const animation = Animated.timing(tutorialCelebrationProgress, {
+      toValue: 1,
+      duration: TUTORIAL_CARD_TRANSITION_MS,
+      easing: TUTORIAL_TRANSITION_EASING,
+      useNativeDriver: true,
+    });
+    animation.start();
+    return () => {
+      animation.stop();
+    };
+  }, [tutorialCelebrationProgress, tutorialCelebrationVisible, tutorialVisible]);
+
+  useEffect(() => {
+    if (!tutorialStepOverlayVisible || effectiveAvatarPose === avatarPose) return;
+    setPreviousAvatarPose(avatarPose);
+    setAvatarPose(effectiveAvatarPose);
+    tutorialAvatarPoseBlend.setValue(0);
+    const animation = Animated.timing(tutorialAvatarPoseBlend, {
+      toValue: 1,
+      duration: TUTORIAL_AVATAR_CROSSFADE_MS,
+      easing: TUTORIAL_TRANSITION_EASING,
+      useNativeDriver: true,
+    });
+    animation.start(({ finished }) => {
+      if (finished) {
+        setPreviousAvatarPose(null);
+      }
+    });
+    return () => {
+      animation.stop();
+    };
+  }, [
+    avatarPose,
+    effectiveAvatarPose,
+    tutorialStepOverlayVisible,
+    tutorialAvatarPoseBlend,
+  ]);
+
+  useEffect(() => {
+    if (!tutorialStepOverlayVisible) return;
+    const shouldHoldForAnchor = Boolean(tutorialActiveSelector) && !tutorialAnchorFound;
+    if (!tutorialAvatarHasPositionRef.current) {
+      tutorialAvatarX.setValue(tutorialAvatarTarget.x);
+      tutorialAvatarY.setValue(tutorialAvatarTarget.y);
+      tutorialAvatarTilt.setValue(tutorialAvatarTarget.tilt);
+      tutorialAvatarHasPositionRef.current = true;
+      return;
+    }
+    if (shouldHoldForAnchor) return;
+    const animation = Animated.parallel([
+      Animated.timing(tutorialAvatarX, {
+        toValue: tutorialAvatarTarget.x,
+        duration: TUTORIAL_AVATAR_MOVE_MS,
+        easing: TUTORIAL_TRANSITION_EASING,
+        useNativeDriver: true,
+      }),
+      Animated.timing(tutorialAvatarY, {
+        toValue: tutorialAvatarTarget.y,
+        duration: TUTORIAL_AVATAR_MOVE_MS,
+        easing: TUTORIAL_TRANSITION_EASING,
+        useNativeDriver: true,
+      }),
+      Animated.timing(tutorialAvatarTilt, {
+        toValue: tutorialAvatarTarget.tilt,
+        duration: TUTORIAL_AVATAR_MOVE_MS,
+        easing: TUTORIAL_TRANSITION_EASING,
+        useNativeDriver: true,
+      }),
+    ]);
+    animation.start();
+    return () => {
+      animation.stop();
+    };
+  }, [
+    tutorialActiveSelector,
+    tutorialAnchorFound,
+    tutorialStepOverlayVisible,
+    tutorialAvatarTarget,
+    tutorialAvatarTilt,
+    tutorialAvatarX,
+    tutorialAvatarY,
+  ]);
+
+  useEffect(() => {
+    if (!tutorialStepOverlayVisible) return;
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(tutorialAvatarFloat, {
+          toValue: -2.6,
+          duration: 1550,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(tutorialAvatarFloat, {
+          toValue: 0,
+          duration: 1650,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    animation.start();
+    return () => {
+      animation.stop();
+    };
+  }, [tutorialAvatarFloat, tutorialStepOverlayVisible]);
+
+  useEffect(() => {
+    if (!tutorialStepOverlayVisible || !tutorialSpotlightVisible) return;
+    tutorialPulse.setValue(0);
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(tutorialPulse, {
+          toValue: 1,
+          duration: 1120,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+        Animated.timing(tutorialPulse, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: false,
+        }),
+      ]),
+    );
+    animation.start();
+    return () => {
+      animation.stop();
+    };
+  }, [tutorialPulse, tutorialSpotlightVisible, tutorialStepOverlayVisible]);
+
+  useEffect(() => {
+    if (!tutorialStepOverlayVisible || !tutorialSpotlightVisible || !tutorialSpotlightRect) {
+      tutorialSpotlightHasRectRef.current = false;
+      return;
+    }
+    const shouldHoldForAnchor = Boolean(tutorialActiveSelector) && !tutorialAnchorFound;
+    if (!tutorialSpotlightHasRectRef.current) {
+      tutorialSpotlightX.setValue(tutorialSpotlightRect.x);
+      tutorialSpotlightY.setValue(tutorialSpotlightRect.y);
+      tutorialSpotlightWidth.setValue(tutorialSpotlightRect.width);
+      tutorialSpotlightHeight.setValue(tutorialSpotlightRect.height);
+      tutorialSpotlightHasRectRef.current = true;
+      return;
+    }
+    if (shouldHoldForAnchor) return;
+    const animation = Animated.parallel([
+      Animated.timing(tutorialSpotlightX, {
+        toValue: tutorialSpotlightRect.x,
+        duration: TUTORIAL_SPOTLIGHT_TRANSITION_MS,
+        easing: TUTORIAL_TRANSITION_EASING,
+        useNativeDriver: false,
+      }),
+      Animated.timing(tutorialSpotlightY, {
+        toValue: tutorialSpotlightRect.y,
+        duration: TUTORIAL_SPOTLIGHT_TRANSITION_MS,
+        easing: TUTORIAL_TRANSITION_EASING,
+        useNativeDriver: false,
+      }),
+      Animated.timing(tutorialSpotlightWidth, {
+        toValue: tutorialSpotlightRect.width,
+        duration: TUTORIAL_SPOTLIGHT_TRANSITION_MS,
+        easing: TUTORIAL_TRANSITION_EASING,
+        useNativeDriver: false,
+      }),
+      Animated.timing(tutorialSpotlightHeight, {
+        toValue: tutorialSpotlightRect.height,
+        duration: TUTORIAL_SPOTLIGHT_TRANSITION_MS,
+        easing: TUTORIAL_TRANSITION_EASING,
+        useNativeDriver: false,
+      }),
+    ]);
+    animation.start();
+    return () => {
+      animation.stop();
+    };
+  }, [
+    tutorialActiveSelector,
+    tutorialAnchorFound,
+    tutorialSpotlightHeight,
+    tutorialSpotlightRect,
+    tutorialStepOverlayVisible,
+    tutorialSpotlightVisible,
+    tutorialSpotlightWidth,
+    tutorialSpotlightX,
+    tutorialSpotlightY,
+  ]);
+
+  const tutorialCardTransform = {
+    opacity: tutorialCardProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.9, 1],
+    }),
+    transform: [
+      {
+        translateY: tutorialCardProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [10, 0],
+        }),
+      },
+      {
+        scale: tutorialCardProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.995, 1],
+        }),
+      },
+    ],
+  };
+  const tutorialCelebrationCardTransform = {
+    opacity: tutorialCelebrationProgress,
+    transform: [
+      {
+        translateY: tutorialCelebrationProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [24, 0],
+        }),
+      },
+      {
+        scale: tutorialCelebrationProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.96, 1],
+        }),
+      },
+    ],
+  };
+
+  const tutorialPulseStyle = {
+    opacity: tutorialPulse.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.42, 0],
+    }),
+    transform: [
+      {
+        scale: tutorialPulse.interpolate({
+          inputRange: [0, 1],
+          outputRange: [1, 1.07],
+        }),
+      },
+    ],
+  };
+  const tutorialAvatarRotate = tutorialAvatarTilt.interpolate({
+    inputRange: [-1, 1],
+    outputRange: ["-4deg", "4deg"],
+  });
+  const tutorialAvatarTranslateY = useMemo(
+    () => Animated.add(tutorialAvatarY, tutorialAvatarFloat),
+    [tutorialAvatarFloat, tutorialAvatarY],
+  );
+  const tutorialAvatarCurrentOpacity = previousAvatarPose
+    ? tutorialAvatarPoseBlend
+    : 1;
+  const tutorialAvatarPreviousOpacity = tutorialAvatarPoseBlend.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+  });
+  const tutorialOverlayWidth = surfaceSize.width > 0 ? surfaceSize.width : 390;
+  const tutorialOverlayHeight = surfaceSize.height > 0 ? surfaceSize.height : 844;
+  const tutorialHoleRect =
+    tutorialSpotlightVisible && tutorialSpotlightRect
+      ? {
+          x: clamp(tutorialSpotlightRect.x, 0, tutorialOverlayWidth),
+          y: clamp(tutorialSpotlightRect.y, 0, tutorialOverlayHeight),
+          width: clamp(tutorialSpotlightRect.width, 0, tutorialOverlayWidth),
+          height: clamp(tutorialSpotlightRect.height, 0, tutorialOverlayHeight),
+        }
+      : null;
+  const tutorialSpotlightCornerRadius = tutorialHoleRect
+    ? clamp(
+        tutorialSpotlightProfile.radius,
+        0,
+        Math.min(tutorialHoleRect.width, tutorialHoleRect.height) / 2,
+      )
+    : tutorialSpotlightProfile.radius;
+  const tutorialSpotlightPulseCornerRadius = tutorialHoleRect
+    ? clamp(
+        tutorialSpotlightProfile.pulseRadius,
+        0,
+        Math.min(tutorialHoleRect.width, tutorialHoleRect.height) / 2,
+      )
+    : tutorialSpotlightProfile.pulseRadius;
+  const tutorialBackdropSegments = useMemo(() => {
+    if (!tutorialHoleRect) return null;
+    const holeLeft = tutorialHoleRect.x;
+    const holeTop = tutorialHoleRect.y;
+    const holeRight = clamp(
+      tutorialHoleRect.x + tutorialHoleRect.width,
+      0,
+      tutorialOverlayWidth,
+    );
+    const holeBottom = clamp(
+      tutorialHoleRect.y + tutorialHoleRect.height,
+      0,
+      tutorialOverlayHeight,
+    );
+    return [
+      { key: "top", left: 0, top: 0, width: tutorialOverlayWidth, height: Math.max(0, holeTop) },
+      {
+        key: "left",
+        left: 0,
+        top: holeTop,
+        width: Math.max(0, holeLeft),
+        height: Math.max(0, holeBottom - holeTop),
+      },
+      {
+        key: "right",
+        left: holeRight,
+        top: holeTop,
+        width: Math.max(0, tutorialOverlayWidth - holeRight),
+        height: Math.max(0, holeBottom - holeTop),
+      },
+      {
+        key: "bottom",
+        left: 0,
+        top: holeBottom,
+        width: tutorialOverlayWidth,
+        height: Math.max(0, tutorialOverlayHeight - holeBottom),
+      },
+    ];
+  }, [tutorialHoleRect, tutorialOverlayHeight, tutorialOverlayWidth]);
+  const tutorialBackdropVisualSegments = useMemo(() => {
+    if (!tutorialHoleRect) return null;
+    // Pixel-align backdrop geometry to avoid seam lines from fractional coordinates.
+    const holeLeft = Math.round(tutorialHoleRect.x);
+    const holeTop = Math.round(tutorialHoleRect.y);
+    const holeRight = Math.round(tutorialHoleRect.x + tutorialHoleRect.width);
+    const holeBottom = Math.round(tutorialHoleRect.y + tutorialHoleRect.height);
+    const holeWidth = Math.max(0, holeRight - holeLeft);
+    const holeHeight = Math.max(0, holeBottom - holeTop);
+
+    if (holeWidth <= 0 || holeHeight <= 0) return null;
+
+    const maxRadius = Math.min(tutorialSpotlightCornerRadius, holeWidth / 2, holeHeight / 2);
+    const cornerRadius = Math.round(clamp(maxRadius, 0, Math.min(holeWidth, holeHeight) / 2));
+    const bandTop = holeTop + cornerRadius;
+    const bandBottom = holeBottom - cornerRadius;
+    const segments: Array<{ key: string; left: number; top: number; width: number; height: number }> = [
+      { key: "top", left: 0, top: 0, width: tutorialOverlayWidth, height: Math.max(0, holeTop) },
+      {
+        key: "bottom",
+        left: 0,
+        top: holeBottom,
+        width: tutorialOverlayWidth,
+        height: Math.max(0, tutorialOverlayHeight - holeBottom),
+      },
+    ];
+
+    if (cornerRadius <= 0) {
+      segments.push(
+        {
+          key: "left",
+          left: 0,
+          top: holeTop,
+          width: Math.max(0, holeLeft),
+          height: Math.max(0, holeBottom - holeTop),
+        },
+        {
+          key: "right",
+          left: holeRight,
+          top: holeTop,
+          width: Math.max(0, tutorialOverlayWidth - holeRight),
+          height: Math.max(0, holeBottom - holeTop),
+        },
+      );
+      return segments;
+    }
+
+    if (bandBottom > bandTop) {
+      segments.push(
+        {
+          key: "left-mid",
+          left: 0,
+          top: bandTop,
+          width: Math.max(0, holeLeft),
+          height: Math.max(0, bandBottom - bandTop),
+        },
+        {
+          key: "right-mid",
+          left: holeRight,
+          top: bandTop,
+          width: Math.max(0, tutorialOverlayWidth - holeRight),
+          height: Math.max(0, bandBottom - bandTop),
+        },
+      );
+    }
+
+    const arcSlices = Math.max(8, Math.min(24, cornerRadius));
+    for (let i = 0; i < arcSlices; i += 1) {
+      const rowTop = Math.round(holeTop + (i * cornerRadius) / arcSlices);
+      const rowBottom = Math.round(holeTop + ((i + 1) * cornerRadius) / arcSlices);
+      const rowHeight = Math.max(0, rowBottom - rowTop);
+      if (rowHeight <= 0) continue;
+
+      const localY = (i + 0.5) * (cornerRadius / arcSlices);
+      const verticalDistance = cornerRadius - localY;
+      const inset = cornerRadius - Math.sqrt(Math.max(0, cornerRadius ** 2 - verticalDistance ** 2));
+      const leftBoundary = Math.round(holeLeft + inset);
+      const rightBoundary = Math.round(holeRight - inset);
+      const bottomRowTop = holeBottom - (rowTop - holeTop) - rowHeight;
+
+      segments.push(
+        {
+          key: `top-left-${i}`,
+          left: 0,
+          top: rowTop,
+          width: Math.max(0, leftBoundary),
+          height: rowHeight,
+        },
+        {
+          key: `top-right-${i}`,
+          left: rightBoundary,
+          top: rowTop,
+          width: Math.max(0, tutorialOverlayWidth - rightBoundary),
+          height: rowHeight,
+        },
+      );
+
+      if (bottomRowTop >= bandBottom && rowHeight > 0) {
+        segments.push(
+          {
+            key: `bottom-left-${i}`,
+            left: 0,
+            top: bottomRowTop,
+            width: Math.max(0, leftBoundary),
+            height: rowHeight,
+          },
+          {
+            key: `bottom-right-${i}`,
+            left: rightBoundary,
+            top: bottomRowTop,
+            width: Math.max(0, tutorialOverlayWidth - rightBoundary),
+            height: rowHeight,
+          },
+        );
+      }
+    }
+
+    return segments;
+  }, [
+    tutorialHoleRect,
+    tutorialOverlayHeight,
+    tutorialOverlayWidth,
+    tutorialSpotlightCornerRadius,
+  ]);
+  const tutorialAllowsSpotlightInteraction =
+    tutorialStepRequiresInteraction && Boolean(tutorialHoleRect && tutorialBackdropSegments);
+
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={handleSurfaceLayout}>
       <View
         pointerEvents="none"
         style={[
@@ -237,6 +1999,7 @@ export const WebSurface = ({
         onLoadStart={() => {
           setLoading(true);
           setError(null);
+          setTutorialDomReady(false);
         }}
         onLoadEnd={() => {
           setLoading(false);
@@ -244,6 +2007,8 @@ export const WebSurface = ({
           retryAttemptRef.current = 0;
         }}
         onError={handleWebError}
+        onHttpError={handleWebHttpError}
+        onMessage={handleWebMessage}
         onOpenWindow={(event) => {
           const targetUrl = event.nativeEvent.targetUrl?.trim();
           if (!targetUrl) return;
@@ -267,6 +2032,267 @@ export const WebSurface = ({
               resizeMode="contain"
             />
           </View>
+        </View>
+      ) : null}
+
+      {tutorialVisible ? (
+        <View style={styles.tutorialOverlay} pointerEvents="box-none">
+          {tutorialCelebrationVisible ? (
+            <>
+              <Pressable style={styles.tutorialBackdropTouch} onPress={() => undefined} />
+              <View style={styles.tutorialBackdropLayer} pointerEvents="none">
+                <View style={styles.tutorialBackdropFallback} />
+              </View>
+              <View style={styles.tutorialCelebrationContent} pointerEvents="box-none">
+                <Animated.View
+                  style={[styles.tutorialCelebrationCard, tutorialCelebrationCardTransform]}
+                >
+                  <View style={styles.tutorialCelebrationFlag}>
+                    <Text style={styles.tutorialCelebrationFlagLabel}>Tutorial completato</Text>
+                  </View>
+                  <Image
+                    source={ONDA_POSE_ASSETS.celebrate}
+                    style={styles.tutorialCelebrationMascot}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.tutorialCelebrationTitle}>
+                    Complimenti, hai terminato il tutorial.
+                  </Text>
+                  <Text style={styles.tutorialCelebrationBody}>
+                    Ora hai tutto quello che serve per usare Where2Beach al meglio: apri la
+                    mappa, confronta l'affollamento in tempo reale e scegli la spiaggia ideale
+                    per te, al momento giusto.
+                  </Text>
+                  <Pressable
+                    style={styles.tutorialCelebrationButton}
+                    onPress={handleFinishTutorial}
+                  >
+                    <Text style={styles.tutorialCelebrationButtonLabel}>Inizia a navigare</Text>
+                  </Pressable>
+                </Animated.View>
+              </View>
+            </>
+          ) : tutorialStep ? (
+            <>
+              {tutorialAllowsSpotlightInteraction && tutorialBackdropSegments ? (
+                tutorialBackdropSegments.map((segment) => (
+                  <Pressable
+                    key={`touch-${segment.key}`}
+                    style={[
+                      styles.tutorialTouchGuardSegment,
+                      {
+                        left: segment.left,
+                        top: segment.top,
+                        width: segment.width,
+                        height: segment.height,
+                      },
+                    ]}
+                    onPress={() => undefined}
+                  />
+                ))
+              ) : (
+                <Pressable style={styles.tutorialBackdropTouch} onPress={() => undefined} />
+              )}
+              <View style={styles.tutorialBackdropLayer} pointerEvents="none">
+                {tutorialBackdropVisualSegments ? (
+                  tutorialBackdropVisualSegments.map((segment) => (
+                    <View
+                      key={segment.key}
+                      style={[
+                        styles.tutorialBackdropSegment,
+                        tutorialOndaPanelPriority ? styles.tutorialBackdropSegmentSoft : null,
+                        {
+                          left: segment.left,
+                          top: segment.top,
+                          width: segment.width,
+                          height: segment.height,
+                        },
+                      ]}
+                    />
+                  ))
+                ) : (
+                      <View
+                        style={[
+                          styles.tutorialBackdropFallback,
+                          tutorialOndaPanelPriority ? styles.tutorialBackdropFallbackExtraSoft : null,
+                          !tutorialSpotlightVisible ? styles.tutorialBackdropFallbackSoft : null,
+                        ]}
+                  />
+                )}
+              </View>
+              {tutorialUsesSyntheticTargetTap &&
+              tutorialActiveCompletionSelector &&
+              tutorialHoleRect ? (
+                <Pressable
+                  style={[
+                    styles.tutorialSpotlightTapTarget,
+                    { borderRadius: tutorialSpotlightCornerRadius },
+                    {
+                      left: tutorialHoleRect.x,
+                      top: tutorialHoleRect.y,
+                      width: tutorialHoleRect.width,
+                      height: tutorialHoleRect.height,
+                    },
+                  ]}
+                  hitSlop={6}
+                  onPress={() => {
+                    triggerTutorialTargetTap(tutorialActiveCompletionSelector);
+                  }}
+                />
+              ) : null}
+
+              {tutorialSpotlightVisible ? (
+                <>
+                  <Animated.View
+                    pointerEvents="none"
+                    style={[
+                      styles.tutorialSpotlightPulse,
+                      tutorialPulseStyle,
+                      { borderRadius: tutorialSpotlightPulseCornerRadius },
+                      {
+                        left: tutorialSpotlightX,
+                        top: tutorialSpotlightY,
+                        width: tutorialSpotlightWidth,
+                        height: tutorialSpotlightHeight,
+                      },
+                    ]}
+                  />
+                  <Animated.View
+                    pointerEvents="none"
+                    style={[
+                      styles.tutorialSpotlight,
+                      { borderRadius: tutorialSpotlightCornerRadius },
+                      {
+                        left: tutorialSpotlightX,
+                        top: tutorialSpotlightY,
+                        width: tutorialSpotlightWidth,
+                        height: tutorialSpotlightHeight,
+                      },
+                    ]}
+                  />
+                </>
+              ) : null}
+
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.tutorialAvatarWrap,
+                  tutorialOndaPanelPriority ? styles.tutorialAvatarWrapDimmed : null,
+                  {
+                    transform: [
+                      { translateX: tutorialAvatarX },
+                      { translateY: tutorialAvatarTranslateY },
+                      { rotate: tutorialAvatarRotate },
+                    ],
+                  },
+                ]}
+              >
+                {previousAvatarPose ? (
+                  <Animated.Image
+                    source={ONDA_POSE_ASSETS[previousAvatarPose]}
+                    style={[styles.tutorialAvatar, { opacity: tutorialAvatarPreviousOpacity }]}
+                    resizeMode="contain"
+                  />
+                ) : null}
+                <Animated.Image
+                  source={currentAvatarAsset}
+                  style={[styles.tutorialAvatar, { opacity: tutorialAvatarCurrentOpacity }]}
+                  resizeMode="contain"
+                />
+              </Animated.View>
+
+              <Animated.View
+                style={[
+                  styles.tutorialCard,
+                  tutorialCompactCard ? styles.tutorialCardCompact : null,
+                  tutorialIsDoneStep ? styles.tutorialCardFinal : null,
+                  tutorialCardTransform,
+                  tutorialCardAtTop
+                    ? { top: Math.max(statusBarOverlayHeight + 14, 20) }
+                    : { bottom: Math.max(insets.bottom + 16, 18) },
+                ]}
+              >
+                {tutorialIsDoneStep ? (
+                  <View style={styles.tutorialFinalBadge}>
+                    <Text style={styles.tutorialFinalBadgeLabel}>Missione completata</Text>
+                  </View>
+                ) : null}
+                <Text style={styles.tutorialEyebrow}>
+                  Passo {safeTutorialStepIndex + 1} di {tutorialStepsCount}
+                </Text>
+                <Text style={[styles.tutorialTitle, tutorialCompactCard ? styles.tutorialTitleCompact : null]}>
+                  {tutorialStep.title}
+                </Text>
+                <Text style={[styles.tutorialBody, tutorialCompactCard ? styles.tutorialBodyCompact : null]}>
+                  {tutorialBodyText}
+                </Text>
+
+                {!tutorialCompactCard ? (
+                  <View style={styles.tutorialDots}>
+                    {FIRST_RUN_TUTORIAL_STEPS.map((step, index) => (
+                      <View
+                        key={step.id}
+                        style={[
+                          styles.tutorialDot,
+                          index === safeTutorialStepIndex ? styles.tutorialDotActive : null,
+                        ]}
+                      />
+                    ))}
+                  </View>
+                ) : null}
+
+                {tutorialStepRequiresInteraction ? (
+                  <Text
+                    style={[
+                      styles.tutorialInteractionHint,
+                      tutorialStepCompleted ? styles.tutorialInteractionHintDone : null,
+                    ]}
+                  >
+                    {tutorialStepCompleted
+                      ? tutorialAutoAdvanceOnComplete
+                        ? "Perfetto, passo successivo in arrivo."
+                        : "Perfetto. Ora puoi leggere e premere Continua."
+                      : tutorialInteractionHintText}
+                  </Text>
+                ) : null}
+
+                {tutorialAutoAdvanceOnComplete ? (
+                  <Text style={styles.tutorialAutoAdvanceHint}>
+                    {tutorialCanAdvance ? "Azione rilevata, proseguo..." : "Esegui il tap indicato per proseguire."}
+                  </Text>
+                ) : (
+                  <View style={styles.tutorialButtonsRow}>
+                    {safeTutorialStepIndex > 0 ? (
+                      <Pressable style={styles.tutorialGhostButton} onPress={handlePrevTutorialStep}>
+                        <Text style={styles.tutorialGhostButtonLabel}>Indietro</Text>
+                      </Pressable>
+                    ) : (
+                      <View style={styles.tutorialGhostButtonPlaceholder} />
+                    )}
+                    <Pressable
+                      style={[
+                        styles.tutorialPrimaryButton,
+                        !tutorialCanAdvance && !tutorialIsDoneStep ? styles.tutorialPrimaryButtonDisabled : null,
+                      ]}
+                      onPress={handleNextTutorialStep}
+                      disabled={!tutorialCanAdvance && !tutorialIsDoneStep}
+                    >
+                      <Text style={styles.tutorialPrimaryButtonLabel}>{tutorialPrimaryLabel}</Text>
+                    </Pressable>
+                  </View>
+                )}
+
+                <Pressable style={styles.tutorialSkipButton} onPress={handleFinishTutorial}>
+                  <Text style={styles.tutorialSkipButtonLabel}>Salta per ora</Text>
+                </Pressable>
+              </Animated.View>
+            </>
+          ) : (
+            <Pressable
+              style={styles.tutorialBackdropTouch}
+              onPress={() => undefined}
+            />
+          )}
         </View>
       ) : null}
     </View>
@@ -344,5 +2370,309 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
     fontSize: 12,
+  },
+  tutorialOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 30,
+  },
+  tutorialBackdropTouch: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  tutorialTouchGuardSegment: {
+    position: "absolute",
+  },
+  tutorialBackdropLayer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  tutorialBackdropSegment: {
+    position: "absolute",
+    backgroundColor: "rgba(2, 6, 23, 0.4)",
+  },
+  tutorialBackdropSegmentSoft: {
+    backgroundColor: "rgba(2, 6, 23, 0.16)",
+  },
+  tutorialBackdropFallback: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(2, 6, 23, 0.34)",
+  },
+  tutorialBackdropFallbackExtraSoft: {
+    backgroundColor: "rgba(2, 6, 23, 0.14)",
+  },
+  tutorialBackdropFallbackSoft: {
+    backgroundColor: "rgba(2, 6, 23, 0.24)",
+  },
+  tutorialSpotlight: {
+    position: "absolute",
+    borderWidth: 2.4,
+    borderColor: "rgba(56, 189, 248, 0.96)",
+    backgroundColor: "rgba(56, 189, 248, 0.07)",
+    shadowColor: "#38bdf8",
+    shadowOpacity: 0.42,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 6,
+  },
+  tutorialSpotlightPulse: {
+    position: "absolute",
+    borderWidth: 2.2,
+    borderColor: "rgba(125, 211, 252, 0.92)",
+    backgroundColor: "transparent",
+  },
+  tutorialSpotlightTapTarget: {
+    position: "absolute",
+    backgroundColor: "transparent",
+  },
+  tutorialAvatarWrap: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    width: TUTORIAL_AVATAR_SIZE,
+    height: TUTORIAL_AVATAR_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tutorialAvatarWrapDimmed: {
+    opacity: 0.08,
+  },
+  tutorialAvatar: {
+    position: "absolute",
+    width: TUTORIAL_AVATAR_SIZE,
+    height: TUTORIAL_AVATAR_SIZE,
+  },
+  tutorialCelebrationContent: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 18,
+  },
+  tutorialCelebrationCard: {
+    width: "100%",
+    maxWidth: 420,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "rgba(45, 212, 191, 0.54)",
+    backgroundColor: "rgba(4, 24, 39, 0.95)",
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 16,
+    alignItems: "center",
+    gap: 10,
+    shadowColor: "#020617",
+    shadowOpacity: 0.62,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 9,
+  },
+  tutorialCelebrationFlag: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(45, 212, 191, 0.72)",
+    backgroundColor: "rgba(45, 212, 191, 0.16)",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  tutorialCelebrationFlagLabel: {
+    color: "#99f6e4",
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.2,
+    textTransform: "uppercase",
+  },
+  tutorialCelebrationMascot: {
+    width: 178,
+    height: 178,
+    marginTop: -2,
+    marginBottom: -4,
+  },
+  tutorialCelebrationTitle: {
+    color: "#f0f9ff",
+    fontSize: 24,
+    fontWeight: "800",
+    letterSpacing: -0.35,
+    textAlign: "center",
+    lineHeight: 30,
+  },
+  tutorialCelebrationBody: {
+    color: "#a5f3fc",
+    fontSize: 14,
+    fontWeight: "500",
+    lineHeight: 20,
+    textAlign: "center",
+  },
+  tutorialCelebrationButton: {
+    width: "100%",
+    borderRadius: 14,
+    backgroundColor: "#14b8a6",
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
+  },
+  tutorialCelebrationButtonLabel: {
+    color: "#042f2e",
+    fontSize: 14,
+    fontWeight: "800",
+    letterSpacing: 0.1,
+  },
+  tutorialCard: {
+    position: "absolute",
+    left: 14,
+    right: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(125, 211, 252, 0.35)",
+    backgroundColor: "rgba(7, 20, 38, 0.92)",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    shadowColor: "#020617",
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    gap: 10,
+  },
+  tutorialCardCompact: {
+    left: 18,
+    right: 18,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 10,
+    gap: 6,
+    backgroundColor: "rgba(7, 20, 38, 0.82)",
+  },
+  tutorialCardFinal: {
+    borderColor: "rgba(45, 212, 191, 0.5)",
+    backgroundColor: "rgba(4, 22, 34, 0.94)",
+  },
+  tutorialFinalBadge: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(45, 212, 191, 0.6)",
+    backgroundColor: "rgba(45, 212, 191, 0.16)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  tutorialFinalBadgeLabel: {
+    color: "#99f6e4",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+  },
+  tutorialEyebrow: {
+    color: "rgba(165, 243, 252, 0.95)",
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0,
+  },
+  tutorialTitle: {
+    color: "#f0f9ff",
+    fontSize: 21,
+    fontWeight: "800",
+    letterSpacing: -0.3,
+  },
+  tutorialTitleCompact: {
+    fontSize: 17,
+    letterSpacing: -0.15,
+  },
+  tutorialBody: {
+    color: "#bae6fd",
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "500",
+  },
+  tutorialBodyCompact: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  tutorialDots: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 2,
+    marginBottom: 2,
+  },
+  tutorialDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "rgba(186, 230, 253, 0.28)",
+  },
+  tutorialDotActive: {
+    width: 18,
+    borderRadius: 5,
+    backgroundColor: "#22d3ee",
+  },
+  tutorialInteractionHint: {
+    color: "#67e8f9",
+    fontSize: 12,
+    fontWeight: "600",
+    lineHeight: 17,
+    marginTop: -1,
+  },
+  tutorialInteractionHintDone: {
+    color: "#5eead4",
+  },
+  tutorialAutoAdvanceHint: {
+    color: "#67e8f9",
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: "700",
+    textAlign: "center",
+    marginTop: 2,
+  },
+  tutorialButtonsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+    marginTop: 2,
+  },
+  tutorialGhostButtonPlaceholder: {
+    flex: 1,
+  },
+  tutorialGhostButton: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(148, 163, 184, 0.45)",
+    backgroundColor: "rgba(15, 23, 42, 0.72)",
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tutorialGhostButtonLabel: {
+    color: "#e2e8f0",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  tutorialPrimaryButton: {
+    flex: 1,
+    borderRadius: 12,
+    backgroundColor: "#06b6d4",
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tutorialPrimaryButtonDisabled: {
+    backgroundColor: "rgba(8, 145, 178, 0.38)",
+  },
+  tutorialPrimaryButtonLabel: {
+    color: "#042f2e",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  tutorialSkipButton: {
+    marginTop: 1,
+    alignSelf: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  tutorialSkipButtonLabel: {
+    color: "rgba(191, 219, 254, 0.88)",
+    fontSize: 12,
+    fontWeight: "600",
   },
 });

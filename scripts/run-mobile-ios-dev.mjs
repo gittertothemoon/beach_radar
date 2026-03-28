@@ -1,4 +1,5 @@
 import net from "node:net";
+import http from "node:http";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -14,7 +15,7 @@ const LOCAL_BASE_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
 const WAIT_TIMEOUT_MS = 90_000;
 const RETRY_DELAY_MS = 350;
 const IOS_BUNDLE_ID = "com.where2beach.mobile";
-const METRO_PORT = 8081;
+const METRO_PORT_CANDIDATES = [8081, 8082, 8083, 8084, 8085];
 
 const startedChildren = [];
 
@@ -132,6 +133,57 @@ const waitForPort = async (host, port, timeoutMs, label) => {
   throw new Error(`${label} non raggiungibile su ${host}:${port} entro ${timeoutMs}ms`);
 };
 
+const isMetroRunning = (host, port, timeoutMs = 900) =>
+  new Promise((resolve) => {
+    const request = http.get(
+      {
+        host,
+        port,
+        path: "/status",
+        timeout: timeoutMs,
+      },
+      (response) => {
+        let raw = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          raw += chunk;
+        });
+        response.on("end", () => {
+          resolve(raw.includes("packager-status:running"));
+        });
+      },
+    );
+
+    request.on("timeout", () => {
+      request.destroy();
+      resolve(false);
+    });
+    request.on("error", () => resolve(false));
+  });
+
+const resolveMetroPort = async (host) => {
+  const envPort = Number(process.env.EXPO_DEV_SERVER_PORT);
+  if (Number.isInteger(envPort) && envPort > 0) {
+    return { port: envPort, reason: "porto Metro da EXPO_DEV_SERVER_PORT" };
+  }
+
+  for (const candidate of METRO_PORT_CANDIDATES) {
+    if (await isMetroRunning(host, candidate)) {
+      return { port: candidate, reason: `riuso Metro gia attivo su ${host}:${candidate}` };
+    }
+  }
+
+  for (const candidate of METRO_PORT_CANDIDATES) {
+    const busyOnHost = await isPortListening(host, candidate);
+    const busyOnLoopback = host === "127.0.0.1" ? busyOnHost : await isPortListening("127.0.0.1", candidate);
+    if (!busyOnHost && !busyOnLoopback) {
+      return { port: candidate, reason: `seleziono porta Metro libera ${candidate}` };
+    }
+  }
+
+  return { port: METRO_PORT_CANDIDATES[0], reason: "nessuna porta libera trovata, fallback su 8081" };
+};
+
 const spawnService = ({ label, cmd, args, cwd }) => {
   console.log(`[mobile:ios] avvio ${label}...`);
   const child = spawn(cmd, args, {
@@ -162,10 +214,14 @@ const setSimulatorJsLocation = (host, port) => {
       "-string",
       jsLocation,
     ],
-    { stdio: "ignore" },
+    { encoding: "utf8" },
   );
   if (result.status === 0) {
     console.log(`[mobile:ios] iOS dev bundle impostato su ${jsLocation}`);
+  } else {
+    const stderr = (result.stderr || "").trim();
+    const detail = stderr ? ` (${stderr})` : "";
+    console.warn(`[mobile:ios] impossibile impostare RCT_jsLocation=${jsLocation}${detail}`);
   }
 };
 
@@ -217,9 +273,13 @@ const main = async () => {
     const simulatorBaseOrigin = `http://${simulatorHost}:${webPort}`;
     const webHost = simulatorHost;
     const viteBindHost = simulatorHost === "127.0.0.1" ? "127.0.0.1" : "0.0.0.0";
+    const { port: metroPort, reason: metroPortReason } = await resolveMetroPort(simulatorHost);
 
     if (simulatorHostReason) {
       console.log(`[mobile:ios] ${simulatorHostReason}`);
+    }
+    if (metroPortReason) {
+      console.log(`[mobile:ios] ${metroPortReason}`);
     }
 
     const apiUp = await isPortListening(apiHost, apiPort);
@@ -250,17 +310,25 @@ const main = async () => {
       console.log(`[mobile:ios] Frontend locale gia attivo su ${simulatorBaseOrigin}`);
     }
 
-    setSimulatorJsLocation(simulatorHost, METRO_PORT);
+    setSimulatorJsLocation(simulatorHost, metroPort);
     console.log("[mobile:ios] avvio Expo iOS...");
-    const expo = spawn("npm", ["--prefix", "mobile", "run", "ios:expo"], {
+    const expo = spawn(
+      "npm",
+      ["--prefix", "mobile", "run", "ios:expo", "--", "--port", String(metroPort)],
+      {
       cwd: repoRoot,
       env: {
         ...process.env,
         EXPO_PUBLIC_BASE_URL: simulatorBaseOrigin,
         REACT_NATIVE_PACKAGER_HOSTNAME: simulatorHost,
+        EXPO_DEV_SERVER_PORT: String(metroPort),
+        RCT_METRO_PORT: String(metroPort),
       },
       stdio: "inherit",
     });
+    setTimeout(() => {
+      setSimulatorJsLocation(simulatorHost, metroPort);
+    }, 5500);
 
     expo.once("error", (error) => {
       console.error(`[mobile:ios] errore avvio Expo: ${error.message}`);
@@ -284,11 +352,23 @@ const main = async () => {
   }
 
   console.log("[mobile:ios] avvio Expo iOS...");
-  const expo = spawn("npm", ["--prefix", "mobile", "run", "ios:expo"], {
+  const { port: metroPort, reason: metroPortReason } = await resolveMetroPort("127.0.0.1");
+  if (metroPortReason) {
+    console.log(`[mobile:ios] ${metroPortReason}`);
+  }
+  setSimulatorJsLocation("127.0.0.1", metroPort);
+  const expo = spawn("npm", ["--prefix", "mobile", "run", "ios:expo", "--", "--port", String(metroPort)], {
     cwd: repoRoot,
-    env: process.env,
+    env: {
+      ...process.env,
+      EXPO_DEV_SERVER_PORT: String(metroPort),
+      RCT_METRO_PORT: String(metroPort),
+    },
     stdio: "inherit",
   });
+  setTimeout(() => {
+    setSimulatorJsLocation("127.0.0.1", metroPort);
+  }, 5500);
 
   expo.once("error", (error) => {
     console.error(`[mobile:ios] errore avvio Expo: ${error.message}`);

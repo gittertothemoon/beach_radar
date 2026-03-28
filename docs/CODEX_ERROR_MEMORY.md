@@ -28,6 +28,76 @@ Last update: 2026-03-28 (Europe/Rome)
 ```
 
 ## Lessons
+### 2026-03-28 - iOS debug bloccato su `No script URL provided` con `unsanitizedScriptURLString = (null)`
+- Contesto: avvio app mobile iOS su simulator durante iterazione UI/tutorial.
+- Errore commesso: assumere che Metro fosse sempre su `8081` e che `RCTBundleURLProvider.sharedSettings().jsBundleURL(...)` fosse sufficiente anche durante startup race.
+- Segnale ignorato: red screen persistente con `No script URL provided` nonostante bundling Metro in corso.
+- Causa radice: disallineamento potenziale tra porta Metro reale e `RCT_jsLocation`, piu fallback fragile in `AppDelegate` che poteva restituire `nil` in fase iniziale.
+- Fix applicata: `scripts/run-mobile-ios-dev.mjs` ora risolve porta Metro dinamicamente (`8081-8085`), forza `expo start --ios --port <porta>`, sincronizza `RCT_jsLocation` prima/dopo launch; `mobile/ios/Where2Beach/AppDelegate.swift` ora costruisce URL bundle da `RCT_jsLocation` con fallback esplicito localhost in debug.
+- Regola permanente: mai assumere `8081` fisso in bootstrap iOS; allineare sempre porta Metro, `RCT_jsLocation` e comando Expo nello stesso flusso.
+- Verifica eseguita: `npm run mobile:ios` (bundle OK), `xcodebuild ... Debug ...` PASS, screenshot simulator con app caricata (no red screen).
+- Guardrail futuro (test/check/alert): se compare `No script URL provided`, eseguire subito check in ordine: `curl /status` su `8081-8085` -> `defaults read com.where2beach.mobile RCT_jsLocation` -> relaunch app dal bundle id corretto.
+
+### 2026-03-28 - Tutorial lasciava navigare l'app durante onboarding
+- Contesto: step tutorial ONDA con spotlight su search/tab e richiesta interazione utente.
+- Errore commesso: consentire input diretto sulla UI reale mentre tutorial attivo, generando side-effect applicativi (zoom mappa, apertura schede, cambio sezione) prima della fine guida.
+- Segnale ignorato: feedback utente di flusso "caotico" con app che naviga mentre il tutorial e' ancora in corso.
+- Causa radice: overlay non bloccante e design step che delegava interazioni a elementi reali della WebView.
+- Fix applicata: tutorial lock totale con touch-catcher fullscreen; interazioni spostate nella card (input citta guidato per search) e azioni controllate via bottoni (`Apri ONDA`, nuovo step `Torna a Mappa`).
+- Regola permanente: durante onboarding guidato, evitare side-effect non deterministici sulla UI reale; usare interazioni simulate/controllate dalla card.
+- Verifica eseguita: `npm --prefix mobile run typecheck` PASS.
+- Guardrail futuro (test/check/alert): smoke completa step-by-step verificando che nessun tap sulla WebView produca navigazione libera finche tutorial non termina.
+
+### 2026-03-28 - Auto-advance troppo aggressivo negli step interattivi
+- Contesto: tutorial ONDA con step guidati "tocca elemento evidenziato".
+- Errore commesso: avanzare automaticamente allo step successivo subito dopo il primo tap dell'utente.
+- Segnale ignorato: feedback utente "passa subito e non mi fa capire niente".
+- Causa radice: confusione tra evento di "step completato" e evento di "navigazione allo step successivo".
+- Fix applicata: disabilitato auto-advance per step `search` e `onda`; il tap ora marca solo completamento step, mentre il passaggio resta esplicito sul bottone `Continua`.
+- Regola permanente: negli onboarding esplicativi, usare progresso a due fasi (azione completata -> conferma utente) per non perdere comprensione.
+- Verifica eseguita: `npm --prefix mobile run typecheck` PASS.
+- Guardrail futuro (test/check/alert): validare manualmente che i tap su step interattivi non cambino step senza input intenzionale sulla CTA.
+
+### 2026-03-28 - Step interattivo bloccato per touch intercettato dall'overlay
+- Contesto: tutorial ONDA con step "tocca la barra di ricerca per continuare".
+- Errore commesso: mantenere un `Pressable` fullscreen sopra la WebView durante il tutorial, impedendo il tap reale sull'elemento evidenziato.
+- Segnale ignorato: utente non riesce a sbloccare lo step nonostante tocchi correttamente la search bar.
+- Causa radice: overlay con `pointerEvents` non pass-through (`auto`) + touch-catcher assoluto che assorbe input.
+- Fix applicata: overlay root impostato a `pointerEvents=\"box-none\"`, rimosso touch-blocker fullscreen, estesi listener di interazione a `pointerdown` e `touchstart` oltre a click/focus.
+- Regola permanente: negli step tutorial "interattivi", l'area spotlight deve lasciare pass-through verso WebView; no layer fullscreen touch-blocking sopra il target.
+- Verifica eseguita: `npm --prefix mobile run typecheck` PASS.
+- Guardrail futuro (test/check/alert): smoke manuale obbligatoria per ogni step con `interactionSelector` (tap reale deve aggiornare stato entro 1 interazione).
+
+### 2026-03-28 - Bootstrap mobile bloccato su JSON `missing_env` da `/api/app-access`
+- Contesto: primo avvio app mobile con tutorial ONDA sopra WebView.
+- Errore commesso: assumere che il bootstrap `/api/app-access` sia sempre configurato anche in ambiente locale, mostrando il tutorial sopra una risposta JSON errore.
+- Segnale ignorato: testo visibile in alto con payload errore (`missing_env`) e sfondo app assente sotto overlay.
+- Causa radice: dipendenza backend (`APP_ACCESS_KEY` / `APP_ACCESS_KEY_HASH`) non sempre presente dove gira la route app-access; la WebView rende il body errore invece dell'app.
+- Fix applicata: in `mobile/src/config/env.ts` il bootstrap usa bypass diretto `/app/?native_shell=1` quando `EXPO_PUBLIC_BASE_URL` e' locale; in `WebSurface` aggiunta gestione `onHttpError` per mostrare errore chiaro e bloccare tutorial su errore server.
+- Regola permanente: separare bootstrap locale e remoto; il gate `/api/app-access` va richiesto solo su origin remoti dove la configurazione server e' garantita.
+- Verifica eseguita: `npm --prefix mobile run typecheck` PASS.
+- Guardrail futuro (test/check/alert): smoke obbligatoria su iOS simulator con base URL locale per verificare che non appaia mai JSON raw in WebView al primo avvio.
+
+### 2026-03-28 - Tutorial mostrato su WebView non ancora pronta
+- Contesto: onboarding first-run ONDA su mobile con overlay animato e spotlight.
+- Errore commesso: considerare `onLoadEnd` della WebView come condizione sufficiente per mostrare il tutorial, senza verificare che la UI web (ancore `data-testid`) fosse realmente montata.
+- Segnale ignorato: utente vede step e card corretti ma contenuto app sotto percepito come vuoto/nero o blu.
+- Causa radice: mismatch tra "document loaded" e "app UI ready" (hydration/montaggio componenti non ancora completato quando parte il tour).
+- Fix applicata: introdotto bridge `w2b-tour-ready` (script inject + `postMessage`) e gating `tutorialVisible` su `tutorialDomReady`; aggiunti probe multipli e fallback temporizzato; overlay dim alleggerito nei fallback senza spotlight.
+- Regola permanente: i tutorial contestuali sopra WebView devono dipendere da segnali di readiness UI (selector/marker), non solo da lifecycle `onLoadEnd`.
+- Verifica eseguita: `npm --prefix mobile run typecheck` PASS.
+- Guardrail futuro (test/check/alert): smoke manuale obbligatoria primo avvio su simulator con verifica che sotto overlay sia visibile contenuto reale dell'app in almeno 2 step con selector.
+
+### 2026-03-28 - Overlay tutorial senza "buco" reale sulla WebView
+- Contesto: refactor tutorial ONDA con spotlight e riposizionamento avatar step-by-step in `mobile/src/components/WebSurface.tsx`.
+- Errore commesso: sostituzione parziale del backdrop (render segmentato introdotto senza stili `tutorialBackdrop*` definiti) lasciando di fatto l'app sotto non leggibile e regressione typecheck.
+- Segnale ignorato: percezione utente "schermo nero/blu" durante tutorial e hint di errore in alto su simulator.
+- Causa radice: integrazione incompleta tra logica layout overlay e StyleSheet (chiavi mancanti + spotlight con fill colorato invece di area trasparente).
+- Fix applicata: aggiunti stili `tutorialBackdropTouch`, `tutorialBackdropLayer`, `tutorialBackdropSegment`, `tutorialBackdropFallback`; mantenuto backdrop solo fuori dal focus; reso trasparente il fill di spotlight/pulse.
+- Regola permanente: quando si introduce una nuova chiave `styles.*` in render, chiudere il task solo con `typecheck` verde e verifica visiva del "hole" sul contenuto sottostante.
+- Verifica eseguita: `npm --prefix mobile run typecheck` PASS.
+- Guardrail futuro (test/check/alert): checklist overlay tutorial obbligatoria su simulator (intro + step con selector) per confermare visibilita' WebView e assenza schermata piena scura.
+
 ### 2026-03-25 - iOS WebView offline per server locale non avviato
 - Contesto: avvio simulatore iOS con mobile che punta a `EXPO_PUBLIC_BASE_URL=http://192.168.1.8:5173`.
 - Errore commesso: avviare l'app iOS senza verificare prima che frontend (`:5173`) e API (`:3000`) fossero up.

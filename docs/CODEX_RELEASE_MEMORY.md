@@ -52,3 +52,9 @@ Note:
 - eventuali blocchi e fix richiesti
 4. Dopo incidenti o correzioni importanti, aggiornare questo file.
 5. Prima di chiudere ogni task release, applicare il protocollo memoria in `docs/CODEX_MEMORY_PROTOCOL.md`.
+
+## Guardrail operativo iOS (dev bootstrap)
+- Se durante sviluppo iOS appare `No script URL provided`:
+- non assumere Metro su `8081`; verificare `http://127.0.0.1:<porta>/status` su `8081-8085`.
+- allineare sempre `RCT_jsLocation` alla porta reale di Metro prima del launch app.
+- usare il runner standard del repo (`npm run mobile:ios`) per mantenere sincronizzati porta Expo/Metro e simulator defaults.

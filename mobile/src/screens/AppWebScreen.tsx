@@ -2,7 +2,16 @@ import { useCallback, useEffect, useState } from "react";
 import { Linking, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebSurface } from "../components/WebSurface";
-import { MOBILE_APP_ACCESS_KEY, MOBILE_APP_URL, MOBILE_BASE_URL } from "../config/env";
+import {
+  MOBILE_APP_ACCESS_KEY,
+  MOBILE_APP_URL,
+  MOBILE_BASE_URL,
+  MOBILE_BASE_URL_IS_LOCAL,
+} from "../config/env";
+import {
+  hasCompletedOnboarding,
+  markOnboardingCompleted,
+} from "../services/onboarding";
 
 const MOBILE_SCHEME = "where2beach:";
 
@@ -70,6 +79,9 @@ const resolveDeepLinkTarget = (rawUrl: string): string | null => {
 
 export const AppWebScreen = () => {
   const [currentUrl, setCurrentUrl] = useState(MOBILE_APP_URL);
+  const [showFirstRunTutorial, setShowFirstRunTutorial] = useState<boolean | null>(
+    null,
+  );
 
   const applyIncomingDeepLink = useCallback((rawUrl: string | null) => {
     if (!rawUrl) return;
@@ -95,7 +107,23 @@ export const AppWebScreen = () => {
     };
   }, [applyIncomingDeepLink]);
 
-  if (!MOBILE_APP_ACCESS_KEY) {
+  useEffect(() => {
+    let active = true;
+    void hasCompletedOnboarding().then((completed) => {
+      if (!active) return;
+      setShowFirstRunTutorial(!completed);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleCompleteTutorial = useCallback(() => {
+    setShowFirstRunTutorial(false);
+    void markOnboardingCompleted();
+  }, []);
+
+  if (!MOBILE_APP_ACCESS_KEY && !MOBILE_BASE_URL_IS_LOCAL) {
     return (
       <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
         <View style={styles.content}>
@@ -115,7 +143,9 @@ export const AppWebScreen = () => {
     <WebSurface
       initialUrl={currentUrl}
       blockLandingRedirect
-      landingBlockedMessage="Chiave app non valida o scaduta. Aggiorna EXPO_PUBLIC_APP_ACCESS_KEY e riapri."
+      landingBlockedMessage="Chiave app non valida o configurazione backend incompleta. Verifica EXPO_PUBLIC_APP_ACCESS_KEY su mobile e APP_ACCESS_KEY/APP_ACCESS_KEY_HASH sulle API."
+      firstRunTutorialEnabled={showFirstRunTutorial === true}
+      onCompleteFirstRunTutorial={handleCompleteTutorial}
     />
   );
 };

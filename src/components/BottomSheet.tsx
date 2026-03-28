@@ -832,6 +832,7 @@ const BottomSheetComponent = ({
           className="pointer-events-none absolute inset-x-0 top-0 h-3 rounded-t-[28px] bg-[rgba(9,18,32,0.34)]"
         />
         <button
+          data-testid="bottom-sheet-header-toggle"
           className="relative z-[1] br-press flex w-full items-center justify-between px-6 py-4 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
           onClick={() => {
             if (suppressClickRef.current) {
@@ -871,7 +872,7 @@ const BottomSheetComponent = ({
               ) : null}
             </div>
           </div>
-          <div className="h-1 w-10 rounded-full bg-white/20" />
+          <div data-testid="bottom-sheet-close-handle" className="h-1 w-10 rounded-full bg-white/20" />
         </button>
         <div
           className={`overflow-hidden ${isDragging ? "" : "transition-[max-height,opacity] duration-250"} ${

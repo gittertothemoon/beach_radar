@@ -6,6 +6,23 @@ const normalizeBaseUrl = (rawValue: string | undefined): string => {
   return trimmed.replace(/\/$/, "");
 };
 
+const isLocalLikeHost = (host: string): boolean => {
+  const value = host.toLowerCase();
+  if (value === "localhost" || value === "127.0.0.1" || value === "::1") return true;
+  if (/^10\./.test(value)) return true;
+  if (/^192\.168\./.test(value)) return true;
+  return /^172\.(1[6-9]|2\d|3[01])\./.test(value);
+};
+
+const isLocalLikeBaseUrl = (baseUrl: string): boolean => {
+  try {
+    const parsed = new URL(baseUrl);
+    return isLocalLikeHost(parsed.hostname);
+  } catch {
+    return false;
+  }
+};
+
 const readAppAccessKey = (rawValue: string | undefined): string | null => {
   if (!rawValue) return null;
   const trimmed = rawValue.trim();
@@ -42,6 +59,7 @@ const readNumberEnv = (
 const IS_DEV_RUNTIME = typeof __DEV__ === "boolean" ? __DEV__ : false;
 
 export const MOBILE_BASE_URL = normalizeBaseUrl(process.env.EXPO_PUBLIC_BASE_URL);
+export const MOBILE_BASE_URL_IS_LOCAL = isLocalLikeBaseUrl(MOBILE_BASE_URL);
 export const MOBILE_APP_ACCESS_KEY = readAppAccessKey(
   process.env.EXPO_PUBLIC_APP_ACCESS_KEY,
 );
@@ -78,11 +96,12 @@ if (MOBILE_DEV_MOCK_AUTH) {
 }
 const MOBILE_APP_PATH = `/app/${mobileAppPathParams.toString() ? `?${mobileAppPathParams.toString()}` : ""}`;
 
-export const MOBILE_APP_URL = MOBILE_APP_ACCESS_KEY
-  ? `${MOBILE_BASE_URL}/api/app-access?key=${encodeURIComponent(
-      MOBILE_APP_ACCESS_KEY,
-    )}&path=${encodeURIComponent(MOBILE_APP_PATH)}`
-  : `${MOBILE_BASE_URL}${MOBILE_APP_PATH}`;
+export const MOBILE_APP_URL =
+  MOBILE_APP_ACCESS_KEY && !MOBILE_BASE_URL_IS_LOCAL
+    ? `${MOBILE_BASE_URL}/api/app-access?key=${encodeURIComponent(
+        MOBILE_APP_ACCESS_KEY,
+      )}&path=${encodeURIComponent(MOBILE_APP_PATH)}`
+    : `${MOBILE_BASE_URL}${MOBILE_APP_PATH}`;
 
 export const buildApiUrl = (
   endpoint: string,
