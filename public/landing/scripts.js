@@ -165,6 +165,334 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCountdown();
     setInterval(updateCountdown, 1000);
 
+    const initRadarSequence = () => {
+        const stage = document.getElementById('radar-sequence-stage');
+        const canvas = document.getElementById('radar-sequence-canvas');
+        const loader = document.getElementById('radar-sequence-loader');
+        const progressEl = document.getElementById('radar-sequence-progress');
+        const indicator = document.getElementById('radar-sequence-indicator');
+        const beatNodes = [...document.querySelectorAll('[data-sequence-beat]')];
+
+        if (!stage || !canvas || beatNodes.length === 0) {
+            return;
+        }
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            return;
+        }
+
+        const clamp01 = (value) => Math.min(1, Math.max(0, value));
+        const PROGRESS_EPSILON = 0.0001;
+        const DESKTOP_COUNT = 120;
+        const MOBILE_COUNT = 240;
+
+        let isMobileView = window.innerWidth < 768;
+        let frames = [];
+        let loadedCount = 0;
+        let lastDrawKey = '';
+        let lastDrawnFrameIndex = 0;
+        let scrollDirection = 0;
+        let currentProgress = 0;
+        let targetProgress = 0;
+        let rafId = 0;
+        let pendingResize = false;
+        let loadVersion = 0;
+
+        const beats = beatNodes.map((node) => ({
+            node,
+            range: (node.getAttribute('data-range') || '')
+                .split(',')
+                .map((entry) => Number(entry.trim()))
+                .filter((entry) => Number.isFinite(entry)),
+        })).filter((item) => item.range.length === 4);
+
+        const resolveFrameForDirection = (frameList, targetIndex, direction, fallbackIndex) => {
+            const direct = frameList[targetIndex];
+            if (direct) {
+                return { image: direct, index: targetIndex };
+            }
+
+            const preferredOffsetSign = direction < 0 ? 1 : -1;
+            for (let radius = 1; radius < frameList.length; radius += 1) {
+                const preferredIndex = targetIndex + preferredOffsetSign * radius;
+                if (preferredIndex >= 0 && preferredIndex < frameList.length && frameList[preferredIndex]) {
+                    return { image: frameList[preferredIndex], index: preferredIndex };
+                }
+
+                const oppositeIndex = targetIndex - preferredOffsetSign * radius;
+                if (oppositeIndex >= 0 && oppositeIndex < frameList.length && frameList[oppositeIndex]) {
+                    return { image: frameList[oppositeIndex], index: oppositeIndex };
+                }
+            }
+
+            if (fallbackIndex >= 0 && fallbackIndex < frameList.length && frameList[fallbackIndex]) {
+                return { image: frameList[fallbackIndex], index: fallbackIndex };
+            }
+
+            return { image: null, index: targetIndex };
+        };
+
+        const setLoaderProgress = () => {
+            if (!progressEl) return;
+            const readyTarget = isMobileView ? 12 : 8;
+            const percent = Math.round((Math.min(loadedCount, readyTarget) / readyTarget) * 100);
+            progressEl.textContent = `${percent}%`;
+        };
+
+        const hideLoader = () => {
+            if (!loader) return;
+            loader.classList.add('opacity-0', 'pointer-events-none');
+            window.setTimeout(() => {
+                loader.style.display = 'none';
+            }, 550);
+        };
+
+        const resizeCanvas = () => {
+            const parent = canvas.parentElement;
+            if (!parent) return false;
+            const dpr = Math.min(window.devicePixelRatio || 1, isMobileView ? 1.5 : 2);
+            const rect = parent.getBoundingClientRect();
+            const nextWidth = Math.max(1, Math.floor(rect.width * dpr));
+            const nextHeight = Math.max(1, Math.floor(rect.height * dpr));
+            const changed = canvas.width !== nextWidth || canvas.height !== nextHeight;
+
+            if (changed) {
+                canvas.width = nextWidth;
+                canvas.height = nextHeight;
+                canvas.style.width = `${rect.width}px`;
+                canvas.style.height = `${rect.height}px`;
+            }
+
+            return changed;
+        };
+
+        const applyBeatStyles = () => {
+            beats.forEach(({ node, range }) => {
+                const [start, enterEnd, exitStart, end] = range;
+                let opacity = 0;
+                let y = 20;
+
+                if (currentProgress >= start && currentProgress <= enterEnd) {
+                    const local = clamp01((currentProgress - start) / Math.max(enterEnd - start, 0.0001));
+                    opacity = local;
+                    y = 20 - (20 * local);
+                } else if (currentProgress > enterEnd && currentProgress < exitStart) {
+                    opacity = 1;
+                    y = 0;
+                } else if (currentProgress >= exitStart && currentProgress <= end) {
+                    const local = clamp01((currentProgress - exitStart) / Math.max(end - exitStart, 0.0001));
+                    opacity = 1 - local;
+                    y = -20 * local;
+                }
+
+                node.style.opacity = opacity.toFixed(3);
+                node.style.transform = `translate3d(0, ${y}px, 0)`;
+            });
+
+            if (indicator) {
+                indicator.style.opacity = (1 - clamp01(currentProgress / 0.1)).toFixed(3);
+            }
+        };
+
+        const drawFrame = () => {
+            const resized = resizeCanvas();
+            if (frames.length === 0) return;
+
+            const targetFrameIndex = Math.min(
+                frames.length - 1,
+                Math.max(0, Math.round(currentProgress * (frames.length - 1))),
+            );
+            const { image, index } = resolveFrameForDirection(
+                frames,
+                targetFrameIndex,
+                scrollDirection,
+                lastDrawnFrameIndex,
+            );
+            const drawKey = `${isMobileView ? 'm' : 'd'}-${index}-${canvas.width}x${canvas.height}`;
+
+            if (!resized && drawKey === lastDrawKey) {
+                return;
+            }
+            lastDrawKey = drawKey;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!image) {
+                return;
+            }
+
+            lastDrawnFrameIndex = index;
+            const canvasAspect = canvas.width / canvas.height;
+            const imageAspect = image.width / image.height;
+            let drawWidth;
+            let drawHeight;
+            let offsetX;
+            let offsetY;
+
+            if (isMobileView) {
+                if (imageAspect > canvasAspect) {
+                    drawHeight = canvas.height;
+                    drawWidth = canvas.height * imageAspect;
+                    offsetX = (canvas.width - drawWidth) / 2;
+                    offsetY = 0;
+                } else {
+                    drawWidth = canvas.width;
+                    drawHeight = canvas.width / imageAspect;
+                    offsetX = 0;
+                    offsetY = (canvas.height - drawHeight) / 2;
+                }
+            } else if (imageAspect > canvasAspect) {
+                drawWidth = canvas.width;
+                drawHeight = canvas.width / imageAspect;
+                offsetX = 0;
+                offsetY = (canvas.height - drawHeight) / 2;
+            } else {
+                drawHeight = canvas.height;
+                drawWidth = canvas.height * imageAspect;
+                offsetX = (canvas.width - drawWidth) / 2;
+                offsetY = 0;
+            }
+
+            ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+        };
+
+        const requestTick = () => {
+            if (rafId) return;
+            rafId = window.requestAnimationFrame(tick);
+        };
+
+        const tick = () => {
+            rafId = 0;
+
+            if (Math.abs(targetProgress - currentProgress) > 0.0005) {
+                currentProgress += (targetProgress - currentProgress) * 0.12;
+            } else {
+                currentProgress = targetProgress;
+            }
+
+            drawFrame();
+            applyBeatStyles();
+
+            if (pendingResize || Math.abs(targetProgress - currentProgress) > 0.0005) {
+                pendingResize = false;
+                requestTick();
+            }
+        };
+
+        const updateTargetProgress = () => {
+            const maxScroll = stage.offsetHeight - window.innerHeight;
+            const rect = stage.getBoundingClientRect();
+            const nextProgress = maxScroll <= 0 ? 0 : clamp01((-rect.top) / maxScroll);
+
+            if (nextProgress > targetProgress + PROGRESS_EPSILON) {
+                scrollDirection = 1;
+            } else if (nextProgress < targetProgress - PROGRESS_EPSILON) {
+                scrollDirection = -1;
+            }
+
+            targetProgress = nextProgress;
+            requestTick();
+        };
+
+        const loadFrames = async () => {
+            loadVersion += 1;
+            const version = loadVersion;
+
+            loadedCount = 0;
+            setLoaderProgress();
+            if (loader) {
+                loader.style.display = '';
+                loader.classList.remove('opacity-0', 'pointer-events-none');
+            }
+
+            const activeCount = isMobileView ? MOBILE_COUNT : DESKTOP_COUNT;
+            const sequencePath = isMobileView ? '/sequence/mobile' : '/sequence';
+            const concurrency = isMobileView ? 6 : 4;
+            const readyThreshold = isMobileView ? 12 : 8;
+
+            frames = Array.from({ length: activeCount }, () => null);
+            lastDrawKey = '';
+            lastDrawnFrameIndex = 0;
+
+            let nextIndex = 0;
+            let readyRaised = false;
+
+            const markLoaded = () => {
+                if (version !== loadVersion) return;
+                loadedCount += 1;
+                setLoaderProgress();
+                if (!readyRaised && loadedCount >= readyThreshold) {
+                    readyRaised = true;
+                    hideLoader();
+                    drawFrame();
+                    applyBeatStyles();
+                }
+            };
+
+            const loadSingle = (index) => new Promise((resolve) => {
+                const image = new Image();
+                image.decoding = 'async';
+                image.src = `${sequencePath}/frame_${index}.webp`;
+                image.onload = () => {
+                    if (version === loadVersion) {
+                        frames[index] = image;
+                    }
+                    markLoaded();
+                    resolve();
+                };
+                image.onerror = () => {
+                    markLoaded();
+                    resolve();
+                };
+            });
+
+            const worker = async () => {
+                while (version === loadVersion) {
+                    const index = nextIndex;
+                    nextIndex += 1;
+                    if (index >= activeCount) {
+                        return;
+                    }
+                    await loadSingle(index);
+                }
+            };
+
+            await Promise.all(Array.from({ length: concurrency }, () => worker()));
+
+            if (version !== loadVersion) {
+                return;
+            }
+
+            hideLoader();
+            drawFrame();
+            applyBeatStyles();
+        };
+
+        const handleViewportChange = () => {
+            const nextMobileView = window.innerWidth < 768;
+            pendingResize = true;
+            if (nextMobileView !== isMobileView) {
+                isMobileView = nextMobileView;
+                void loadFrames();
+            } else {
+                requestTick();
+            }
+            updateTargetProgress();
+        };
+
+        window.addEventListener('scroll', updateTargetProgress, { passive: true });
+        window.addEventListener('resize', handleViewportChange);
+        window.addEventListener('orientationchange', handleViewportChange);
+
+        void loadFrames().then(() => {
+            updateTargetProgress();
+            requestTick();
+        });
+    };
+
+    initRadarSequence();
+
     // ===== Community Counter (reuse existing counter system) =====
     document.querySelectorAll('.signup-counter').forEach(el => {
         counterObserver.observe(el);

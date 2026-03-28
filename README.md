@@ -38,22 +38,16 @@ cp .env.example .env.local
 npm run dev
 ```
 
-5. Start landing (Next.js hero) with safe cleanup + Node 20 enforcement:
+5. Start the public landing + local API proxy:
 ```bash
 npm run landing:dev
-```
-
-6. If you need `/api/*` locally, run Vercel dev:
-```bash
-vercel dev --listen 3000 --yes
 ```
 
 ## Core Scripts
 
 ```bash
 npm run dev                 # Vite app
-npm run landing:dev         # Next landing (safe: kills :3000, clears stale .next, runs with Node 20)
-npm run landing:build       # Builds Vite app + Next landing
+npm run landing:dev         # Public landing (/landing/) on :3000 + local API dev server on :3001
 npm run lint                # ESLint
 npm run typecheck           # TypeScript project refs check
 npm run check               # lint + typecheck
@@ -67,19 +61,6 @@ npm run mobile:typecheck    # TypeScript check (mobile)
 npm run mobile:build:android:preview  # EAS Android internal APK
 npm run mobile:build:ios:preview      # EAS iOS internal build
 ```
-
-Hero + app-shell (single Vercel project):
-
-```bash
-npm --prefix w2b-hero run build    # builds Vite app + syncs assets/APIs + builds Next hero
-```
-
-`w2b-hero` build now includes an automatic sync step that:
-- builds the root Vite app
-- copies `dist/index.html` to `w2b-hero/public/app-shell/index.html`
-- copies `dist/assets/*` to `w2b-hero/public/assets/*`
-- syncs required static files (`manifest`, favicons, `icons`, `og`)
-- syncs serverless APIs from `api/*` to `w2b-hero/api/*`
 
 App tests:
 
@@ -263,7 +244,7 @@ GitHub Actions workflow: `.github/workflows/security-guardrails.yml`
 - runs weekly (`cron`) and on manual dispatch
 - enforces:
   - dangerous sink scan (`dangerouslySetInnerHTML`, `innerHTML`, `document.write`)
-  - dependency audits (root + `w2b-hero`, high severity and above)
+  - dependency audits (root, high severity and above)
   - live HTTP security smoke (`/landing/`, `/privacy/`, `/terms/`, `/cookie-policy/`, `/api/app-access`, `/api/signup`)
   - Supabase advisor check with allowlist (`auth_leaked_password_protection` for Free plan)
 

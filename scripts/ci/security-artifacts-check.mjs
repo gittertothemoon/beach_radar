@@ -4,7 +4,6 @@ import path from "node:path";
 const ROOT = process.cwd();
 const TARGET_DIRS = [
   path.join(ROOT, "dist"),
-  path.join(ROOT, "w2b-hero", "public", "assets"),
 ];
 
 function walkFiles(dirPath, output) {

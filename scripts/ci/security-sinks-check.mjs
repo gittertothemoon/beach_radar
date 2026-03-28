@@ -1,15 +1,8 @@
 import { execFileSync } from "node:child_process";
 
-const TARGETS = ["src", "public", "api", "w2b-hero/app"];
+const TARGETS = ["src", "public", "api"];
 const PATTERN = "dangerouslySetInnerHTML|innerHTML\\s*=|document\\.write\\(";
-
-const ALLOWLIST = [
-  {
-    pathSuffix: "w2b-hero/app/page.tsx",
-    includes: "dangerouslySetInnerHTML",
-    reason: "JSON-LD script tag with pre-escaped payload",
-  },
-];
+const ALLOWLIST = [];
 
 function isAllowedHit(line) {
   const [filePath = "", _lineNumber = "", content = ""] = line.split(":", 3);

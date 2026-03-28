@@ -1,19 +1,55 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type ViteDevServer } from 'vite'
 import react from '@vitejs/plugin-react'
 import autoprefixer from 'autoprefixer'
 import tailwindcss from 'tailwindcss'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+const DEV_STATIC_ROUTE_REWRITES: Record<string, string> = {
+  '/landing': '/landing/index.html',
+  '/landing/': '/landing/index.html',
+  '/privacy': '/privacy/index.html',
+  '/privacy/': '/privacy/index.html',
+  '/terms': '/terms/index.html',
+  '/terms/': '/terms/index.html',
+  '/cookie-policy': '/cookie-policy/index.html',
+  '/cookie-policy/': '/cookie-policy/index.html',
+}
+
+const devRoutingPlugin = () => ({
+  name: 'where2beach-dev-routing',
+  configureServer(server: ViteDevServer) {
+    server.middlewares.use((req: IncomingMessage & { url?: string }, res: ServerResponse, next: () => void) => {
+      const rawUrl = req.url || '/'
+      const [pathname, search = ''] = rawUrl.split('?')
+
+      if (pathname === '/') {
+        res.statusCode = 307
+        res.setHeader('Location', '/landing/')
+        res.end()
+        return
+      }
+
+      const rewrittenPath = DEV_STATIC_ROUTE_REWRITES[pathname]
+      if (rewrittenPath) {
+        req.url = search ? `${rewrittenPath}?${search}` : rewrittenPath
+      }
+
+      next()
+    })
+  },
+})
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), devRoutingPlugin()],
   server: {
     host: true,
     proxy: {
-      "/api": "http://127.0.0.1:3000",
+      "/api": process.env.VITE_API_PROXY_TARGET || "http://127.0.0.1:3000",
     },
   },
   css: {
