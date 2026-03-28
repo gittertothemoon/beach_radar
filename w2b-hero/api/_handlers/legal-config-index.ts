@@ -15,9 +15,9 @@ type LegalConfig = {
 };
 
 const DEFAULT_CONFIG: LegalConfig = {
-  privacyUrl: "/privacy/",
+  privacyUrl: "https://www.iubenda.com/privacy-policy/93638969",
   termsUrl: "/terms/",
-  cookieUrl: "/cookie-policy/",
+  cookieUrl: "https://www.iubenda.com/privacy-policy/93638969/cookie-policy",
   contactEmail: "privacy@where2beach.com",
   iubenda: {
     siteId: null,
@@ -26,6 +26,7 @@ const DEFAULT_CONFIG: LegalConfig = {
     autoBlocking: true,
   },
 };
+const LEGACY_IUBENDA_POLICY_IDS = new Set<number>([89523138]);
 
 function readBooleanEnv(name: string, fallback: boolean): boolean {
   const raw = readEnv(name);
@@ -82,14 +83,37 @@ function sanitizeEmail(raw: string | null): string | null {
   return trimmed;
 }
 
+function extractIubendaPolicyId(rawUrl: string): number | null {
+  try {
+    const parsed = new URL(rawUrl);
+    const host = parsed.hostname.toLowerCase();
+    if (host !== "iubenda.com" && !host.endsWith(".iubenda.com")) return null;
+    const match = parsed.pathname.match(/\/privacy-policy\/(\d+)(?:\/|$)/);
+    if (!match) return null;
+    const id = Number.parseInt(match[1], 10);
+    if (!Number.isFinite(id) || id <= 0) return null;
+    return id;
+  } catch {
+    return null;
+  }
+}
+
+function isLegacyIubendaUrl(rawUrl: string): boolean {
+  const policyId = extractIubendaPolicyId(rawUrl);
+  if (!policyId) return false;
+  return LEGACY_IUBENDA_POLICY_IDS.has(policyId);
+}
+
 function resolvePrivacyUrl(): string {
   const explicit = sanitizeUrl(
     readFirst("LEGAL_PRIVACY_URL", "IUBENDA_PRIVACY_URL", "IUBENDA_PRIVACY_POLICY_URL"),
   );
-  if (explicit) return explicit;
+  if (explicit && !isLegacyIubendaUrl(explicit)) return explicit;
 
   const policyId = readPositiveIntEnv("IUBENDA_PRIVACY_POLICY_ID");
-  if (policyId) return `https://www.iubenda.com/privacy-policy/${policyId}`;
+  if (policyId && !LEGACY_IUBENDA_POLICY_IDS.has(policyId)) {
+    return `https://www.iubenda.com/privacy-policy/${policyId}`;
+  }
 
   return DEFAULT_CONFIG.privacyUrl;
 }
@@ -106,11 +130,15 @@ function resolveTermsUrl(): string {
 
 function resolveCookieUrl(): string {
   const explicit = sanitizeUrl(readFirst("LEGAL_COOKIE_URL", "IUBENDA_COOKIE_URL"));
-  if (explicit) return explicit;
+  if (explicit && !isLegacyIubendaUrl(explicit)) return explicit;
 
   const cookiePolicyId = readPositiveIntEnv("IUBENDA_COOKIE_POLICY_ID");
   const privacyPolicyId = readPositiveIntEnv("IUBENDA_PRIVACY_POLICY_ID");
-  if (privacyPolicyId && cookiePolicyId) {
+  if (
+    privacyPolicyId &&
+    cookiePolicyId &&
+    !LEGACY_IUBENDA_POLICY_IDS.has(privacyPolicyId)
+  ) {
     return `https://www.iubenda.com/privacy-policy/${privacyPolicyId}/cookie-policy`;
   }
 

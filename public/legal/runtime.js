@@ -15,6 +15,9 @@
       autoBlocking: true,
     },
   };
+  var LEGACY_IUBENDA_POLICY_IDS = {
+    "89523138": true,
+  };
 
   var KEY_TO_CONFIG = {
     privacy: "privacyUrl",
@@ -82,6 +85,19 @@
     }
   }
 
+  function isLegacyIubendaUrl(rawUrl) {
+    try {
+      var parsed = new URL(rawUrl, window.location.origin);
+      var host = (parsed.hostname || "").toLowerCase();
+      if (host !== "iubenda.com" && !host.endsWith(".iubenda.com")) return false;
+      var match = parsed.pathname.match(/\/privacy-policy\/(\d+)(?:\/|$)/);
+      if (!match) return false;
+      return LEGACY_IUBENDA_POLICY_IDS[match[1]] === true;
+    } catch {
+      return false;
+    }
+  }
+
   function normalizePathUrl(rawUrl, fallback) {
     var value = toNonEmptyString(rawUrl);
     if (!value) return fallback;
@@ -98,6 +114,7 @@
 
     try {
       var parsed = new URL(value);
+      if (isLegacyIubendaUrl(parsed.toString())) return fallback;
       return parsed.toString();
     } catch {
       return fallback;

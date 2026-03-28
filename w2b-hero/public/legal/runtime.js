@@ -4,9 +4,9 @@
   window.__W2B_LEGAL_RUNTIME_BOOTED = true;
 
   var DEFAULT_CONFIG = {
-    privacyUrl: "/privacy/",
+    privacyUrl: "https://www.iubenda.com/privacy-policy/93638969",
     termsUrl: "/terms/",
-    cookieUrl: "/cookie-policy/",
+    cookieUrl: "https://www.iubenda.com/privacy-policy/93638969/cookie-policy",
     contactEmail: "privacy@where2beach.com",
     iubenda: {
       siteId: null,
@@ -14,6 +14,9 @@
       lang: "it",
       autoBlocking: true,
     },
+  };
+  var LEGACY_IUBENDA_POLICY_IDS = {
+    "89523138": true,
   };
 
   var KEY_TO_CONFIG = {
@@ -52,6 +55,15 @@
     if (window.__W2B_NATIVE_SHELL === true) return true;
 
     try {
+      var pathname = (window.location.pathname || "").replace(/\/+$/, "") || "/";
+      if (
+        pathname === "/app" ||
+        pathname.indexOf("/app/") === 0 ||
+        pathname === "/register" ||
+        pathname.indexOf("/app/register") === 0
+      ) {
+        return true;
+      }
       var params = new URLSearchParams(window.location.search || "");
       var nativeShell = toNonEmptyString(params.get("native_shell"));
       if (nativeShell && (nativeShell === "1" || nativeShell.toLowerCase() === "true")) {
@@ -73,6 +85,19 @@
     }
   }
 
+  function isLegacyIubendaUrl(rawUrl) {
+    try {
+      var parsed = new URL(rawUrl, window.location.origin);
+      var host = (parsed.hostname || "").toLowerCase();
+      if (host !== "iubenda.com" && !host.endsWith(".iubenda.com")) return false;
+      var match = parsed.pathname.match(/\/privacy-policy\/(\d+)(?:\/|$)/);
+      if (!match) return false;
+      return LEGACY_IUBENDA_POLICY_IDS[match[1]] === true;
+    } catch {
+      return false;
+    }
+  }
+
   function normalizePathUrl(rawUrl, fallback) {
     var value = toNonEmptyString(rawUrl);
     if (!value) return fallback;
@@ -89,6 +114,7 @@
 
     try {
       var parsed = new URL(value);
+      if (isLegacyIubendaUrl(parsed.toString())) return fallback;
       return parsed.toString();
     } catch {
       return fallback;

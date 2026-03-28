@@ -89,6 +89,14 @@ type ChatMessageRow = {
   source: "local" | "openai" | null;
   totalTokens: number | null;
 };
+type RuntimeLegalConfig = {
+  privacyUrl?: string;
+  termsUrl?: string;
+  cookieUrl?: string;
+};
+type WindowWithLegalConfig = Window & {
+  W2B_LEGAL_CONFIG?: RuntimeLegalConfig;
+};
 
 const MAX_CHAT_MESSAGES = 12;
 const MAX_CHAT_INPUT_CHARS = 420;
@@ -99,6 +107,8 @@ const SUPPORT_EMAIL = "info@where2beach.com";
 const SHARE_APP_URL = "https://where2beach.com/";
 const DEFAULT_REVIEW_URL = "https://apps.apple.com/it/search?term=where2beach";
 const APP_REVIEW_URL = import.meta.env.VITE_APP_REVIEW_URL?.trim() || DEFAULT_REVIEW_URL;
+const normalizePathname = (value: string): string =>
+  value.replace(/\/+$/, "") || "/";
 
 const ONDA_AVATARS = {
   core: ondaAvatarCore,
@@ -320,6 +330,11 @@ const BottomSheetComponent = ({
     readPreferredLanguage(),
   );
   const [interestIds, setInterestIds] = useState<InterestId[]>(() => readInterests());
+  const [runtimeLegalConfig, setRuntimeLegalConfig] = useState<RuntimeLegalConfig>(() => {
+    if (typeof window === "undefined") return {};
+    const browserWindow = window as WindowWithLegalConfig;
+    return browserWindow.W2B_LEGAL_CONFIG ?? {};
+  });
   const suppressClickRef = useRef(false);
   const startYRef = useRef(0);
   const startProgressRef = useRef(0);
@@ -423,6 +438,30 @@ const BottomSheetComponent = ({
     };
   }, [onDragStateChange]);
 
+  useEffect(() => {
+    const handleLegalConfigReady = (event: Event) => {
+      const detail = (event as CustomEvent<RuntimeLegalConfig>).detail;
+      if (!detail || typeof detail !== "object") return;
+      setRuntimeLegalConfig(detail);
+    };
+
+    const browserWindow = window as WindowWithLegalConfig;
+    if (browserWindow.W2B_LEGAL_CONFIG) {
+      setRuntimeLegalConfig(browserWindow.W2B_LEGAL_CONFIG);
+    }
+
+    window.addEventListener(
+      "w2b:legal-config-ready",
+      handleLegalConfigReady as EventListener,
+    );
+    return () => {
+      window.removeEventListener(
+        "w2b:legal-config-ready",
+        handleLegalConfigReady as EventListener,
+      );
+    };
+  }, []);
+
   const handleToggleFavorites = useCallback(() => {
     if (!hasFavorites) return;
     setFavoritesOpen((prev) => !prev);
@@ -438,6 +477,11 @@ const BottomSheetComponent = ({
       window.open(href, "_blank", "noopener,noreferrer");
       return;
     }
+    window.location.assign(href);
+  }, []);
+
+  const openLegalUrl = useCallback((href: string) => {
+    if (!href) return;
     window.location.assign(href);
   }, []);
 
@@ -464,6 +508,37 @@ const BottomSheetComponent = ({
     params.set("back", "/app/");
     return `${basePath}?${params.toString()}`;
   }, [preferredLanguage]);
+
+  const legalUrls = useMemo(() => {
+    const resolve = (rawValue: string | undefined, internalPath: string) => {
+      const fallback = buildLegalUrl(internalPath);
+      if (!rawValue || rawValue.trim().length === 0) return fallback;
+
+      try {
+        const parsed = new URL(rawValue, window.location.origin);
+        const parsedPath = normalizePathname(parsed.pathname);
+        const normalizedInternal = normalizePathname(internalPath);
+
+        if (parsed.origin === window.location.origin && parsedPath === normalizedInternal) {
+          const fallbackUrl = new URL(fallback, window.location.origin);
+          fallbackUrl.searchParams.forEach((value, key) => {
+            if (!parsed.searchParams.has(key)) {
+              parsed.searchParams.set(key, value);
+            }
+          });
+        }
+
+        return parsed.toString();
+      } catch {
+        return fallback;
+      }
+    };
+
+    return {
+      privacy: resolve(runtimeLegalConfig.privacyUrl, PRIVACY_URL),
+      cookie: resolve(runtimeLegalConfig.cookieUrl, COOKIE_POLICY_URL),
+    };
+  }, [buildLegalUrl, runtimeLegalConfig]);
 
   const businessRequestUrl = useMemo(() => {
     const params = new URLSearchParams();
@@ -984,7 +1059,7 @@ const BottomSheetComponent = ({
                       </svg>
                     )}
                     label={STRINGS.account.settingsPrivacyLabel}
-                    onClick={() => openUrl(buildLegalUrl(PRIVACY_URL))}
+                    onClick={() => openLegalUrl(legalUrls.privacy)}
                     testId="settings-privacy-row"
                   />
                   <SettingsRow
@@ -1004,7 +1079,7 @@ const BottomSheetComponent = ({
                       </svg>
                     )}
                     label={STRINGS.account.settingsCookieLabel}
-                    onClick={() => openUrl(buildLegalUrl(COOKIE_POLICY_URL))}
+                    onClick={() => openLegalUrl(legalUrls.cookie)}
                     testId="settings-cookie-row"
                   />
                 </div>
