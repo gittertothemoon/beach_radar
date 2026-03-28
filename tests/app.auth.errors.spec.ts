@@ -96,7 +96,7 @@ const fillRegisterForm = async (page: Page) => {
   await page.getByTestId("auth-password-input").fill("Password!123");
   await page.getByPlaceholder("Ripeti la password").fill("Password!123");
   await page
-    .getByRole("checkbox", { name: /accetto.*(documenti legali|termini|privacy)/i })
+    .getByRole("checkbox", { name: /accetto.*(privacy|cookie)/i })
     .check();
 };
 

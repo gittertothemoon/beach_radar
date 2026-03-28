@@ -3,7 +3,6 @@ import { applyApiSecurityHeaders, readEnv } from "../_lib/security.js";
 
 type LegalConfig = {
   privacyUrl: string;
-  termsUrl: string;
   cookieUrl: string;
   contactEmail: string;
   iubenda: {
@@ -16,7 +15,6 @@ type LegalConfig = {
 
 const DEFAULT_CONFIG: LegalConfig = {
   privacyUrl: "https://www.iubenda.com/privacy-policy/93638969",
-  termsUrl: "/terms/",
   cookieUrl: "https://www.iubenda.com/privacy-policy/93638969/cookie-policy",
   contactEmail: "privacy@where2beach.com",
   iubenda: {
@@ -118,16 +116,6 @@ function resolvePrivacyUrl(): string {
   return DEFAULT_CONFIG.privacyUrl;
 }
 
-function resolveTermsUrl(): string {
-  const explicit = sanitizeUrl(readFirst("LEGAL_TERMS_URL", "IUBENDA_TERMS_URL"));
-  if (explicit) return explicit;
-
-  const termsId = readPositiveIntEnv("IUBENDA_TERMS_ID");
-  if (termsId) return `https://www.iubenda.com/terms-and-conditions/${termsId}`;
-
-  return DEFAULT_CONFIG.termsUrl;
-}
-
 function resolveCookieUrl(): string {
   const explicit = sanitizeUrl(readFirst("LEGAL_COOKIE_URL", "IUBENDA_COOKIE_URL"));
   if (explicit && !isLegacyIubendaUrl(explicit)) return explicit;
@@ -153,7 +141,6 @@ function buildConfig(): LegalConfig {
 
   return {
     privacyUrl: resolvePrivacyUrl(),
-    termsUrl: resolveTermsUrl(),
     cookieUrl: resolveCookieUrl(),
     contactEmail:
       sanitizeEmail(readFirst("LEGAL_CONTACT_EMAIL", "PRIVACY_CONTACT_EMAIL")) ??

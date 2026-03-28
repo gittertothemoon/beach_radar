@@ -13,8 +13,6 @@ const DEV_STATIC_ROUTE_REWRITES: Record<string, string> = {
   '/landing/': '/landing/index.html',
   '/privacy': '/privacy/index.html',
   '/privacy/': '/privacy/index.html',
-  '/terms': '/terms/index.html',
-  '/terms/': '/terms/index.html',
   '/cookie-policy': '/cookie-policy/index.html',
   '/cookie-policy/': '/cookie-policy/index.html',
 }

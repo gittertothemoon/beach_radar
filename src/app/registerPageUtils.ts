@@ -16,13 +16,11 @@ export const FORGOT_PASSWORD_FAST_NOTICE_MS = 700;
 
 export const DEFAULT_LEGAL_INTERNAL_PATHS = {
   privacy: "/privacy/",
-  terms: "/terms/",
   cookie: "/cookie-policy/",
 } as const;
 
 export type RuntimeLegalConfig = {
   privacyUrl?: string;
-  termsUrl?: string;
   cookieUrl?: string;
 };
 

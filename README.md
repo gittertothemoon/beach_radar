@@ -5,7 +5,7 @@ The project currently includes:
 
 - public landing flow (`/landing/`)
 - gated app flow (`/app/`) with map, reports, weather, account/favorites
-- legal pages (`/privacy/`, `/terms/`, `/cookie-policy/`) with runtime iubenda support
+- legal pages (`/privacy/`, `/cookie-policy/`) with runtime iubenda support
 - Supabase-backed APIs (`/api/*`)
 
 ## Tech Stack
@@ -146,7 +146,7 @@ Most important:
 - frontend account links: `VITE_APP_REVIEW_URL` (optional store review URL)
 - APIs: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `APP_ACCESS_KEY` (or `APP_ACCESS_KEY_HASH`)
 - Chatbot API: `OPENAI_API_KEY` (required), `OPENAI_CHAT_MODEL` (default `gpt-5.4-nano`)
-- Legal/iubenda: `LEGAL_PRIVACY_URL`, `LEGAL_TERMS_URL`, `LEGAL_COOKIE_URL`, `IUBENDA_SITE_ID`, `IUBENDA_COOKIE_POLICY_ID`
+- Legal/iubenda: `LEGAL_PRIVACY_URL`, `LEGAL_COOKIE_URL`, `IUBENDA_SITE_ID`, `IUBENDA_COOKIE_POLICY_ID`
 
 Optional feature flags:
 
@@ -184,14 +184,12 @@ Optional feature flags:
 
 1. In iubenda dashboard, generate:
 - Privacy direct link
-- Terms direct link
 - Cookie policy direct link
 - Cookie banner IDs: `siteId` and `cookiePolicyId`
 
 2. Set env vars in Vercel project:
 ```bash
 LEGAL_PRIVACY_URL=<direct privacy link>
-LEGAL_TERMS_URL=<direct terms link>
 LEGAL_COOKIE_URL=<direct cookie link>
 LEGAL_CONTACT_EMAIL=privacy@where2beach.com
 IUBENDA_SITE_ID=<site id>
@@ -245,7 +243,7 @@ GitHub Actions workflow: `.github/workflows/security-guardrails.yml`
 - enforces:
   - dangerous sink scan (`dangerouslySetInnerHTML`, `innerHTML`, `document.write`)
   - dependency audits (root, high severity and above)
-  - live HTTP security smoke (`/landing/`, `/privacy/`, `/terms/`, `/cookie-policy/`, `/api/app-access`, `/api/signup`)
+  - live HTTP security smoke (`/landing/`, `/privacy/`, `/cookie-policy/`, `/api/app-access`, `/api/signup`)
   - Supabase advisor check with allowlist (`auth_leaked_password_protection` for Free plan)
 
 Recommended repo secrets/variables:

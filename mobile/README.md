@@ -80,5 +80,4 @@ Notes:
   - `docs/mobile_qa_checklist.md`
 - Legal URLs for store metadata (public, no login):
   - `https://where2beach.com/privacy/`
-  - `https://where2beach.com/terms/`
   - `https://where2beach.com/cookie-policy/`

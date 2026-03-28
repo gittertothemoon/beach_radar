@@ -5,7 +5,6 @@
 
   var DEFAULT_CONFIG = {
     privacyUrl: "https://www.iubenda.com/privacy-policy/93638969",
-    termsUrl: "/terms/",
     cookieUrl: "https://www.iubenda.com/privacy-policy/93638969/cookie-policy",
     contactEmail: "privacy@where2beach.com",
     iubenda: {
@@ -21,7 +20,6 @@
 
   var KEY_TO_CONFIG = {
     privacy: "privacyUrl",
-    terms: "termsUrl",
     cookie: "cookieUrl",
   };
 
@@ -146,7 +144,6 @@
 
     return {
       privacyUrl: normalizePathUrl(incomingConfig.privacyUrl, baseConfig.privacyUrl),
-      termsUrl: normalizePathUrl(incomingConfig.termsUrl, baseConfig.termsUrl),
       cookieUrl: normalizePathUrl(incomingConfig.cookieUrl, baseConfig.cookieUrl),
       contactEmail: normalizeEmail(incomingConfig.contactEmail, baseConfig.contactEmail),
       iubenda: mergedIubenda,

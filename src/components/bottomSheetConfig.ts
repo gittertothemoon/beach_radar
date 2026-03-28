@@ -24,7 +24,6 @@ export const normalizePathname = (value: string): string =>
 
 export type RuntimeLegalConfig = {
   privacyUrl?: string;
-  termsUrl?: string;
   cookieUrl?: string;
 };
 

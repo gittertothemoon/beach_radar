@@ -228,7 +228,7 @@ export const STRINGS = {
     showPasswordsAction: "Mostra password",
     passwordHint:
       "Minimo 10 caratteri, con maiuscola, minuscola, numero e simbolo.",
-    consentLabel: "Accetto i documenti legali:",
+    consentLabel: "Accetto privacy e cookie policy:",
     createAction: "Completa registrazione",
     creatingAction: "Creazione account...",
     signInSubmitAction: "Accedi",
@@ -326,7 +326,7 @@ export const STRINGS = {
     weakPassword:
       "Password troppo debole. Segui i requisiti indicati sotto il campo.",
     passwordMismatch: "Le password non coincidono.",
-    consentRequired: "Devi accettare termini e privacy per continuare.",
+    consentRequired: "Devi accettare privacy e cookie policy per continuare.",
     created: "Account creato. Ora puoi salvare i preferiti.",
   },
   chatbot: {

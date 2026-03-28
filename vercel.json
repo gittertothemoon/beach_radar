@@ -116,11 +116,6 @@
       "permanent": true
     },
     {
-      "source": "/terms",
-      "destination": "/terms/",
-      "permanent": true
-    },
-    {
       "source": "/cookie-policy",
       "destination": "/cookie-policy/",
       "permanent": true
@@ -128,11 +123,6 @@
     {
       "source": "/landing/privacy.html",
       "destination": "/privacy/",
-      "permanent": true
-    },
-    {
-      "source": "/landing/termini.html",
-      "destination": "/terms/",
       "permanent": true
     },
     {
@@ -231,10 +221,6 @@
     {
       "source": "/privacy/",
       "destination": "/privacy/index.html"
-    },
-    {
-      "source": "/terms/",
-      "destination": "/terms/index.html"
     },
     {
       "source": "/cookie-policy/",

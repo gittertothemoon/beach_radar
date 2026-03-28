@@ -89,7 +89,6 @@ async function main() {
 
   await checkPageHeaders(baseUrl, "/landing/");
   await checkPageHeaders(baseUrl, "/privacy/");
-  await checkPageHeaders(baseUrl, "/terms/");
   await checkPageHeaders(baseUrl, "/cookie-policy/", { allowNotFound: true });
   await checkApiHeaders(baseUrl, "/api/app-access", [200, 302, 401, 403, 405]);
   await checkApiHeaders(baseUrl, "/api/signup", [405]);

@@ -60,7 +60,7 @@ test("register can establish a session and keep it after reload", async ({ page 
   await page.getByTestId("auth-password-input").fill(password);
   await page.getByPlaceholder("Ripeti la password").fill(password);
   await page
-    .getByRole("checkbox", { name: /accetto.*(documenti legali|termini|privacy)/i })
+    .getByRole("checkbox", { name: /accetto.*(privacy|cookie)/i })
     .check();
   await page.getByTestId("auth-submit").click();
 

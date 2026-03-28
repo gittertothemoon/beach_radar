@@ -30,7 +30,7 @@ test.describe("auth form", () => {
     await page.getByTestId("auth-password-input").fill("Ab1!");
     await page.getByPlaceholder("Ripeti la password").fill("Ab1!diversa");
     await page
-      .getByRole("checkbox", { name: /accetto.*(documenti legali|termini|privacy)/i })
+      .getByRole("checkbox", { name: /accetto.*(privacy|cookie)/i })
       .check();
     await page.getByTestId("auth-submit").click();
 

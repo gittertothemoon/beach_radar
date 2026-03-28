@@ -130,7 +130,6 @@ const RegisterPage = () => {
     };
     return {
       privacy: withContext(DEFAULT_LEGAL_INTERNAL_PATHS.privacy),
-      terms: withContext(DEFAULT_LEGAL_INTERNAL_PATHS.terms),
       cookie: withContext(DEFAULT_LEGAL_INTERNAL_PATHS.cookie),
     };
   }, [searchParams]);
@@ -189,11 +188,6 @@ const RegisterPage = () => {
         runtimeLegalConfig.privacyUrl,
         internalLegalUrls.privacy,
         DEFAULT_LEGAL_INTERNAL_PATHS.privacy,
-      ),
-      termsUrl: resolve(
-        runtimeLegalConfig.termsUrl,
-        internalLegalUrls.terms,
-        DEFAULT_LEGAL_INTERNAL_PATHS.terms,
       ),
       cookieUrl: resolve(
         runtimeLegalConfig.cookieUrl,
@@ -709,16 +703,6 @@ const RegisterPage = () => {
                         className="font-semibold underline-offset-2 hover:underline"
                       >
                         Privacy
-                      </a>{" "}
-                      ·{" "}
-                      <a
-                        href={legalLinks.termsUrl}
-                        {...(isExternalHref(legalLinks.termsUrl)
-                          ? { target: "_blank", rel: "noopener noreferrer" }
-                          : {})}
-                        className="font-semibold underline-offset-2 hover:underline"
-                      >
-                        Termini
                       </a>{" "}
                       ·{" "}
                       <a

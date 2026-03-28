@@ -25,12 +25,10 @@ Purpose:
 
 2. Legal and support URLs
 - Privacy Policy URL (public and reachable without login)
-- Terms URL (if available)
 - Support URL (email or landing page)
 - Marketing URL (optional, recommended)
 - Suggested defaults for this repo:
   - Privacy: `https://where2beach.com/privacy/`
-  - Terms: `https://where2beach.com/terms/`
   - Cookie policy: `https://where2beach.com/cookie-policy/`
   - These pages can auto-redirect to iubenda direct links when `LEGAL_*` env vars are configured.
 
