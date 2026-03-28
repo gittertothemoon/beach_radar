@@ -32,6 +32,7 @@ import {
   writeInterests,
   writePreferredLanguage,
 } from "../lib/accountPreferences";
+import { PUBLIC_BASE_URL } from "../config/publicUrl";
 import ondaAvatarCore from "../assets/chatbot/onda/onda-1.png";
 import ondaAvatarHero from "../assets/chatbot/onda/onda-2.png";
 import ondaAvatarWelcome from "../assets/chatbot/onda/onda-4.png";
@@ -96,6 +97,7 @@ type RuntimeLegalConfig = {
 };
 type WindowWithLegalConfig = Window & {
   W2B_LEGAL_CONFIG?: RuntimeLegalConfig;
+  __W2B_NATIVE_SHELL?: boolean;
 };
 
 const MAX_CHAT_MESSAGES = 12;
@@ -119,6 +121,22 @@ const ONDA_AVATARS = {
 
 const createMessageId = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const isNativeShellContext = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const browserWindow = window as WindowWithLegalConfig;
+  if (browserWindow.__W2B_NATIVE_SHELL === true) return true;
+
+  const params = new URLSearchParams(window.location.search);
+  const nativeShell = params.get("native_shell") ?? params.get("nativeShell");
+  if (nativeShell) {
+    const normalized = nativeShell.trim().toLowerCase();
+    if (normalized === "1" || normalized === "true") return true;
+  }
+
+  const from = params.get("from");
+  return typeof from === "string" && from.trim().toLowerCase() === "app";
+};
 
 const resolveOndaHeaderVisual = (
   chatSending: boolean,
@@ -550,6 +568,14 @@ const BottomSheetComponent = ({
     }
     return `${LANDING_URL}?${params.toString()}#business-request`;
   }, [interestIds, preferredLanguage]);
+  const businessRequestExternalUrl = useMemo(
+    () => new URL(businessRequestUrl, PUBLIC_BASE_URL).toString(),
+    [businessRequestUrl],
+  );
+  const businessRequestCtaUrl = useMemo(
+    () => (isNativeShellContext() ? businessRequestExternalUrl : businessRequestUrl),
+    [businessRequestExternalUrl, businessRequestUrl],
+  );
 
   const handleOpenSavedBeaches = useCallback(() => {
     setFavoritesOpen(true);
@@ -1217,11 +1243,11 @@ const BottomSheetComponent = ({
 
               <section className="overflow-hidden rounded-2xl border border-sky-200/24 bg-[radial-gradient(130%_140%_at_100%_0%,rgba(56,189,248,0.3),transparent_55%),linear-gradient(180deg,#1d4d80,#1e4a77)] px-4 py-3">
                 <a
-                  href={businessRequestUrl}
+                  href={businessRequestCtaUrl}
                   data-testid="settings-business-cta"
                   onClick={(event) => {
                     event.preventDefault();
-                    openUrl(businessRequestUrl);
+                    openUrl(businessRequestCtaUrl);
                   }}
                   className="br-press flex w-full items-center justify-between gap-3 text-left focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
                 >
