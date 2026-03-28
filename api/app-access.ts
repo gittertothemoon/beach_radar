@@ -123,7 +123,9 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     "Max-Age=2592000",
     "Path=/app",
     "HttpOnly",
-    "SameSite=Strict",
+    // Native WebView bootstrap can be treated as cross-site navigation.
+    // Lax keeps CSRF protection on unsafe methods while preserving /api/app-access -> /app redirect flow.
+    "SameSite=Lax",
   ];
   if (shouldUseSecureCookie(req)) {
     cookieParts.push("Secure");

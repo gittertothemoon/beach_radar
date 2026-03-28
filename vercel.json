@@ -226,7 +226,7 @@
     },
     {
       "source": "/register/",
-      "destination": "/app-shell/index.html"
+      "destination": "/index.html"
     },
     {
       "source": "/privacy/",
@@ -249,7 +249,7 @@
           "value": "1"
         }
       ],
-      "destination": "/app-shell/index.html"
+      "destination": "/index.html"
     }
   ]
 }
