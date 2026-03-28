@@ -80,7 +80,61 @@
             <a href="#waitlist"
                 class="bg-corallo text-white px-8 py-3 rounded-full font-bold shadow-lg w-11/12 text-center">Entra in lista prioritaria</a>
         </div>
-    </nav>
+</nav>
+
+    <!-- Immersive Sequence Intro -->
+    <section id="radar-sequence" class="relative overflow-hidden bg-[#000006] text-white">
+        <div id="radar-sequence-stage" class="relative h-[400svh] md:h-[400vh]">
+            <div id="radar-sequence-loader"
+                class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[#000006] transition-opacity duration-500">
+                <div class="relative flex h-16 w-16 items-center justify-center">
+                    <div class="absolute inset-0 rounded-full bg-cyan-500/20 blur-2xl animate-pulse"></div>
+                    <div class="h-12 w-12 rounded-full border-2 border-cyan-400/25 border-t-cyan-400 animate-spin"></div>
+                </div>
+                <p class="mt-6 flex flex-col items-center gap-2 text-sm font-medium tracking-[0.28em] text-white/50">
+                    <span class="uppercase">Calibrando il Radar</span>
+                    <span id="radar-sequence-progress" class="font-mono text-xs tracking-[0.32em] text-cyan-300/85">0%</span>
+                </p>
+            </div>
+
+            <div class="sticky top-0 h-[100svh] overflow-hidden pointer-events-none">
+                <canvas id="radar-sequence-canvas" class="h-full w-full"></canvas>
+
+                <div class="absolute inset-0 bg-gradient-to-b from-[#000006]/18 via-transparent to-[#000006]/58"></div>
+
+                <div id="radar-sequence-copy" class="absolute inset-0">
+                    <div data-sequence-beat data-range="0,0.1,0.15,0.25"
+                        class="sequence-beat sequence-beat-center px-6 text-center">
+                        <h2 class="sequence-beat-title">LA SPIAGGIA PERFETTA ESISTE.</h2>
+                        <p class="sequence-beat-subtitle">Smetti di perdere tempo. Scopri dove andare prima di partire.</p>
+                    </div>
+                    <div data-sequence-beat data-range="0.25,0.35,0.45,0.55"
+                        class="sequence-beat sequence-beat-left px-6 text-left">
+                        <h2 class="sequence-beat-title">DATI IN TEMPO REALE</h2>
+                        <p class="sequence-beat-subtitle">Vento, onde, affollamento e meteo: tutto aggiornato al secondo.</p>
+                    </div>
+                    <div data-sequence-beat data-range="0.5,0.6,0.7,0.8"
+                        class="sequence-beat sequence-beat-right px-6 text-right">
+                        <h2 class="sequence-beat-title">ZERO SORPRESE</h2>
+                        <p class="sequence-beat-subtitle">Scegli la spiaggia giusta al primo colpo. Ogni volta.</p>
+                    </div>
+                    <div data-sequence-beat data-range="0.75,0.85,1,1"
+                        class="sequence-beat sequence-beat-center px-6 text-center">
+                        <h2 class="sequence-beat-title">ACCESSO PRIORITARIO</h2>
+                        <p class="sequence-beat-subtitle">Scorri, esplora e poi entra nella lista prioritaria senza perdere il contesto.</p>
+                    </div>
+                </div>
+
+                <div id="radar-sequence-indicator"
+                    class="absolute inset-x-0 bottom-12 flex flex-col items-center justify-center text-[11px] uppercase tracking-[0.32em] text-white/40">
+                    <div class="mb-2">Scorri per esplorare</div>
+                    <div class="relative h-8 w-px overflow-hidden bg-white/20">
+                        <div class="sequence-indicator-bar absolute left-0 top-0 h-1/2 w-full bg-white/65"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Hero Section -->
     <section class="hero-gradient min-h-[100svh] flex items-center pt-32 md:pt-48 pb-20 md:pb-32 relative overflow-hidden">

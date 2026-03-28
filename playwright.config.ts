@@ -4,7 +4,7 @@ const ENABLE_API_SERVER = process.env.PW_ENABLE_API_SERVER !== "0";
 
 const API_WEB_SERVER = {
   command:
-    "npm --prefix w2b-hero run sync:app-shell && SIGNUP_TEST_MODE=1 REPORTS_TEST_MODE=1 BEACH_ENRICH_TEST_MODE=1 CRON_SECRET=test-cron-secret APP_ACCESS_KEY=test-app-access-key npx vercel dev --listen 3000 --yes",
+    "SIGNUP_TEST_MODE=1 BUSINESS_REQUEST_TEST_MODE=1 REPORTS_TEST_MODE=1 BEACH_ENRICH_TEST_MODE=1 CRON_SECRET=test-cron-secret APP_ACCESS_KEY=test-app-access-key npm run landing:dev",
   url: "http://localhost:3000",
   reuseExistingServer: true,
   timeout: 120_000,

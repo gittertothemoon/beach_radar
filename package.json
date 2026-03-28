@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "landing:dev": "node scripts/run-landing-dev.mjs",
-    "landing:build": "npm --prefix w2b-hero run build",
-    "build": "tsc -b && vite build",
+    "sync:app-shell": "node scripts/sync-app-shell.mjs",
+    "build": "tsc -b && vite build && npm run sync:app-shell",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "check": "npm run lint && npm run typecheck",

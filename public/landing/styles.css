@@ -4,6 +4,95 @@ body {
     overflow-x: hidden;
 }
 
+/* ===== Immersive Sequence ===== */
+.sequence-beat {
+    position: absolute;
+    top: 50%;
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    justify-content: center;
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+    transition: opacity 120ms linear, transform 120ms linear;
+    will-change: opacity, transform;
+}
+
+.sequence-beat-left {
+    left: 0;
+    align-items: flex-start;
+}
+
+.sequence-beat-right {
+    right: 0;
+    align-items: flex-end;
+}
+
+.sequence-beat-center {
+    left: 0;
+    align-items: center;
+}
+
+.sequence-beat-title {
+    margin: 0 0 1rem;
+    max-width: 11ch;
+    font-size: clamp(2.35rem, 8vw, 6rem);
+    font-weight: 900;
+    line-height: 0.94;
+    letter-spacing: -0.06em;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.9), 0 4px 40px rgba(0, 0, 0, 0.7), 0 0 8px rgba(0, 0, 0, 1);
+}
+
+.sequence-beat-subtitle {
+    margin: 0;
+    max-width: 32rem;
+    font-size: clamp(1rem, 2.2vw, 1.55rem);
+    font-weight: 600;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.94);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 1);
+}
+
+.sequence-indicator-bar {
+    animation: sequenceIndicatorSlide 1.5s linear infinite;
+}
+
+@keyframes sequenceIndicatorSlide {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(32px);
+    }
+}
+
+@media (min-width: 768px) {
+    .sequence-beat-left {
+        left: 6rem;
+        width: auto;
+    }
+
+    .sequence-beat-right {
+        right: 6rem;
+        width: auto;
+    }
+}
+
+@media (max-width: 767px) {
+    .sequence-beat-left,
+    .sequence-beat-right,
+    .sequence-beat-center {
+        left: 0;
+        right: 0;
+        align-items: center;
+        text-align: center;
+    }
+
+    .sequence-beat-title {
+        max-width: 13ch;
+    }
+}
+
 /* ===== Glass Navbar ===== */
 .glass-nav {
     background: rgba(255, 255, 255, 0.85);

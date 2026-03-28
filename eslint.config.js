@@ -9,7 +9,6 @@ export default defineConfig([
   globalIgnores([
     'dist',
     'mobile/**',
-    'w2b-hero/**',
     'remotion/**',
     'test-results',
     'playwright-report',

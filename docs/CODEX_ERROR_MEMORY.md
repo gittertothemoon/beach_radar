@@ -37,13 +37,13 @@ Last update: 2026-03-25 (Europe/Rome)
 - Verifica eseguita: `curl` su homepage (`200`) e su `/api/app-access` (`302`), poi reload Metro riuscito.
 - Guardrail futuro (test/check/alert): checklist pre-avvio obbligatoria `lsof :5173`, `lsof :3000`, `curl http://<base-url>`.
 
-### 2026-03-25 - Apertura landing sbagliata (Next root invece di `/landing/`)
+### 2026-03-25 - Apertura landing sbagliata (root invece di `/landing/`)
 - Contesto: richiesta di aprire la landing in uso su `www.where2beach.com`.
-- Errore commesso: aprire istanze Next non allineate al routing reale della produzione.
+- Errore commesso: aprire entrypoint di dev non allineati al routing reale della produzione.
 - Segnale ignorato: in produzione la root redirige a `/landing/`.
 - Causa radice: uso di flussi di dev multipli senza vincolare il path canonico.
-- Fix applicata: `landing:dev` aggiornato a usare `vercel dev --listen 3000 --yes` e apertura sempre su `/landing/`.
-- Regola permanente: non usare mai la root Next come landing; usare solo `/landing/` tramite routing Vercel.
+- Fix applicata: `landing:dev` aggiornato ad aprire sempre `/landing/` con runner locale dedicato.
+- Regola permanente: non usare mai la root come landing; usare solo `/landing/` come path canonico.
 - Verifica eseguita: `/` => `307` verso `/landing/`, `/landing/` => `200`.
 - Guardrail futuro (test/check/alert): dopo ogni avvio landing eseguire check automatico redirect root -> `/landing/`.
 

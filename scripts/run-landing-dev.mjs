@@ -1,17 +1,9 @@
 import { execFileSync, spawn } from "node:child_process";
-import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptsDir, "..");
-const heroDir = path.join(repoRoot, "w2b-hero");
-
-const removeIfExists = (target) => {
-  if (!fs.existsSync(target)) return;
-  fs.rmSync(target, { recursive: true, force: true });
-  console.log(`[landing:dev] removed ${path.relative(repoRoot, target)}`);
-};
 
 const killListenPort = (port) => {
   let stdout = "";
@@ -39,34 +31,50 @@ const killListenPort = (port) => {
   console.log(`[landing:dev] killed ${pids.length} process(es) on :${port}`);
 };
 
-const ensureHeroProject = () => {
-  const heroPackageJson = path.join(heroDir, "package.json");
-  if (!fs.existsSync(heroPackageJson)) {
-    console.error(`[landing:dev] missing ${heroPackageJson}`);
-    process.exit(1);
-  }
-};
+const children = [];
 
-const startVercelDev = () => {
-  console.log("[landing:dev] starting Vercel dev (landing on /landing/) at http://127.0.0.1:3000");
-  const child = spawn("vercel", ["dev", "--listen", "3000", "--yes"], {
+const spawnChild = (command, args, extraEnv = {}) => {
+  const child = spawn(command, args, {
     cwd: repoRoot,
     stdio: "inherit",
-    env: process.env,
+    env: {
+      ...process.env,
+      ...extraEnv,
+    },
   });
-
+  children.push(child);
   child.on("exit", (code, signal) => {
     if (signal) {
       process.kill(process.pid, signal);
       return;
     }
-    process.exit(code ?? 1);
+    if ((code ?? 0) !== 0) {
+      process.exit(code ?? 1);
+    }
   });
+  return child;
 };
 
-ensureHeroProject();
-removeIfExists(path.join(repoRoot, ".next"));
-removeIfExists(path.join(repoRoot, "next-env.d.ts"));
-removeIfExists(path.join(heroDir, ".next"));
+const shutdown = () => {
+  for (const child of children) {
+    if (!child.killed) {
+      child.kill("SIGTERM");
+    }
+  }
+};
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
+process.on("exit", shutdown);
+
 killListenPort(3000);
-startVercelDev();
+killListenPort(3001);
+
+console.log("[landing:dev] starting landing on http://127.0.0.1:3000/landing/");
+spawnChild("node", ["scripts/run-api-dev.mjs"], {
+  API_DEV_HOST: "127.0.0.1",
+  API_DEV_PORT: "3001",
+});
+spawnChild("npm", ["run", "dev", "--", "--host", "127.0.0.1", "--port", "3000"], {
+  VITE_API_PROXY_TARGET: "http://127.0.0.1:3001",
+});

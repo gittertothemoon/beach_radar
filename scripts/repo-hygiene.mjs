@@ -1,5 +1,4 @@
 import { execFileSync } from "node:child_process";
-import fs from "node:fs";
 import path from "node:path";
 
 const REPO_ROOT = path.resolve(".");
@@ -51,15 +50,6 @@ const main = () => {
   if (invalidOverrideNames.length > 0) {
     errors.push(
       `Invalid raw override naming (use uppercase tokens): ${invalidOverrideNames.join(", ")}`,
-    );
-  }
-
-  const rootNextArtifacts = [".next", "next-env.d.ts"].filter((entry) =>
-    fs.existsSync(path.join(REPO_ROOT, entry)),
-  );
-  if (rootNextArtifacts.length > 0) {
-    errors.push(
-      `Root contains generated Next artifacts: ${rootNextArtifacts.join(", ")}. Start hero with 'npm run landing:dev'.`,
     );
   }
 

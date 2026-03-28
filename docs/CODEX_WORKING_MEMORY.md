@@ -15,7 +15,7 @@ Last update: 2026-03-25 (Europe/Rome)
 ## Mappa rapida progetto
 - Web app principale: `src/` (Vite + React + TypeScript).
 - API serverless: `api/` (Vercel Functions + Supabase).
-- Landing/hero: `w2b-hero/` (Next.js, build con sync app-shell).
+- Landing pubblica: `public/landing/` (static + routing Vercel su `/landing/`).
 - Mobile: `mobile/` (Expo, apre direttamente `/app/` via WebView).
 - Test E2E: `tests/` (Playwright).
 
