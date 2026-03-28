@@ -33,6 +33,27 @@ import {
   writePreferredLanguage,
 } from "../lib/accountPreferences";
 import { PUBLIC_BASE_URL } from "../config/publicUrl";
+import {
+  APP_REVIEW_URL,
+  CLOSED_VISIBLE_HEIGHT,
+  CONTENT_MAX_VIEWPORT_RATIO,
+  COOKIE_POLICY_URL,
+  DRAG_RANGE_CLOSE_TO_OPEN_PX,
+  DRAG_RANGE_OPEN_TO_CLOSE_PX,
+  DRAG_THRESHOLD,
+  LANDING_URL,
+  MAX_CHAT_INPUT_CHARS,
+  MAX_CHAT_MESSAGES,
+  MIN_CONTENT_DRAG_RANGE_PX,
+  normalizePathname,
+  OPEN_SNAP_THRESHOLD,
+  PRIVACY_URL,
+  SHARE_APP_URL,
+  SUPPORT_EMAIL,
+  VELOCITY_THRESHOLD,
+  type RuntimeLegalConfig,
+  type WindowWithLegalConfig,
+} from "./bottomSheetConfig";
 import ondaAvatarCore from "../assets/chatbot/onda/onda-1.png";
 import ondaAvatarHero from "../assets/chatbot/onda/onda-2.png";
 import ondaAvatarWelcome from "../assets/chatbot/onda/onda-4.png";
@@ -60,16 +81,6 @@ type BottomSheetProps = {
   onOpenSignIn: () => void;
 };
 
-const PEEK_HEIGHT = 56;
-const DRAG_THRESHOLD = 6;
-const VELOCITY_THRESHOLD = 0.45;
-const CLOSED_LIFT_PX = 34;
-const CLOSED_VISIBLE_HEIGHT = PEEK_HEIGHT + CLOSED_LIFT_PX;
-const CONTENT_MAX_VIEWPORT_RATIO = 0.62;
-const MIN_CONTENT_DRAG_RANGE_PX = 240;
-const DRAG_RANGE_OPEN_TO_CLOSE_PX = 220;
-const DRAG_RANGE_CLOSE_TO_OPEN_PX = 290;
-const OPEN_SNAP_THRESHOLD = 0.58;
 export type BottomSheetSection = "map" | "profile" | "chatbot";
 
 const stateBadge = (state: string) => {
@@ -90,27 +101,6 @@ type ChatMessageRow = {
   source: "local" | "openai" | null;
   totalTokens: number | null;
 };
-type RuntimeLegalConfig = {
-  privacyUrl?: string;
-  termsUrl?: string;
-  cookieUrl?: string;
-};
-type WindowWithLegalConfig = Window & {
-  W2B_LEGAL_CONFIG?: RuntimeLegalConfig;
-  __W2B_NATIVE_SHELL?: boolean;
-};
-
-const MAX_CHAT_MESSAGES = 12;
-const MAX_CHAT_INPUT_CHARS = 420;
-const PRIVACY_URL = "/privacy/";
-const COOKIE_POLICY_URL = "/cookie-policy/";
-const LANDING_URL = "/landing/";
-const SUPPORT_EMAIL = "info@where2beach.com";
-const SHARE_APP_URL = "https://where2beach.com/";
-const DEFAULT_REVIEW_URL = "https://apps.apple.com/it/search?term=where2beach";
-const APP_REVIEW_URL = import.meta.env.VITE_APP_REVIEW_URL?.trim() || DEFAULT_REVIEW_URL;
-const normalizePathname = (value: string): string =>
-  value.replace(/\/+$/, "") || "/";
 
 const ONDA_AVATARS = {
   core: ondaAvatarCore,
@@ -462,11 +452,6 @@ const BottomSheetComponent = ({
       if (!detail || typeof detail !== "object") return;
       setRuntimeLegalConfig(detail);
     };
-
-    const browserWindow = window as WindowWithLegalConfig;
-    if (browserWindow.W2B_LEGAL_CONFIG) {
-      setRuntimeLegalConfig(browserWindow.W2B_LEGAL_CONFIG);
-    }
 
     window.addEventListener(
       "w2b:legal-config-ready",

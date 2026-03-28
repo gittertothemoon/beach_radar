@@ -17,56 +17,26 @@ import {
   setFavoriteBeach,
   updateAccountPassword,
 } from "../lib/account";
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const NAME_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]{2,}$/;
-const NICKNAME_PATTERN = /^[A-Za-z0-9._-]{3,24}$/;
-const NON_DELIVERABLE_EMAIL_DOMAINS = new Set([
-  "example.com",
-  "example.net",
-  "example.org",
-]);
-const HAS_UPPERCASE = /[A-Z]/;
-const HAS_LOWERCASE = /[a-z]/;
-const HAS_NUMBER = /\d/;
-const HAS_SYMBOL = /[^A-Za-z0-9]/;
-const MIN_PASSWORD_LENGTH = 10;
-const DEFAULT_LEGAL_INTERNAL_PATHS = {
-  privacy: "/privacy/",
-  terms: "/terms/",
-  cookie: "/cookie-policy/",
-} as const;
+import {
+  DEFAULT_LEGAL_INTERNAL_PATHS,
+  EMAIL_PATTERN,
+  FORGOT_PASSWORD_FAST_NOTICE_MS,
+  HAS_LOWERCASE,
+  HAS_NUMBER,
+  HAS_SYMBOL,
+  HAS_UPPERCASE,
+  hasNonDeliverableDomain,
+  isExternalHref,
+  MIN_PASSWORD_LENGTH,
+  NAME_PATTERN,
+  NICKNAME_PATTERN,
+  normalizePathname,
+  type RuntimeLegalConfig,
+  type WindowWithLegalConfig,
+} from "./registerPageUtils";
 
 type AuthMode = "register" | "login" | "forgot" | "reset";
 type NoticeTone = "success" | "info";
-type RuntimeLegalConfig = {
-  privacyUrl?: string;
-  termsUrl?: string;
-  cookieUrl?: string;
-};
-type WindowWithLegalConfig = Window & {
-  W2B_LEGAL_CONFIG?: RuntimeLegalConfig;
-};
-const FORGOT_PASSWORD_FAST_NOTICE_MS = 700;
-
-const hasNonDeliverableDomain = (emailValue: string): boolean => {
-  const atIndex = emailValue.lastIndexOf("@");
-  if (atIndex <= 0) return false;
-  const domain = emailValue.slice(atIndex + 1).toLowerCase();
-  return NON_DELIVERABLE_EMAIL_DOMAINS.has(domain);
-};
-
-const normalizePathname = (value: string): string =>
-  value.replace(/\/+$/, "") || "/";
-
-const isExternalHref = (rawUrl: string): boolean => {
-  try {
-    const parsed = new URL(rawUrl, window.location.origin);
-    return parsed.origin !== window.location.origin;
-  } catch {
-    return false;
-  }
-};
 
 const RegisterPage = () => {
   const [firstName, setFirstName] = useState("");
@@ -177,11 +147,6 @@ const RegisterPage = () => {
       if (!detail || typeof detail !== "object") return;
       setRuntimeLegalConfig(detail);
     };
-
-    const browserWindow = window as WindowWithLegalConfig;
-    if (browserWindow.W2B_LEGAL_CONFIG) {
-      setRuntimeLegalConfig(browserWindow.W2B_LEGAL_CONFIG);
-    }
 
     window.addEventListener(
       "w2b:legal-config-ready",

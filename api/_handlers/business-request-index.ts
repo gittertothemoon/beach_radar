@@ -256,7 +256,16 @@ const anonymizeSource = (value: string | null, namespace: "ip" | "ua"): string |
   return `sha256:${hashValue(trimmed, namespace)}`;
 };
 
-const checkRateLimit = (req: VercelRequest): { ok: boolean; retryAfter?: number } => {
+const isTestModeRequest = (req: VercelRequest): boolean => {
+  if (TEST_MODE) return true;
+  if (process.env.NODE_ENV === "production") return false;
+  return toSingleString(req.headers["x-w2b-test-mode"]) === "1";
+};
+
+const checkRateLimit = (
+  req: VercelRequest,
+  testMode: boolean,
+): { ok: boolean; retryAfter?: number } => {
   const now = Date.now();
   const windowSec = readIntEnv(
     "BUSINESS_RATE_LIMIT_WINDOW_SEC",
@@ -268,8 +277,13 @@ const checkRateLimit = (req: VercelRequest): { ok: boolean; retryAfter?: number 
   const max = readIntEnv("BUSINESS_RATE_LIMIT_MAX", DEFAULT_RATE_LIMIT_MAX, 1, 80);
   const testOverrideRaw = toSingleString(req.headers["x-w2b-test-rate-max"]);
   const testOverride = testOverrideRaw ? Number.parseInt(testOverrideRaw, 10) : NaN;
+  if (testMode && !Number.isFinite(testOverride)) {
+    // In test mode, rate limiting is opt-in via x-w2b-test-rate-max so
+    // unrelated integration tests are deterministic across repeated runs.
+    return { ok: true };
+  }
   const effectiveMax =
-    TEST_MODE && Number.isFinite(testOverride) && testOverride >= 1 && testOverride <= 50
+    testMode && Number.isFinite(testOverride) && testOverride >= 1 && testOverride <= 50
       ? testOverride
       : max;
 
@@ -278,7 +292,7 @@ const checkRateLimit = (req: VercelRequest): { ok: boolean; retryAfter?: number 
   const ua = toSingleString(req.headers["user-agent"]) || "unknown";
   const key = `${hashValue(ip, "ip")}:${hashValue(ua, "ua")}:${windowStart}`;
 
-  if (TEST_MODE) {
+  if (testMode) {
     return updateTestModeStore(
       BUSINESS_REQUEST_TEST_STORE_FILE,
       createBusinessTestState,
@@ -385,7 +399,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
 
-  const rate = checkRateLimit(req);
+  const testMode = isTestModeRequest(req);
+  const rate = checkRateLimit(req, testMode);
   if (!rate.ok) {
     if (rate.retryAfter) {
       res.setHeader("Retry-After", String(rate.retryAfter));
@@ -425,7 +440,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const userAgent = anonymizeSource(toSingleString(req.headers["user-agent"]), "ua");
   const nowIso = new Date(nowMs).toISOString();
 
-  if (TEST_MODE) {
+  if (testMode) {
     const key = `${emailNorm}:${companyNameNorm}`;
     const outcome = updateTestModeStore(
       BUSINESS_REQUEST_TEST_STORE_FILE,

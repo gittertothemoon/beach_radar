@@ -19,12 +19,40 @@ const DEV_STATIC_ROUTE_REWRITES: Record<string, string> = {
   '/cookie-policy/': '/cookie-policy/index.html',
 }
 
+const LANDING_APP_PATH_PREFIX = "/app";
+const ACCESS_COOKIE_TOKEN = "br_app_access=1";
+const IS_LANDING_DEV_SERVER = Boolean(process.env.VITE_API_PROXY_TARGET);
+
 const devRoutingPlugin = () => ({
   name: 'where2beach-dev-routing',
   configureServer(server: ViteDevServer) {
     server.middlewares.use((req: IncomingMessage & { url?: string }, res: ServerResponse, next: () => void) => {
       const rawUrl = req.url || '/'
       const [pathname, search = ''] = rawUrl.split('?')
+      const isAppPath =
+        pathname === LANDING_APP_PATH_PREFIX ||
+        pathname.startsWith(`${LANDING_APP_PATH_PREFIX}/`)
+
+      if (IS_LANDING_DEV_SERVER && isAppPath) {
+        const cookieHeader = typeof req.headers.cookie === "string" ? req.headers.cookie : "";
+        const hasAppAccessCookie = cookieHeader
+          .split(";")
+          .some((token) => token.trim() === ACCESS_COOKIE_TOKEN);
+
+        if (!hasAppAccessCookie) {
+          res.statusCode = 307
+          res.setHeader("Location", "/landing/")
+          res.end()
+          return
+        }
+
+        if (pathname === LANDING_APP_PATH_PREFIX) {
+          res.statusCode = 307
+          res.setHeader("Location", "/app/")
+          res.end()
+          return
+        }
+      }
 
       if (pathname === '/') {
         res.statusCode = 307

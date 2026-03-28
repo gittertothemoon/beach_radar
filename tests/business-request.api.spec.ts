@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 
 const BUSINESS_REQUEST_ENDPOINT = "/api/business-request";
+const TEST_MODE_HEADERS = {
+  "x-w2b-test-mode": "1",
+} as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -47,6 +50,7 @@ test.describe("business request api", () => {
 
   test("invalid payload returns 400", async ({ request }) => {
     const response = await request.post(BUSINESS_REQUEST_ENDPOINT, {
+      headers: TEST_MODE_HEADERS,
       data: {
         businessType: "stabilimento",
         email: "not-an-email",
@@ -65,6 +69,7 @@ test.describe("business request api", () => {
   test("honeypot request is accepted with spam-safe response", async ({ request }) => {
     const suffix = `${Date.now()}`;
     const response = await request.post(BUSINESS_REQUEST_ENDPOINT, {
+      headers: TEST_MODE_HEADERS,
       data: buildPayload(suffix, {
         hp: "bot-filled-field",
       }),
@@ -82,7 +87,10 @@ test.describe("business request api", () => {
     const suffix = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const payload = buildPayload(suffix);
 
-    const first = await request.post(BUSINESS_REQUEST_ENDPOINT, { data: payload });
+    const first = await request.post(BUSINESS_REQUEST_ENDPOINT, {
+      headers: TEST_MODE_HEADERS,
+      data: payload,
+    });
     const firstBody = await readJson(first);
     if (first.status() === 500 && firstBody?.error === "missing_env") {
       test.skip(true, "Supabase env non configurato.");
@@ -93,7 +101,10 @@ test.describe("business request api", () => {
     expect(firstBody?.already).toBe(false);
     expect(typeof firstBody?.notified).toBe("boolean");
 
-    const second = await request.post(BUSINESS_REQUEST_ENDPOINT, { data: payload });
+    const second = await request.post(BUSINESS_REQUEST_ENDPOINT, {
+      headers: TEST_MODE_HEADERS,
+      data: payload,
+    });
     const secondBody = await readJson(second);
     expect(second.status()).toBe(200);
     expect(secondBody).toMatchObject({ ok: true, already: true });
@@ -103,6 +114,7 @@ test.describe("business request api", () => {
   test("rate limit returns 429 + retry_after", async ({ request }) => {
     const ua = `where2beach-business-rate-test-${Date.now()}`;
     const headers = {
+      ...TEST_MODE_HEADERS,
       "user-agent": ua,
       "x-w2b-test-rate-max": "1",
     };
