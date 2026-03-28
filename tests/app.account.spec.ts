@@ -17,7 +17,7 @@ const openProfileSettings = async (page: Page) => {
 };
 
 test.describe("account settings panel", () => {
-  test("business CTA opens dedicated landing section", async ({ page }) => {
+  test("business CTA opens dedicated landing section on web", async ({ page }) => {
     await grantAppAccess(page.context());
     await mockAnalyticsApi(page);
     await mockGeolocation(page.context());
@@ -30,6 +30,25 @@ test.describe("account settings panel", () => {
     await page.getByTestId("settings-business-cta").click();
     await page.waitForURL(/\/landing\/\?.*#business-request/);
     await expect(page).toHaveURL(/src=account/);
+  });
+
+  test("business CTA opens an external landing page in native shell", async ({ page }) => {
+    await grantAppAccess(page.context());
+    await mockAnalyticsApi(page);
+    await mockGeolocation(page.context());
+    await mockWeatherApi(page);
+    await mockReportsFeed(page, []);
+
+    await page.goto(appUiUrl({ reportAnywhere: "1", native_shell: "1" }));
+    await openProfileSettings(page);
+
+    const popupPromise = page.waitForEvent("popup");
+    await page.getByTestId("settings-business-cta").click();
+    const popup = await popupPromise;
+
+    await expect(popup).toHaveURL(/\/landing\/\?.*#business-request/);
+    await expect(popup).toHaveURL(/src=account/);
+    await expect(page).toHaveURL(/\/app\/\?.*native_shell=1/);
   });
 
   test("language and interests preferences are persisted in localStorage", async ({
