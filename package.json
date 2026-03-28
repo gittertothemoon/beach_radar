@@ -44,6 +44,7 @@
     "video:render:bomb-pack": "npm --prefix remotion run render:bomb-pack",
     "mobile:start": "npm --prefix mobile run start",
     "mobile:ios": "node scripts/run-mobile-ios-dev.mjs",
+    "mobile:ios:open": "node scripts/mobile-ios-open.mjs",
     "mobile:ios:expo": "npm --prefix mobile run ios:expo",
     "mobile:android": "npm --prefix mobile run android",
     "mobile:typecheck": "npm --prefix mobile run typecheck",
