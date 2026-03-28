@@ -15,9 +15,9 @@ type LegalConfig = {
 };
 
 const DEFAULT_CONFIG: LegalConfig = {
-  privacyUrl: "/privacy/",
+  privacyUrl: "https://www.iubenda.com/privacy-policy/93638969",
   termsUrl: "/terms/",
-  cookieUrl: "/cookie-policy/",
+  cookieUrl: "https://www.iubenda.com/privacy-policy/93638969/cookie-policy",
   contactEmail: "privacy@where2beach.com",
   iubenda: {
     siteId: null,

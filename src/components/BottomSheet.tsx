@@ -93,6 +93,7 @@ type ChatMessageRow = {
 const MAX_CHAT_MESSAGES = 12;
 const MAX_CHAT_INPUT_CHARS = 420;
 const PRIVACY_URL = "/privacy/";
+const COOKIE_POLICY_URL = "/cookie-policy/";
 const LANDING_URL = "/landing/";
 const SUPPORT_EMAIL = "info@where2beach.com";
 const SHARE_APP_URL = "https://where2beach.com/";
@@ -985,6 +986,26 @@ const BottomSheetComponent = ({
                     label={STRINGS.account.settingsPrivacyLabel}
                     onClick={() => openUrl(buildLegalUrl(PRIVACY_URL))}
                     testId="settings-privacy-row"
+                  />
+                  <SettingsRow
+                    icon={(
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M5 6h14v12H5z" />
+                        <path d="M9 10h6" />
+                        <path d="M9 14h6" />
+                      </svg>
+                    )}
+                    label={STRINGS.account.settingsCookieLabel}
+                    onClick={() => openUrl(buildLegalUrl(COOKIE_POLICY_URL))}
+                    testId="settings-cookie-row"
                   />
                 </div>
               </section>

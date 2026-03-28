@@ -4,9 +4,9 @@
   window.__W2B_LEGAL_RUNTIME_BOOTED = true;
 
   var DEFAULT_CONFIG = {
-    privacyUrl: "/privacy/",
+    privacyUrl: "https://www.iubenda.com/privacy-policy/93638969",
     termsUrl: "/terms/",
-    cookieUrl: "/cookie-policy/",
+    cookieUrl: "https://www.iubenda.com/privacy-policy/93638969/cookie-policy",
     contactEmail: "privacy@where2beach.com",
     iubenda: {
       siteId: null,
@@ -52,6 +52,15 @@
     if (window.__W2B_NATIVE_SHELL === true) return true;
 
     try {
+      var pathname = (window.location.pathname || "").replace(/\/+$/, "") || "/";
+      if (
+        pathname === "/app" ||
+        pathname.indexOf("/app/") === 0 ||
+        pathname === "/register" ||
+        pathname.indexOf("/app/register") === 0
+      ) {
+        return true;
+      }
       var params = new URLSearchParams(window.location.search || "");
       var nativeShell = toNonEmptyString(params.get("native_shell"));
       if (nativeShell && (nativeShell === "1" || nativeShell.toLowerCase() === "true")) {
