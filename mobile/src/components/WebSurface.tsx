@@ -125,7 +125,10 @@ export const WebSurface = ({
 
   const handleShouldStartLoadWithRequest = useCallback(
     (request: { url: string; isTopFrame?: boolean }) => {
-      if (blockLandingRedirect && /\/landing(\/|$)/i.test(request.url)) {
+      const isTopFrameRequest = request.isTopFrame !== false;
+      const isLandingRequest = /\/landing(\/|$)/i.test(request.url);
+      // Guard only the initial app-access handshake redirect.
+      if (blockLandingRedirect && !hasLoadedOnce && isTopFrameRequest && isLandingRequest) {
         setLoading(false);
         setError(
           landingBlockedMessage ??
@@ -158,7 +161,7 @@ export const WebSurface = ({
       }
       return true;
     },
-    [appOrigin, blockLandingRedirect, landingBlockedMessage, openExternalUrl],
+    [appOrigin, blockLandingRedirect, hasLoadedOnce, landingBlockedMessage, openExternalUrl],
   );
 
   const handleWebError = useCallback(
