@@ -8,7 +8,7 @@
     "userInterfaceStyle": "dark",
     "scheme": "where2beach",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/android-icon-foreground.png",
       "resizeMode": "contain",
       "backgroundColor": "#020617"
     },

@@ -1,7 +1,8 @@
 import net from "node:net";
 import path from "node:path";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import { fileURLToPath } from "node:url";
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
@@ -9,9 +10,11 @@ const repoRoot = path.resolve(scriptsDir, "..");
 const mobileEnvPath = path.join(repoRoot, "mobile", ".env");
 
 const DEFAULT_BASE_URL = "https://where2beach.com";
-const LOCAL_BASE_HOSTS = new Set(["127.0.0.1", "localhost"]);
+const LOCAL_BASE_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
 const WAIT_TIMEOUT_MS = 90_000;
 const RETRY_DELAY_MS = 350;
+const IOS_BUNDLE_ID = "com.where2beach.mobile";
+const METRO_PORT = 8081;
 
 const startedChildren = [];
 
@@ -37,6 +40,19 @@ const parseDotEnv = (content) => {
   return parsed;
 };
 
+const listLocalIPv4Addresses = () => {
+  const interfaces = os.networkInterfaces();
+  const addresses = [];
+  for (const values of Object.values(interfaces)) {
+    if (!Array.isArray(values)) continue;
+    for (const info of values) {
+      if (!info || info.family !== "IPv4" || info.internal) continue;
+      addresses.push(info.address);
+    }
+  }
+  return addresses;
+};
+
 const readMobileBaseUrl = () => {
   if (!fs.existsSync(mobileEnvPath)) return DEFAULT_BASE_URL;
   const raw = fs.readFileSync(mobileEnvPath, "utf8");
@@ -47,6 +63,46 @@ const readMobileBaseUrl = () => {
 const normalizeHostForChecks = (value) => {
   const lower = value.toLowerCase();
   return lower === "localhost" ? "127.0.0.1" : lower;
+};
+
+const isPrivateOrLocalHost = (host) => {
+  if (!host) return false;
+  if (LOCAL_BASE_HOSTS.has(host)) return true;
+  if (/^10\./.test(host)) return true;
+  if (/^192\.168\./.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
+  return false;
+};
+
+const chooseSimulatorHost = (baseHost) => {
+  const localIPv4s = listLocalIPv4Addresses();
+  const localSet = new Set(localIPv4s);
+  const firstLanHost = localIPv4s.find((candidate) => isPrivateOrLocalHost(candidate));
+
+  if (LOCAL_BASE_HOSTS.has(baseHost)) {
+    return {
+      host: firstLanHost ?? "127.0.0.1",
+      reason: firstLanHost
+        ? `base loopback, uso IP LAN ${firstLanHost} per il simulator`
+        : "base loopback senza IP LAN disponibile, uso 127.0.0.1",
+    };
+  }
+
+  if (localSet.has(baseHost)) {
+    return { host: baseHost, reason: null };
+  }
+
+  if (firstLanHost) {
+    return {
+      host: firstLanHost,
+      reason: `host ${baseHost} non trovato sulle interfacce locali, uso ${firstLanHost}`,
+    };
+  }
+
+  return {
+    host: baseHost,
+    reason: null,
+  };
 };
 
 const isPortListening = (host, port, timeoutMs = 900) =>
@@ -91,6 +147,28 @@ const spawnService = ({ label, cmd, args, cwd }) => {
   return child;
 };
 
+const setSimulatorJsLocation = (host, port) => {
+  const jsLocation = `${host}:${port}`;
+  const result = spawnSync(
+    "xcrun",
+    [
+      "simctl",
+      "spawn",
+      "booted",
+      "defaults",
+      "write",
+      IOS_BUNDLE_ID,
+      "RCT_jsLocation",
+      "-string",
+      jsLocation,
+    ],
+    { stdio: "ignore" },
+  );
+  if (result.status === 0) {
+    console.log(`[mobile:ios] iOS dev bundle impostato su ${jsLocation}`);
+  }
+};
+
 let cleaningUp = false;
 const cleanupChildren = (signal = "SIGTERM") => {
   if (cleaningUp) return;
@@ -117,9 +195,9 @@ const main = async () => {
   }
 
   const baseHost = normalizeHostForChecks(base.hostname);
-  const baseIsLocal =
-    (base.protocol === "http:" || base.protocol === "https:") &&
-    LOCAL_BASE_HOSTS.has(baseHost);
+  const baseIsHttp = base.protocol === "http:" || base.protocol === "https:";
+  const baseIsLocal = baseIsHttp && isPrivateOrLocalHost(baseHost);
+  const webPort = Number(base.port || 5173);
 
   process.on("SIGINT", () => {
     cleanupChildren("SIGTERM");
@@ -134,8 +212,15 @@ const main = async () => {
   if (baseIsLocal) {
     const apiHost = "127.0.0.1";
     const apiPort = 3000;
-    const webHost = "127.0.0.1";
-    const webPort = Number(base.port || 5173);
+    const { host: simulatorHost, reason: simulatorHostReason } =
+      chooseSimulatorHost(baseHost);
+    const simulatorBaseOrigin = `http://${simulatorHost}:${webPort}`;
+    const webHost = simulatorHost;
+    const viteBindHost = simulatorHost === "127.0.0.1" ? "127.0.0.1" : "0.0.0.0";
+
+    if (simulatorHostReason) {
+      console.log(`[mobile:ios] ${simulatorHostReason}`);
+    }
 
     const apiUp = await isPortListening(apiHost, apiPort);
     if (!apiUp) {
@@ -156,14 +241,42 @@ const main = async () => {
       spawnService({
         label: `Vite dev (:${webPort})`,
         cmd: "npm",
-        args: ["run", "dev", "--", "--host", "127.0.0.1", "--port", String(webPort)],
+        args: ["run", "dev", "--", "--host", viteBindHost, "--port", String(webPort)],
         cwd: repoRoot,
       });
       await waitForPort(webHost, webPort, WAIT_TIMEOUT_MS, "Frontend locale");
-      console.log(`[mobile:ios] Frontend locale pronto su ${base.origin}`);
+      console.log(`[mobile:ios] Frontend locale pronto su ${simulatorBaseOrigin}`);
     } else {
-      console.log(`[mobile:ios] Frontend locale gia attivo su ${base.origin}`);
+      console.log(`[mobile:ios] Frontend locale gia attivo su ${simulatorBaseOrigin}`);
     }
+
+    setSimulatorJsLocation(simulatorHost, METRO_PORT);
+    console.log("[mobile:ios] avvio Expo iOS...");
+    const expo = spawn("npm", ["--prefix", "mobile", "run", "ios:expo"], {
+      cwd: repoRoot,
+      env: {
+        ...process.env,
+        EXPO_PUBLIC_BASE_URL: simulatorBaseOrigin,
+        REACT_NATIVE_PACKAGER_HOSTNAME: simulatorHost,
+      },
+      stdio: "inherit",
+    });
+
+    expo.once("error", (error) => {
+      console.error(`[mobile:ios] errore avvio Expo: ${error.message}`);
+      cleanupChildren("SIGTERM");
+      process.exit(1);
+    });
+
+    expo.once("exit", (code, signal) => {
+      cleanupChildren("SIGTERM");
+      if (signal) {
+        process.kill(process.pid, signal);
+        return;
+      }
+      process.exit(code ?? 1);
+    });
+    return;
   } else {
     console.log(
       `[mobile:ios] EXPO_PUBLIC_BASE_URL punta a remoto (${base.origin}), salto avvio stack locale`,
@@ -171,7 +284,7 @@ const main = async () => {
   }
 
   console.log("[mobile:ios] avvio Expo iOS...");
-  const expo = spawn("npm", ["--prefix", "mobile", "run", "ios"], {
+  const expo = spawn("npm", ["--prefix", "mobile", "run", "ios:expo"], {
     cwd: repoRoot,
     env: process.env,
     stdio: "inherit",

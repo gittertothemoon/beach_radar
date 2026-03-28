@@ -5,7 +5,8 @@
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
-    "ios": "expo start --ios",
+    "ios": "node ../scripts/run-mobile-ios-dev.mjs",
+    "ios:expo": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "eas:build:android:dev": "npx eas-cli build --platform android --profile development",

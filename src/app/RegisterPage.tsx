@@ -631,6 +631,12 @@ const RegisterPage = () => {
                     <input
                       data-testid="auth-email-input"
                       type="email"
+                      name={isLoginMode ? "username" : "email"}
+                      autoComplete={isLoginMode ? "username" : "email"}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      inputMode="email"
                       value={email}
                       onChange={(event) => {
                         setEmail(event.target.value);
@@ -653,6 +659,7 @@ const RegisterPage = () => {
                       key={`password-${showPasswords ? "visible" : "hidden"}`}
                       data-testid="auth-password-input"
                       type={showPasswords ? "text" : "password"}
+                      name={isLoginMode ? "current-password" : "new-password"}
                       autoComplete={isLoginMode ? "current-password" : "new-password"}
                       autoCapitalize="none"
                       spellCheck={false}
@@ -678,6 +685,7 @@ const RegisterPage = () => {
                     <input
                       key={`confirm-password-${showPasswords ? "visible" : "hidden"}`}
                       type={showPasswords ? "text" : "password"}
+                      name="confirm-password"
                       autoComplete="new-password"
                       autoCapitalize="none"
                       spellCheck={false}

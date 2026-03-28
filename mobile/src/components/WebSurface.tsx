@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   Linking,
   Pressable,
@@ -17,6 +16,51 @@ type WebSurfaceProps = {
   landingBlockedMessage?: string;
 };
 
+const AUTO_RELOAD_MAX_ATTEMPTS = 2;
+const AUTO_RELOAD_DELAY_MS = 700;
+const PROD_FALLBACK_ORIGIN = "https://where2beach.com";
+
+const isLocalLikeHost = (host: string): boolean => {
+  const value = host.toLowerCase();
+  if (value === "localhost" || value === "127.0.0.1" || value === "::1") return true;
+  if (/^10\./.test(value)) return true;
+  if (/^192\.168\./.test(value)) return true;
+  return /^172\.(1[6-9]|2\d|3[01])\./.test(value);
+};
+
+const isNetworkTransientError = (nativeError: {
+  code?: number;
+  domain?: string;
+  description?: string;
+}): boolean => {
+  const code = typeof nativeError.code === "number" ? nativeError.code : null;
+  if (code === -1004 || code === -1001 || code === -1009 || code === -1003) {
+    return true;
+  }
+
+  const domain = (nativeError.domain ?? "").toLowerCase();
+  const description = (nativeError.description ?? "").toLowerCase();
+  return (
+    domain.includes("nsurlerrordomain") &&
+    (description.includes("impossibile connettersi al server") ||
+      description.includes("could not connect to the server") ||
+      description.includes("offline") ||
+      description.includes("timed out"))
+  );
+};
+
+const withFallbackOrigin = (rawUrl: string, fallbackOrigin: string): string | null => {
+  try {
+    const current = new URL(rawUrl);
+    const fallback = new URL(fallbackOrigin);
+    current.protocol = fallback.protocol;
+    current.host = fallback.host;
+    return current.toString();
+  } catch {
+    return null;
+  }
+};
+
 export const WebSurface = ({
   initialUrl,
   blockLandingRedirect = false,
@@ -25,21 +69,49 @@ export const WebSurface = ({
   const insets = useSafeAreaInsets();
   const statusBarOverlayHeight = Math.max(28, insets.top + 2);
   const webViewRef = useRef<WebView>(null);
+  const retryAttemptRef = useRef(0);
+  const fallbackAppliedRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentUrl, setCurrentUrl] = useState(initialUrl);
 
-  const source = useMemo(() => ({ uri: initialUrl }), [initialUrl]);
+  const source = useMemo(() => ({ uri: currentUrl }), [currentUrl]);
   const appOrigin = useMemo(() => {
     try {
-      return new URL(initialUrl).origin;
+      return new URL(currentUrl).origin;
     } catch {
       return null;
     }
-  }, [initialUrl]);
+  }, [currentUrl]);
+
+  const isLocalSource = useMemo(() => {
+    try {
+      return isLocalLikeHost(new URL(currentUrl).hostname);
+    } catch {
+      return false;
+    }
+  }, [currentUrl]);
+
+  const resetConnectionState = useCallback(() => {
+    retryAttemptRef.current = 0;
+    fallbackAppliedRef.current = false;
+    setError(null);
+    setHasLoadedOnce(false);
+    setLoading(true);
+  }, []);
+
+  const applySourceUrl = useCallback(
+    (nextUrl: string) => {
+      resetConnectionState();
+      setCurrentUrl(nextUrl);
+    },
+    [resetConnectionState],
+  );
 
   const handleReload = useCallback(() => {
     setError(null);
+    retryAttemptRef.current = 0;
     webViewRef.current?.reload();
   }, []);
 
@@ -89,6 +161,51 @@ export const WebSurface = ({
     [appOrigin, blockLandingRedirect, landingBlockedMessage, openExternalUrl],
   );
 
+  const handleWebError = useCallback(
+    (event: {
+      nativeEvent: {
+        code?: number;
+        domain?: string;
+        description?: string;
+      };
+    }) => {
+      const nativeError = event.nativeEvent ?? {};
+      const transientNetworkError = isNetworkTransientError(nativeError);
+
+      if (transientNetworkError && retryAttemptRef.current < AUTO_RELOAD_MAX_ATTEMPTS) {
+        retryAttemptRef.current += 1;
+        setError(null);
+        setLoading(true);
+        const waitMs = AUTO_RELOAD_DELAY_MS * retryAttemptRef.current;
+        setTimeout(() => {
+          webViewRef.current?.reload();
+        }, waitMs);
+        return;
+      }
+
+      if (transientNetworkError && isLocalSource && !fallbackAppliedRef.current) {
+        const fallbackUrl = withFallbackOrigin(currentUrl, PROD_FALLBACK_ORIGIN);
+        if (fallbackUrl && fallbackUrl !== currentUrl) {
+          fallbackAppliedRef.current = true;
+          setError(null);
+          setLoading(true);
+          setCurrentUrl(fallbackUrl);
+          return;
+        }
+      }
+
+      setLoading(false);
+      setHasLoadedOnce(true);
+      setError(nativeError.description || "Errore sconosciuto");
+    },
+    [currentUrl, isLocalSource],
+  );
+
+  useEffect(() => {
+    if (initialUrl === currentUrl) return;
+    applySourceUrl(initialUrl);
+  }, [applySourceUrl, currentUrl, initialUrl]);
+
   return (
     <View style={styles.container}>
       <View
@@ -120,12 +237,9 @@ export const WebSurface = ({
         onLoadEnd={() => {
           setLoading(false);
           setHasLoadedOnce(true);
+          retryAttemptRef.current = 0;
         }}
-        onError={(event) => {
-          setLoading(false);
-          setHasLoadedOnce(true);
-          setError(event.nativeEvent.description || "Errore sconosciuto");
-        }}
+        onError={handleWebError}
         onOpenWindow={(event) => {
           const targetUrl = event.nativeEvent.targetUrl?.trim();
           if (!targetUrl) return;
@@ -142,13 +256,13 @@ export const WebSurface = ({
 
       {loading && !hasLoadedOnce && !error ? (
         <View style={styles.loadingLayer} pointerEvents="none">
-          <Image
-            source={require("../../assets/splash-icon.png")}
-            style={styles.loadingLogo}
-            resizeMode="contain"
-          />
-          <ActivityIndicator size="large" color="#22d3ee" />
-          <Text style={styles.loadingLabel}>Caricamento</Text>
+          <View style={styles.loadingBadge}>
+            <Image
+              source={require("../../assets/android-icon-foreground.png")}
+              style={styles.loadingLogo}
+              resizeMode="contain"
+            />
+          </View>
         </View>
       ) : null}
     </View>
@@ -182,15 +296,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#020617",
   },
-  loadingLogo: {
-    width: 232,
-    height: 232,
-    marginBottom: 18,
+  loadingBadge: {
+    width: 236,
+    height: 236,
+    borderRadius: 118,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(148, 163, 184, 0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(148, 163, 184, 0.24)",
   },
-  loadingLabel: {
-    marginTop: 8,
-    color: "#e2e8f0",
-    fontWeight: "600",
+  loadingLogo: {
+    width: 196,
+    height: 196,
   },
   errorBox: {
     margin: 16,

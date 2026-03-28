@@ -93,6 +93,8 @@ const SHOW_ALL_PINS_ZOOM_OUT_DELTA = 2;
 const SHOW_ALL_PINS_FLY_DURATION_S = 1.1;
 const REPORT_RADIUS_M = 700;
 const REPORTS_FEED_ERROR_TOAST_GRACE_MS = 10_000;
+const LIMITED_DATA_SHOW_THRESHOLD = 0.9;
+const LIMITED_DATA_HIDE_THRESHOLD = 0.8;
 const REMOTE_REPORT_SESSION_KEY = "br_report_anywhere_v1";
 const REGISTER_RESUME_KEY = "where2beach-register-resume-v1";
 const MOCK_CROWD_LEVELS: CrowdLevel[] = [1, 2, 3, 4];
@@ -278,6 +280,8 @@ function App() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [reportThanksOpen, setReportThanksOpen] = useState(false);
+  const [reportsFeedReady, setReportsFeedReady] = useState(false);
+  const [showLimitedDataNotice, setShowLimitedDataNotice] = useState(false);
   const [debugToast, setDebugToast] = useState<string | null>(null);
   const [debugRefreshKey, setDebugRefreshKey] = useState(0);
   const [perfSnapshot, setPerfSnapshot] = useState(() => getPerfSnapshot());
@@ -605,6 +609,7 @@ function App() {
       if (result.ok) {
         setReports(result.reports);
         reportsFeedReadyRef.current = true;
+        setReportsFeedReady(true);
         reportsUnavailableToastShownRef.current = false;
         return;
       }
@@ -967,15 +972,30 @@ function App() {
     return focused ? [focused] : filteredBeachesBase;
   }, [beachViewsBase, filteredBeachesBase, soloBeachId]);
 
-  const liveDataNotice = useMemo(() => {
+  const limitedDataPredRatio = useMemo(() => {
     const total = beachViewsBase.length;
-    if (total === 0) return null;
+    if (total === 0) return 0;
     let predCount = 0;
     beachViewsBase.forEach((beach) => {
       if (beach.state === "PRED") predCount += 1;
     });
-    return predCount / total >= 0.85 ? STRINGS.banners.limitedData : null;
+    return predCount / total;
   }, [beachViewsBase]);
+
+  useEffect(() => {
+    if (!reportsFeedReady || reports.length === 0 || beachViewsBase.length === 0) {
+      setShowLimitedDataNotice(false);
+      return;
+    }
+
+    setShowLimitedDataNotice((prev) =>
+      prev
+        ? limitedDataPredRatio >= LIMITED_DATA_HIDE_THRESHOLD
+        : limitedDataPredRatio >= LIMITED_DATA_SHOW_THRESHOLD,
+    );
+  }, [beachViewsBase.length, limitedDataPredRatio, reports.length, reportsFeedReady]);
+
+  const liveDataNotice = showLimitedDataNotice ? STRINGS.banners.limitedData : null;
 
   const nearbyBeaches = useMemo(() => {
     if (!userLocation) return [];

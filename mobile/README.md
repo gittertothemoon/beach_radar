@@ -27,7 +27,8 @@ npm run start
 
 ```bash
 npm run start
-npm run ios
+npm run ios              # safe iOS startup (checks/boots local web+api stack when base URL is local)
+npm run ios:expo         # Expo iOS only (no local stack bootstrap)
 npm run android
 npm run typecheck
 npm run eas:build:android:preview
