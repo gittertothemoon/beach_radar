@@ -95,6 +95,11 @@ type TutorialTargetBridgeMessage = {
   activated: boolean;
 };
 
+type NativeFirstPaintBridgeMessage = {
+  type: "w2b-native-first-paint";
+  ready: boolean;
+};
+
 type TutorialSpotlightProfile = {
   padX: number;
   padY: number;
@@ -324,6 +329,17 @@ const isTutorialTargetBridgeMessage = (value: unknown): value is TutorialTargetB
     record.type === "w2b-tour-target" &&
     typeof record.selector === "string" &&
     typeof record.activated === "boolean"
+  );
+};
+
+const isNativeFirstPaintBridgeMessage = (
+  value: unknown,
+): value is NativeFirstPaintBridgeMessage => {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+  return (
+    record.type === "w2b-native-first-paint" &&
+    typeof record.ready === "boolean"
   );
 };
 
@@ -560,6 +576,7 @@ export const WebSurface = ({
   const fallbackAppliedRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [initialPresentationReady, setInitialPresentationReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentUrl, setCurrentUrl] = useState(initialUrl);
   const [surfaceSize, setSurfaceSize] = useState({ width: 0, height: 0 });
@@ -606,6 +623,7 @@ export const WebSurface = ({
   const notifyInitialLoadSettled = useCallback(() => {
     if (initialLoadSettledRef.current) return;
     initialLoadSettledRef.current = true;
+    setInitialPresentationReady(true);
     clearInitialLoadProbeTimers();
     onInitialLoadSettled?.();
   }, [clearInitialLoadProbeTimers, onInitialLoadSettled]);
@@ -981,17 +999,37 @@ export const WebSurface = ({
     if (initialLoadSettledRef.current) return;
     clearInitialLoadProbeTimers();
     const runProbe = () => {
-      probeTutorialReady();
+      const script = `
+        (function() {
+          try {
+            var htmlReady =
+              document.documentElement &&
+              document.documentElement.getAttribute("data-native-app-ready") === "1";
+            var runtimeReady = window.__W2B_NATIVE_APP_READY === true;
+            var payload = {
+              type: "w2b-native-first-paint",
+              ready: Boolean(htmlReady || runtimeReady)
+            };
+            if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+              window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+            }
+          } catch (_error) {
+            // Ignore bridge probe errors.
+          }
+        })();
+        true;
+      `;
+      webViewRef.current?.injectJavaScript(script);
     };
     runProbe();
     initialLoadProbeTimersRef.current = [
       setTimeout(runProbe, 180),
-      setTimeout(runProbe, 640),
+      setTimeout(runProbe, 700),
       setTimeout(() => {
         notifyInitialLoadSettled();
-      }, 2400),
+      }, 4500),
     ];
-  }, [clearInitialLoadProbeTimers, notifyInitialLoadSettled, probeTutorialReady]);
+  }, [clearInitialLoadProbeTimers, notifyInitialLoadSettled]);
 
   const handleShouldStartLoadWithRequest = useCallback(
     (request: { url: string; isTopFrame?: boolean }) => {
@@ -1130,9 +1168,11 @@ export const WebSurface = ({
 
       if (isTutorialReadyBridgeMessage(parsed)) {
         setTutorialDomReady(parsed.ready);
-        if (parsed.ready) {
-          notifyInitialLoadSettled();
-        }
+        return;
+      }
+
+      if (isNativeFirstPaintBridgeMessage(parsed)) {
+        if (parsed.ready) notifyInitialLoadSettled();
         return;
       }
 
@@ -2125,6 +2165,16 @@ export const WebSurface = ({
         style={styles.webview}
       />
 
+      {!initialPresentationReady && !error ? (
+        <View style={styles.initialBootLayer} pointerEvents="none">
+          <Image
+            source={require("../../assets/splash-icon.png")}
+            style={styles.initialBootLogo}
+            resizeMode="contain"
+          />
+        </View>
+      ) : null}
+
       {loading && hasLoadedOnce && !error ? (
         <View style={styles.loadingLayer} pointerEvents="none">
           <View style={styles.loadingBadge}>
@@ -2417,6 +2467,21 @@ const styles = StyleSheet.create({
   webview: {
     flex: 1,
     backgroundColor: "#020617",
+  },
+  initialBootLayer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#020617",
+    zIndex: 12,
+  },
+  initialBootLogo: {
+    width: 360,
+    height: 360,
   },
   loadingLayer: {
     position: "absolute",

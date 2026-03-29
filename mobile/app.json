@@ -8,7 +8,7 @@
     "userInterfaceStyle": "dark",
     "scheme": "where2beach",
     "splash": {
-      "image": "./assets/android-icon-foreground.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#020617"
     },
@@ -42,7 +42,19 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#020617",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#020617"
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {

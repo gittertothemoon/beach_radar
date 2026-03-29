@@ -1,6 +1,6 @@
 # CODEX Error Memory
 
-Last update: 2026-03-28 (Europe/Rome)
+Last update: 2026-03-29 (Europe/Rome)
 
 ## Scopo
 - Tenere una memoria operativa degli errori commessi durante debug complessi.
@@ -28,6 +28,16 @@ Last update: 2026-03-28 (Europe/Rome)
 ```
 
 ## Lessons
+### 2026-03-29 - Segnalazione build 15 su Privacy/Cookie durante registrazione
+- Contesto: utente mobile (build 15) ha toccato i link legali in registrazione ed e' finito sulla schermata "Cookie Policy" interna.
+- Errore commesso: trattare il report come regressione critica senza prima verificare se la schermata mostrata fosse il fallback legale previsto.
+- Segnale ignorato: screenshot coerente 1:1 con `public/cookie-policy/index.html` (CTA `Apri cookie policy`, `Gestisci preferenze cookie`, `Privacy`).
+- Causa radice: quando la config legale runtime non e' ancora pronta al click, il `RegisterPage` usa fallback interni (`/privacy/`, `/cookie-policy/`) con contesto; in build 18 la segnalazione non e' stata riprodotta.
+- Fix applicata: nessuna modifica codice in questo task; classificazione come comportamento fallback non bloccante e aggiunta regola QA release.
+- Regola permanente: su report "privacy/cookie apre pagina inattesa", verificare prima se e' fallback legale previsto e se le CTA interne portano correttamente a policy/preferenze, prima di aprire fix regressivo.
+- Verifica eseguita: controllo codice `src/app/RegisterPage.tsx`, `public/cookie-policy/index.html`, `public/legal/runtime.js` + confronto visivo con screenshot utente.
+- Guardrail futuro (test/check/alert): in QA build interna eseguire smoke su registrazione -> tap `Privacy` e `Cookie`; esito accettabile = apertura policy esterna oppure fallback interno con CTA funzionanti e navigazione non bloccata.
+
 ### 2026-03-28 - iOS debug bloccato su `No script URL provided` con `unsanitizedScriptURLString = (null)`
 - Contesto: avvio app mobile iOS su simulator durante iterazione UI/tutorial.
 - Errore commesso: assumere che Metro fosse sempre su `8081` e che `RCTBundleURLProvider.sharedSettings().jsBundleURL(...)` fosse sufficiente anche durante startup race.

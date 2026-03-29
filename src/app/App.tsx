@@ -28,6 +28,11 @@ import {
 } from "../lib/account";
 import { getDevMockAccount } from "../lib/devMockAuth";
 import {
+  fetchAccountRewards,
+  redeemBadge,
+  type AccountRewardsSummary,
+} from "../lib/rewards";
+import {
   ANALYTICS_UPDATE_EVENT,
   type AnalyticsSource,
   clearEvents,
@@ -186,6 +191,9 @@ function App() {
   >(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [rewardsSummary, setRewardsSummary] = useState<AccountRewardsSummary | null>(null);
+  const [rewardsLoading, setRewardsLoading] = useState(false);
+  const [redeemingBadgeCode, setRedeemingBadgeCode] = useState<string | null>(null);
   const [reportThanksOpen, setReportThanksOpen] = useState(false);
   const [reportsFeedReady, setReportsFeedReady] = useState(false);
   const [showLimitedDataNotice, setShowLimitedDataNotice] = useState(false);
@@ -201,6 +209,7 @@ function App() {
   >(() => (shouldSkipInitialSplash ? "hidden" : "visible"));
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef<LeafletMap | null>(null);
+  const nativeFirstPaintPostedRef = useRef(false);
   const resumeMapViewRef = useRef<RegisterResumeMapView | null>(
     registerResumeSnapshot?.mapView ?? null,
   );
@@ -310,6 +319,42 @@ function App() {
   }, [shouldSkipInitialSplash]);
 
   useEffect(() => {
+    if (!shouldSkipInitialSplash) return;
+    if (typeof window === "undefined") return;
+    const browserWindow = window as Window & {
+      __W2B_NATIVE_APP_READY?: boolean;
+    };
+    browserWindow.__W2B_NATIVE_APP_READY = false;
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("data-native-app-ready", "0");
+    }
+    nativeFirstPaintPostedRef.current = false;
+  }, [shouldSkipInitialSplash]);
+
+  useEffect(() => {
+    if (!shouldSkipInitialSplash) return;
+    if (!mapReady) return;
+    if (nativeFirstPaintPostedRef.current) return;
+    if (typeof window === "undefined") return;
+    const browserWindow = window as Window & {
+      ReactNativeWebView?: { postMessage?: (payload: string) => void };
+      __W2B_NATIVE_APP_READY?: boolean;
+    };
+    browserWindow.__W2B_NATIVE_APP_READY = true;
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("data-native-app-ready", "1");
+    }
+    nativeFirstPaintPostedRef.current = true;
+    try {
+      browserWindow.ReactNativeWebView?.postMessage?.(
+        JSON.stringify({ type: "w2b-native-first-paint", ready: true }),
+      );
+    } catch {
+      // Ignore bridge post errors outside native shell.
+    }
+  }, [mapReady, shouldSkipInitialSplash]);
+
+  useEffect(() => {
     console.info(`Loaded spots: ${SPOTS.length}`);
   }, []);
 
@@ -400,6 +445,77 @@ function App() {
     setProfileOpen,
     setDeletingAccount,
   });
+
+  const refreshRewards = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!account) {
+        setRewardsSummary(null);
+        setRewardsLoading(false);
+        return;
+      }
+      setRewardsLoading(true);
+      const result = await fetchAccountRewards();
+      if (result.ok) {
+        setRewardsSummary(result.summary);
+        setRewardsLoading(false);
+        return;
+      }
+      setRewardsLoading(false);
+      if (result.code === "account_required") {
+        setAccount(null);
+        setRewardsSummary(null);
+        return;
+      }
+      if (options?.silent) return;
+      showLocationToast(STRINGS.account.rewardsLoadFailed, "error");
+    },
+    [account, setAccount, showLocationToast],
+  );
+
+  const handleRedeemBadge = useCallback(
+    async (badgeCode: string) => {
+      if (!account || redeemingBadgeCode) return;
+      setRedeemingBadgeCode(badgeCode);
+      const result = await redeemBadge(badgeCode);
+      if (result.ok) {
+        setRewardsSummary(result.summary);
+        showLocationToast(STRINGS.account.badgeRedeemSuccess, "success");
+        setRedeemingBadgeCode(null);
+        return;
+      }
+      setRedeemingBadgeCode(null);
+      if (result.code === "account_required") {
+        setAccount(null);
+        setRewardsSummary(null);
+        return;
+      }
+      const errorMessage =
+        result.code === "insufficient_points"
+          ? STRINGS.account.badgeRedeemInsufficientPoints
+          : result.code === "badge_already_owned"
+            ? STRINGS.account.badgeRedeemAlreadyOwned
+            : result.code === "badge_not_found"
+              ? STRINGS.account.badgeRedeemNotFound
+              : STRINGS.account.badgeRedeemFailed;
+      showLocationToast(errorMessage, "error");
+    },
+    [account, redeemingBadgeCode, setAccount, showLocationToast],
+  );
+
+  useEffect(() => {
+    if (!account) {
+      setRewardsSummary(null);
+      setRewardsLoading(false);
+      setRedeemingBadgeCode(null);
+      return;
+    }
+    void refreshRewards({ silent: true });
+  }, [account, refreshRewards]);
+
+  useEffect(() => {
+    if (!account || !profileOpen) return;
+    void refreshRewards({ silent: true });
+  }, [account, profileOpen, refreshRewards]);
 
   const applyAccountRequiredState = useCallback(
     (nextState: AccountRequiredState) => {
@@ -682,6 +798,29 @@ function App() {
     setNow,
     setReportOpen,
     setReportThanksOpen,
+    onReportSubmitted: ({ awardedPoints, pointsBalance }) => {
+      setRewardsSummary((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          balance:
+            typeof pointsBalance === "number"
+              ? Math.max(0, Math.round(pointsBalance))
+              : prev.balance + awardedPoints,
+          pointsEarned: prev.pointsEarned + awardedPoints,
+          badges: prev.badges.map((badge) => ({
+            ...badge,
+            redeemable: !badge.owned &&
+              (typeof pointsBalance === "number"
+                ? pointsBalance >= badge.pointsCost
+                : prev.balance + awardedPoints >= badge.pointsCost),
+          })),
+        };
+      });
+      if (profileOpen) {
+        void refreshRewards({ silent: true });
+      }
+    },
   });
   const selectedOverride = selectedBeachId ? overrides[selectedBeachId] : null;
 
@@ -1355,10 +1494,14 @@ function App() {
             email={account.email}
             favoriteBeaches={profileFavoriteBeaches}
             deleting={deletingAccount}
+            rewards={rewardsSummary}
+            rewardsLoading={rewardsLoading}
+            redeemingBadgeCode={redeemingBadgeCode}
             onClose={() => setProfileOpen(false)}
             onSelectFavorite={handleSelectProfileFavorite}
             onSignOut={handleSignOut}
             onDeleteAccount={handleDeleteAccount}
+            onRedeemBadge={handleRedeemBadge}
           />
         </Suspense>
       ) : null}

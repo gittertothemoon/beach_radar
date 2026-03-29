@@ -3,6 +3,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer, DarkTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Image, StyleSheet, View } from "react-native";
 import { AppWebScreen } from "./src/screens/AppWebScreen";
 
 export type RootStackParamList = {
@@ -13,8 +14,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const MIN_SPLASH_VISIBLE_MS = 680;
 
 void SplashScreen.setOptions({
-  duration: 220,
-  fade: true,
+  duration: 0,
+  fade: false,
 });
 
 void SplashScreen.preventAutoHideAsync().catch(() => {
@@ -35,6 +36,7 @@ const theme = {
 
 export default function App() {
   const [isBootReady, setIsBootReady] = useState(false);
+  const [mountNavigation, setMountNavigation] = useState(false);
   const bootReadyRef = useRef(false);
   const splashStartTimeRef = useRef(Date.now());
 
@@ -42,6 +44,15 @@ export default function App() {
     if (bootReadyRef.current) return;
     bootReadyRef.current = true;
     setIsBootReady(true);
+  }, []);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setMountNavigation(true);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
   }, []);
 
   useEffect(() => {
@@ -63,18 +74,59 @@ export default function App() {
   }, [isBootReady]);
 
   return (
-    <NavigationContainer theme={theme}>
-      <StatusBar style="light" />
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: "#020617" },
-        }}
-      >
-        <Stack.Screen name="MapWeb">
-          {() => <AppWebScreen onInitialWebReady={handleInitialWebReady} />}
-        </Stack.Screen>
-      </Stack.Navigator>
-    </NavigationContainer>
+    <View style={styles.root}>
+      {mountNavigation ? (
+        <NavigationContainer theme={theme}>
+          <StatusBar style="light" />
+          <Stack.Navigator
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: "#020617" },
+            }}
+          >
+            <Stack.Screen name="MapWeb">
+              {() => <AppWebScreen onInitialWebReady={handleInitialWebReady} />}
+            </Stack.Screen>
+          </Stack.Navigator>
+        </NavigationContainer>
+      ) : (
+        <View style={styles.placeholder} />
+      )}
+
+      {!isBootReady ? (
+        <View style={styles.bootstrapLayer} pointerEvents="none">
+          <Image
+            source={require("./assets/splash-icon.png")}
+            style={styles.bootstrapLogo}
+            resizeMode="contain"
+          />
+        </View>
+      ) : null}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: "#020617",
+  },
+  placeholder: {
+    flex: 1,
+    backgroundColor: "#020617",
+  },
+  bootstrapLayer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#020617",
+  },
+  bootstrapLogo: {
+    width: 360,
+    height: 360,
+  },
+});
