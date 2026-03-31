@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "App (Vite)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "Landing + API",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "landing:dev"],
+      "port": 3000
+    },
+    {
+      "name": "Video (Remotion Studio)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "video:dev"],
+      "port": 3000
+    },
+    {
+      "name": "Mobile iOS",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "mobile:ios"],
+      "port": 8081
+    }
+  ]
+}

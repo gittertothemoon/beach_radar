@@ -111,61 +111,64 @@
 </nav>
 
     <!-- Hero Section -->
-    <section id="hero" class="hero-gradient min-h-[100svh] flex items-center pt-32 md:pt-48 pb-20 md:pb-32 relative overflow-hidden">
+    <section id="hero" class="hero-gradient min-h-[100svh] flex flex-col justify-center pt-28 md:pt-48 pb-28 md:pb-32 relative overflow-hidden">
         <!-- Mobile Background Image & Overlay -->
         <div class="absolute inset-0 z-0 md:hidden">
-            <img src="hero_image.png" alt="Sfondo Mobile" class="w-full h-full object-cover object-center">
-            <div class="absolute inset-0 bg-[#003553]/80 mix-blend-multiply"></div>
-            <!-- Solid overlay for mobile readability -->
+            <img src="hero_image.png" alt="Sfondo Mobile" class="w-full h-full object-cover object-center hero-bg-zoom">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#003553]/90 via-[#004B7A]/75 to-[#003553]/95"></div>
         </div>
 
-        <!-- Floating abstract shapes -->
-        <div
-            class="absolute top-1/4 left-10 w-72 h-72 bg-onda opacity-30 rounded-full blur-[80px] animate-blob mix-blend-screen z-0">
+        <!-- Animated floating light orbs -->
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+        <div class="hero-orb hero-orb-3"></div>
+        <div class="hero-orb hero-orb-4"></div>
+        <div class="hero-orb hero-orb-5"></div>
+
+        <!-- Floating particles -->
+        <div class="hero-particles" aria-hidden="true">
+            <span class="hero-particle" style="--x: 12%; --y: 18%; --size: 3px; --delay: 0s; --dur: 4s;"></span>
+            <span class="hero-particle" style="--x: 85%; --y: 25%; --size: 2px; --delay: 1s; --dur: 5s;"></span>
+            <span class="hero-particle" style="--x: 45%; --y: 70%; --size: 4px; --delay: 0.5s; --dur: 6s;"></span>
+            <span class="hero-particle" style="--x: 70%; --y: 15%; --size: 2px; --delay: 2s; --dur: 4.5s;"></span>
+            <span class="hero-particle" style="--x: 25%; --y: 80%; --size: 3px; --delay: 1.5s; --dur: 5.5s;"></span>
+            <span class="hero-particle" style="--x: 90%; --y: 60%; --size: 2px; --delay: 0.8s; --dur: 4.2s;"></span>
+            <span class="hero-particle" style="--x: 55%; --y: 40%; --size: 3px; --delay: 2.5s; --dur: 5.8s;"></span>
+            <span class="hero-particle" style="--x: 8%; --y: 55%; --size: 2px; --delay: 1.2s; --dur: 4.8s;"></span>
         </div>
-        <div class="absolute bottom-1/4 right-10 w-96 h-96 bg-corallo opacity-30 rounded-full blur-[100px] animate-blob mix-blend-screen z-0"
-            style="animation-delay: 2s;"></div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
                 <!-- Text Content -->
-                <div class="text-white text-center md:text-left space-y-8">
-                    <div
-                        class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-sm font-semibold tracking-wide border border-white/20 shadow-lg">
-                        <span class="relative flex h-3 w-3">
-                            <span
-                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-corallo opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-3 w-3 bg-corallo"></span>
-                        </span>
-                        Il primo ecosistema community-driven
-                    </div>
-
-                    <h1 class="text-5xl md:text-6xl lg:text-[5.5rem] font-black leading-[1.05] tracking-tighter">
+                <div class="text-white text-center md:text-left">
+                    <h1 class="hero-entrance hero-entrance-1 text-[3.2rem] leading-[1.02] md:text-6xl lg:text-[5.5rem] font-black md:leading-[1.05] tracking-tighter">
                         Basta vacanze <br />
-                        <span
-                            class="text-transparent bg-clip-text bg-gradient-to-r from-corallo to-[#FFB154]">rovinate.</span>
+                        <span class="hero-gradient-text">rovinate.</span>
                     </h1>
 
-                    <p class="text-lg md:text-xl font-normal text-onda/90 leading-relaxed max-w-lg mx-auto md:mx-0">
+                    <p class="hero-entrance hero-entrance-2 mt-5 text-lg md:text-xl font-normal text-onda/90 leading-relaxed max-w-lg mx-auto md:mx-0">
                         Controlla in anticipo affollamento, meteo e segnalazioni della community. Parti solo quando la
                         spiaggia è davvero quella giusta per te.
                     </p>
 
+                    <!-- Phone mockup - mobile only, between text and CTA -->
                     <!-- CTA Buttons -->
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-2">
+                    <div class="hero-entrance hero-entrance-3 flex flex-col sm:flex-row gap-3 justify-center md:justify-start mt-8">
                         <!-- App Store Button -->
-                        <a href="#waitlist"
+                        <a href="https://apps.apple.com/it/app/where2beach/id6760668956"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             data-cta-id="hero_store_ios"
                             data-cta-section="hero"
                             data-cta-variant="secondary"
-                            class="flex items-center justify-center gap-3 bg-white/90 backdrop-blur-lg border border-white/20 text-gray-900 px-7 py-4 rounded-[2rem] hover:bg-white transition-all hover:-translate-y-1 shadow-glass group">
+                            class="hero-store-btn flex items-center justify-center gap-3 bg-white/95 backdrop-blur-lg border border-white/30 text-gray-900 px-7 py-4 rounded-[2rem] hover:bg-white transition-all hover:-translate-y-1 shadow-glass group">
                             <svg class="w-8 h-8 fill-current group-hover:text-mare transition-colors"
                                 viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
                             </svg>
                             <div class="text-left">
-                                <div class="text-[10px] leading-tight text-gray-500 font-medium">In arrivo su</div>
+                                <div class="text-[10px] leading-tight text-gray-500 font-medium">Scarica su</div>
                                 <div class="text-sm font-bold leading-tight">App Store</div>
                             </div>
                         </a>
@@ -187,10 +190,9 @@
                         </a>
                     </div>
 
-                    <div class="max-w-lg mx-auto md:mx-0">
+                    <div class="hero-entrance hero-entrance-4 max-w-lg mx-auto md:mx-0 mt-6">
                         <p class="text-sm text-onda/90 font-medium">
-                            L'app non è ancora disponibile: lascia la tua email e ricevi l'accesso appena apriamo iOS e
-                            Android.
+                            Disponibile su App Store. In arrivo su Google Play: lascia la tua email per essere avvisato.
                         </p>
                         <form id="landing-email-form-hero" data-signup-form
                             class="mt-4 flex flex-col sm:flex-row gap-3 max-w-xl relative z-20">
@@ -211,14 +213,14 @@
                     </div>
 
                     <!-- Seasonal Urgency Countdown -->
-                    <div id="summer-countdown" class="countdown-container mt-8 relative hidden lg:block">
+                    <div id="summer-countdown" class="hero-entrance hero-entrance-5 countdown-container mt-8 relative">
                         <div class="inline-flex flex-col items-center gap-3">
                             <div class="flex items-center gap-2 text-onda/70 text-xs font-bold uppercase tracking-[0.2em]">
                                 <span class="w-5 h-px bg-gradient-to-r from-transparent to-onda/40"></span>
-                                <span>☀️ L'estate 2026 inizia tra</span>
+                                <span>L'estate 2026 inizia tra</span>
                                 <span class="w-5 h-px bg-gradient-to-l from-transparent to-onda/40"></span>
                             </div>
-                            <div class="flex gap-3" id="countdown-timer">
+                            <div class="flex gap-2 sm:gap-3" id="countdown-timer">
                                 <div class="cd-tile group">
                                     <span id="cd-days" class="cd-value text-transparent bg-clip-text bg-gradient-to-b from-corallo to-[#FFB154]">--</span>
                                     <span class="cd-label">giorni</span>
@@ -243,7 +245,7 @@
                     </div>
                 </div>
 
-                <!-- Graphic / Mascot -->
+                <!-- Graphic / Mascot - Desktop -->
                 <div class="hidden md:flex justify-center relative animate-float">
                     <div class="w-72 h-72 lg:w-[32rem] lg:h-[32rem] relative z-10 flex items-center justify-center">
                         <!-- Glowing aura behind image -->
@@ -255,10 +257,15 @@
             </div>
         </div>
 
-        <!-- SVG Bottom Wave for smooth transition -->
-        <div class="absolute bottom-[-1px] left-0 w-full overflow-hidden leading-none z-0">
-            <svg class="relative block w-full h-[60px] md:h-[120px]" xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <!-- Animated multi-layer waves -->
+        <div class="absolute bottom-[-1px] left-0 w-full overflow-hidden leading-none z-[5]">
+            <svg class="hero-wave hero-wave-back" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,80 C360,120 720,40 1080,80 C1260,100 1380,60 1440,70 L1440,120 L0,120 Z" fill="rgba(253,251,247,0.3)"></path>
+            </svg>
+            <svg class="hero-wave hero-wave-mid" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,90 C240,50 480,110 720,70 C960,30 1200,100 1440,60 L1440,120 L0,120 Z" fill="rgba(253,251,247,0.5)"></path>
+            </svg>
+            <svg class="hero-wave hero-wave-front" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
                 <path d="M0,64 C480,120 960,8 1440,64 L1440,120 L0,120 Z" fill="#FDFBF7"></path>
             </svg>
         </div>
@@ -1031,7 +1038,7 @@
             <h2 class="reveal text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter drop-shadow-sm">Lancio in
                 arrivo.<br>Prenota il tuo accesso.</h2>
             <p class="reveal stagger-1 text-xl text-onda mb-8 max-w-2xl mx-auto font-light">
-                Iscriviti alla lista prioritaria: ti avvisiamo appena l'app è disponibile su App Store e Google Play.
+                Già disponibile su App Store. Iscriviti alla lista per sapere quando arriva su Google Play.
             </p>
 
             <!-- Community Social Proof Counter -->
@@ -1060,10 +1067,10 @@
 
             <div class="reveal stagger-2 flex flex-col sm:flex-row gap-5 justify-center">
                 <!-- Apple Store -->
-                <button
-                    type="button"
-                    data-scroll-target="#landing-email-form"
-                    data-focus-target="#landing-email-input"
+                <a
+                    href="https://apps.apple.com/it/app/where2beach/id6760668956"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     data-cta-id="waitlist_store_ios"
                     data-cta-section="waitlist"
                     data-cta-variant="secondary"
@@ -1073,8 +1080,8 @@
                         <path
                             d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
                     </svg>
-                    In arrivo su App Store
-                </button>
+                    Scarica su App Store
+                </a>
                 <!-- Google Play -->
                 <button
                     type="button"
@@ -1092,8 +1099,8 @@
                 </button>
             </div>
 
-            <p class="mt-8 text-sm text-onda/80 font-medium">L'app è in fase di lancio: arriverà presto su App Store e
-                Google Play.<br>Lascia la tua email per ricevere accesso anticipato e aggiornamenti reali sul rollout.</p>
+            <p class="mt-8 text-sm text-onda/80 font-medium">L'app è già disponibile su App Store. Google Play è in
+                arrivo.<br>Lascia la tua email per ricevere aggiornamenti sul lancio Android.</p>
 
             <form id="landing-email-form" data-signup-form class="mt-6 flex flex-col sm:flex-row gap-3 max-w-md mx-auto relative z-20">
                 <input type="email" id="landing-email-input" data-signup-input name="email" placeholder="La tua migliore email..." required
