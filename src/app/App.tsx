@@ -860,11 +860,11 @@ function App() {
     if (!size || size.x <= 0 || size.y <= 0) return;
 
     // Keep marker coordinates unchanged; move map center so the selected pin
-    // lands in a clear area between top controls and bottom overlays.
+    // lands clearly above the weather widget and overlay buttons.
     const targetX = size.x * 0.5;
     const topSafeY = Math.max(170, size.y * 0.24);
-    const bottomSafeY = size.y - Math.max(360, size.y * 0.34);
-    const preferredY = size.y * 0.52;
+    const bottomSafeY = size.y - Math.max(400, size.y * 0.48);
+    const preferredY = size.y * 0.37;
     const targetY = Math.max(topSafeY, Math.min(bottomSafeY, preferredY));
 
     const selectedProjected = map.project([selectedBeach.lat, selectedBeach.lng], zoom);
