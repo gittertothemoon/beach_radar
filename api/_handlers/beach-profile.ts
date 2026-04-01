@@ -112,7 +112,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   res.setHeader(
     "Cache-Control",
-    `public, max-age=0, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=120`,
+    `public, max-age=3600, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=120`,
   );
 
   if (TEST_MODE) {

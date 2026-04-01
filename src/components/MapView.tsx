@@ -563,6 +563,7 @@ const ClusteredMarkers = ({
                     dragend: (event) => {
                       const marker = event.target as L.Marker;
                       const { lat, lng } = marker.getLatLng();
+                      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
                       onOverride(beach.id, lat, lng);
                     },
                   }

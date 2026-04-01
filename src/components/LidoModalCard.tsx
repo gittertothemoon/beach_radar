@@ -583,14 +583,14 @@ const LidoModalCardComponent = ({
           <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div className="text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
-                {STRINGS.labels?.reviews || "Recensioni"}
+                {STRINGS.labels.reviews}
               </div>
               {onWriteReview && (
                 <button
                   onClick={onWriteReview}
                   className="br-press text-[11px] font-semibold text-sky-400 hover:text-sky-300 transition"
                 >
-                  {STRINGS.actions?.writeReview || "Scrivi una recensione"}
+                  {STRINGS.actions.writeReview}
                 </button>
               )}
             </div>
@@ -598,7 +598,7 @@ const LidoModalCardComponent = ({
             <div className="mt-4 space-y-4">
               {reviewsLoading ? (
                 <p className="text-[13px] text-slate-400 text-center py-2">
-                  {STRINGS.empty?.loadingReviews || "Caricamento recensioni..."}
+                  {STRINGS.empty.loadingReviews}
                 </p>
               ) : reviews.length > 0 ? (
                 reviews.map((r) => (
@@ -625,7 +625,7 @@ const LidoModalCardComponent = ({
                 ))
               ) : (
                 <p className="text-[13px] text-slate-500 text-center py-2">
-                  {STRINGS.empty?.noReviews || "Nessuna recensione ancora. Sii il primo!"}
+                  {STRINGS.empty.noReviews}
                 </p>
               )}
             </div>

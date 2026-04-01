@@ -372,6 +372,9 @@ function App() {
   useEffect(() => {
     if (!mapReady) return;
     postNativeFirstPaintReady();
+    // Prefetch lazy modal chunks so they are ready before the user taps a beach.
+    void import("../components/LidoModalCard");
+    void import("../components/ReportModal");
   }, [mapReady, postNativeFirstPaintReady]);
 
   useEffect(() => {

@@ -26,5 +26,5 @@ export const FEATURE_FLAGS = {
     import.meta.env.VITE_FORCE_REMOTE_REPORTS,
     false,
   ),
-  reportsPollMs: parseNumberEnv(import.meta.env.VITE_REPORTS_POLL_MS, 60_000, 5_000),
+  reportsPollMs: parseNumberEnv(import.meta.env.VITE_REPORTS_POLL_MS, 20_000, 5_000),
 };

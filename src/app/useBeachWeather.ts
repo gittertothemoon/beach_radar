@@ -80,19 +80,18 @@ export const useBeachWeather = ({
     }
 
     const controller = new AbortController();
-    const loadingTimeoutId = window.setTimeout(() => {
-      setWeatherByKey((prev) => {
-        const current = prev[selectedWeatherKey];
-        return {
-          ...prev,
-          [selectedWeatherKey]: {
-            status: "loading",
-            data: current?.data ?? null,
-            expiresAt: current?.expiresAt ?? 0,
-          },
-        };
-      });
-    }, 0);
+
+    setWeatherByKey((prev) => {
+      const current = prev[selectedWeatherKey];
+      return {
+        ...prev,
+        [selectedWeatherKey]: {
+          status: "loading",
+          data: current?.data ?? null,
+          expiresAt: current?.expiresAt ?? 0,
+        },
+      };
+    });
 
     void fetchBeachWeather(selectedBeachLat, selectedBeachLng, controller.signal)
       .then((snapshot) => {
@@ -121,7 +120,6 @@ export const useBeachWeather = ({
       });
 
     return () => {
-      window.clearTimeout(loadingTimeoutId);
       controller.abort();
     };
   }, [selectedBeachLat, selectedBeachLng, selectedWeatherKey]);

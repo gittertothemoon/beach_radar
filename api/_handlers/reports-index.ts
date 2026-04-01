@@ -369,7 +369,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       res.setHeader(
         "Cache-Control",
-        "public, max-age=0, s-maxage=15, stale-while-revalidate=30",
+        "public, max-age=0, s-maxage=8, stale-while-revalidate=15",
       );
       return res.status(200).json({ ok: true, reports });
     }
@@ -398,7 +398,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.setHeader(
       "Cache-Control",
-      "public, max-age=0, s-maxage=15, stale-while-revalidate=30",
+      "public, max-age=0, s-maxage=8, stale-while-revalidate=15",
     );
     return res.status(200).json({ ok: true, reports });
   }
