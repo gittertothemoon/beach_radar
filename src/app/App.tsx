@@ -1134,8 +1134,16 @@ function App() {
   }, []);
 
   const handleChangeBottomSection = useCallback((section: BottomSheetSection) => {
-    setActiveSheetSection(section);
-  }, []);
+    setActiveSheetSection((prev) => {
+      if (prev !== section) return section;
+      return prev;
+    });
+    setSheetOpen((prev) => {
+      // Same section: toggle. Different section: always open.
+      if (activeSheetSection === section) return !prev;
+      return true;
+    });
+  }, [activeSheetSection]);
 
   const {
     handleToggleFavorite,
