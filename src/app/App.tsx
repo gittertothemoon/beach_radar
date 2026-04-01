@@ -1007,13 +1007,17 @@ function App() {
   const handleSelectBeachFromMarker = useCallback(
     (beachId: string) => {
       selectionSourceRef.current = "marker";
-      if (selectedBeachId === beachId) {
-        setIsLidoModalOpen(true);
-      } else {
+      if (selectedBeachId === beachId && !isLidoModalOpen) {
+        // Pin already selected but card closed (e.g. after "show all pins"):
+        // zoom to it and open the card.
+        focusBeach(beachId, { solo: true });
+      } else if (selectedBeachId !== beachId) {
+        // New pin: zoom only, let the user decide to open.
         focusBeach(beachId, { solo: true, openModal: false });
       }
+      // If card is already open for this beach, do nothing.
     },
-    [focusBeach, selectedBeachId],
+    [focusBeach, isLidoModalOpen, selectedBeachId],
   );
 
   const handleSelectSuggestion = useCallback(
