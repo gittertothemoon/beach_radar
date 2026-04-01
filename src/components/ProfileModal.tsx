@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { STRINGS } from "../i18n/it";
+import type { AccountRewardsSummary } from "../lib/rewards";
 
 type ProfileModalProps = {
   isOpen: boolean;
@@ -10,11 +11,25 @@ type ProfileModalProps = {
     name: string;
     region: string;
   }[];
+  rewards: AccountRewardsSummary | null;
+  rewardsLoading: boolean;
+  redeemingBadgeCode: string | null;
   deleting: boolean;
   onClose: () => void;
   onSelectFavorite: (beachId: string) => void;
   onSignOut: () => void;
   onDeleteAccount: () => void;
+  onRedeemBadge: (badgeCode: string) => void;
+};
+
+const iconToGlyph = (icon: string): string => {
+  if (icon === "eye") return "EYE";
+  if (icon === "shield") return "SHD";
+  if (icon === "wave") return "WAV";
+  if (icon === "beach") return "SEA";
+  if (icon === "lighthouse") return "LTH";
+  if (icon === "sun") return "SUN";
+  return "BDG";
 };
 
 const ProfileModal = ({
@@ -22,11 +37,15 @@ const ProfileModal = ({
   name,
   email,
   favoriteBeaches,
+  rewards,
+  rewardsLoading,
+  redeemingBadgeCode,
   deleting,
   onClose,
   onSelectFavorite,
   onSignOut,
   onDeleteAccount,
+  onRedeemBadge,
 }: ProfileModalProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -92,6 +111,79 @@ const ProfileModal = ({
             <div className="mt-1 text-[14px] font-semibold br-text-primary">{name}</div>
           ) : null}
           <div className="truncate text-[13px] br-text-secondary">{email}</div>
+        </div>
+
+        <div className="mt-3 rounded-[12px] border border-emerald-200/25 bg-emerald-500/10 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-emerald-100/90">
+              {STRINGS.account.pointsBalanceTitle}
+            </div>
+            <div className="text-[11px] text-emerald-100/70">
+              {rewardsLoading ? STRINGS.account.rewardsLoading : STRINGS.account.rewardsReady}
+            </div>
+          </div>
+          <div className="mt-1 text-[24px] font-semibold text-emerald-50">
+            {rewards ? `${rewards.balance} pt` : "--"}
+          </div>
+          <div className="mt-1 text-[11px] text-emerald-100/85">
+            {rewards
+              ? STRINGS.account.reportPointsHint(rewards.reportPoints)
+              : STRINGS.account.rewardsUnavailable}
+          </div>
+          <div className="mt-2 rounded-[10px] border border-emerald-100/15 bg-black/30 px-2.5 py-2 text-[11px] text-emerald-50/85">
+            {rewards ? rewards.couponConversion.message : STRINGS.account.couponComingSoon}
+          </div>
+          {rewards?.badges?.length ? (
+            <div className="mt-2 max-h-[220px] space-y-1.5 overflow-y-auto rounded-[10px] border border-white/12 bg-black/35 p-2">
+              {rewards.badges.map((badge) => {
+                const isRedeeming = redeemingBadgeCode === badge.code;
+                const redeemDisabled = isRedeeming || !badge.redeemable;
+                return (
+                  <div
+                    key={badge.code}
+                    className="rounded-[10px] border border-white/10 bg-black/40 px-2.5 py-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span aria-hidden="true" className="text-[10px] font-semibold text-amber-100/80">
+                            {iconToGlyph(badge.icon)}
+                          </span>
+                          <span className="truncate text-[12px] font-semibold br-text-primary">
+                            {badge.name}
+                          </span>
+                        </div>
+                        <div className="mt-0.5 text-[10px] br-text-tertiary">
+                          {badge.description}
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-[10px] text-amber-100/90">
+                        {badge.pointsCost} pt
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center justify-end">
+                      {badge.owned ? (
+                        <span className="rounded-full border border-emerald-200/35 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-100">
+                          {STRINGS.account.badgeOwned}
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={redeemDisabled}
+                          onClick={() => onRedeemBadge(badge.code)}
+                          className="br-press rounded-full border border-amber-300/45 bg-amber-500/15 px-2.5 py-1 text-[10px] font-semibold text-amber-50 disabled:cursor-not-allowed disabled:opacity-55"
+                        >
+                          {isRedeeming
+                            ? STRINGS.account.badgeRedeemingAction
+                            : STRINGS.account.badgeRedeemAction}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
 
         <div className="mt-3 rounded-[12px] border border-white/20 bg-black/82 px-4 py-3">

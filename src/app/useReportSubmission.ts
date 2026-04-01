@@ -39,6 +39,10 @@ type UseReportSubmissionInput = {
   setNow: Dispatch<SetStateAction<number>>;
   setReportOpen: Dispatch<SetStateAction<boolean>>;
   setReportThanksOpen: Dispatch<SetStateAction<boolean>>;
+  onReportSubmitted?: (result: {
+    awardedPoints: number;
+    pointsBalance: number | null;
+  }) => void;
 };
 
 type UseReportSubmissionOutput = {
@@ -67,6 +71,7 @@ export const useReportSubmission = ({
   setNow,
   setReportOpen,
   setReportThanksOpen,
+  onReportSubmitted,
 }: UseReportSubmissionInput): UseReportSubmissionOutput => {
   const [reportError, setReportError] = useState<string | null>(null);
   const [submittingReport, setSubmittingReport] = useState(false);
@@ -127,6 +132,9 @@ export const useReportSubmission = ({
               beachId: selectedBeach.id,
               level,
             });
+            if (result.rewards) {
+              onReportSubmitted?.(result.rewards);
+            }
             return;
           }
 
@@ -169,6 +177,7 @@ export const useReportSubmission = ({
       submitFailedMessage,
       submittingReport,
       tooSoonMessage,
+      onReportSubmitted,
     ],
   );
 

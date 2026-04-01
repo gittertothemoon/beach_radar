@@ -16,6 +16,7 @@ type FetchReportsSuccessPayload = {
 type SubmitReportSuccessPayload = {
   ok: true;
   report?: unknown;
+  rewards?: unknown;
 };
 
 type FetchReportsErrorCode = "network" | "unavailable" | "invalid_payload";
@@ -31,7 +32,7 @@ export type FetchReportsResult =
   | { ok: false; code: FetchReportsErrorCode };
 
 export type SubmitReportResult =
-  | { ok: true; report: Report }
+  | { ok: true; report: Report; rewards?: { awardedPoints: number; pointsBalance: number | null } }
   | { ok: false; code: SubmitReportErrorCode; retryAfterSec?: number };
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -97,6 +98,20 @@ const parseReport = (value: unknown): Report | null => {
     attribution: isAttributionSnapshot(attribution)
       ? attribution
       : undefined,
+  };
+};
+
+const parseReportRewards = (
+  value: unknown,
+): { awardedPoints: number; pointsBalance: number | null } | null => {
+  if (!isObject(value)) return null;
+  const awardedPoints = toFiniteNumber(value.awardedPoints);
+  if (awardedPoints === null || awardedPoints <= 0) return null;
+  const pointsBalanceRaw = toFiniteNumber(value.pointsBalance);
+  return {
+    awardedPoints: Math.round(awardedPoints),
+    pointsBalance:
+      pointsBalanceRaw === null ? null : Math.max(0, Math.round(pointsBalanceRaw)),
   };
 };
 
@@ -253,5 +268,6 @@ export const submitSharedReport = async (input: {
   if (!report) {
     return { ok: false, code: "invalid_payload" };
   }
-  return { ok: true, report };
+  const rewards = parseReportRewards(parsed.rewards) ?? undefined;
+  return { ok: true, report, rewards };
 };

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import 'leaflet/dist/leaflet.css'
 import './styles/globals.css'
 
-const App = lazy(() => import('./app/App'))
+import App from './app/App'
 const RegisterPage = lazy(() => import('./app/RegisterPage'))
 
 const normalizedPath =

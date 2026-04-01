@@ -11,6 +11,7 @@ const DEFAULT_REPORTS_LOOKBACK_HOURS = 6;
 const DEFAULT_REPORTS_GET_LIMIT = 5000;
 const MAX_BEACH_ID_LENGTH = 96;
 const MAX_REPORTER_HASH_LENGTH = 128;
+const REPORT_COMPLETED_POINTS = 15;
 const TEST_MODE_MAX_REPORTS = 5000;
 const REPORTS_TEST_STORE_FILE = "reports-state.json";
 const TEST_MODE = process.env.REPORTS_TEST_MODE === "1";
@@ -55,6 +56,11 @@ type PublicReport = {
   hasAlgae?: boolean;
   createdAt: number;
   attribution?: unknown;
+};
+
+type ReportRewardSummary = {
+  awardedPoints: number;
+  pointsBalance: number | null;
 };
 
 type ReportsTestStore = {
@@ -404,6 +410,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   applyApiSecurityHeaders(res, { noStore: true });
 
   let reporterHash: string;
+  let reporterUserId: string | null = null;
   let supabase = null as ReturnType<typeof buildSupabaseClient>;
 
   if (TEST_MODE) {
@@ -412,6 +419,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(403).json({ ok: false, error: "account_required" });
     }
     reporterHash = toReporterHash(`test:${accessToken}`);
+    reporterUserId = `test:${accessToken}`;
   } else {
     supabase = buildSupabaseClient();
     if (!supabase) {
@@ -427,7 +435,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (userError || !userData.user?.id) {
       return res.status(403).json({ ok: false, error: "account_required" });
     }
-    reporterHash = toReporterHash(userData.user.id);
+    reporterUserId = userData.user.id;
+    reporterHash = toReporterHash(reporterUserId);
   }
 
   const { body, error: bodyError } = readBody(req);
@@ -532,7 +541,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!publicReport) {
       return res.status(500).json({ ok: false, error: "report_invalid" });
     }
-    return res.status(200).json({ ok: true, report: publicReport });
+    const rewards: ReportRewardSummary = {
+      awardedPoints: REPORT_COMPLETED_POINTS,
+      pointsBalance: null,
+    };
+    return res.status(200).json({ ok: true, report: publicReport, rewards });
   }
 
   if (!supabase) {
@@ -568,6 +581,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     water_condition: waterCondition ?? null,
     beach_condition: beachCondition ?? null,
     reporter_hash: reporterHash,
+    user_id: reporterUserId,
     attribution,
     source_ip: ipHash,
     user_agent: userAgentHash,
@@ -589,6 +603,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!report) {
     return res.status(500).json({ ok: false, error: "report_invalid" });
   }
+  let pointsBalance: number | null = null;
+  if (reporterUserId) {
+    const { data: rewardRow } = await supabase
+      .from("user_points_balances")
+      .select("points_balance")
+      .eq("user_id", reporterUserId)
+      .maybeSingle();
+    if (rewardRow && typeof rewardRow.points_balance === "number") {
+      pointsBalance = rewardRow.points_balance;
+    }
+  }
 
-  return res.status(200).json({ ok: true, report });
+  const rewards: ReportRewardSummary = {
+    awardedPoints: REPORT_COMPLETED_POINTS,
+    pointsBalance,
+  };
+
+  return res.status(200).json({ ok: true, report, rewards });
 }

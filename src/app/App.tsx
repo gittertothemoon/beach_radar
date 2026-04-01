@@ -223,6 +223,28 @@ function App() {
     BOTTOM_NAV_FALLBACK_HEIGHT_PX,
   );
 
+  const postNativeFirstPaintReady = useCallback(() => {
+    if (!shouldSkipInitialSplash) return;
+    if (nativeFirstPaintPostedRef.current) return;
+    if (typeof window === "undefined") return;
+    const browserWindow = window as Window & {
+      ReactNativeWebView?: { postMessage?: (payload: string) => void };
+      __W2B_NATIVE_APP_READY?: boolean;
+    };
+    browserWindow.__W2B_NATIVE_APP_READY = true;
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("data-native-app-ready", "1");
+    }
+    nativeFirstPaintPostedRef.current = true;
+    try {
+      browserWindow.ReactNativeWebView?.postMessage?.(
+        JSON.stringify({ type: "w2b-native-first-paint", ready: true }),
+      );
+    } catch {
+      // Ignore bridge post errors outside native shell.
+    }
+  }, [shouldSkipInitialSplash]);
+
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.style.setProperty(
@@ -333,26 +355,24 @@ function App() {
 
   useEffect(() => {
     if (!shouldSkipInitialSplash) return;
-    if (!mapReady) return;
-    if (nativeFirstPaintPostedRef.current) return;
     if (typeof window === "undefined") return;
-    const browserWindow = window as Window & {
-      ReactNativeWebView?: { postMessage?: (payload: string) => void };
-      __W2B_NATIVE_APP_READY?: boolean;
+    let firstFrame = 0;
+    let secondFrame = 0;
+    firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        postNativeFirstPaintReady();
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
     };
-    browserWindow.__W2B_NATIVE_APP_READY = true;
-    if (typeof document !== "undefined") {
-      document.documentElement.setAttribute("data-native-app-ready", "1");
-    }
-    nativeFirstPaintPostedRef.current = true;
-    try {
-      browserWindow.ReactNativeWebView?.postMessage?.(
-        JSON.stringify({ type: "w2b-native-first-paint", ready: true }),
-      );
-    } catch {
-      // Ignore bridge post errors outside native shell.
-    }
-  }, [mapReady, shouldSkipInitialSplash]);
+  }, [postNativeFirstPaintReady, shouldSkipInitialSplash]);
+
+  useEffect(() => {
+    if (!mapReady) return;
+    postNativeFirstPaintReady();
+  }, [mapReady, postNativeFirstPaintReady]);
 
   useEffect(() => {
     console.info(`Loaded spots: ${SPOTS.length}`);
