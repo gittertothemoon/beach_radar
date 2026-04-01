@@ -918,7 +918,7 @@ function App() {
   const focusBeach = useCallback(
     (
       beachId: string,
-      options?: { updateSearch?: boolean; moveMap?: boolean; solo?: boolean },
+      options?: { updateSearch?: boolean; moveMap?: boolean; solo?: boolean; openModal?: boolean },
     ) => {
       const beach = beachViewsBase.find((item) => item.id === beachId);
       if (!beach) return;
@@ -927,7 +927,9 @@ function App() {
       }
       setSelectedBeachId(beach.id);
       setSoloBeachId(options?.solo ? beach.id : null);
-      setIsLidoModalOpen(true);
+      if (options?.openModal !== false) {
+        setIsLidoModalOpen(true);
+      }
       setSheetOpen(false);
       setActiveSheetSection("map");
       const shouldMoveMap = options?.moveMap ?? true;
@@ -1005,9 +1007,13 @@ function App() {
   const handleSelectBeachFromMarker = useCallback(
     (beachId: string) => {
       selectionSourceRef.current = "marker";
-      focusBeach(beachId, { solo: true });
+      if (selectedBeachId === beachId) {
+        setIsLidoModalOpen(true);
+      } else {
+        focusBeach(beachId, { solo: true, openModal: false });
+      }
     },
-    [focusBeach],
+    [focusBeach, selectedBeachId],
   );
 
   const handleSelectSuggestion = useCallback(
