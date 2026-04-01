@@ -3,7 +3,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer, DarkTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Image, StyleSheet, View } from "react-native";
+import { Dimensions, Image, StyleSheet, View } from "react-native";
 import { AppWebScreen } from "./src/screens/AppWebScreen";
 
 export type RootStackParamList = {
@@ -11,7 +11,9 @@ export type RootStackParamList = {
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const MIN_SPLASH_VISIBLE_MS = 680;
+const MIN_SPLASH_VISIBLE_MS = 350;
+const SPLASH_LOGO_SIZE = Math.round(Dimensions.get("screen").width * 0.82);
+const IS_DEV_RUNTIME = typeof __DEV__ === "boolean" ? __DEV__ : false;
 
 void SplashScreen.setOptions({
   duration: 0,
@@ -39,10 +41,17 @@ export default function App() {
   const [mountNavigation, setMountNavigation] = useState(false);
   const bootReadyRef = useRef(false);
   const splashStartTimeRef = useRef(Date.now());
+  const initialWebReadyElapsedRef = useRef<number | null>(null);
+  const splashHiddenLoggedRef = useRef(false);
 
   const handleInitialWebReady = useCallback(() => {
     if (bootReadyRef.current) return;
     bootReadyRef.current = true;
+    const elapsed = Date.now() - splashStartTimeRef.current;
+    initialWebReadyElapsedRef.current = elapsed;
+    if (IS_DEV_RUNTIME) {
+      console.info(`[mobile:boot] inside-app-ready ${elapsed}ms`);
+    }
     setIsBootReady(true);
   }, []);
 
@@ -62,6 +71,14 @@ export default function App() {
     const timer = setTimeout(() => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
+          if (IS_DEV_RUNTIME && !splashHiddenLoggedRef.current) {
+            splashHiddenLoggedRef.current = true;
+            const totalElapsed = Date.now() - splashStartTimeRef.current;
+            const readyElapsed = initialWebReadyElapsedRef.current ?? totalElapsed;
+            console.info(
+              `[mobile:boot] splash-hidden ${totalElapsed}ms (inside-app-ready ${readyElapsed}ms)`,
+            );
+          }
           void SplashScreen.hideAsync().catch(() => {
             // Ignore splash hide errors.
           });
@@ -126,7 +143,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#020617",
   },
   bootstrapLogo: {
-    width: 360,
-    height: 360,
+    width: SPLASH_LOGO_SIZE,
+    height: SPLASH_LOGO_SIZE,
   },
 });

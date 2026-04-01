@@ -46,7 +46,22 @@ ensureExists(distAssetsDir, "dist assets");
 emptyDir(publicAppShellDir);
 emptyDir(publicAssetsDir, { keep: publicAssetsKeep });
 
-fs.copyFileSync(distIndexHtml, path.join(publicAppShellDir, "index.html"));
+// Inject modulepreload for lazy App chunk so it downloads in parallel with main entry.
+let indexHtml = fs.readFileSync(distIndexHtml, "utf8");
+const appChunk = fs.readdirSync(distAssetsDir).find((f) => /^App-[^.]+\.js$/.test(f));
+if (appChunk) {
+  const preloadTag = `<link rel="modulepreload" crossorigin href="/assets/${appChunk}">`;
+  // Insert before the closing </head> tag if not already present.
+  if (!indexHtml.includes(preloadTag)) {
+    indexHtml = indexHtml.replace("</head>", `  ${preloadTag}\n  </head>`);
+  }
+  console.log(`[sync:app-shell] injected modulepreload for ${appChunk}`);
+} else {
+  console.warn("[sync:app-shell] App chunk not found — skipping modulepreload injection");
+}
+
+const destIndexHtml = path.join(publicAppShellDir, "index.html");
+fs.writeFileSync(destIndexHtml, indexHtml, "utf8");
 copyDir(distAssetsDir, publicAssetsDir);
 
 console.log("[sync:app-shell] synced dist/index.html -> public/app-shell/index.html");
