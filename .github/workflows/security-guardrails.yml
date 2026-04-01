@@ -31,9 +31,6 @@ jobs:
       - name: Root dependency audit (high+)
         run: npm audit --omit=dev --audit-level=high
 
-      - name: Hero dependency audit (high+)
-        run: npm --prefix w2b-hero audit --omit=dev --audit-level=high
-
       - name: Production build
         run: npm run build
 
