@@ -128,6 +128,7 @@ const TUTORIAL_AVATAR_CROSSFADE_MS = 200;
 const TUTORIAL_AUTO_ADVANCE_DELAY_MS = 220;
 const TUTORIAL_CARD_TRANSITION_FROM = 0.84;
 const TUTORIAL_CARD_ESTIMATED_HEIGHT = 268;
+const INITIAL_BOOT_LOGO_SIZE = 408;
 
 const ONDA_POSE_ASSETS: Record<AvatarPose, number> = {
   idle: require("../../assets/tutorial/onda-idle.png"),
@@ -2107,6 +2108,9 @@ export const WebSurface = ({
   ]);
   const tutorialAllowsSpotlightInteraction =
     tutorialStepRequiresInteraction && Boolean(tutorialHoleRect && tutorialBackdropSegments);
+  const showBlockingInitialBootLayer = !initialPresentationReady && !error;
+  const showInlineLoadingBadge =
+    loading && hasLoadedOnce && !error && initialPresentationReady;
 
   return (
     <View style={styles.container} onLayout={handleSurfaceLayout}>
@@ -2165,7 +2169,7 @@ export const WebSurface = ({
         style={styles.webview}
       />
 
-      {!initialPresentationReady && !error ? (
+      {showBlockingInitialBootLayer ? (
         <View style={styles.initialBootLayer} pointerEvents="none">
           <Image
             source={require("../../assets/splash-icon.png")}
@@ -2175,14 +2179,15 @@ export const WebSurface = ({
         </View>
       ) : null}
 
-      {loading && hasLoadedOnce && !error ? (
-        <View style={styles.loadingLayer} pointerEvents="none">
-          <View style={styles.loadingBadge}>
+      {showInlineLoadingBadge ? (
+        <View style={styles.loadingInlineWrap} pointerEvents="none">
+          <View style={styles.loadingInlineBadge}>
             <Image
               source={require("../../assets/android-icon-foreground.png")}
-              style={styles.loadingLogo}
+              style={styles.loadingInlineLogo}
               resizeMode="contain"
             />
+            <Text style={styles.loadingInlineLabel}>Aggiornamento…</Text>
           </View>
         </View>
       ) : null}
@@ -2480,32 +2485,41 @@ const styles = StyleSheet.create({
     zIndex: 12,
   },
   initialBootLogo: {
-    width: 360,
-    height: 360,
+    width: INITIAL_BOOT_LOGO_SIZE,
+    height: INITIAL_BOOT_LOGO_SIZE,
   },
-  loadingLayer: {
+  loadingInlineWrap: {
     position: "absolute",
     left: 0,
     right: 0,
-    top: 0,
-    bottom: 0,
+    bottom: 22,
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#020617",
+    zIndex: 9,
   },
-  loadingBadge: {
-    width: 236,
-    height: 236,
-    borderRadius: 118,
+  loadingInlineBadge: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(148, 163, 184, 0.1)",
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 999,
+    backgroundColor: "rgba(2, 6, 23, 0.86)",
     borderWidth: 1,
     borderColor: "rgba(148, 163, 184, 0.24)",
+    shadowColor: "#000",
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 10,
   },
-  loadingLogo: {
-    width: 196,
-    height: 196,
+  loadingInlineLogo: {
+    width: 22,
+    height: 22,
+  },
+  loadingInlineLabel: {
+    color: "#e2e8f0",
+    fontSize: 13,
+    fontWeight: "700",
   },
   errorBox: {
     margin: 16,

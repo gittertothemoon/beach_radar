@@ -28,6 +28,36 @@ Last update: 2026-03-29 (Europe/Rome)
 ```
 
 ## Lessons
+### 2026-03-29 - IPA store/device installata sul simulatore ma non launchabile
+- Contesto: richiesta di misurare il boot della build 19 partendo dall'artefatto `.ipa` fornito dall'utente.
+- Errore commesso: rischio di considerare l'installazione riuscita via `simctl install` come prova sufficiente che la build store sia eseguibile e quindi misurabile sul simulatore.
+- Segnale ignorato: il Mach-O della build 19 e' `arm64` con `LC_BUILD_VERSION platform IOS`, non `iOS Simulator`; il launch effettivo fallisce subito con diniego SpringBoard.
+- Causa radice: su Apple Silicon un'app device puo' entrare nel catalogo app del simulatore, ma non per questo e' compatibile con il runtime simulator o avviabile per misure di boot.
+- Fix applicata: verificato metadata build (`CFBundleVersion=19`, `CFBundleShortVersionString=1.0.1`, `bundle id com.where2beach.mobile`), tentato install e launch reali, classificato blocco come `non misurabile su questa macchina`; controllo anche su device fisici collegati (`xcrun devicectl list devices`) con esito nessun device.
+- Regola permanente: per misurare una build store specifica non fermarsi mai a `ipa valida` o `install ok`; servono sempre `launch riuscito` sul simulatore oppure un device fisico con quella build.
+- Verifica eseguita: unzip IPA, `PlistBuddy`, `file`, `vtool`/`otool`, `simctl install`, `simctl launch`, log `CoreSimulator/SpringBoard`, `devicectl list devices`.
+- Guardrail futuro (test/check/alert): checklist fissa per richieste "misura build X" = 1) conferma build/versione, 2) conferma piattaforma binario, 3) prova launch reale, 4) se fallisce o manca device, dichiarare impossibilita' della misura e non sostituirla con build dev.
+
+### 2026-03-29 - Link web `/app/?key=...` scambiato per apertura app nativa
+- Contesto: verifica richiesta utente del comportamento "dal web" aprendo `https://where2beach.com/app/?key=...` su iOS simulator con app installata.
+- Errore commesso: assumere che un URL HTTPS applicativo implichi automaticamente handoff alla app nativa installata.
+- Segnale ignorato: sequenza screenshot con toolbar Safari visibile anche dopo il caricamento completo della mappa; nessuno screenshot mostrava il contenitore nativo fuori da Safari.
+- Causa radice: nel test reale il link apre la web app in Safari; non emerge handoff nativo automatico tramite universal link / smart banner / redirect a custom scheme per questo percorso.
+- Fix applicata: nessuna modifica codice in questo task; classificazione corretta del comportamento attuale come `web in Safari`, non `apertura app nativa`.
+- Regola permanente: quando si valida "apri app dal web", non basarsi sull'URL o sull'intenzione del flow; verificare sempre visivamente se sparisce Safari e se compare davvero il contenitore nativo.
+- Verifica eseguita: apertura URL via `xcrun simctl openurl booted`, sequenza screenshot temporizzati, controllo app installata + launch manuale separato riuscito.
+- Guardrail futuro (test/check/alert): se il requisito prodotto e' handoff web->app, introdurre test esplicito su device/simulator con esito binario `Safari resta visibile` vs `app nativa in foreground`.
+
+### 2026-03-29 - Loader fullscreen WebView scambiato per crash/splash bloccata su iOS
+- Contesto: simulazione locale dell'app mobile su iOS simulator con WebView che carica `/app/?native_shell=1` da Vite locale.
+- Errore commesso: interpretare subito la schermata nera con logo come crash della web app o bootstrap Expo, senza prima confrontare il render puro della stessa URL fuori dal contenitore mobile.
+- Segnale ignorato: i log WebKit indicavano page load completato e la stessa URL, aperta in browser headless, mostrava correttamente mappa, pin e bottom nav.
+- Causa radice: il contenitore `mobile/src/components/WebSurface.tsx` mostrava un loader fullscreen post-boot (`loading && hasLoadedOnce`) che su iOS poteva restare attivo piu del dovuto e coprire completamente la WebView, producendo un falso "black screen".
+- Fix applicata: separato il bootstrap bloccante iniziale dal loading successivo; mantenuto overlay pieno solo prima di `initialPresentationReady` e sostituito il loader post-boot con badge inline non bloccante.
+- Regola permanente: se una WebView iOS sembra "nera", verificare sempre in ordine 1) se la stessa URL renderizza correttamente in browser, 2) se i log indicano page load completo, 3) se un overlay nativo/mobile sta coprendo contenuto gia pronto.
+- Verifica eseguita: `npm run mobile:typecheck` PASS; screenshot simulator dopo patch con UI visibile (search bar, mappa, cluster pin, bottom nav); screenshot browser headless della stessa URL coerente.
+- Guardrail futuro (test/check/alert): evitare loader fullscreen persistenti sopra WebView dopo il first paint; i loader post-boot devono essere non bloccanti o limitati a transizioni URL esplicite.
+
 ### 2026-03-29 - Segnalazione build 15 su Privacy/Cookie durante registrazione
 - Contesto: utente mobile (build 15) ha toccato i link legali in registrazione ed e' finito sulla schermata "Cookie Policy" interna.
 - Errore commesso: trattare il report come regressione critica senza prima verificare se la schermata mostrata fosse il fallback legale previsto.

@@ -1,6 +1,6 @@
 # CODEX Working Memory
 
-Last update: 2026-03-29 21:47 (Europe/Rome)
+Last update: 2026-03-29 22:32 (Europe/Rome)
 
 ## Obiettivo condiviso
 - Massimo livello su design, funzionalita', affidabilita' reale.
@@ -47,6 +47,16 @@ Last update: 2026-03-29 21:47 (Europe/Rome)
 3. Prossimo sviluppo su feature/design con baseline verde.
 
 ## Log sintetico
+- 2026-03-29: ridotto il critical path del boot app intervenendo sul shell web dentro la WebView: `src/main.tsx` ora carica `App` eager (non piu lazy al root) e `src/app/App.tsx` segnala `w2b-native-first-paint` al primo frame utile del native shell invece di attendere `mapReady`; check verdi con `npm run check`, `npm run build` e `cd mobile && npm run typecheck`.
+- 2026-03-29: verificata l'IPA `/Users/ivanpanto/Downloads/application-78b95184-bac3-40d6-a039-b9564cbce630.ipa` come vera build 19 (`CFBundleVersion=19`, `1.0.1`, `com.where2beach.mobile`); sul simulatore Apple Silicon l'app si installa nel catalogo ma il launch viene negato da SpringBoard, quindi il boot reale della build 19 non e' misurabile da questa macchina senza iPhone fisico o build specifica per simulator.
+- 2026-03-29: verificato blocco sulla richiesta "misura build 19": nel simulatore e nel workspace non e' disponibile la build store/testflight 19; l'app installata localmente e' solo la dev build `com.where2beach.mobile` con `CFBundleVersion = 1`, senza `.ipa`/`.xcarchive` locale da installare e misurare.
+- 2026-03-29: chiarito timing del boot dell'app installata su simulator: first/cold launch osservato ~`2.9s` fino a utente dentro app e ~`3.0s` fino a splash nascosta; warm relaunch successivi osservati tra ~`1.1s` e `1.6s`.
+- 2026-03-29: testato il link web `https://where2beach.com/app/?key=...` su iOS simulator come apertura "dal web": nel test reale non ha fatto handoff all'app nativa ma ha aperto Safari e caricato la web app; timeline osservata ~`3.0s` pagina Safari bianca, ~`5.0s` splash/hero web, ~`7.3s` app usabile dentro Safari.
+- 2026-03-29: chiarito avvio app "dal web": nel repo non emerge un bottone pubblico generico web->app nativa, ma esiste deep link mobile `where2beach://open?path=...` usato nel contesto auth/native shell; l'app lo consuma in `mobile/src/screens/AppWebScreen.tsx` convertendolo in URL WebView su `/app` o `/register` con `native_shell=1`.
+- 2026-03-29: aumentato il logo di avvio nel contenitore mobile (`mobile/App.tsx`, `mobile/src/components/WebSurface.tsx`) e predisposto splash nativo piu grande in `mobile/app.json` (`expo-splash-screen.imageWidth = 220`); misurato boot locale su iPhone 16e in Expo Go: `inside-app-ready 2909ms`, `splash-hidden 2954ms`.
+- 2026-03-29: chiarita la corrispondenza tra simulatore locale e produzione mobile: il simulatore dev e' rappresentativo della UI/UX del contenitore, ma la build pubblicata punta a `https://where2beach.com` senza flag dev/mock; quindi l'utente finale vede il contenitore mobile rilasciato piu la web app live corrente servita dal dominio.
+- 2026-03-29: risolto il falso "black screen" della simulazione iOS locale: la web app su `/app/?native_shell=1` era sana, ma `mobile/src/components/WebSurface.tsx` mostrava un loader fullscreen post-boot che poteva coprire tutta la WebView; sostituito con badge inline non bloccante e verificata UI app reale sul simulator `iPhone 16e`.
+- 2026-03-29: avviata simulazione iOS locale su simulator `iPhone 16e` con `mobile/.env` puntato a `http://192.168.1.8:5173`; stack locale confermato (`vercel dev` su `:3000`, frontend su `:5173`, Metro su `:8081`) e app `com.where2beach.mobile` aperta in foreground fino alla splash screen.
 - 2026-03-29: chiarito flusso pratico App Store quando la build iOS e' gia' presente in App Store Connect/TestFlight (caso build 18): non serve nuova submit EAS; va creata/selezionata la versione App Store corretta, collegata la build esistente e inviato il version release ad App Review dalla UI di App Store Connect.
 - 2026-03-29: chiarita regola update per where2beach dopo pubblicazione su App Store: le modifiche solo lato web/API caricate dalla WebView arrivano senza nuova submit, mentre ogni cambiamento del contenitore mobile Expo/React Native va pubblicato con build+submit store; OTA Expo non risulta ancora configurato nel repo.
 - 2026-03-29: definita soglia per passaggio Apple Developer `individual -> organization`: ha senso solo quando esiste entita' legale reale e stabile (azienda/associazione/ente con D-U-N-S) e serve mostrare un nome brand/aziendale al posto del nome personale, non come workaround temporaneo di privacy.

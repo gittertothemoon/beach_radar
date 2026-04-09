@@ -1,6 +1,6 @@
 # CODEX Release Memory
 
-Last update: 2026-03-29 21:47 (Europe/Rome)
+Last update: 2026-03-29 22:28 (Europe/Rome)
 
 ## Scopo
 - Evitare di ripetere ogni volta il flusso di rilascio mobile.
@@ -25,6 +25,8 @@ Last update: 2026-03-29 21:47 (Europe/Rome)
 - Se la modifica e' solo lato sito/API servita da `https://where2beach.com` e non richiede cambiamenti nel codice mobile, l'update arriva agli utenti dentro l'app senza nuova submit App Store.
 - Se invece cambia il contenitore mobile (`mobile/`, configurazione Expo/EAS, asset nativi, permessi, plugin, SDK, logica RN/WebView), trattarlo come update store.
 - Al momento non risultano configurazioni OTA Expo esplicite (`runtimeVersion` / `updates`), quindi per modifiche del contenitore mobile usare build+submit store.
+- Il simulatore locale in dev e' utile per validare UI/UX del contenitore e integrazione WebView, ma non coincide 1:1 con produzione se usa `mobile/.env` locale o flag QA/dev (`mock_auth`, `report_anywhere`, base URL LAN). La build preview/production definita in `mobile/eas.json` punta invece a `https://where2beach.com` e non include quei flag locali.
+- Traduzione pratica: cio' che "pubblichi" su App Store e' soprattutto il contenitore mobile; cio' che l'utente "vede" dopo l'installazione e' per larga parte la web app live servita dal dominio al momento dell'apertura, salvo differenze introdotte da codice/config nativi del contenitore.
 
 ## Check rapido prima di scegliere il tipo update
 - Sono cambiati `mobile/ios/` o `mobile/android/`?
@@ -50,6 +52,12 @@ Note:
 - Al 2026-03-28 non risultano configurazioni OTA esplicite (`runtimeVersion` / `updates`).
 - Finche' non viene configurato OTA in modo esplicito e testato, usare flusso store.
 
+## Regola di misura build specifica
+- Se l'utente chiede timing/comportamento di una build store specifica (es. `build 19`), non usare la dev build del simulatore come sostituto.
+- Prima verificare la disponibilita' reale del binario da misurare: `.ipa`, `.xcarchive`, dev/preview build installata, oppure device con quella build.
+- Se nel simulatore compare `CFBundleVersion` diverso dalla build richiesta, dichiarare il blocco in modo esplicito: la misura non e' della build richiesta ma della build locale installata.
+- Se viene fornita una `.ipa` store/device e il simulatore Apple Silicon la accetta in installazione, non assumere che sia eseguibile: verificare sempre il launch reale. `install ok` nel catalogo simulator non equivale a `boot misurabile`; se SpringBoard nega l'apertura, la misura resta valida solo su device fisico o su build compilata per simulator.
+
 ## Protocollo operativo Codex
 1. Classificare il tipo modifica (OTA vs store) con il check rapido.
 2. Eseguire il flusso appropriato senza chiedere all'utente dettagli tecnici non necessari.
@@ -65,6 +73,7 @@ Note:
 - non assumere Metro su `8081`; verificare `http://127.0.0.1:<porta>/status` su `8081-8085`.
 - allineare sempre `RCT_jsLocation` alla porta reale di Metro prima del launch app.
 - usare il runner standard del repo (`npm run mobile:ios`) per mantenere sincronizzati porta Expo/Metro e simulator defaults.
+- Se stai validando splash/logo/timing in Expo Go, ricordare che non rappresenta perfettamente la splash nativa della build pubblicata: opzioni come `expo-splash-screen` e parte del comportamento splash custom richiedono development build o build store per essere validate fedelmente.
 
 ## Guardrail QA legali (build interne/TestFlight)
 - Durante registrazione, verificare tap su `Privacy` e `Cookie` almeno una volta per build.
