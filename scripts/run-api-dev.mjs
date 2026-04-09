@@ -5,6 +5,23 @@ import { pathToFileURL } from "node:url";
 import esbuild from "esbuild";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+
+// Load .env.local into process.env for local API dev
+for (const envFile of [".env.local", ".env"]) {
+  const envPath = path.join(repoRoot, envFile);
+  if (!fs.existsSync(envPath)) continue;
+  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq < 1) continue;
+    const key = trimmed.slice(0, eq).trim();
+    const val = trimmed.slice(eq + 1).trim().replace(/\\n$/, "");
+    if (key && !(key in process.env)) process.env[key] = val;
+  }
+  break;
+}
+
 const apiRoot = path.join(repoRoot, "api");
 const outdir = path.join(repoRoot, ".cache", "api-dev");
 const host = process.env.API_DEV_HOST || "127.0.0.1";

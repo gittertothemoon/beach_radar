@@ -204,7 +204,11 @@ export const submitSharedReport = async (input: {
   attribution?: AttributionSnapshot;
 }): Promise<SubmitReportResult> => {
   if (getDevMockAccount()) {
-    return { ok: true, report: buildMockReport(input) };
+    return {
+      ok: true,
+      report: buildMockReport(input),
+      rewards: { awardedPoints: 15, pointsBalance: null },
+    };
   }
 
   let response: Response;

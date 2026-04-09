@@ -37,7 +37,11 @@ const devRoutingPlugin = () => ({
           .split(";")
           .some((token) => token.trim() === ACCESS_COOKIE_TOKEN);
 
-        if (!hasAppAccessCookie) {
+        // In local dev, mock_auth=1 bypasses the gate entirely
+        const searchParams = new URLSearchParams(search);
+        const hasMockAuth = searchParams.get("mock_auth") === "1" || searchParams.get("mockAuth") === "1";
+
+        if (!hasAppAccessCookie && !hasMockAuth) {
           res.statusCode = 307
           res.setHeader("Location", "/landing/")
           res.end()

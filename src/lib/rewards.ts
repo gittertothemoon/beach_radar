@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "./supabase";
+import { getDevMockAccount } from "./devMockAuth";
 
 type ApiErrorPayload = {
   ok: false;
@@ -58,6 +59,23 @@ export type FetchAccountRewardsResult =
 export type RedeemBadgeResult =
   | { ok: true; summary: AccountRewardsSummary }
   | { ok: false; code: RedeemBadgeErrorCode };
+
+const MOCK_REWARDS_SUMMARY: AccountRewardsSummary = {
+  balance: 45,
+  pointsEarned: 60,
+  pointsSpent: 15,
+  reportPoints: 15,
+  ownedBadgesCount: 1,
+  badges: [
+    { code: "occhio_del_mare", name: "Occhio del Mare", description: "Primo esploratore della costa", icon: "eye", pointsCost: 120, owned: false, ownedAt: null, redeemable: false },
+    { code: "sentinella_costiera", name: "Sentinella Costiera", description: "Guida fidata per i bagnanti", icon: "shield", pointsCost: 120, owned: true, ownedAt: new Date().toISOString(), redeemable: false },
+    { code: "cavalcaonde", name: "Cavalcaonde", description: "Sempre in prima linea sull'onda", icon: "wave", pointsCost: 120, owned: false, ownedAt: null, redeemable: false },
+    { code: "amico_del_lido", name: "Amico del Lido", description: "Di casa in ogni spiaggia", icon: "beach", pointsCost: 120, owned: false, ownedAt: null, redeemable: false },
+    { code: "faro_del_nord", name: "Faro del Nord", description: "Luce per chi cerca il posto giusto", icon: "lighthouse", pointsCost: 120, owned: false, ownedAt: null, redeemable: false },
+    { code: "re_del_sole", name: "Re del Sole", description: "Leggenda vivente delle spiagge", icon: "sun", pointsCost: 120, owned: false, ownedAt: null, redeemable: false },
+  ],
+  couponConversion: { enabled: false, status: "coming_soon", message: "Presto potrai convertire i punti in coupon per sconti e omaggi dai partner." },
+};
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -216,6 +234,10 @@ const mapStatusToRedeemError = (
 };
 
 export const fetchAccountRewards = async (): Promise<FetchAccountRewardsResult> => {
+  if (getDevMockAccount()) {
+    return { ok: true, summary: MOCK_REWARDS_SUMMARY };
+  }
+
   const authToken = await loadAuthToken();
   if (!authToken) {
     return { ok: false, code: "account_required" };
@@ -254,6 +276,23 @@ export const redeemBadge = async (badgeCode: string): Promise<RedeemBadgeResult>
   const trimmedBadgeCode = badgeCode.trim();
   if (!trimmedBadgeCode) {
     return { ok: false, code: "invalid_badge_code" };
+  }
+
+  if (getDevMockAccount()) {
+    const badge = MOCK_REWARDS_SUMMARY.badges.find((b) => b.code === trimmedBadgeCode);
+    if (!badge) return { ok: false, code: "badge_not_found" };
+    if (badge.owned) return { ok: false, code: "badge_already_owned" };
+    if (MOCK_REWARDS_SUMMARY.balance < badge.pointsCost) return { ok: false, code: "insufficient_points" };
+    const updated: AccountRewardsSummary = {
+      ...MOCK_REWARDS_SUMMARY,
+      balance: MOCK_REWARDS_SUMMARY.balance - badge.pointsCost,
+      pointsSpent: MOCK_REWARDS_SUMMARY.pointsSpent + badge.pointsCost,
+      ownedBadgesCount: MOCK_REWARDS_SUMMARY.ownedBadgesCount + 1,
+      badges: MOCK_REWARDS_SUMMARY.badges.map((b) =>
+        b.code === trimmedBadgeCode ? { ...b, owned: true, ownedAt: new Date().toISOString(), redeemable: false } : b,
+      ),
+    };
+    return { ok: true, summary: updated };
   }
 
   const authToken = await loadAuthToken();
