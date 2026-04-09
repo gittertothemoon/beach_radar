@@ -3,12 +3,16 @@ import { STRINGS } from "../i18n/it";
 
 type ReportThanksModalProps = {
   isOpen: boolean;
+  awardedPoints?: number;
+  newBalance?: number | null;
   onClose: () => void;
   onShare: () => void;
 };
 
 const ReportThanksModal = ({
   isOpen,
+  awardedPoints,
+  newBalance,
   onClose,
   onShare,
 }: ReportThanksModalProps) => {
@@ -47,6 +51,8 @@ const ReportThanksModal = ({
 
   if (!isOpen) return null;
 
+  const hasReward = typeof awardedPoints === "number" && awardedPoints > 0;
+
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
       <div
@@ -58,8 +64,9 @@ const ReportThanksModal = ({
       >
         <div className="pointer-events-none absolute -right-24 -top-20 h-44 w-44 rounded-full bg-white/5 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -left-16 h-48 w-48 rounded-full bg-white/5 blur-3xl" />
+
         <div className="relative z-10 flex items-start gap-3">
-          <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-100">
+          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-100">
             <svg
               viewBox="0 0 24 24"
               aria-hidden="true"
@@ -71,7 +78,7 @@ const ReportThanksModal = ({
               <path d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="text-[15px] font-semibold">
               {STRINGS.report.thanksPrompt}
             </div>
@@ -80,6 +87,27 @@ const ReportThanksModal = ({
             </div>
           </div>
         </div>
+
+        {hasReward ? (
+          <div className="relative z-10 mt-4 rounded-[14px] border border-emerald-300/25 bg-emerald-500/12 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/25 text-[14px]">
+                  ⭐
+                </span>
+                <span className="text-[14px] font-semibold text-emerald-100">
+                  {STRINGS.account.reportThanksPointsEarned(awardedPoints)}
+                </span>
+              </div>
+              {typeof newBalance === "number" ? (
+                <span className="text-[12px] text-emerald-200/80">
+                  {STRINGS.account.reportThanksNewBalance(newBalance)}
+                </span>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
         <div className="relative z-10 mt-4 flex items-center justify-between">
           <button
             type="button"

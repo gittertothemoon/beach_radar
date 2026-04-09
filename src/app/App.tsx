@@ -195,6 +195,7 @@ function App() {
   const [rewardsLoading, setRewardsLoading] = useState(false);
   const [redeemingBadgeCode, setRedeemingBadgeCode] = useState<string | null>(null);
   const [reportThanksOpen, setReportThanksOpen] = useState(false);
+  const [lastReportReward, setLastReportReward] = useState<{ awardedPoints: number; newBalance: number | null } | null>(null);
   const [reportsFeedReady, setReportsFeedReady] = useState(false);
   const [showLimitedDataNotice, setShowLimitedDataNotice] = useState(false);
   const [debugToast, setDebugToast] = useState<string | null>(null);
@@ -822,6 +823,7 @@ function App() {
     setReportOpen,
     setReportThanksOpen,
     onReportSubmitted: ({ awardedPoints, pointsBalance }) => {
+      setLastReportReward({ awardedPoints, newBalance: pointsBalance ?? null });
       setRewardsSummary((prev) => {
         if (!prev) return prev;
         return {
@@ -1550,7 +1552,9 @@ function App() {
         <Suspense fallback={null}>
           <ReportThanksModal
             isOpen={reportThanksOpen}
-            onClose={() => setReportThanksOpen(false)}
+            awardedPoints={lastReportReward?.awardedPoints}
+            newBalance={lastReportReward?.newBalance}
+            onClose={() => { setReportThanksOpen(false); setLastReportReward(null); }}
             onShare={handleShareFromThanks}
           />
         </Suspense>

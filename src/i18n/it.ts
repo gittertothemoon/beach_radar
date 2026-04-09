@@ -290,16 +290,23 @@ export const STRINGS = {
     rewardsUnavailable: "Saldo non disponibile al momento.",
     reportPointsHint: (points: number) =>
       `Ogni segnalazione completata vale ${points} punti.`,
+    reportThanksPointsEarned: (pts: number) => `+${pts} pt guadagnati`,
+    reportThanksNewBalance: (balance: number) => `Saldo: ${balance} pt`,
+    badgeStoreTitle: "Store badge",
+    badgeStoreEmpty: "Nessun badge disponibile al momento.",
+    storeProgressHint: (needed: number) =>
+      `Ti mancano ${needed} pt per il prossimo badge`,
+    couponStoreTitle: "Coupon & sconti",
     couponComingSoon:
-      "Presto potrai convertire i punti anche in coupon per sconti e omaggi.",
-    badgeRedeemAction: "Riscatta badge",
+      "Presto potrai convertire i punti in coupon per sconti e omaggi dai partner.",
+    badgeRedeemAction: "Riscatta",
     badgeRedeemingAction: "Riscatto...",
-    badgeOwned: "Riscattato",
+    badgeOwned: "Ottenuto",
     rewardsLoadFailed: "Non riesco a caricare il saldo punti ora. Riprova tra poco.",
     badgeRedeemSuccess: "Badge riscattato con successo.",
     badgeRedeemInsufficientPoints:
       "Punti insufficienti per questo badge. Continua a segnalare.",
-    badgeRedeemAlreadyOwned: "Hai gia riscattato questo badge.",
+    badgeRedeemAlreadyOwned: "Hai già riscattato questo badge.",
     badgeRedeemNotFound: "Badge non disponibile.",
     badgeRedeemFailed: "Non riesco a riscattare il badge ora. Riprova tra poco.",
     settingsTitle: "Preferenze",
