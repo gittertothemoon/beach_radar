@@ -826,25 +826,22 @@ function App() {
       setLastReportReward({ awardedPoints, newBalance: pointsBalance ?? null });
       setRewardsSummary((prev) => {
         if (!prev) return prev;
+        const newBalance =
+          typeof pointsBalance === "number"
+            ? Math.max(0, Math.round(pointsBalance))
+            : prev.balance + awardedPoints;
         return {
           ...prev,
-          balance:
-            typeof pointsBalance === "number"
-              ? Math.max(0, Math.round(pointsBalance))
-              : prev.balance + awardedPoints,
+          balance: newBalance,
           pointsEarned: prev.pointsEarned + awardedPoints,
           badges: prev.badges.map((badge) => ({
             ...badge,
-            redeemable: !badge.owned &&
-              (typeof pointsBalance === "number"
-                ? pointsBalance >= badge.pointsCost
-                : prev.balance + awardedPoints >= badge.pointsCost),
+            redeemable: !badge.owned && newBalance >= badge.pointsCost,
           })),
         };
       });
-      if (profileOpen) {
-        void refreshRewards({ silent: true });
-      }
+      // Always refresh from DB after a report to keep all counters in sync
+      void refreshRewards({ silent: true });
     },
   });
   const selectedOverride = selectedBeachId ? overrides[selectedBeachId] : null;
