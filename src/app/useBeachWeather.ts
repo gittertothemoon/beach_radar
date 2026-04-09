@@ -30,6 +30,8 @@ export const useBeachWeather = ({
     Record<string, WeatherCacheEntry>
   >({});
   const weatherByKeyRef = useRef<Record<string, WeatherCacheEntry>>({});
+  const [retryKey, setRetryKey] = useState(0);
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     weatherByKeyRef.current = weatherByKey;
@@ -117,12 +119,19 @@ export const useBeachWeather = ({
             },
           };
         });
+        retryTimeoutRef.current = setTimeout(() => {
+          setRetryKey((k) => k + 1);
+        }, 10_000);
       });
 
     return () => {
       controller.abort();
+      if (retryTimeoutRef.current !== null) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
     };
-  }, [selectedBeachLat, selectedBeachLng, selectedWeatherKey]);
+  }, [selectedBeachLat, selectedBeachLng, selectedWeatherKey, retryKey]);
 
   return {
     selectedWeather,
