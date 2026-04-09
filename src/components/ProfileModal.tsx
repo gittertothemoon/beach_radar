@@ -92,16 +92,17 @@ const ProfileModal = ({
     nextUnowned && rewards ? nextUnowned.pointsCost - rewards.balance : null;
 
   return (
-    <div className="fixed inset-0 z-[75] flex items-center justify-center bg-black/78 px-4">
+    <div className="fixed inset-0 z-[75] flex items-end justify-center bg-black/78 px-0 pb-0 sm:items-center sm:px-4">
       <div
         ref={containerRef}
         role="dialog"
         aria-modal="true"
         aria-label={STRINGS.account.profileTitle}
-        className="flex max-h-[90dvh] w-full max-w-[420px] flex-col overflow-hidden rounded-[20px] border border-white/18 bg-[rgba(7,10,14,0.96)] shadow-[0_24px_70px_-30px_rgba(0,0,0,0.82)]"
+        className="flex w-full max-w-[420px] flex-col overflow-hidden rounded-t-[24px] border border-white/18 bg-[rgba(7,10,14,0.96)] shadow-[0_24px_70px_-30px_rgba(0,0,0,0.82)] sm:rounded-[20px]"
+        style={{ maxHeight: "calc(90 * var(--svh, 1vh))" }}
       >
-        {/* Scrollable body */}
-        <div className="overflow-y-auto px-5 pb-5 pt-4">
+        {/* Scrollable body — min-h-0 ensures it shrinks inside flex parent */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[env(safe-area-inset-bottom,16px)] pt-4">
 
           {/* Header */}
           <div className="flex items-center justify-between">
