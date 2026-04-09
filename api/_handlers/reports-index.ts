@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { readTestModeStore, updateTestModeStore } from "./test-mode-store.js";
@@ -508,7 +508,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return { duplicate: true as const, row: null as ReportRow | null };
         }
 
-        const id = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        const id = randomUUID();
         const row: ReportRow = {
           id,
           beach_id: beachId,

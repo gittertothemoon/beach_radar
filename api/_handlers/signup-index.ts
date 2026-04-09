@@ -279,12 +279,9 @@ function hashToken(token: string): string {
 
 function withDebug(error: { message?: string; code?: string | null; details?: string | null; hint?: string | null }) {
   if (process.env.SIGNUP_DEBUG !== "1" && process.env.WAITLIST_DEBUG !== "1") return undefined;
-  return {
-    message: error.message,
-    code: error.code,
-    details: error.details,
-    hint: error.hint
-  };
+  // Log full error server-side only; never expose DB internals to the client
+  console.error("[signup debug]", { message: error.message, code: error.code, details: error.details, hint: error.hint });
+  return { code: error.code ?? undefined };
 }
 
 function buildConfirmUrl(baseUrl: string, token: string): string {
