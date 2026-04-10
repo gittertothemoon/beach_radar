@@ -2,6 +2,9 @@ import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { fetchSharedReports } from "../lib/reports";
 import type { Report } from "../lib/types";
 
+// Must match server DEFAULT_REPORTS_LOOKBACK_HOURS
+const LOOKBACK_MS = 6 * 60 * 60 * 1000;
+
 type UseReportsFeedInput = {
   setReports: Dispatch<SetStateAction<Report[]>>;
   setReportsFeedReady: Dispatch<SetStateAction<boolean>>;
@@ -34,7 +37,20 @@ export const useReportsFeed = ({
       if (!active) return;
 
       if (result.ok) {
-        setReports(result.reports);
+        setReports((prev) => {
+          // Merge: server reports are authoritative, but keep locally-submitted
+          // reports that aren't yet reflected in the server response (CDN cache lag).
+          // They're dropped naturally once the server confirms them (same id) or
+          // once they fall outside the lookback window.
+          const serverIds = new Set(result.reports.map((r) => r.id));
+          const cutoff = Date.now() - LOOKBACK_MS;
+          const localOnly = prev.filter(
+            (r) => !serverIds.has(r.id) && r.createdAt >= cutoff,
+          );
+          return localOnly.length > 0
+            ? [...result.reports, ...localOnly]
+            : result.reports;
+        });
         reportsFeedReadyRef.current = true;
         setReportsFeedReady(true);
         reportsUnavailableToastShownRef.current = false;

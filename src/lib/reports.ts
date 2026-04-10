@@ -146,6 +146,11 @@ const toApiErrorPayload = (value: unknown): ApiErrorPayload | null => {
   };
 };
 
+// In-memory mock store — persists submitted reports across poll cycles in dev mode.
+// Reports older than MOCK_LOOKBACK_MS are automatically pruned on each fetch.
+const MOCK_LOOKBACK_MS = 6 * 60 * 60 * 1000; // matches REPORTS_LOOKBACK_HOURS default
+let mockReports: Report[] = [];
+
 const buildMockReport = (input: {
   beachId: string;
   crowdLevel: CrowdLevel;
@@ -169,6 +174,12 @@ const buildMockReport = (input: {
 export const fetchSharedReports = async (
   signal?: AbortSignal,
 ): Promise<FetchReportsResult> => {
+  if (getDevMockAccount()) {
+    const cutoff = Date.now() - MOCK_LOOKBACK_MS;
+    mockReports = mockReports.filter((r) => r.createdAt >= cutoff);
+    return { ok: true, reports: mockReports };
+  }
+
   let response: Response;
   try {
     response = await fetch("/api/reports", { method: "GET", signal });
@@ -204,9 +215,11 @@ export const submitSharedReport = async (input: {
   attribution?: AttributionSnapshot;
 }): Promise<SubmitReportResult> => {
   if (getDevMockAccount()) {
+    const report = buildMockReport(input);
+    mockReports = [report, ...mockReports];
     return {
       ok: true,
-      report: buildMockReport(input),
+      report,
       rewards: { awardedPoints: 15, pointsBalance: null },
     };
   }
