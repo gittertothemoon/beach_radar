@@ -68,12 +68,15 @@ const ReportThanksModal = ({
         <div className="relative z-10 flex items-start gap-3">
           <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-100">
             <svg
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               aria-hidden="true"
-              className="h-5 w-5"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
               <path d="M5 13l4 4L19 7" />
             </svg>
@@ -93,7 +96,7 @@ const ReportThanksModal = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/25 text-emerald-200">
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M12 2l2.9 6.26 6.1.55-4.5 3.93 1.38 6.26L12 15.77l-5.88 3.23 1.38-6.26L3 8.81l6.1-.55L12 2z" />
                   </svg>
                 </span>
