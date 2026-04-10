@@ -950,18 +950,30 @@ function App() {
         Number.isFinite(beach.lat) &&
         Number.isFinite(beach.lng)
       ) {
-        const offsetY = Math.round(map.getSize().y * 0.25);
+        const zoom = BEACH_FOCUS_ZOOM;
         const currentZoom = map.getZoom();
         const zoomDelta = Number.isFinite(currentZoom)
-          ? Math.max(0, BEACH_FOCUS_ZOOM - currentZoom)
+          ? Math.max(0, zoom - currentZoom)
           : 0;
         const flyDuration = Math.min(3.2, Math.max(1.4, 0.8 + zoomDelta * 0.15));
-        map.once("moveend", () => {
-          if (offsetY) {
-            map.panBy([0, -offsetY], { animate: true });
-          }
-        });
-        map.flyTo([beach.lat, beach.lng], BEACH_FOCUS_ZOOM, {
+
+        // Place pin at ~37% from top (same logic as reframeSelectedBeachForSoloView)
+        // so it sits above the weather widget and overlay buttons.
+        const size = map.getSize();
+        const targetX = size.x * 0.5;
+        const topSafeY = Math.max(170, size.y * 0.24);
+        const bottomSafeY = size.y - Math.max(400, size.y * 0.48);
+        const preferredY = size.y * 0.37;
+        const targetY = Math.max(topSafeY, Math.min(bottomSafeY, preferredY));
+
+        const pinProjected = map.project([beach.lat, beach.lng], zoom);
+        const centerProjected = pinProjected.add([
+          size.x / 2 - targetX,
+          size.y / 2 - targetY,
+        ]);
+        const center = map.unproject(centerProjected, zoom);
+
+        map.flyTo(center, zoom, {
           animate: true,
           duration: flyDuration,
           easeLinearity: 0.25,
