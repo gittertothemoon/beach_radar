@@ -66,15 +66,15 @@ const ReportThanksModal = ({
         <div className="pointer-events-none absolute -bottom-24 -left-16 h-48 w-48 rounded-full bg-white/5 blur-3xl" />
 
         <div className="relative z-10 flex items-start gap-3">
-          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/5 text-slate-100">
+          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-300/30 bg-emerald-500/20">
             <svg
               width="20"
               height="20"
               viewBox="0 0 24 24"
               aria-hidden="true"
               fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
+              stroke="#6ee7b7"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
