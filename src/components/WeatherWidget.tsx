@@ -1,5 +1,6 @@
 import { memo } from "react";
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
+import { useLanguageRefresh } from "../i18n/useLanguageRefresh";
 import type { BeachWeatherSnapshot } from "../lib/weather";
 
 type WeatherWidgetProps = {
@@ -25,6 +26,7 @@ const WeatherWidgetComponent = ({
   weatherUnavailable,
   onOpenDetails,
 }: WeatherWidgetProps) => {
+  useLanguageRefresh();
   return (
     <button
       type="button"

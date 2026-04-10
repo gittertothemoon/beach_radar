@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
 import type { ActiveBadge } from "../lib/activeBadge";
 import BadgeIcon from "./BadgeIcon";
 
@@ -103,7 +103,9 @@ const ProfileModal = ({
                 {activeBadge ? (
                   <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/35 bg-amber-500/15 px-2 py-0.5">
                     <BadgeIcon icon={activeBadge.icon} size={13} className="text-amber-200/90" />
-                    <span className="text-[10px] font-semibold text-amber-200/90">{activeBadge.name}</span>
+                    <span className="text-[10px] font-semibold text-amber-200/90">
+                      {STRINGS.badges[activeBadge.code as keyof typeof STRINGS.badges]?.name ?? activeBadge.name}
+                    </span>
                   </span>
                 ) : null}
               </div>

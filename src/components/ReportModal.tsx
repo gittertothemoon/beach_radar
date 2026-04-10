@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CrowdLevel, WaterLevel, BeachLevel } from "../lib/types";
 import type { LatLng } from "../lib/geo";
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
 
 const RADIUS_M = 700;
 

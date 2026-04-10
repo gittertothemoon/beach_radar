@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
+import { useLanguageRefresh } from "../i18n/useLanguageRefresh";
 
 type ReviewModalProps = {
     isOpen: boolean;
@@ -16,6 +17,7 @@ const ReviewModalComponent = ({
     onClose,
     onSubmit,
 }: ReviewModalProps) => {
+    useLanguageRefresh();
     const [content, setContent] = useState("");
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);

@@ -1,4 +1,4 @@
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
 
 export type BeachWeatherCurrent = {
   ts: number;

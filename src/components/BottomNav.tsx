@@ -1,4 +1,6 @@
 import { memo, useEffect, useRef } from "react";
+import { STRINGS } from "../i18n/strings";
+import { useLanguageRefresh } from "../i18n/useLanguageRefresh";
 
 type BottomSheetSection = "map" | "profile" | "chatbot" | "rewards";
 
@@ -87,6 +89,7 @@ const BottomNavComponent = ({
   onChange,
   onHeightChange,
 }: BottomNavProps) => {
+  useLanguageRefresh();
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -113,7 +116,7 @@ const BottomNavComponent = ({
   return (
     <div ref={containerRef}>
       <nav
-        aria-label="Navigazione app"
+        aria-label={STRINGS.nav.ariaLabel}
         className="px-3 pb-[max(env(safe-area-inset-bottom),8px)] pt-1"
       >
         <div className="grid grid-cols-4 gap-1">
@@ -124,7 +127,7 @@ const BottomNavComponent = ({
             className={navItemClass(activeSection === "map")}
           >
             <MapIcon active={activeSection === "map"} />
-            <span>Mappa</span>
+            <span>{STRINGS.nav.map}</span>
           </button>
           <button
             type="button"
@@ -142,7 +145,7 @@ const BottomNavComponent = ({
             className={navItemClass(activeSection === "rewards")}
           >
             <RewardsIcon active={activeSection === "rewards"} />
-            <span>Premi</span>
+            <span>{STRINGS.nav.rewards}</span>
           </button>
           <button
             type="button"
@@ -152,7 +155,7 @@ const BottomNavComponent = ({
           >
             <ProfileIcon active={activeSection === "profile"} />
             <span className="inline-flex items-center gap-1.5">
-              <span>Profilo</span>
+              <span>{STRINGS.nav.profile}</span>
               {accountEmail ? (
                 <span
                   className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_0_1px_rgba(16,185,129,0.28),0_0_7px_rgba(16,185,129,0.32)]"

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
 
 type ReportThanksModalProps = {
   isOpen: boolean;

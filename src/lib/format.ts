@@ -1,4 +1,4 @@
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
 import type { BeachState } from "./types";
 
 export const formatMinutesAgo = (updatedAt: number | null, now: number) => {

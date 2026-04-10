@@ -1,4 +1,4 @@
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
 import { track } from "../lib/analytics";
 import { crowdLevelLabel } from "../lib/format";
 import type { BeachState, CrowdLevel } from "../lib/types";

@@ -1,5 +1,5 @@
 import type { BeachWithStats } from "../lib/types";
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
 import {
   crowdLabel,
   formatConfidence,

@@ -12,7 +12,8 @@ import type {
   ReactNode,
 } from "react";
 import type { BeachWithStats } from "../lib/types";
-import { STRINGS } from "../i18n/it";
+import { STRINGS, applyLanguage } from "../i18n/strings";
+import { useLanguageRefresh } from "../i18n/useLanguageRefresh";
 import BottomNav from "./BottomNav";
 import RewardsSheet from "./RewardsSheet";
 import {
@@ -31,7 +32,6 @@ import {
   readInterests,
   readPreferredLanguage,
   writeInterests,
-  writePreferredLanguage,
 } from "../lib/accountPreferences";
 import { PUBLIC_BASE_URL } from "../config/publicUrl";
 import {
@@ -175,6 +175,7 @@ const BeachRowComponent = ({
   onSelectBeach,
   onToggleFavorite,
 }: BeachRowProps) => {
+  useLanguageRefresh();
   const handleClick = useCallback(() => onSelectBeach(beach.id), [onSelectBeach, beach.id]);
   const handleToggleFavorite = useCallback(
     () => onToggleFavorite(beach.id),
@@ -333,6 +334,7 @@ const BottomSheetComponent = ({
 }: BottomSheetProps) => {
   type SettingsPanel = "language" | "interests" | null;
 
+  useLanguageRefresh();
   const perfEnabled = isPerfEnabled();
   useRenderCounter("BottomSheet", perfEnabled);
   const [dragProgress, setDragProgress] = useState<number | null>(null);
@@ -503,9 +505,10 @@ const BottomSheetComponent = ({
   }, []);
 
   const updatePreferredLanguage = useCallback((nextLanguage: PreferredLanguage) => {
+    if (nextLanguage === preferredLanguage) return;
+    applyLanguage(nextLanguage);
     setPreferredLanguage(nextLanguage);
-    writePreferredLanguage(nextLanguage);
-  }, []);
+  }, [preferredLanguage]);
 
   const toggleInterest = useCallback((interestId: InterestId) => {
     setInterestIds((prev) => {
@@ -1150,7 +1153,7 @@ const BottomSheetComponent = ({
               {settingsPanel === "interests" ? (
                 <section className="rounded-2xl border border-white/16 bg-white/8 p-3 backdrop-blur-md">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.1em] br-text-tertiary">
-                    Interessi profilo
+                    {STRINGS.interests.title}
                   </div>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {INTEREST_OPTIONS.map((option) => {
@@ -1167,7 +1170,7 @@ const BottomSheetComponent = ({
                               : "border-white/18 bg-white/5 br-text-secondary"
                           }`}
                         >
-                          {option.label}
+                          {STRINGS.interests[option.id as keyof typeof STRINGS.interests] ?? option.label}
                         </button>
                       );
                     })}

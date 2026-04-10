@@ -1,6 +1,6 @@
 import { type CSSProperties, type FormEvent, useEffect, useMemo, useState } from "react";
 import logo from "../assets/logo.png";
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
 import { PUBLIC_BASE_URL } from "../config/publicUrl";
 import {
   getAppSessionErrorMessage,

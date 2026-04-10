@@ -6,7 +6,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
+import { useLanguageRefresh } from "../i18n/useLanguageRefresh";
 import { isPerfEnabled, useRenderCounter } from "../lib/perf";
 import { normalizeSearchText, useDebouncedValue } from "../lib/search";
 
@@ -40,6 +41,7 @@ const TopSearchComponent = ({
   onSelectSuggestion,
   onSubmitQuery,
 }: TopSearchProps) => {
+  useLanguageRefresh();
   const perfEnabled = isPerfEnabled();
   useRenderCounter("TopSearch", perfEnabled);
   const containerRef = useRef<HTMLDivElement | null>(null);

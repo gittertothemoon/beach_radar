@@ -362,6 +362,7 @@ export const STRINGS = {
     passwordMismatch: "Le password non coincidono.",
     consentRequired: "Devi accettare privacy e cookie policy per continuare.",
     created: "Account creato. Ora puoi salvare i preferiti.",
+    comingSoon: "Prossimamente",
   },
   chatbot: {
     title: "ONDA",
@@ -418,6 +419,28 @@ export const STRINGS = {
   hints: {
     showAllPins:
       "Stai vedendo solo questo lido. Tocca \"Mostra tutti i pin\" per rivedere l'elenco completo.",
+  },
+  badges: {
+    occhio_del_mare: { name: "Occhio del Mare", description: "Primo esploratore della costa" },
+    sentinella_costiera: { name: "Sentinella Costiera", description: "Guida fidata per i bagnanti" },
+    cavalcaonde: { name: "Cavalcaonde", description: "Sempre in prima linea sull'onda" },
+    amico_del_lido: { name: "Amico del Lido", description: "Di casa in ogni spiaggia" },
+    faro_del_nord: { name: "Faro del Nord", description: "Luce per chi cerca il posto giusto" },
+    re_del_sole: { name: "Re del Sole", description: "Leggenda vivente delle spiagge" },
+  },
+  nav: {
+    ariaLabel: "Navigazione app",
+    map: "Mappa",
+    rewards: "Premi",
+    profile: "Profilo",
+  },
+  interests: {
+    title: "Interessi profilo",
+    family: "Famiglie",
+    surf: "Surf e sport",
+    relax: "Relax",
+    food: "Food & drink",
+    events: "Eventi",
   },
   debug: {
     title: "Debug",

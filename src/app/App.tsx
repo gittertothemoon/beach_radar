@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import type { Map as LeafletMap } from "leaflet";
 import MapView from "../components/MapView";
 import TopSearch from "../components/TopSearch";
@@ -7,7 +7,7 @@ import WeatherWidget from "../components/WeatherWidget";
 import logo from "../assets/logo.png";
 import splashBg from "../assets/initial-bg.png";
 import { SPOTS, hasFiniteCoords } from "../data/spots";
-import { STRINGS } from "../i18n/it";
+import { STRINGS, subscribeToLanguage } from "../i18n/strings";
 import {
   aggregateBeachStatsFromIndex,
   buildReportsIndex,
@@ -134,6 +134,10 @@ const BadgeCelebrationModal = lazy(() => import("../components/BadgeCelebrationM
 type ToastTone = "info" | "success" | "error";
 
 function App() {
+  // Re-render when language changes (applyLanguage notifies subscribers)
+  const [, forceUpdateLang] = useReducer((x: number) => x + 1, 0);
+  useEffect(() => subscribeToLanguage(forceUpdateLang), []);
+
   const shouldSkipInitialSplash = useMemo(() => {
     if (typeof window === "undefined") return false;
     const params = new URLSearchParams(window.location.search);
@@ -517,10 +521,13 @@ function App() {
         // Find the redeemed badge to auto-equip and celebrate
         const redeemedBadge = result.summary.badges.find((b) => b.code === badgeCode);
         if (redeemedBadge) {
-          const newActive: ActiveBadge = { code: redeemedBadge.code, icon: redeemedBadge.icon, name: redeemedBadge.name };
+          const locale = STRINGS.badges[redeemedBadge.code as keyof typeof STRINGS.badges];
+          const localizedName = locale?.name ?? redeemedBadge.name;
+          const localizedDesc = locale?.description ?? redeemedBadge.description;
+          const newActive: ActiveBadge = { code: redeemedBadge.code, icon: redeemedBadge.icon, name: localizedName };
           saveActiveBadge(newActive);
           setActiveBadge(newActive);
-          setCelebrationBadge({ ...newActive, description: redeemedBadge.description });
+          setCelebrationBadge({ ...newActive, description: localizedDesc });
         }
         return;
       }

@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef } from "react";
+import { useLanguageRefresh } from "../i18n/useLanguageRefresh";
 import type { BeachProfile, BeachWithStats, Review } from "../lib/types";
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
 import {
   crowdLevelLabel,
   formatConfidence,
@@ -171,6 +172,7 @@ const LidoModalCardComponent = ({
   onShare,
   onWriteReview,
 }: LidoModalCardProps) => {
+  useLanguageRefresh();
   const perfEnabled = isPerfEnabled();
   useRenderCounter("LidoModalCard", perfEnabled);
   const dialogRef = useRef<HTMLDivElement | null>(null);

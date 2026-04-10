@@ -1,4 +1,4 @@
-import { STRINGS } from "../i18n/it";
+import { STRINGS } from "../i18n/strings";
 import type { AccountRewardsSummary } from "../lib/rewards";
 import type { ActiveBadge } from "../lib/activeBadge";
 import BadgeIcon from "./BadgeIcon";
@@ -103,6 +103,9 @@ const RewardsSheet = ({
               const isRedeeming = redeemingBadgeCode === badge.code;
               const redeemDisabled = isRedeeming || !badge.redeemable;
               const isActive = activeBadge?.code === badge.code;
+              const locale = STRINGS.badges[badge.code as keyof typeof STRINGS.badges];
+              const badgeName = locale?.name ?? badge.name;
+              const badgeDescription = locale?.description ?? badge.description;
               return (
                 <div
                   key={badge.code}
@@ -142,17 +145,17 @@ const RewardsSheet = ({
                     )}
                   </div>
                   <div className="mt-2 text-[12px] font-semibold leading-tight br-text-primary">
-                    {badge.name}
+                    {badgeName}
                   </div>
                   <div className="mt-0.5 text-[10px] leading-snug br-text-tertiary">
-                    {badge.description}
+                    {badgeDescription}
                   </div>
                   {badge.owned ? (
                     !isActive ? (
                       <div className="mt-2.5">
                         <button
                           type="button"
-                          onClick={() => onEquipBadge({ code: badge.code, icon: badge.icon, name: badge.name })}
+                          onClick={() => onEquipBadge({ code: badge.code, icon: badge.icon, name: badgeName })}
                           className="br-press w-full rounded-full border border-white/20 bg-white/8 py-1.5 text-[11px] font-semibold text-slate-300 transition-colors hover:border-amber-300/40 hover:text-amber-100 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
                         >
                           {STRINGS.account.badgeEquipAction}
@@ -197,7 +200,7 @@ const RewardsSheet = ({
             {STRINGS.account.couponStoreTitle}
           </div>
           <span className="rounded-full border border-slate-600/50 bg-black/40 px-2 py-0.5 text-[9px] font-semibold text-slate-500">
-            Prossimamente
+            {STRINGS.account.comingSoon}
           </span>
         </div>
         <div className="mt-2 text-[11px] leading-relaxed text-slate-500">
