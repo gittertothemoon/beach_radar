@@ -1478,17 +1478,14 @@ function App() {
         {soloBeachId ? (
           <div className="pointer-events-auto flex flex-col items-end gap-2">
             {showAllPinsHint ? (
-              <div className="max-w-[260px] rounded-xl border border-amber-200/45 bg-amber-500/20 px-3 py-2 text-right text-[12px] font-medium text-amber-50 shadow-[0_10px_24px_rgba(0,0,0,0.35)] backdrop-blur-[18px]">
+              <div className="max-w-[240px] rounded-[14px] border border-amber-300/60 bg-[rgba(30,20,4,0.88)] px-3.5 py-2.5 text-right text-[12px] font-medium leading-snug text-amber-100 shadow-[0_12px_28px_rgba(0,0,0,0.55)] backdrop-blur-md">
                 {STRINGS.hints.showAllPins}
               </div>
             ) : null}
             <button
               type="button"
               onClick={handleShowAllPins}
-              className={`br-press rounded-full border px-4 py-2 text-[12px] font-semibold text-slate-100 backdrop-blur-[20px] transition focus-visible:outline-none focus-visible:ring-1 ${showAllPinsHint
-                ? "border-amber-300/70 ring-1 ring-amber-300/60"
-                : "border-white/26 bg-[linear-gradient(180deg,rgba(26,40,64,0.4),rgba(12,23,41,0.48))] hover:border-white/36 focus-visible:ring-white/25"
-                }`}
+              className="br-press rounded-full border border-white/30 bg-[rgba(10,14,22,0.82)] px-4 py-2 text-[12px] font-semibold text-slate-100 shadow-[0_8px_20px_rgba(0,0,0,0.5)] backdrop-blur-md transition hover:border-white/45 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
             >
               {STRINGS.actions.showAllPins}
             </button>
