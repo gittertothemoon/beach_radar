@@ -5,7 +5,6 @@ type BottomSheetSection = "map" | "profile" | "chatbot" | "rewards";
 type BottomNavProps = {
   activeSection: BottomSheetSection;
   accountEmail: string | null;
-  rewardsBalance: number | null;
   onChange: (section: BottomSheetSection) => void;
   onHeightChange?: (height: number) => void;
 };
@@ -85,7 +84,6 @@ const RewardsIcon = ({ active }: { active: boolean }) => (
 const BottomNavComponent = ({
   activeSection,
   accountEmail,
-  rewardsBalance,
   onChange,
   onHeightChange,
 }: BottomNavProps) => {
@@ -144,12 +142,7 @@ const BottomNavComponent = ({
             className={navItemClass(activeSection === "rewards")}
           >
             <RewardsIcon active={activeSection === "rewards"} />
-            <span className="inline-flex items-center gap-1">
-              <span>Premi</span>
-              {typeof rewardsBalance === "number" && accountEmail ? (
-                <span className="text-[9px] font-bold opacity-70">{rewardsBalance}</span>
-              ) : null}
-            </span>
+            <span>Premi</span>
           </button>
           <button
             type="button"
@@ -177,7 +170,6 @@ const BottomNavComponent = ({
 const bottomNavEqual = (prev: BottomNavProps, next: BottomNavProps) =>
   prev.activeSection === next.activeSection &&
   prev.accountEmail === next.accountEmail &&
-  prev.rewardsBalance === next.rewardsBalance &&
   prev.onChange === next.onChange &&
   prev.onHeightChange === next.onHeightChange;
 

@@ -1450,7 +1450,6 @@ const BottomSheetComponent = ({
           <BottomNav
             activeSection={activeSection}
             accountEmail={accountEmail}
-            rewardsBalance={rewards?.balance ?? null}
             onChange={onSectionChange}
             onHeightChange={onBottomNavHeightChange}
           />
