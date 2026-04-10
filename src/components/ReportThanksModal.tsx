@@ -92,15 +92,17 @@ const ReportThanksModal = ({
           <div className="relative z-10 mt-4 rounded-[14px] border border-emerald-300/25 bg-emerald-500/12 px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/25 text-[14px]">
-                  ⭐
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/25 text-emerald-200">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                    <path d="M12 2l2.9 6.26 6.1.55-4.5 3.93 1.38 6.26L12 15.77l-5.88 3.23 1.38-6.26L3 8.81l6.1-.55L12 2z" />
+                  </svg>
                 </span>
                 <span className="text-[14px] font-semibold text-emerald-100">
                   {STRINGS.account.reportThanksPointsEarned(awardedPoints)}
                 </span>
               </div>
               {typeof newBalance === "number" ? (
-                <span className="text-[12px] text-emerald-200/80">
+                <span className="text-[12px] font-semibold text-emerald-200/70">
                   {STRINGS.account.reportThanksNewBalance(newBalance)}
                 </span>
               ) : null}

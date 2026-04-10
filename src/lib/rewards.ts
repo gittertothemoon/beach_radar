@@ -60,7 +60,8 @@ export type RedeemBadgeResult =
   | { ok: true; summary: AccountRewardsSummary }
   | { ok: false; code: RedeemBadgeErrorCode };
 
-const MOCK_REWARDS_SUMMARY: AccountRewardsSummary = {
+// Mutable mock state — survives across fetchAccountRewards / redeemBadge calls within a session
+let mockState: AccountRewardsSummary = {
   balance: 45,
   pointsEarned: 60,
   pointsSpent: 15,
@@ -76,6 +77,25 @@ const MOCK_REWARDS_SUMMARY: AccountRewardsSummary = {
   ],
   couponConversion: { enabled: false, status: "coming_soon", message: "Presto potrai convertire i punti in coupon per sconti e omaggi dai partner." },
 };
+
+/** Returns the current mock balance (after any awardMockPoints calls). */
+export function getMockBalance(): number {
+  return mockState.balance;
+}
+
+/** Call this from report submission in mock mode so the balance persists across refreshes. */
+export function awardMockPoints(pts: number): void {
+  const newBalance = mockState.balance + pts;
+  mockState = {
+    ...mockState,
+    balance: newBalance,
+    pointsEarned: mockState.pointsEarned + pts,
+    badges: mockState.badges.map((b) => ({
+      ...b,
+      redeemable: !b.owned && newBalance >= b.pointsCost,
+    })),
+  };
+}
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -235,7 +255,7 @@ const mapStatusToRedeemError = (
 
 export const fetchAccountRewards = async (): Promise<FetchAccountRewardsResult> => {
   if (getDevMockAccount()) {
-    return { ok: true, summary: MOCK_REWARDS_SUMMARY };
+    return { ok: true, summary: mockState };
   }
 
   const authToken = await loadAuthToken();
@@ -279,20 +299,23 @@ export const redeemBadge = async (badgeCode: string): Promise<RedeemBadgeResult>
   }
 
   if (getDevMockAccount()) {
-    const badge = MOCK_REWARDS_SUMMARY.badges.find((b) => b.code === trimmedBadgeCode);
+    const badge = mockState.badges.find((b) => b.code === trimmedBadgeCode);
     if (!badge) return { ok: false, code: "badge_not_found" };
     if (badge.owned) return { ok: false, code: "badge_already_owned" };
-    if (MOCK_REWARDS_SUMMARY.balance < badge.pointsCost) return { ok: false, code: "insufficient_points" };
-    const updated: AccountRewardsSummary = {
-      ...MOCK_REWARDS_SUMMARY,
-      balance: MOCK_REWARDS_SUMMARY.balance - badge.pointsCost,
-      pointsSpent: MOCK_REWARDS_SUMMARY.pointsSpent + badge.pointsCost,
-      ownedBadgesCount: MOCK_REWARDS_SUMMARY.ownedBadgesCount + 1,
-      badges: MOCK_REWARDS_SUMMARY.badges.map((b) =>
-        b.code === trimmedBadgeCode ? { ...b, owned: true, ownedAt: new Date().toISOString(), redeemable: false } : b,
+    if (mockState.balance < badge.pointsCost) return { ok: false, code: "insufficient_points" };
+    const newBalance = mockState.balance - badge.pointsCost;
+    mockState = {
+      ...mockState,
+      balance: newBalance,
+      pointsSpent: mockState.pointsSpent + badge.pointsCost,
+      ownedBadgesCount: mockState.ownedBadgesCount + 1,
+      badges: mockState.badges.map((b) =>
+        b.code === trimmedBadgeCode
+          ? { ...b, owned: true, ownedAt: new Date().toISOString(), redeemable: false }
+          : { ...b, redeemable: !b.owned && newBalance >= b.pointsCost },
       ),
     };
-    return { ok: true, summary: updated };
+    return { ok: true, summary: mockState };
   }
 
   const authToken = await loadAuthToken();

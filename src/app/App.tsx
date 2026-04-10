@@ -30,6 +30,8 @@ import { getDevMockAccount } from "../lib/devMockAuth";
 import {
   fetchAccountRewards,
   redeemBadge,
+  awardMockPoints,
+  getMockBalance,
   type AccountRewardsSummary,
 } from "../lib/rewards";
 import {
@@ -843,25 +845,14 @@ function App() {
     setReportOpen,
     setReportThanksOpen,
     onReportSubmitted: ({ awardedPoints, pointsBalance }) => {
-      setLastReportReward({ awardedPoints, newBalance: pointsBalance ?? null });
-      setRewardsSummary((prev) => {
-        if (!prev) return prev;
-        const newBalance =
-          typeof pointsBalance === "number"
-            ? Math.max(0, Math.round(pointsBalance))
-            : prev.balance + awardedPoints;
-        return {
-          ...prev,
-          balance: newBalance,
-          pointsEarned: prev.pointsEarned + awardedPoints,
-          badges: prev.badges.map((badge) => ({
-            ...badge,
-            redeemable: !badge.owned && newBalance >= badge.pointsCost,
-          })),
-        };
-      });
-      // Refresh from DB to sync counters — skip in mock mode (mock returns fixed data)
-      if (!devMockAccount) void refreshRewards({ silent: true });
+      if (devMockAccount) {
+        // Update in-memory mock first so balance is correct in both the modal and refresh
+        awardMockPoints(awardedPoints);
+        setLastReportReward({ awardedPoints, newBalance: getMockBalance() });
+      } else {
+        setLastReportReward({ awardedPoints, newBalance: pointsBalance ?? null });
+      }
+      void refreshRewards({ silent: true });
     },
   });
   const selectedOverride = selectedBeachId ? overrides[selectedBeachId] : null;
