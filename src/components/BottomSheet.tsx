@@ -14,6 +14,7 @@ import type {
 import type { BeachWithStats } from "../lib/types";
 import { STRINGS } from "../i18n/it";
 import BottomNav from "./BottomNav";
+import RewardsSheet from "./RewardsSheet";
 import {
   formatConfidenceInline,
   formatDistanceLabel,
@@ -79,9 +80,16 @@ type BottomSheetProps = {
   accountEmail: string | null;
   onOpenProfile: () => void;
   onOpenSignIn: () => void;
+  // rewards
+  rewards: import("../lib/rewards").AccountRewardsSummary | null;
+  rewardsLoading: boolean;
+  redeemingBadgeCode: string | null;
+  activeBadge: import("../lib/activeBadge").ActiveBadge | null;
+  onRedeemBadge: (badgeCode: string) => void;
+  onEquipBadge: (badge: import("../lib/activeBadge").ActiveBadge) => void;
 };
 
-export type BottomSheetSection = "map" | "profile" | "chatbot";
+export type BottomSheetSection = "map" | "profile" | "chatbot" | "rewards";
 
 const stateBadge = (state: string) => {
   switch (state) {
@@ -316,6 +324,12 @@ const BottomSheetComponent = ({
   accountEmail,
   onOpenProfile,
   onOpenSignIn,
+  rewards,
+  rewardsLoading,
+  redeemingBadgeCode,
+  activeBadge,
+  onRedeemBadge,
+  onEquipBadge,
 }: BottomSheetProps) => {
   type SettingsPanel = "language" | "interests" | null;
 
@@ -808,7 +822,9 @@ const BottomSheetComponent = ({
     ? STRINGS.labels.nearbyBeaches
     : activeSection === "profile"
       ? STRINGS.account.profileTitle
-      : STRINGS.chatbot.title;
+      : activeSection === "rewards"
+        ? STRINGS.account.rewardsSectionTitle
+        : STRINGS.chatbot.title;
   const sectionSubtitle = activeSection === "map"
     ? (hasLocation
       ? STRINGS.labels.nearbyWithinRadius(beaches.length, nearbyRadiusKm)
@@ -1291,6 +1307,18 @@ const BottomSheetComponent = ({
               ) : null}
             </div>
           ) : null}
+          {activeSection === "rewards" ? (
+            <RewardsSheet
+              rewards={rewards}
+              rewardsLoading={rewardsLoading}
+              redeemingBadgeCode={redeemingBadgeCode}
+              activeBadge={activeBadge}
+              accountEmail={accountEmail}
+              onRedeemBadge={onRedeemBadge}
+              onEquipBadge={onEquipBadge}
+              onOpenSignIn={onOpenSignIn}
+            />
+          ) : null}
           {activeSection === "chatbot" ? (
             <div className="space-y-4 pb-6">
               <section className="overflow-hidden rounded-[22px] border border-white/12 bg-[radial-gradient(120%_130%_at_85%_-20%,rgba(56,189,248,0.22),transparent_50%),linear-gradient(180deg,rgba(7,19,34,0.88),rgba(5,15,28,0.94))]">
@@ -1422,6 +1450,7 @@ const BottomSheetComponent = ({
           <BottomNav
             activeSection={activeSection}
             accountEmail={accountEmail}
+            rewardsBalance={rewards?.balance ?? null}
             onChange={onSectionChange}
             onHeightChange={onBottomNavHeightChange}
           />
@@ -1450,7 +1479,13 @@ const bottomSheetEqual = (prev: BottomSheetProps, next: BottomSheetProps) =>
   prev.accountName === next.accountName &&
   prev.accountEmail === next.accountEmail &&
   prev.onOpenProfile === next.onOpenProfile &&
-  prev.onOpenSignIn === next.onOpenSignIn;
+  prev.onOpenSignIn === next.onOpenSignIn &&
+  prev.rewards === next.rewards &&
+  prev.rewardsLoading === next.rewardsLoading &&
+  prev.redeemingBadgeCode === next.redeemingBadgeCode &&
+  prev.activeBadge === next.activeBadge &&
+  prev.onRedeemBadge === next.onRedeemBadge &&
+  prev.onEquipBadge === next.onEquipBadge;
 
 const BottomSheet = memo(BottomSheetComponent, bottomSheetEqual);
 

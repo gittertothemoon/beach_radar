@@ -1553,17 +1553,12 @@ function App() {
             name={accountDisplayName}
             email={account.email}
             favoriteBeaches={profileFavoriteBeaches}
-            deleting={deletingAccount}
-            rewards={rewardsSummary}
-            rewardsLoading={rewardsLoading}
-            redeemingBadgeCode={redeemingBadgeCode}
             activeBadge={activeBadge}
+            deleting={deletingAccount}
             onClose={() => setProfileOpen(false)}
             onSelectFavorite={handleSelectProfileFavorite}
             onSignOut={handleSignOut}
             onDeleteAccount={handleDeleteAccount}
-            onRedeemBadge={handleRedeemBadge}
-            onEquipBadge={handleEquipBadge}
           />
         </Suspense>
       ) : null}
@@ -1787,6 +1782,12 @@ function App() {
         accountEmail={account?.email ?? null}
         onOpenProfile={handleOpenProfile}
         onOpenSignIn={handleOpenSignIn}
+        rewards={rewardsSummary}
+        rewardsLoading={rewardsLoading}
+        redeemingBadgeCode={redeemingBadgeCode}
+        activeBadge={activeBadge}
+        onRedeemBadge={handleRedeemBadge}
+        onEquipBadge={handleEquipBadge}
       />
       {selectedBeach ? (
         <Suspense fallback={null}>

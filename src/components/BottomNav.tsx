@@ -1,10 +1,11 @@
 import { memo, useEffect, useRef } from "react";
 
-type BottomSheetSection = "map" | "profile" | "chatbot";
+type BottomSheetSection = "map" | "profile" | "chatbot" | "rewards";
 
 type BottomNavProps = {
   activeSection: BottomSheetSection;
   accountEmail: string | null;
+  rewardsBalance: number | null;
   onChange: (section: BottomSheetSection) => void;
   onHeightChange?: (height: number) => void;
 };
@@ -67,9 +68,24 @@ const ProfileIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
+const RewardsIcon = ({ active }: { active: boolean }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={navIconClass(active)}
+    fill={active ? "currentColor" : "none"}
+    stroke="currentColor"
+    strokeWidth={active ? 0 : 1.9}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
 const BottomNavComponent = ({
   activeSection,
   accountEmail,
+  rewardsBalance,
   onChange,
   onHeightChange,
 }: BottomNavProps) => {
@@ -102,7 +118,7 @@ const BottomNavComponent = ({
         aria-label="Navigazione app"
         className="px-3 pb-[max(env(safe-area-inset-bottom),8px)] pt-1"
       >
-        <div className="grid grid-cols-3 gap-1">
+        <div className="grid grid-cols-4 gap-1">
           <button
             type="button"
             data-testid="bottom-nav-map"
@@ -120,6 +136,20 @@ const BottomNavComponent = ({
           >
             <ChatbotIcon active={activeSection === "chatbot"} />
             <span>ONDA</span>
+          </button>
+          <button
+            type="button"
+            data-testid="bottom-nav-rewards"
+            onClick={() => onChange("rewards")}
+            className={navItemClass(activeSection === "rewards")}
+          >
+            <RewardsIcon active={activeSection === "rewards"} />
+            <span className="inline-flex items-center gap-1">
+              <span>Premi</span>
+              {typeof rewardsBalance === "number" && accountEmail ? (
+                <span className="text-[9px] font-bold opacity-70">{rewardsBalance}</span>
+              ) : null}
+            </span>
           </button>
           <button
             type="button"
@@ -147,6 +177,7 @@ const BottomNavComponent = ({
 const bottomNavEqual = (prev: BottomNavProps, next: BottomNavProps) =>
   prev.activeSection === next.activeSection &&
   prev.accountEmail === next.accountEmail &&
+  prev.rewardsBalance === next.rewardsBalance &&
   prev.onChange === next.onChange &&
   prev.onHeightChange === next.onHeightChange;
 
