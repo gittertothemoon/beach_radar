@@ -521,3 +521,61 @@ body {
     transform: scale(0.92);
   }
 }
+
+@keyframes br-badge-pop {
+  0% {
+    transform: scale(0.4) rotate(-12deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.18) rotate(4deg);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.94) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes br-badge-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+  }
+  50% {
+    box-shadow: 0 0 40px 12px rgba(251, 191, 36, 0.35);
+  }
+}
+
+@keyframes br-celebration-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes br-celebration-slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes br-confetti-fall {
+  0% {
+    transform: translateY(-10px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(120px) rotate(540deg);
+    opacity: 0;
+  }
+}

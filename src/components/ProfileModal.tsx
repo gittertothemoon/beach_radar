@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { STRINGS } from "../i18n/it";
 import type { AccountRewardsSummary } from "../lib/rewards";
+import type { ActiveBadge } from "../lib/activeBadge";
 
 type ProfileModalProps = {
   isOpen: boolean;
@@ -14,12 +15,14 @@ type ProfileModalProps = {
   rewards: AccountRewardsSummary | null;
   rewardsLoading: boolean;
   redeemingBadgeCode: string | null;
+  activeBadge: ActiveBadge | null;
   deleting: boolean;
   onClose: () => void;
   onSelectFavorite: (beachId: string) => void;
   onSignOut: () => void;
   onDeleteAccount: () => void;
   onRedeemBadge: (badgeCode: string) => void;
+  onEquipBadge: (badge: ActiveBadge) => void;
 };
 
 const BADGE_ICONS: Record<string, string> = {
@@ -43,12 +46,14 @@ const ProfileModal = ({
   rewards,
   rewardsLoading,
   redeemingBadgeCode,
+  activeBadge,
   deleting,
   onClose,
   onSelectFavorite,
   onSignOut,
   onDeleteAccount,
   onRedeemBadge,
+  onEquipBadge,
 }: ProfileModalProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -124,7 +129,15 @@ const ProfileModal = ({
               {STRINGS.account.signedInAs}
             </div>
             {name ? (
-              <div className="mt-1 text-[14px] font-semibold br-text-primary">{name}</div>
+              <div className="mt-1 flex items-center gap-2">
+                <div className="text-[14px] font-semibold br-text-primary">{name}</div>
+                {activeBadge ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/35 bg-amber-500/15 px-2 py-0.5">
+                    <span className="text-[13px] leading-none">{badgeIcon(activeBadge.icon)}</span>
+                    <span className="text-[10px] font-semibold text-amber-200/90">{activeBadge.name}</span>
+                  </span>
+                ) : null}
+              </div>
             ) : null}
             <div className="truncate text-[13px] br-text-secondary">{email}</div>
           </div>
@@ -177,13 +190,16 @@ const ProfileModal = ({
                 {rewards.badges.map((badge) => {
                   const isRedeeming = redeemingBadgeCode === badge.code;
                   const redeemDisabled = isRedeeming || !badge.redeemable;
+                  const isActive = activeBadge?.code === badge.code;
                   return (
                     <div
                       key={badge.code}
                       className={[
                         "flex flex-col rounded-[12px] border p-3 transition-colors",
                         badge.owned
-                          ? "border-emerald-300/30 bg-emerald-500/10"
+                          ? isActive
+                            ? "border-amber-300/45 bg-amber-500/12"
+                            : "border-emerald-300/30 bg-emerald-500/10"
                           : "border-white/10 bg-black/40",
                       ].join(" ")}
                     >
@@ -195,9 +211,15 @@ const ProfileModal = ({
                           {badgeIcon(badge.icon)}
                         </span>
                         {badge.owned ? (
-                          <span className="mt-0.5 rounded-full border border-emerald-300/35 bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-200">
-                            {STRINGS.account.badgeOwned}
-                          </span>
+                          isActive ? (
+                            <span className="mt-0.5 rounded-full border border-amber-300/50 bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-200">
+                              {STRINGS.account.badgeEquippedLabel}
+                            </span>
+                          ) : (
+                            <span className="mt-0.5 rounded-full border border-emerald-300/35 bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-200">
+                              {STRINGS.account.badgeOwned}
+                            </span>
+                          )
                         ) : (
                           <span className="mt-0.5 rounded-full border border-amber-300/30 bg-black/40 px-1.5 py-0.5 text-[9px] font-semibold text-amber-200/80">
                             {badge.pointsCost} pt
@@ -210,7 +232,19 @@ const ProfileModal = ({
                       <div className="mt-0.5 text-[10px] leading-snug br-text-tertiary">
                         {badge.description}
                       </div>
-                      {!badge.owned ? (
+                      {badge.owned ? (
+                        !isActive ? (
+                          <div className="mt-2.5">
+                            <button
+                              type="button"
+                              onClick={() => onEquipBadge({ code: badge.code, icon: badge.icon, name: badge.name })}
+                              className="br-press w-full rounded-full border border-white/20 bg-white/8 py-1.5 text-[11px] font-semibold text-slate-300 transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 hover:border-amber-300/40 hover:text-amber-100"
+                            >
+                              {STRINGS.account.badgeEquipAction}
+                            </button>
+                          </div>
+                        ) : null
+                      ) : (
                         <div className="mt-2.5">
                           <button
                             type="button"
@@ -229,7 +263,7 @@ const ProfileModal = ({
                               : STRINGS.account.badgeRedeemAction}
                           </button>
                         </div>
-                      ) : null}
+                      )}
                     </div>
                   );
                 })}

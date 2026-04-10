@@ -33,6 +33,11 @@ import {
   type AccountRewardsSummary,
 } from "../lib/rewards";
 import {
+  loadActiveBadge,
+  saveActiveBadge,
+  type ActiveBadge,
+} from "../lib/activeBadge";
+import {
   ANALYTICS_UPDATE_EVENT,
   type AnalyticsSource,
   clearEvents,
@@ -122,6 +127,7 @@ const ReportThanksModal = lazy(() => import("../components/ReportThanksModal"));
 const PerformanceOverlay = lazy(() => import("../components/PerformanceOverlay"));
 const AccountRequiredModal = lazy(() => import("../components/AccountRequiredModal"));
 const ProfileModal = lazy(() => import("../components/ProfileModal"));
+const BadgeCelebrationModal = lazy(() => import("../components/BadgeCelebrationModal"));
 
 type ToastTone = "info" | "success" | "error";
 
@@ -194,6 +200,8 @@ function App() {
   const [rewardsSummary, setRewardsSummary] = useState<AccountRewardsSummary | null>(null);
   const [rewardsLoading, setRewardsLoading] = useState(false);
   const [redeemingBadgeCode, setRedeemingBadgeCode] = useState<string | null>(null);
+  const [activeBadge, setActiveBadge] = useState<ActiveBadge | null>(() => loadActiveBadge());
+  const [celebrationBadge, setCelebrationBadge] = useState<ActiveBadge & { description: string } | null>(null);
   const [reportThanksOpen, setReportThanksOpen] = useState(false);
   const [lastReportReward, setLastReportReward] = useState<{ awardedPoints: number; newBalance: number | null } | null>(null);
   const [reportsFeedReady, setReportsFeedReady] = useState(false);
@@ -503,8 +511,15 @@ function App() {
       const result = await redeemBadge(badgeCode);
       if (result.ok) {
         setRewardsSummary(result.summary);
-        showLocationToast(STRINGS.account.badgeRedeemSuccess, "success");
         setRedeemingBadgeCode(null);
+        // Find the redeemed badge to auto-equip and celebrate
+        const redeemedBadge = result.summary.badges.find((b) => b.code === badgeCode);
+        if (redeemedBadge) {
+          const newActive: ActiveBadge = { code: redeemedBadge.code, icon: redeemedBadge.icon, name: redeemedBadge.name };
+          saveActiveBadge(newActive);
+          setActiveBadge(newActive);
+          setCelebrationBadge({ ...newActive, description: redeemedBadge.description });
+        }
         return;
       }
       setRedeemingBadgeCode(null);
@@ -525,6 +540,11 @@ function App() {
     },
     [account, redeemingBadgeCode, setAccount, showLocationToast],
   );
+
+  const handleEquipBadge = useCallback((badge: ActiveBadge) => {
+    saveActiveBadge(badge);
+    setActiveBadge(badge);
+  }, []);
 
   useEffect(() => {
     if (!account) {
@@ -1537,11 +1557,24 @@ function App() {
             rewards={rewardsSummary}
             rewardsLoading={rewardsLoading}
             redeemingBadgeCode={redeemingBadgeCode}
+            activeBadge={activeBadge}
             onClose={() => setProfileOpen(false)}
             onSelectFavorite={handleSelectProfileFavorite}
             onSignOut={handleSignOut}
             onDeleteAccount={handleDeleteAccount}
             onRedeemBadge={handleRedeemBadge}
+            onEquipBadge={handleEquipBadge}
+          />
+        </Suspense>
+      ) : null}
+      {celebrationBadge ? (
+        <Suspense fallback={null}>
+          <BadgeCelebrationModal
+            isOpen={true}
+            badgeName={celebrationBadge.name}
+            badgeDescription={celebrationBadge.description}
+            badgeIcon={celebrationBadge.icon}
+            onClose={() => setCelebrationBadge(null)}
           />
         </Suspense>
       ) : null}
