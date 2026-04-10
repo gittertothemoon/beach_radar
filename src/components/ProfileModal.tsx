@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { STRINGS } from "../i18n/it";
 import type { AccountRewardsSummary } from "../lib/rewards";
 import type { ActiveBadge } from "../lib/activeBadge";
+import BadgeIcon from "./BadgeIcon";
 
 type ProfileModalProps = {
   isOpen: boolean;
@@ -25,18 +26,6 @@ type ProfileModalProps = {
   onEquipBadge: (badge: ActiveBadge) => void;
 };
 
-const BADGE_ICONS: Record<string, string> = {
-  eye: "👁️",
-  shield: "🛡️",
-  wave: "🌊",
-  beach: "🏖️",
-  lighthouse: "⛯",
-  sun: "☀️",
-};
-
-function badgeIcon(icon: string): string {
-  return BADGE_ICONS[icon] ?? "🏅";
-}
 
 const ProfileModal = ({
   isOpen,
@@ -133,7 +122,7 @@ const ProfileModal = ({
                 <div className="text-[14px] font-semibold br-text-primary">{name}</div>
                 {activeBadge ? (
                   <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/35 bg-amber-500/15 px-2 py-0.5">
-                    <span className="text-[13px] leading-none">{badgeIcon(activeBadge.icon)}</span>
+                    <BadgeIcon icon={activeBadge.icon} size={13} className="text-amber-200/90" />
                     <span className="text-[10px] font-semibold text-amber-200/90">{activeBadge.name}</span>
                   </span>
                 ) : null}
@@ -204,12 +193,17 @@ const ProfileModal = ({
                       ].join(" ")}
                     >
                       <div className="flex items-start justify-between gap-1">
-                        <span
-                          aria-hidden="true"
-                          className="text-[22px] leading-none"
-                        >
-                          {badgeIcon(badge.icon)}
-                        </span>
+                        <BadgeIcon
+                          icon={badge.icon}
+                          size={28}
+                          className={
+                            badge.owned
+                              ? isActive
+                                ? "text-amber-200"
+                                : "text-emerald-200"
+                              : "text-slate-400"
+                          }
+                        />
                         {badge.owned ? (
                           isActive ? (
                             <span className="mt-0.5 rounded-full border border-amber-300/50 bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-200">

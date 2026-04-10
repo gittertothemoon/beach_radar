@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { STRINGS } from "../i18n/it";
+import BadgeIcon from "./BadgeIcon";
 
 type BadgeCelebrationModalProps = {
   isOpen: boolean;
@@ -20,18 +21,6 @@ const CONFETTI_PIECES = [
   { x: 90, delay: 0.08, color: "#f472b6", size: 6, duration: 1.2 },
 ];
 
-const BADGE_ICONS: Record<string, string> = {
-  eye: "👁️",
-  shield: "🛡️",
-  wave: "🌊",
-  beach: "🏖️",
-  lighthouse: "⛯",
-  sun: "☀️",
-};
-
-function badgeEmoji(icon: string): string {
-  return BADGE_ICONS[icon] ?? "🏅";
-}
 
 const BadgeCelebrationModal = ({
   isOpen,
@@ -106,12 +95,12 @@ const BadgeCelebrationModal = ({
         <div className="relative flex flex-col items-center px-6 pb-7 pt-8">
           {/* Badge icon */}
           <div
-            className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-amber-300/50 bg-amber-500/15 text-[52px]"
+            className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-amber-300/50 bg-amber-500/15 text-amber-100"
             style={{
               animation: "br-badge-pop 600ms 160ms cubic-bezier(0.34,1.56,0.64,1) both, br-badge-glow 2s 800ms ease-in-out infinite",
             }}
           >
-            {badgeEmoji(badgeIcon)}
+            <BadgeIcon icon={badgeIcon} size={52} />
           </div>
 
           {/* "Badge sbloccato!" label */}

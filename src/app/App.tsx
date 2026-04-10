@@ -860,8 +860,8 @@ function App() {
           })),
         };
       });
-      // Always refresh from DB after a report to keep all counters in sync
-      void refreshRewards({ silent: true });
+      // Refresh from DB to sync counters — skip in mock mode (mock returns fixed data)
+      if (!devMockAccount) void refreshRewards({ silent: true });
     },
   });
   const selectedOverride = selectedBeachId ? overrides[selectedBeachId] : null;
