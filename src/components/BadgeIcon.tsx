@@ -1,10 +1,26 @@
+import beachPng from "../assets/badges/beach.png";
+import eyePng from "../assets/badges/eye.png";
+import lighthousePng from "../assets/badges/lighthouse.png";
+import shieldPng from "../assets/badges/shield.png";
+import sunPng from "../assets/badges/sun.png";
+import wavePng from "../assets/badges/wave.png";
+
 type BadgeIconProps = {
   icon: string;
   size?: number;
   className?: string;
 };
 
-const icons: Record<string, (size: number) => React.ReactElement> = {
+const rasterIcons: Record<string, string> = {
+  eye: eyePng,
+  shield: shieldPng,
+  wave: wavePng,
+  beach: beachPng,
+  lighthouse: lighthousePng,
+  sun: sunPng,
+};
+
+const vectorIcons: Record<string, (size: number) => React.ReactElement> = {
   eye: (s) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <ellipse cx="12" cy="12" rx="10" ry="6.5" />
@@ -64,10 +80,32 @@ const fallback = (s: number) => (
 );
 
 const BadgeIcon = ({ icon, size = 24, className }: BadgeIconProps) => {
-  const render = icons[icon] ?? fallback;
+  const rasterSrc = rasterIcons[icon];
+  const useRaster = Boolean(rasterSrc);
+  const isMuted = className?.includes("slate-500") || className?.includes("text-slate");
+  const filter = isMuted ? "grayscale(1) saturate(0.18) brightness(0.95)" : undefined;
+  const opacity = isMuted ? 0.72 : 1;
+  const render = vectorIcons[icon] ?? fallback;
   return (
     <span className={className} aria-hidden="true" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-      {render(size)}
+      {useRaster ? (
+        <img
+          src={rasterSrc}
+          alt=""
+          width={size}
+          height={size}
+          draggable={false}
+          style={{
+            width: size,
+            height: size,
+            objectFit: "contain",
+            filter,
+            opacity,
+          }}
+        />
+      ) : (
+        render(size)
+      )}
     </span>
   );
 };

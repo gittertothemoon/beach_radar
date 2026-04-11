@@ -25,6 +25,8 @@
     "seed:validate": "node scripts/seed/validate.mjs",
     "assets:sync": "node scripts/sync-brand-assets.mjs",
     "assets:check": "node scripts/sync-brand-assets.mjs --check",
+    "badges:gen": "node scripts/generate-badge-assets.mjs",
+    "badges:optimize": "node scripts/optimize-badge-assets.mjs",
     "repo:hygiene": "node scripts/repo-hygiene.mjs",
     "check:all": "npm run check && npm run repo:hygiene && npm run assets:check",
     "supabase:fix-env": "node scripts/supabase-ops.mjs fix-env",

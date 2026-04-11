@@ -28,6 +28,16 @@ Last update: 2026-04-11 (Europe/Rome)
 ```
 
 ## Lessons
+### 2026-04-11 - Generazione immagini badge bloccata da limite billing API
+- Contesto: richiesta utente di creare nuovi badge "puliti e belli" usando il generatore immagini.
+- Errore commesso: assumere che la disponibilita' di `OPENAI_API_KEY` in `.env.local` fosse sufficiente per completare la generazione batch.
+- Segnale ignorato: il fallback CLI `image_gen.py` ha risposto subito con `billing_hard_limit_reached` su tutti i job.
+- Causa radice: account/progetto API con limite di spesa raggiunto; quindi il flusso AI non e' eseguibile finche' non viene sbloccata la fatturazione.
+- Fix applicata: mantenuto obiettivo prodotto senza blocco usando un fallback locale deterministico: script `scripts/generate-badge-assets.mjs` che genera set badge premium in SVG+PNG (`src/assets/badges/*`) e integrazione UI in `BadgeIcon`.
+- Regola permanente: quando un task visuale dipende da image API, validare subito (prima del batch) i prerequisiti reali di billing oltre alla sola presenza della key; se billing bloccato, proporre e applicare fallback asset locale per non fermare il rilascio.
+- Verifica eseguita: `npm run typecheck` PASS, `npm run build` PASS, `npm run test:app -- --grep "account settings panel"` PASS.
+- Guardrail futuro (test/check/alert): aggiungere smoke pre-generazione con una singola richiesta immagine e gestione esplicita dell'errore `billing_hard_limit_reached` con switch rapido al fallback locale.
+
 ### 2026-04-11 - `npm run check` inquinato da `.claude/worktrees/*`
 - Contesto: ricognizione stato repository dopo sessioni con Claude Code e worktree locali presenti sotto `.claude/worktrees/`.
 - Errore commesso: leggere il risultato di `npm run check` come stato reale della codebase principale senza separare il codice sorgente da copie/worktree di supporto.

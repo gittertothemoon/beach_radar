@@ -1,0 +1,27 @@
+
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 170) rotate(90) scale(280)">
+      <stop offset="0" stop-color="#0f766e" />
+      <stop offset="1" stop-color="#0f766e" />
+    </radialGradient>
+    <linearGradient id="ring" x1="120" y1="96" x2="392" y2="416" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d1fae5" />
+      <stop offset="1" stop-color="#10b981" />
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 158) rotate(90) scale(144)">
+      <stop offset="0" stop-color="#5eead4" stop-opacity="0.6" />
+      <stop offset="1" stop-color="#5eead4" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="212" fill="url(#ring)"/>
+  <circle cx="256" cy="256" r="186" fill="url(#bg)"/>
+  <circle cx="256" cy="188" r="132" fill="url(#glow)"/>
+  <ellipse cx="256" cy="152" rx="112" ry="42" fill="#FFFFFF" fill-opacity="0.12"/>
+  <circle cx="256" cy="256" r="186" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="3"/>
+  
+      <path d="M256 138 L154 186 V250 C154 328 209 396 256 410 C303 396 358 328 358 250 V186 Z" fill="none" stroke="#ecfeff" stroke-width="18" stroke-linejoin="round"/>
+      <path d="M214 274 L244 304 L304 234" fill="none" stroke="#5eead4" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M256 170 V340" stroke="#0f172a" stroke-opacity="0.35" stroke-width="7" stroke-linecap="round"/>
+    
+</svg>
