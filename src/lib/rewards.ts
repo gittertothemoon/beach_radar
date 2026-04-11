@@ -22,6 +22,19 @@ type RewardBadge = {
   redeemable: boolean;
 };
 
+export type Achievement = {
+  id: string;
+  threshold: number;
+  unlocked: boolean;
+};
+
+export type WeeklyMission = {
+  goal: number;
+  progress: number;
+  periodStart: string;
+  periodEnd: string;
+};
+
 export type AccountRewardsSummary = {
   balance: number;
   pointsEarned: number;
@@ -34,6 +47,8 @@ export type AccountRewardsSummary = {
     status: "coming_soon";
     message: string;
   };
+  achievements: Achievement[];
+  weeklyMission: WeeklyMission;
 };
 
 type FetchRewardsErrorCode =
@@ -76,6 +91,19 @@ let mockState: AccountRewardsSummary = {
     { code: "re_del_sole", name: "Re del Sole", description: "Leggenda vivente delle spiagge", icon: "sun", pointsCost: 120, owned: false, ownedAt: null, redeemable: false },
   ],
   couponConversion: { enabled: false, status: "coming_soon", message: "Presto potrai convertire i punti in coupon per sconti e omaggi dai partner." },
+  achievements: [
+    { id: "first_report", threshold: 1, unlocked: true },
+    { id: "reporter_5", threshold: 5, unlocked: false },
+    { id: "reporter_10", threshold: 10, unlocked: false },
+    { id: "reporter_25", threshold: 25, unlocked: false },
+    { id: "reporter_50", threshold: 50, unlocked: false },
+  ],
+  weeklyMission: {
+    goal: 3,
+    progress: 1,
+    periodStart: new Date(Date.now() - 2 * 86400 * 1000).toISOString(),
+    periodEnd: new Date(Date.now() + 4 * 86400 * 1000).toISOString(),
+  },
 };
 
 /** Returns the current mock balance (after any awardMockPoints calls). */
@@ -175,6 +203,23 @@ const parseSummary = (value: unknown): AccountRewardsSummary | null => {
   const couponMessage = toSingleString(couponConversionRaw?.message)
     ?? "Conversione coupon in arrivo.";
 
+  const achievementsRaw = Array.isArray(value.achievements) ? value.achievements : [];
+  const achievements: Achievement[] = achievementsRaw
+    .map((item): Achievement | null => {
+      if (!isObject(item)) return null;
+      const id = toSingleString(item.id);
+      const threshold = toFiniteNumber(item.threshold);
+      if (!id || threshold === null || threshold < 1) return null;
+      return { id, threshold: Math.round(threshold), unlocked: item.unlocked === true };
+    })
+    .filter((a): a is Achievement => a !== null);
+
+  const missionRaw = isObject(value.weeklyMission) ? value.weeklyMission : null;
+  const missionGoal = toFiniteNumber(missionRaw?.goal) ?? 3;
+  const missionProgress = toFiniteNumber(missionRaw?.progress) ?? 0;
+  const periodStart = toSingleString(missionRaw?.periodStart) ?? new Date().toISOString();
+  const periodEnd = toSingleString(missionRaw?.periodEnd) ?? new Date().toISOString();
+
   return {
     balance: Math.max(0, Math.round(balance)),
     pointsEarned: Math.max(0, Math.round(pointsEarned)),
@@ -186,6 +231,13 @@ const parseSummary = (value: unknown): AccountRewardsSummary | null => {
       enabled: couponConversionRaw?.enabled === true,
       status: couponStatus,
       message: couponMessage,
+    },
+    achievements,
+    weeklyMission: {
+      goal: Math.max(1, Math.round(missionGoal)),
+      progress: Math.max(0, Math.round(missionProgress)),
+      periodStart,
+      periodEnd,
     },
   };
 };

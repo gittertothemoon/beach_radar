@@ -84,6 +84,106 @@ const RewardsSheet = ({
         ) : null}
       </div>
 
+      {/* ── Weekly mission ── */}
+      {rewards ? (() => {
+        const { weeklyMission } = rewards;
+        const pct = Math.min(100, Math.round((weeklyMission.progress / weeklyMission.goal) * 100));
+        const done = weeklyMission.progress >= weeklyMission.goal;
+        return (
+          <div className={[
+            "rounded-[14px] border px-4 py-3.5 transition-colors",
+            done
+              ? "border-sky-300/35 bg-sky-500/10"
+              : "border-white/12 bg-black/30",
+          ].join(" ")}>
+            <div className="flex items-center justify-between">
+              <div className={[
+                "text-[12px] font-semibold uppercase tracking-[0.08em]",
+                done ? "text-sky-200/90" : "text-sky-100/70",
+              ].join(" ")}>
+                {STRINGS.account.missionsTitle}
+              </div>
+              <div className={[
+                "text-[11px] font-semibold",
+                done ? "text-sky-200" : "text-slate-400",
+              ].join(" ")}>
+                {done
+                  ? STRINGS.account.missionCompleted
+                  : STRINGS.account.missionProgressLabel(weeklyMission.progress, weeklyMission.goal)}
+              </div>
+            </div>
+            <div className="mt-2 text-[12px] br-text-primary">
+              {STRINGS.account.missionWeeklyLabel(weeklyMission.goal)}
+            </div>
+            <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                className={[
+                  "h-full rounded-full transition-all duration-500",
+                  done ? "bg-sky-400" : "bg-sky-500/70",
+                ].join(" ")}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        );
+      })() : null}
+
+      {/* ── Achievements ── */}
+      {rewards?.achievements?.length ? (
+        <div className="rounded-[14px] border border-white/12 bg-black/30 px-4 py-3.5">
+          <div className="text-[12px] font-semibold uppercase tracking-[0.08em] text-violet-200/80">
+            {STRINGS.account.achievementsTitle}
+          </div>
+          <div className="mt-3 space-y-2">
+            {rewards.achievements.map((ach) => {
+              const locale = STRINGS.achievements[ach.id as keyof typeof STRINGS.achievements];
+              const name = locale?.name ?? ach.id;
+              const description = locale?.description ?? "";
+              return (
+                <div
+                  key={ach.id}
+                  className={[
+                    "flex items-center gap-3 rounded-[10px] border px-3 py-2.5 transition-colors",
+                    ach.unlocked
+                      ? "border-violet-300/30 bg-violet-500/10"
+                      : "border-white/8 bg-black/25 opacity-55",
+                  ].join(" ")}
+                >
+                  <div className={[
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[15px]",
+                    ach.unlocked
+                      ? "border-violet-300/50 bg-violet-500/20 text-violet-100"
+                      : "border-white/12 bg-black/30 text-slate-600",
+                  ].join(" ")}>
+                    {ach.unlocked ? "✦" : "·"}
+                  </div>
+                  <div className="min-w-0">
+                    <div className={[
+                      "text-[12px] font-semibold leading-tight",
+                      ach.unlocked ? "br-text-primary" : "br-text-tertiary",
+                    ].join(" ")}>
+                      {name}
+                    </div>
+                    <div className="mt-0.5 text-[10px] leading-snug br-text-tertiary">
+                      {ach.unlocked ? description : STRINGS.account.achievementLocked}
+                    </div>
+                  </div>
+                  {ach.unlocked ? (
+                    <svg className="ml-auto shrink-0 text-violet-300/70" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                    </svg>
+                  ) : (
+                    <div className="ml-auto shrink-0 text-[10px] font-semibold text-slate-600">
+                      {ach.threshold}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
       {/* ── Badge store ── */}
       <div className="rounded-[14px] border border-white/12 bg-black/30 px-4 py-3.5">
         <div className="flex items-center justify-between">

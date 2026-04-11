@@ -6,9 +6,19 @@ import { applyApiSecurityHeaders, readBearerToken, readEnv } from "../_lib/secur
 const BALANCES_TABLE = "user_points_balances";
 const BADGE_CATALOG_TABLE = "badge_catalog";
 const USER_BADGES_TABLE = "user_badges";
+const POINTS_LEDGER_TABLE = "points_ledger";
 const REPORT_COMPLETED_POINTS = 15;
 const MAX_BADGE_CODE_LENGTH = 80;
 const MAX_BODY_BYTES = 8 * 1024;
+const WEEKLY_MISSION_GOAL = 3;
+
+const ACHIEVEMENT_DEFS = [
+  { id: "first_report", threshold: 1 },
+  { id: "reporter_5", threshold: 5 },
+  { id: "reporter_10", threshold: 10 },
+  { id: "reporter_25", threshold: 25 },
+  { id: "reporter_50", threshold: 50 },
+] as const;
 
 type RewardsSummary = {
   balance: number;
@@ -30,6 +40,17 @@ type RewardsSummary = {
     enabled: boolean;
     status: "coming_soon";
     message: string;
+  };
+  achievements: {
+    id: string;
+    threshold: number;
+    unlocked: boolean;
+  }[];
+  weeklyMission: {
+    goal: number;
+    progress: number;
+    periodStart: string;
+    periodEnd: string;
   };
 };
 
@@ -160,6 +181,17 @@ function readBody(req: VercelRequest): { body: Record<string, unknown> | null; e
   return { body: req.body };
 }
 
+function getIsoWeekBounds(): { start: string; end: string } {
+  const now = new Date();
+  const day = now.getUTCDay() || 7; // 1=Mon … 7=Sun
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - (day - 1)));
+  const sunday = new Date(Date.UTC(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate() + 6, 23, 59, 59, 999));
+  return {
+    start: monday.toISOString(),
+    end: sunday.toISOString(),
+  };
+}
+
 function buildSupabaseClient(): SupabaseClient | null {
   const supabaseUrl = readEnv("SUPABASE_URL");
   const serviceRole = readEnv("SUPABASE_SERVICE_ROLE_KEY");
@@ -185,28 +217,49 @@ async function loadRewardsSummary(
     return { ok: false, error: "db_balance_init_failed" };
   }
 
-  const [{ data: balanceData, error: balanceError }, { data: badgeData, error: badgeError }, { data: ownedData, error: ownedError }] =
-    await Promise.all([
-      supabase
-        .from(BALANCES_TABLE)
-        .select("points_balance, points_earned, points_spent")
-        .eq("user_id", userId)
-        .maybeSingle(),
-      supabase
-        .from(BADGE_CATALOG_TABLE)
-        .select("code, name, description, icon, points_cost, sort_order, active")
-        .eq("active", true)
-        .order("sort_order", { ascending: true }),
-      supabase
-        .from(USER_BADGES_TABLE)
-        .select("badge_code, created_at")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false }),
-    ]);
+  const weekBounds = getIsoWeekBounds();
+
+  const [
+    { data: balanceData, error: balanceError },
+    { data: badgeData, error: badgeError },
+    { data: ownedData, error: ownedError },
+    { count: totalReportCount, error: totalReportError },
+    { count: weeklyReportCount, error: weeklyReportError },
+  ] = await Promise.all([
+    supabase
+      .from(BALANCES_TABLE)
+      .select("points_balance, points_earned, points_spent")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabase
+      .from(BADGE_CATALOG_TABLE)
+      .select("code, name, description, icon, points_cost, sort_order, active")
+      .eq("active", true)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from(USER_BADGES_TABLE)
+      .select("badge_code, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from(POINTS_LEDGER_TABLE)
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("reason", "report_completed"),
+    supabase
+      .from(POINTS_LEDGER_TABLE)
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("reason", "report_completed")
+      .gte("created_at", weekBounds.start)
+      .lte("created_at", weekBounds.end),
+  ]);
 
   if (balanceError) return { ok: false, error: "db_balance_fetch_failed" };
   if (badgeError) return { ok: false, error: "db_badges_fetch_failed" };
   if (ownedError) return { ok: false, error: "db_user_badges_fetch_failed" };
+  if (totalReportError) return { ok: false, error: "db_ledger_fetch_failed" };
+  if (weeklyReportError) return { ok: false, error: "db_ledger_fetch_failed" };
 
   const balanceRow = isObject(balanceData) ? (balanceData as UserPointsBalanceRow) : {};
   const pointsBalance = Math.max(0, Math.round(toFiniteNumber(balanceRow.points_balance) ?? 0));
@@ -222,6 +275,9 @@ async function loadRewardsSummary(
     .map((row) => parseUserBadgeRow(row))
     .filter((row): row is NonNullable<ReturnType<typeof parseUserBadgeRow>> => row !== null);
   const ownedMap = new Map(ownedRows.map((row) => [row.badgeCode, row]));
+
+  const totalReports = Math.max(0, totalReportCount ?? 0);
+  const weeklyReports = Math.max(0, Math.min(WEEKLY_MISSION_GOAL, weeklyReportCount ?? 0));
 
   const summary: RewardsSummary = {
     balance: pointsBalance,
@@ -247,6 +303,17 @@ async function loadRewardsSummary(
       status: "coming_soon",
       message:
         "Presto i punti si convertiranno anche in coupon per lidi e partner convenzionati.",
+    },
+    achievements: ACHIEVEMENT_DEFS.map((def) => ({
+      id: def.id,
+      threshold: def.threshold,
+      unlocked: totalReports >= def.threshold,
+    })),
+    weeklyMission: {
+      goal: WEEKLY_MISSION_GOAL,
+      progress: weeklyReports,
+      periodStart: weekBounds.start,
+      periodEnd: weekBounds.end,
     },
   };
 
