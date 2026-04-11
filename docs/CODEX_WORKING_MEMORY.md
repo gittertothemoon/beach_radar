@@ -1,6 +1,6 @@
 # CODEX Working Memory
 
-Last update: 2026-04-11 21:02 (Europe/Rome)
+Last update: 2026-04-11 21:53 (Europe/Rome)
 
 ## Obiettivo condiviso
 - Massimo livello su design, funzionalita', affidabilita' reale.
@@ -47,6 +47,9 @@ Last update: 2026-04-11 21:02 (Europe/Rome)
 3. Prossimo sviluppo su feature/design con baseline verde.
 
 ## Log sintetico
+- 2026-04-11: fix bug restart tutorial da profilo mobile: il comando web `w2b-restart-tutorial` ora viene inviato con retry bridge in `src/app/App.tsx` (doppio post a 120ms) e il contenitore mobile forza sempre un reset reale del tutorial con transizione `false -> true` in `mobile/src/screens/AppWebScreen.tsx` (con cleanup `cancelAnimationFrame`); aggiunto test Playwright di regressione `profile restart tutorial posts bridge event in native shell` in `tests/app.account.spec.ts`; verifiche PASS (`npm run typecheck`, `npm run mobile:typecheck`, `npm run test:app -- --grep "account settings panel"`).
+- 2026-04-11: allineata landing al prodotto corrente lato gamification/commercial promise: copy aggiornato su coupon (`coming soon`), CTA tracking rinominate (`nav_store_ios`, `mobile_nav_store_ios`) con test Playwright aggiornati, e sostituzione visual chip emoji con medaglie reali (`public/landing/gamification/*.png`) + dot indicators coerenti; suite landing PASS (`6/6`). Nota: `npm run build` finale bloccato da errore TypeScript preesistente/non correlato in `src/lib/aggregate.ts` (`hasRoughSea` non presente in `BeachStats`).
+- 2026-04-11: eseguito audit coerenza landing vs prodotto attuale: base narrativa allineata (live crowd/meteo/community + CTA iOS + Android waitlist) ma rilevate incoerenze prioritarie da correggere: copy promesse coupon "attivi" mentre in app e' ancora "coming soon", naming tecnico `waitlist_*` su CTA iOS gia' live, e visual language landing (emoji chip traguardi/seguenti) non allineato all'estetica premium badge+achievement introdotta in app.
 - 2026-04-11: integrata iconografia dedicata anche per gli achievement/traguardi con asset utente in `src/assets/achievements/` (`first_report`, `reporter_5`, `reporter_10`, `reporter_25`, `reporter_50`) ottimizzati e ritagliati in tondo trasparente; introdotto `src/components/AchievementIcon.tsx` e aggiornata `RewardsSheet` per mostrare le medaglie con stato locked in grayscale; verifiche PASS (`npm run typecheck`, `npm run build`, `npm run test:app -- --grep \"account settings panel\"`).
 - 2026-04-11: completata passata "game-ready" dei badge per mobile con pipeline dedicata `npm run badges:optimize` (`scripts/optimize-badge-assets.mjs`): resize a 256px, micro-tuning contrasto/nitidezza e compressione PNG palette mantenendo alpha; peso totale badge ridotto da ~1.59MB a ~206KB (-87.3%) con `typecheck`/`build` verdi.
 - 2026-04-11: integrati i 6 badge finali forniti dall'utente (generati esternamente) sostituendo gli asset in `src/assets/badges/*.png` con versioni pulite a maschera circolare trasparente; `BadgeIcon` aggiornato per usare sempre i raster badge su tutte le taglie evitando fallback line-art; verifica verde con `npm run typecheck` e `npm run build`.

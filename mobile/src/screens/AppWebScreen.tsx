@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebSurface } from "../components/WebSurface";
@@ -86,6 +86,7 @@ export const AppWebScreen = ({ onInitialWebReady }: AppWebScreenProps) => {
   const [showFirstRunTutorial, setShowFirstRunTutorial] = useState<boolean | null>(
     null,
   );
+  const restartTutorialFrameRef = useRef<number | null>(null);
 
   const applyIncomingDeepLink = useCallback((rawUrl: string | null) => {
     if (!rawUrl) return;
@@ -122,13 +123,33 @@ export const AppWebScreen = ({ onInitialWebReady }: AppWebScreenProps) => {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (restartTutorialFrameRef.current == null) return;
+      cancelAnimationFrame(restartTutorialFrameRef.current);
+      restartTutorialFrameRef.current = null;
+    };
+  }, []);
+
   const handleCompleteTutorial = useCallback(() => {
     setShowFirstRunTutorial(false);
     void markOnboardingCompleted();
   }, []);
 
   const handleRestartTutorial = useCallback(() => {
-    void resetOnboarding().then(() => setShowFirstRunTutorial(true));
+    if (restartTutorialFrameRef.current != null) {
+      cancelAnimationFrame(restartTutorialFrameRef.current);
+      restartTutorialFrameRef.current = null;
+    }
+
+    // Force a fresh false->true transition so the overlay always restarts from step 1.
+    setShowFirstRunTutorial(false);
+    void resetOnboarding();
+
+    restartTutorialFrameRef.current = requestAnimationFrame(() => {
+      restartTutorialFrameRef.current = null;
+      setShowFirstRunTutorial(true);
+    });
   }, []);
 
   if (!MOBILE_APP_ACCESS_KEY && !MOBILE_BASE_URL_IS_LOCAL) {

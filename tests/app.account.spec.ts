@@ -39,7 +39,9 @@ test.describe("account settings panel", () => {
     await mockWeatherApi(page);
     await mockReportsFeed(page, []);
 
-    await page.goto(appUiUrl({ reportAnywhere: "1", native_shell: "1" }));
+    await page.goto(
+      appUiUrl({ reportAnywhere: "1", native_shell: "1", mock_auth: "1" }),
+    );
     await openProfileSettings(page);
 
     const popupPromise = page.waitForEvent("popup");
@@ -49,6 +51,59 @@ test.describe("account settings panel", () => {
     await expect(popup).toHaveURL(/\/landing\/\?.*#business-request/);
     await expect(popup).toHaveURL(/src=account/);
     await expect(page).toHaveURL(/\/app\/\?.*native_shell=1/);
+  });
+
+  test("profile restart tutorial posts bridge event in native shell", async ({ page }) => {
+    await page.addInitScript(() => {
+      const browserWindow = window as Window & {
+        __W2B_BRIDGE_MESSAGES__?: string[];
+        ReactNativeWebView?: { postMessage?: (payload: string) => void };
+      };
+      window.sessionStorage.setItem("where2beach-dev-mock-auth-v1", "1");
+      browserWindow.__W2B_BRIDGE_MESSAGES__ = [];
+      browserWindow.ReactNativeWebView = {
+        postMessage(payload: string) {
+          browserWindow.__W2B_BRIDGE_MESSAGES__?.push(payload);
+        },
+      };
+    });
+
+    await grantAppAccess(page.context());
+    await mockAnalyticsApi(page);
+    await mockGeolocation(page.context());
+    await mockWeatherApi(page);
+    await mockReportsFeed(page, []);
+
+    await page.goto(appUiUrl({ reportAnywhere: "1", native_shell: "1" }));
+    await openProfileSettings(page);
+
+    await page.getByTestId("settings-login-row").click();
+    const restartButton = page.getByTestId("profile-restart-tutorial");
+    await expect(restartButton).toBeVisible();
+
+    await restartButton.click();
+    await expect(restartButton).toBeHidden();
+
+    await page.waitForTimeout(220);
+    const bridgeMessages = await page.evaluate(() => {
+      const browserWindow = window as Window & {
+        __W2B_BRIDGE_MESSAGES__?: string[];
+      };
+      return browserWindow.__W2B_BRIDGE_MESSAGES__ ?? [];
+    });
+
+    expect(bridgeMessages.length).toBeGreaterThanOrEqual(2);
+    const restartEvents = bridgeMessages
+      .map((raw) => {
+        try {
+          const parsed = JSON.parse(raw) as { type?: string };
+          return parsed.type ?? null;
+        } catch {
+          return null;
+        }
+      })
+      .filter((value) => value === "w2b-restart-tutorial");
+    expect(restartEvents.length).toBeGreaterThanOrEqual(2);
   });
 
   test("language and interests preferences are persisted in localStorage", async ({

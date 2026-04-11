@@ -28,6 +28,16 @@ Last update: 2026-04-11 (Europe/Rome)
 ```
 
 ## Lessons
+### 2026-04-11 - Restart tutorial da profilo non ripartiva in modo affidabile
+- Contesto: utente mobile in sezione profilo; tap su "Inizia il tutorial" chiudeva il profilo ma non rilanciava la guida.
+- Errore commesso: affidare il riavvio tutorial a un singolo `postMessage` bridge e a un semplice `setShowFirstRunTutorial(true)` senza forzare un reset dello stato quando gia attivo/stale.
+- Segnale ignorato: comportamento utente riproducibile "torno alla schermata profilo, tutorial non parte" dopo click su restart.
+- Causa radice: catena restart fragile su due fronti: bridge web->native senza retry e assenza di transizione garantita `false -> true` nel flag tutorial lato `AppWebScreen`.
+- Fix applicata: in `src/app/App.tsx` inviato `w2b-restart-tutorial` con doppio post (immediato + retry a 120ms); in `mobile/src/screens/AppWebScreen.tsx` restart reso deterministico con reset esplicito (`setShowFirstRunTutorial(false)` + `requestAnimationFrame` -> `true`) e cleanup `cancelAnimationFrame` su unmount.
+- Regola permanente: per comandi UX cross-layer (WebView bridge) evitare trigger one-shot e usare restart idempotenti con retry trasporto + reset stato locale esplicito.
+- Verifica eseguita: `npm run typecheck` PASS, `npm run mobile:typecheck` PASS, `npm run test:app -- --grep "account settings panel"` PASS (incluso nuovo test `profile restart tutorial posts bridge event in native shell`).
+- Guardrail futuro (test/check/alert): mantenere test E2E dedicato al bottone restart tutorial in native shell con assert su chiusura modal e messaggi bridge emessi.
+
 ### 2026-04-11 - Generazione immagini badge bloccata da limite billing API
 - Contesto: richiesta utente di creare nuovi badge "puliti e belli" usando il generatore immagini.
 - Errore commesso: assumere che la disponibilita' di `OPENAI_API_KEY` in `.env.local` fosse sufficiente per completare la generazione batch.
@@ -37,6 +47,16 @@ Last update: 2026-04-11 (Europe/Rome)
 - Regola permanente: quando un task visuale dipende da image API, validare subito (prima del batch) i prerequisiti reali di billing oltre alla sola presenza della key; se billing bloccato, proporre e applicare fallback asset locale per non fermare il rilascio.
 - Verifica eseguita: `npm run typecheck` PASS, `npm run build` PASS, `npm run test:app -- --grep "account settings panel"` PASS.
 - Guardrail futuro (test/check/alert): aggiungere smoke pre-generazione con una singola richiesta immagine e gestione esplicita dell'errore `billing_hard_limit_reached` con switch rapido al fallback locale.
+
+### 2026-04-11 - Build globale bloccato da errore TypeScript non correlato alla landing
+- Contesto: task di allineamento landing (copy/CTA/UI) con test landing verdi; verifica finale `npm run build`.
+- Errore commesso: assumere che il build failure, emerso solo alla fine, fosse potenzialmente introdotto dalle modifiche landing senza isolare subito il file coinvolto.
+- Segnale ignorato: errore compiler puntuale su `src/lib/aggregate.ts` (`hasRoughSea` non presente in `BeachStats`), file fuori scope rispetto ai file `public/landing/*` e test landing.
+- Causa radice: worktree con cambi paralleli attivi (feature gamification/app) e stato TS non completamente verde prima del pass landing.
+- Fix applicata: classificazione esplicita come blocker preesistente/non correlato al pacchetto landing e chiusura task su metriche scope-appropriate (suite landing 6/6 PASS).
+- Regola permanente: quando si lavora su superficie isolata (landing statica), verificare sempre i gate specifici (`test landing`, smoke visual) e, in caso di failure build globale, distinguere subito errori in-scope vs out-of-scope prima di aprire fix collaterali.
+- Verifica eseguita: `npm run test:app -- --grep \"landing conversion safeguards|landing business request form\"` PASS; `npm run build` FAIL con stack in `src/lib/aggregate.ts`.
+- Guardrail futuro (test/check/alert): mantenere un check TS/build baseline separato prima dei task marketing/landing per evitare falsi allarmi su regressioni non correlate.
 
 ### 2026-04-11 - `npm run check` inquinato da `.claude/worktrees/*`
 - Contesto: ricognizione stato repository dopo sessioni con Claude Code e worktree locali presenti sotto `.claude/worktrees/`.

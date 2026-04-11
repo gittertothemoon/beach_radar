@@ -1260,13 +1260,23 @@ function App() {
   });
 
   const handleRestartTutorial = useCallback(() => {
-    setProfileOpen(false);
+    const payload = JSON.stringify({ type: "w2b-restart-tutorial" });
     try {
-      (window as Window & { ReactNativeWebView?: { postMessage?: (p: string) => void } })
-        .ReactNativeWebView?.postMessage?.(JSON.stringify({ type: "w2b-restart-tutorial" }));
+      const browserWindow = window as Window & {
+        ReactNativeWebView?: { postMessage?: (p: string) => void };
+      };
+      browserWindow.ReactNativeWebView?.postMessage?.(payload);
+      window.setTimeout(() => {
+        try {
+          browserWindow.ReactNativeWebView?.postMessage?.(payload);
+        } catch {
+          // Ignore transient bridge errors on delayed retry.
+        }
+      }, 120);
     } catch {
       // Outside native shell — no-op.
     }
+    setProfileOpen(false);
   }, []);
 
   const handleOpenReport = useCallback(() => {
