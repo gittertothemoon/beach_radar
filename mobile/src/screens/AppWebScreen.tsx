@@ -187,6 +187,7 @@ const styles = StyleSheet.create({
   },
   devResetButton: {
     margin: 12,
+    marginBottom: 76,
     paddingHorizontal: 12,
     paddingVertical: 7,
     backgroundColor: "rgba(15, 23, 42, 0.85)",
