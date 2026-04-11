@@ -75,7 +75,7 @@
                     <a href="#partners" class="text-white/80 font-medium hover:text-onda transition-colors" id="link-4">Per aziende</a>
                     <a href="https://apps.apple.com/it/app/where2beach/id6760668956"
                         target="_blank" rel="noopener noreferrer"
-                        data-cta-id="nav_waitlist"
+                        data-cta-id="nav_store_ios"
                         data-cta-section="nav"
                         data-cta-variant="primary"
                         class="bg-corallo text-white px-6 py-2.5 rounded-full font-bold shadow-glow-corallo hover:bg-corallo-hover hover:scale-105 transition-all duration-300">
@@ -105,7 +105,7 @@
             <a href="#partners" class="text-gray-700 font-bold text-lg hover:text-corallo transition-colors">Per aziende</a>
             <a href="https://apps.apple.com/it/app/where2beach/id6760668956"
                 target="_blank" rel="noopener noreferrer"
-                data-cta-id="mobile_nav_waitlist"
+                data-cta-id="mobile_nav_store_ios"
                 data-cta-section="nav"
                 data-cta-variant="primary"
                 class="bg-corallo text-white px-8 py-3 rounded-full font-bold shadow-lg w-11/12 text-center">Scarica l'app</a>
@@ -401,7 +401,17 @@
                         <div>
                             <div class="inline-flex items-center gap-1.5 mb-2 bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">Esclusivo</div>
                             <h3 class="text-lg font-bold text-gray-900 tracking-tight mb-1">Segnala e guadagna premi reali</h3>
-                            <p class="text-gray-500 text-sm md:text-base font-medium leading-relaxed">Ogni segnalazione verificata ti fa guadagnare punti. Più contribuisci, più sblocchi coupon e vantaggi esclusivi dai lidi partner.</p>
+                            <p class="text-gray-500 text-sm md:text-base font-medium leading-relaxed">Ogni segnalazione verificata ti fa guadagnare punti. Sblocchi badge e traguardi subito; i coupon partner sono in arrivo.</p>
+                            <div class="mt-4">
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.1em] text-gray-500">Badge & traguardi in app</div>
+                                <div class="landing-medal-strip mt-2.5">
+                                    <img src="gamification/first_report.png" alt="Traguardo Prima Onda" loading="lazy">
+                                    <img src="gamification/reporter_10.png" alt="Traguardo 10 segnalazioni" loading="lazy">
+                                    <img src="gamification/reporter_25.png" alt="Traguardo 25 segnalazioni" loading="lazy">
+                                    <img src="gamification/wave.png" alt="Badge Cavalcaonde" loading="lazy">
+                                    <img src="gamification/shield.png" alt="Badge Sentinella Costiera" loading="lazy">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -421,27 +431,27 @@
                         <!-- Visual Signal Type Badges -->
                         <div class="signal-badges-grid pl-0 md:pl-[4.75rem]">
                             <span class="signal-badge" style="--badge-delay: 0s">
-                                <span class="signal-badge-icon bg-red-100">🏖️</span>
+                                <span class="signal-badge-dot signal-badge-dot-red"></span>
                                 <span class="text-red-800">Affollamento</span>
                             </span>
                             <span class="signal-badge" style="--badge-delay: 0.06s">
-                                <span class="signal-badge-icon bg-purple-100">🪼</span>
+                                <span class="signal-badge-dot signal-badge-dot-purple"></span>
                                 <span class="text-purple-800">Meduse</span>
                             </span>
                             <span class="signal-badge" style="--badge-delay: 0.12s">
-                                <span class="signal-badge-icon bg-cyan-100">🌊</span>
+                                <span class="signal-badge-dot signal-badge-dot-cyan"></span>
                                 <span class="text-cyan-800">Mare Mosso</span>
                             </span>
                             <span class="signal-badge" style="--badge-delay: 0.18s">
-                                <span class="signal-badge-icon bg-amber-100">🅿️</span>
+                                <span class="signal-badge-dot signal-badge-dot-amber"></span>
                                 <span class="text-amber-800">Parcheggio</span>
                             </span>
                             <span class="signal-badge" style="--badge-delay: 0.24s">
-                                <span class="signal-badge-icon bg-teal-100">💨</span>
+                                <span class="signal-badge-dot signal-badge-dot-teal"></span>
                                 <span class="text-teal-800">Vento</span>
                             </span>
                             <span class="signal-badge" style="--badge-delay: 0.3s">
-                                <span class="signal-badge-icon bg-green-100">🧹</span>
+                                <span class="signal-badge-dot signal-badge-dot-green"></span>
                                 <span class="text-green-800">Pulizia</span>
                             </span>
                         </div>
@@ -652,8 +662,8 @@
                             </div>
                             <div>
                                 <strong class="text-gray-900 text-lg">Gamification & Rewards</strong>
-                                <p class="text-gray-600 text-sm mt-1 leading-relaxed">Sistema di reward integrato che
-                                    premia chi aiuta la community con coupon e sconti esclusivi nei lidi partner.</p>
+                                <p class="text-gray-600 text-sm mt-1 leading-relaxed">Sistema reward con punti, badge e
+                                    traguardi progressivi. I coupon partner arriveranno con il prossimo rollout.</p>
                             </div>
                         </li>
                     </ul>
@@ -747,6 +757,8 @@
                     data-cta-id="waitlist_store_ios"
                     data-cta-section="waitlist"
                     data-cta-variant="primary"
+                    data-scroll-target="#waitlist"
+                    data-focus-target="#landing-email-input"
                     class="flex items-center justify-center gap-3 bg-white text-gray-900 px-8 py-4 rounded-[2rem] hover:bg-white/90 transition-all font-bold shadow-glass hover:-translate-y-1 group text-lg">
                     <svg class="w-7 h-7 fill-current group-hover:text-mare transition-colors" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg">
                         <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />

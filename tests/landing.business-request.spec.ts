@@ -73,7 +73,7 @@ test.describe("landing conversion safeguards", () => {
     await expect(pageErrors).toEqual([]);
   });
 
-  test("waitlist store CTA scrolls and focuses the email input", async ({ page }) => {
+  test("store CTA scrolls and focuses the email input", async ({ page }) => {
     await page.goto("/landing/");
 
     await page.locator('[data-cta-id="waitlist_store_ios"]').click();
@@ -120,7 +120,7 @@ test.describe("landing conversion safeguards", () => {
     });
 
     await page.goto("/landing/?utm_source=test&utm_medium=e2e&utm_campaign=landing");
-    await page.locator('[data-cta-id="nav_waitlist"]').click();
+    await page.locator('[data-cta-id="nav_store_ios"]').click();
     await page.locator("#landing-email-input").fill("qa.landing@example.org");
     await page.locator("#landing-email-submit").click();
     await page.waitForTimeout(400);
