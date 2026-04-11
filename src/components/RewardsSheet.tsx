@@ -102,15 +102,27 @@ const RewardsSheet = ({
               ? "border-sky-300/35 bg-sky-500/10"
               : "border-white/12 bg-black/30",
           ].join(" ")}>
-            <div className="flex items-center justify-between">
-              <div className={[
-                "text-[12px] font-semibold uppercase tracking-[0.08em]",
-                done ? "text-sky-200/90" : "text-sky-100/70",
-              ].join(" ")}>
-                {STRINGS.account.missionsTitle}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className={[
+                  "text-[12px] font-semibold uppercase tracking-[0.08em]",
+                  done ? "text-sky-200/90" : "text-sky-100/70",
+                ].join(" ")}>
+                  {STRINGS.account.missionsTitle}
+                </div>
+                <span className={[
+                  "rounded-full border px-2 py-0.5 text-[10px] font-bold",
+                  weeklyMission.claimed
+                    ? "border-slate-600/40 bg-black/30 text-slate-500"
+                    : done
+                      ? "border-sky-300/50 bg-sky-500/20 text-sky-200"
+                      : "border-sky-400/30 bg-sky-500/10 text-sky-300/80",
+                ].join(" ")}>
+                  +{weeklyMission.reward} pt
+                </span>
               </div>
               <div className={[
-                "text-[11px] font-semibold",
+                "text-[11px] font-semibold shrink-0",
                 done ? "text-sky-200" : "text-slate-400",
               ].join(" ")}>
                 {weeklyMission.claimed
