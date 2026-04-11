@@ -1,6 +1,6 @@
 # CODEX Working Memory
 
-Last update: 2026-04-11 22:12 (Europe/Rome)
+Last update: 2026-04-11 22:58 (Europe/Rome)
 
 ## Obiettivo condiviso
 - Massimo livello su design, funzionalita', affidabilita' reale.
@@ -47,6 +47,7 @@ Last update: 2026-04-11 22:12 (Europe/Rome)
 3. Prossimo sviluppo su feature/design con baseline verde.
 
 ## Log sintetico
+- 2026-04-11: completata release iOS verso App Store Connect dopo fix del version train: prima submit del build `20` rifiutata da Apple (`1.0.1` train chiuso), quindi bump `mobile/app.json` a `1.0.2`, nuova build production `21` (`d88e11aa-ff12-4c91-b29c-db62ae9bc107`) e submit riuscita (`8206af73-8ac6-4bb0-a0bf-158d2313bea6`), ora in processing Apple.
 - 2026-04-11: eseguita nuova build EAS iOS production richiesta utente dopo fix tutorial; build cloud `f8fc887f-eb26-49c9-a03f-ff3416ca9edb` completata `FINISHED` con `appBuildVersion=20` e IPA pronta (`https://expo.dev/artifacts/eas/wKgeRzXkhCXJcmN7dHTpot.ipa`), mantenendo riferimento al commit `67fe7de`.
 - 2026-04-11: confermato stato "app live nello store"; fase corrente spostata su marketing execution con priorita' acquisizione installazioni (ASO, paid search minima, creator/local partnerships, referral loop e KPI funnel install -> first open -> first report).
 - 2026-04-11: entrati in fase go-to-market con priorita' acquisizione download: obiettivo operativo immediato su distribuzione (App Store/TestFlight), conversione store listing (ASO base + screenshot/video) e attivazione loop referral in-app per accelerare installazioni senza regressioni di prodotto.

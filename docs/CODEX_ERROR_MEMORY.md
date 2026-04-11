@@ -28,6 +28,16 @@ Last update: 2026-04-11 (Europe/Rome)
 ```
 
 ## Lessons
+### 2026-04-11 - Submit App Store rifiutata per version train chiuso
+- Contesto: submit iOS production del build `20` verso App Store Connect dopo build EAS completata.
+- Errore commesso: rilanciare piu volte `eas submit` sulla stessa versione app `1.0.1`, trattando il failure come problema transitorio del submitter.
+- Segnale ignorato: stato submission `ERRORED` ripetuto con stesso pattern, senza dettagli nel log CLI standard.
+- Causa radice: App Store Connect rifiutava nuove upload sulla versione `1.0.1` (train chiuso / versione non piu accettata), errore `EAS_UPLOAD_TO_ASC_CLOSED_VERSION_TRAIN`.
+- Fix applicata: ispezione stato submission via GraphQL API Expo (`submissions.byId -> jobRun.errors`) per ottenere l'errore reale; bump `mobile/app.json` `version` da `1.0.1` a `1.0.2`, nuova build production (`21`) e nuova submit completata con successo.
+- Regola permanente: quando `eas submit` fallisce senza dettaglio CLI, verificare subito `jobRun.errors` della submission; se errore e' `CLOSED_VERSION_TRAIN`, incrementare `CFBundleShortVersionString` e rifare build+submit.
+- Verifica eseguita: build `d88e11aa-ff12-4c91-b29c-db62ae9bc107` `FINISHED`; submit `8206af73-8ac6-4bb0-a0bf-158d2313bea6` `✔ Submitted your app to Apple App Store Connect`.
+- Guardrail futuro (test/check/alert): prima di submit iOS, validare che `expo.version` sia superiore all'ultimo train chiuso in App Store Connect per evitare retry inutili sullo stesso binario.
+
 ### 2026-04-11 - Restart tutorial da profilo non ripartiva in modo affidabile
 - Contesto: utente mobile in sezione profilo; tap su "Inizia il tutorial" chiudeva il profilo ma non rilanciava la guida.
 - Errore commesso: affidare il riavvio tutorial a un singolo `postMessage` bridge e a un semplice `setShowFirstRunTutorial(true)` senza forzare un reset dello stato quando gia attivo/stale.

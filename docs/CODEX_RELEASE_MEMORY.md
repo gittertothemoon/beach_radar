@@ -1,6 +1,6 @@
 # CODEX Release Memory
 
-Last update: 2026-04-11 22:12 (Europe/Rome)
+Last update: 2026-04-11 22:58 (Europe/Rome)
 
 ## Scopo
 - Evitare di ripetere ogni volta il flusso di rilascio mobile.
@@ -59,6 +59,11 @@ Note:
 
 ## Ultima esecuzione release
 - 2026-04-11: eseguita build iOS production con commit `67fe7de` (fix restart tutorial mobile) tramite `npm --prefix mobile run eas:build:ios:prod`; build completata `FINISHED` su EAS con `appBuildVersion=20` e artefatto `.ipa` disponibile su `https://expo.dev/artifacts/eas/wKgeRzXkhCXJcmN7dHTpot.ipa`.
+- 2026-04-11: tentata submit App Store del build `20` fallita con errore `EAS_UPLOAD_TO_ASC_CLOSED_VERSION_TRAIN` (versione `1.0.1` non piu accettata da App Store Connect); fix operativo applicato subito con bump `expo.version` a `1.0.2` in `mobile/app.json`, nuova build iOS production `21` (`d88e11aa-ff12-4c91-b29c-db62ae9bc107`) e submit completata con successo (`8206af73-8ac6-4bb0-a0bf-158d2313bea6`, stato Apple: processing).
+
+## Guardrail version train App Store
+- Se la submit iOS fallisce con `EAS_UPLOAD_TO_ASC_CLOSED_VERSION_TRAIN`, non ripetere la submit sullo stesso binario/versione.
+- Azione corretta obbligatoria: incrementare `expo.version` (`CFBundleShortVersionString`) a una versione superiore, rifare `eas build` e solo dopo rilanciare `eas submit`.
 
 ## Stato OTA
 - Al 2026-03-28 non risultano configurazioni OTA esplicite (`runtimeVersion` / `updates`).
