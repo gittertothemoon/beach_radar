@@ -251,7 +251,7 @@ const ReportModal = ({
               4. {STRINGS.report.specialConditions}{" "}
               <span className="text-[10px] lowercase font-normal opacity-60">(opzionale)</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 data-testid="report-jellyfish-toggle"
