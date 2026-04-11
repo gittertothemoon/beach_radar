@@ -72,6 +72,8 @@ export const STRINGS = {
     reviews: "Recensioni",
     jellyfish: "Meduse",
     algae: "Alghe",
+    roughSea: "Mare agitato",
+    strongWind: "Vento forte",
   },
   status: {
     live: "Aggiornato ora",
@@ -175,6 +177,8 @@ export const STRINGS = {
     specialConditions: "Condizioni speciali",
     hasJellyfish: "Meduse presenti",
     hasAlgae: "Alghe presenti",
+    hasRoughSea: "Mare agitato",
+    hasStrongWind: "Vento forte",
     presenceDetected: "Segnalate",
     thanksPrompt: "✅ Grazie. Vuoi aiutare anche gli altri?",
     thanksSubtitle: "Condividi l'aggiornamento per aiutare chi sta arrivando.",

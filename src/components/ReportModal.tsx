@@ -39,7 +39,7 @@ type ReportModalProps = {
     level: CrowdLevel,
     water?: WaterLevel,
     beach?: BeachLevel,
-    options?: { hasJellyfish?: boolean; hasAlgae?: boolean },
+    options?: { hasJellyfish?: boolean; hasAlgae?: boolean; hasRoughSea?: boolean; hasStrongWind?: boolean },
   ) => void;
   submitError: string | null;
   submitting?: boolean;
@@ -65,6 +65,8 @@ const ReportModal = ({
   const [selectedBeach, setSelectedBeach] = useState<BeachLevel | null>(null);
   const [hasJellyfish, setHasJellyfish] = useState(false);
   const [hasAlgae, setHasAlgae] = useState(false);
+  const [hasRoughSea, setHasRoughSea] = useState(false);
+  const [hasStrongWind, setHasStrongWind] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -274,6 +276,30 @@ const ReportModal = ({
               >
                 {STRINGS.report.hasAlgae}
               </button>
+              <button
+                type="button"
+                data-testid="report-rough-sea-toggle"
+                onClick={() => setHasRoughSea((prev) => !prev)}
+                disabled={!canReport || submitting}
+                className={`br-press rounded-[10px] border px-3 py-2.5 text-[12px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${hasRoughSea
+                    ? "border-blue-300/60 bg-blue-500/20 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
+                    : "border-white/10 bg-black/30 br-text-tertiary hover:border-white/20 hover:bg-black/40"
+                  }`}
+              >
+                {STRINGS.report.hasRoughSea}
+              </button>
+              <button
+                type="button"
+                data-testid="report-strong-wind-toggle"
+                onClick={() => setHasStrongWind((prev) => !prev)}
+                disabled={!canReport || submitting}
+                className={`br-press rounded-[10px] border px-3 py-2.5 text-[12px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${hasStrongWind
+                    ? "border-violet-300/60 bg-violet-500/20 text-violet-100 shadow-[0_0_15px_rgba(139,92,246,0.15)]"
+                    : "border-white/10 bg-black/30 br-text-tertiary hover:border-white/20 hover:bg-black/40"
+                  }`}
+              >
+                {STRINGS.report.hasStrongWind}
+              </button>
             </div>
           </div>
 
@@ -283,6 +309,8 @@ const ReportModal = ({
               onSubmit(selectedCrowd, selectedWater ?? undefined, selectedBeach ?? undefined, {
                 hasJellyfish: hasJellyfish ? true : undefined,
                 hasAlgae: hasAlgae ? true : undefined,
+                hasRoughSea: hasRoughSea ? true : undefined,
+                hasStrongWind: hasStrongWind ? true : undefined,
               })
             }
             data-testid="report-submit"

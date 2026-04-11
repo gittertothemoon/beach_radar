@@ -54,6 +54,8 @@ type PublicReport = {
   beachCondition?: 1 | 2 | 3;
   hasJellyfish?: boolean;
   hasAlgae?: boolean;
+  hasRoughSea?: boolean;
+  hasStrongWind?: boolean;
   createdAt: number;
   attribution?: unknown;
 };
@@ -161,6 +163,8 @@ function sanitizeAttribution(value: unknown): Record<string, unknown> | null {
     "last_seen_at",
     "has_jellyfish",
     "has_algae",
+    "has_rough_sea",
+    "has_strong_wind",
   ];
 
   for (const key of allowed) {
@@ -183,16 +187,16 @@ function mergeAttributionFlags(
   attribution: Record<string, unknown> | null,
   hasJellyfish: boolean | undefined,
   hasAlgae: boolean | undefined,
+  hasRoughSea: boolean | undefined,
+  hasStrongWind: boolean | undefined,
 ): Record<string, unknown> | null {
   const merged: Record<string, unknown> = {
     ...(attribution ?? {}),
   };
-  if (hasJellyfish !== undefined) {
-    merged.has_jellyfish = hasJellyfish;
-  }
-  if (hasAlgae !== undefined) {
-    merged.has_algae = hasAlgae;
-  }
+  if (hasJellyfish !== undefined) merged.has_jellyfish = hasJellyfish;
+  if (hasAlgae !== undefined) merged.has_algae = hasAlgae;
+  if (hasRoughSea !== undefined) merged.has_rough_sea = hasRoughSea;
+  if (hasStrongWind !== undefined) merged.has_strong_wind = hasStrongWind;
   return Object.keys(merged).length > 0 ? merged : null;
 }
 
@@ -266,6 +270,12 @@ function toPublicReport(row: ReportRow): PublicReport | null {
   const hasAlgaeRaw =
     parseOptionalBoolean(attribution?.has_algae) ??
     parseOptionalBoolean(attribution?.hasAlgae);
+  const hasRoughSeaRaw =
+    parseOptionalBoolean(attribution?.has_rough_sea) ??
+    parseOptionalBoolean(attribution?.hasRoughSea);
+  const hasStrongWindRaw =
+    parseOptionalBoolean(attribution?.has_strong_wind) ??
+    parseOptionalBoolean(attribution?.hasStrongWind);
 
   return {
     id: row.id,
@@ -275,6 +285,8 @@ function toPublicReport(row: ReportRow): PublicReport | null {
     beachCondition: parseBeachLevel(row.beach_condition) ?? undefined,
     hasJellyfish: typeof hasJellyfishRaw === "boolean" ? hasJellyfishRaw : undefined,
     hasAlgae: typeof hasAlgaeRaw === "boolean" ? hasAlgaeRaw : undefined,
+    hasRoughSea: typeof hasRoughSeaRaw === "boolean" ? hasRoughSeaRaw : undefined,
+    hasStrongWind: typeof hasStrongWindRaw === "boolean" ? hasStrongWindRaw : undefined,
     createdAt,
     attribution: row.attribution ?? undefined,
   };
@@ -478,6 +490,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ ok: false, error: "invalid_has_algae" });
   }
 
+  const hasRoughSea = parseOptionalBoolean(body.hasRoughSea);
+  if (hasRoughSea === null) {
+    return res.status(400).json({ ok: false, error: "invalid_has_rough_sea" });
+  }
+
+  const hasStrongWind = parseOptionalBoolean(body.hasStrongWind);
+  if (hasStrongWind === null) {
+    return res.status(400).json({ ok: false, error: "invalid_has_strong_wind" });
+  }
+
   const reporterHashRaw = toSingleString(body.reporterHash);
   if (reporterHashRaw && reporterHashRaw.length > MAX_REPORTER_HASH_LENGTH) {
     return res.status(400).json({ ok: false, error: "invalid_reporter_hash" });
@@ -487,6 +509,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     sanitizeAttribution(body.attribution),
     hasJellyfish,
     hasAlgae,
+    hasRoughSea,
+    hasStrongWind,
   );
   const nowIso = new Date().toISOString();
   const rateSinceIso = new Date(

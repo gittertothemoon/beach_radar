@@ -342,6 +342,22 @@ const LidoModalCardComponent = ({
                 </span>
               </div>
             ) : null}
+            {beach.hasRoughSea ? (
+              <div className="mt-3 flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-tertiary border-t border-white/5 pt-3">
+                <span>{STRINGS.labels.roughSea}</span>
+                <span className="text-[11px] font-semibold br-text-primary">
+                  {STRINGS.report.presenceDetected}
+                </span>
+              </div>
+            ) : null}
+            {beach.hasStrongWind ? (
+              <div className="mt-3 flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-tertiary border-t border-white/5 pt-3">
+                <span>{STRINGS.labels.strongWind}</span>
+                <span className="text-[11px] font-semibold br-text-primary">
+                  {STRINGS.report.presenceDetected}
+                </span>
+              </div>
+            ) : null}
             <div className="mt-3 grid gap-2 border-t border-white/5 pt-3">
               <div className="flex items-center justify-between">
                 <span className="br-text-tertiary">
@@ -688,6 +704,8 @@ const lidoModalEqual = (prev: LidoModalCardProps, next: LidoModalCardProps) => {
     a.beachCondition === b.beachCondition &&
     a.hasJellyfish === b.hasJellyfish &&
     a.hasAlgae === b.hasAlgae &&
+    a.hasRoughSea === b.hasRoughSea &&
+    a.hasStrongWind === b.hasStrongWind &&
     a.confidence === b.confidence &&
     a.updatedAt === b.updatedAt &&
     a.reportsCount === b.reportsCount &&

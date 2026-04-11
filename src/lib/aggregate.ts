@@ -38,6 +38,8 @@ const aggregateFromReports = (
   let activeCount = 0;
   let hasJellyfish = false;
   let hasAlgae = false;
+  let hasRoughSea = false;
+  let hasStrongWind = false;
 
   for (const report of reports) {
     const ageMin = (now - report.createdAt) / 60000;
@@ -56,12 +58,10 @@ const aggregateFromReports = (
     if (report.beachCondition) {
       beachWeights.set(report.beachCondition, (beachWeights.get(report.beachCondition) ?? 0) + weight);
     }
-    if (report.hasJellyfish) {
-      hasJellyfish = true;
-    }
-    if (report.hasAlgae) {
-      hasAlgae = true;
-    }
+    if (report.hasJellyfish) hasJellyfish = true;
+    if (report.hasAlgae) hasAlgae = true;
+    if (report.hasRoughSea) hasRoughSea = true;
+    if (report.hasStrongWind) hasStrongWind = true;
 
     if (report.createdAt > latestReportAt) latestReportAt = report.createdAt;
   }
@@ -129,6 +129,8 @@ const aggregateFromReports = (
     beachCondition: bestBeachLevel,
     hasJellyfish,
     hasAlgae,
+    hasRoughSea,
+    hasStrongWind,
     state,
     confidence,
     updatedAt: latestReportAt,

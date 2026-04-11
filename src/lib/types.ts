@@ -56,6 +56,8 @@ export type Report = {
   beachCondition?: BeachLevel;
   hasJellyfish?: boolean;
   hasAlgae?: boolean;
+  hasRoughSea?: boolean;
+  hasStrongWind?: boolean;
   reporterHash?: string;
   attribution?: AttributionSnapshot;
 };
@@ -77,6 +79,8 @@ export type BeachStats = {
   beachCondition?: BeachLevel;
   hasJellyfish?: boolean;
   hasAlgae?: boolean;
+  hasRoughSea?: boolean;
+  hasStrongWind?: boolean;
   state: BeachState;
   confidence: number;
   updatedAt: number | null;

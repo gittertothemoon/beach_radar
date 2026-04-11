@@ -23,6 +23,8 @@ type SelectedBeachForReport = {
 type SubmitReportExtraOptions = {
   hasJellyfish?: boolean;
   hasAlgae?: boolean;
+  hasRoughSea?: boolean;
+  hasStrongWind?: boolean;
 };
 
 type UseReportSubmissionInput = {
@@ -115,6 +117,8 @@ export const useReportSubmission = ({
         beachCondition,
         hasJellyfish: options?.hasJellyfish,
         hasAlgae: options?.hasAlgae,
+        hasRoughSea: options?.hasRoughSea,
+        hasStrongWind: options?.hasStrongWind,
         reporterHash,
         attribution,
       })

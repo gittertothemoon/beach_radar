@@ -82,6 +82,14 @@ const parseReport = (value: unknown): Report | null => {
     toOptionalBoolean(value.hasAlgae) ??
     toOptionalBoolean(attribution?.has_algae) ??
     toOptionalBoolean(attribution?.hasAlgae);
+  const hasRoughSea =
+    toOptionalBoolean(value.hasRoughSea) ??
+    toOptionalBoolean(attribution?.has_rough_sea) ??
+    toOptionalBoolean(attribution?.hasRoughSea);
+  const hasStrongWind =
+    toOptionalBoolean(value.hasStrongWind) ??
+    toOptionalBoolean(attribution?.has_strong_wind) ??
+    toOptionalBoolean(attribution?.hasStrongWind);
 
   if (crowdLevel === null || createdAt === null || !isCrowdLevel(crowdLevel)) {
     return null;
@@ -94,6 +102,8 @@ const parseReport = (value: unknown): Report | null => {
     beachCondition: beachConditionRaw && isBeachLevel(beachConditionRaw) ? beachConditionRaw : undefined,
     hasJellyfish,
     hasAlgae,
+    hasRoughSea,
+    hasStrongWind,
     createdAt,
     attribution: isAttributionSnapshot(attribution)
       ? attribution
@@ -158,6 +168,8 @@ const buildMockReport = (input: {
   beachCondition?: import("./types").BeachLevel;
   hasJellyfish?: boolean;
   hasAlgae?: boolean;
+  hasRoughSea?: boolean;
+  hasStrongWind?: boolean;
   attribution?: AttributionSnapshot;
 }): Report => ({
   id: `mock-report-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -167,6 +179,8 @@ const buildMockReport = (input: {
   beachCondition: input.beachCondition,
   hasJellyfish: input.hasJellyfish,
   hasAlgae: input.hasAlgae,
+  hasRoughSea: input.hasRoughSea,
+  hasStrongWind: input.hasStrongWind,
   createdAt: Date.now(),
   attribution: input.attribution,
 });
@@ -211,6 +225,8 @@ export const submitSharedReport = async (input: {
   beachCondition?: import("./types").BeachLevel;
   hasJellyfish?: boolean;
   hasAlgae?: boolean;
+  hasRoughSea?: boolean;
+  hasStrongWind?: boolean;
   reporterHash: string;
   attribution?: AttributionSnapshot;
 }): Promise<SubmitReportResult> => {
