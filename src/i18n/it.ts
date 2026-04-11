@@ -3,11 +3,11 @@ export const STRINGS = {
   actions: {
     close: "Chiudi",
     share: "Condividi",
-    report: "Segnala",
+    report: "Aggiorna",
     createAccount: "Crea account",
     addFavorite: "Aggiungi ai preferiti",
     removeFavorite: "Rimuovi preferito",
-    reportCrowd: "Segnala affollamento",
+    reportCrowd: "Aggiorna la mappa",
     showAllPins: "Mostra tutti i pin",
     openInMaps: "Apri su Mappe",
     clearSearch: "Cancella ricerca",
@@ -21,7 +21,7 @@ export const STRINGS = {
     myLocation: "La mia posizione",
     closeBeachDetails: "Chiudi dettagli spiaggia",
     closeReport: "Chiudi segnalazione",
-    reportBeach: (beachName: string) => `Segnala ${beachName}`,
+    reportBeach: (beachName: string) => `Aggiorna ${beachName}`,
     beachDetails: (beachName: string) => `Dettagli ${beachName}`,
     toggleFavoriteBeach: (beachName: string, isFavorite: boolean) =>
       isFavorite
@@ -29,7 +29,7 @@ export const STRINGS = {
         : `Aggiungi ${beachName} ai preferiti`,
   },
   banners: {
-    limitedData: "Pochi dati recenti. Aiutaci con una segnalazione.",
+    limitedData: "Pochi dati recenti. Aggiorna la mappa!",
   },
   search: {
     label: "Cerca",
@@ -156,20 +156,20 @@ export const STRINGS = {
       count === 1 ? "1 segnalazione" : `${count} segnalazioni`,
   },
   report: {
-    title: "Segnala affollamento",
-    submitting: "Invio segnalazione...",
+    title: "Com'è adesso?",
+    submitting: "Sto aggiornando...",
     locationSearching: "Sto cercando la tua posizione...",
-    locationDenied: "Posizione negata. Attivala per segnalare.",
+    locationDenied: "Posizione negata. Attivala per aggiornare la mappa.",
     locationUnavailable: "Posizione non disponibile.",
-    locationRequired: "Attiva la posizione per segnalare.",
-    tooFar: "Sei troppo lontano per segnalare qui. Avvicinati alla spiaggia.",
+    locationRequired: "Attiva la posizione per aggiornare la mappa.",
+    tooFar: "Sei troppo lontano per aggiornare qui. Avvicinati alla spiaggia.",
     remoteAllowed:
-      "Segnalazione da remoto attiva. Puoi segnalare anche se lontano.",
-    nearEnough: "Sei vicino alla spiaggia. Puoi segnalare.",
-    tooSoon: "Hai già segnalato da poco. Riprova tra qualche minuto.",
-    accountRequired: "Per inviare segnalazioni devi accedere o registrarti.",
+      "Aggiornamento da remoto attivo. Puoi aggiornare anche se lontano.",
+    nearEnough: "Sei vicino alla spiaggia. Puoi aggiornare.",
+    tooSoon: "Hai già aggiornato di recente. Riprova tra qualche minuto.",
+    accountRequired: "Per aggiornare la mappa devi accedere o registrarti.",
     submitFailed:
-      "Non riesco a salvare la segnalazione ora. Riprova tra poco.",
+      "Non riesco a salvare l'aggiornamento ora. Riprova tra poco.",
     feedUnavailable:
       "Dati segnalazioni non disponibili al momento. Riprova tra poco.",
     specialConditions: "Condizioni speciali",
@@ -177,18 +177,18 @@ export const STRINGS = {
     hasAlgae: "Alghe presenti",
     presenceDetected: "Segnalate",
     thanksPrompt: "✅ Grazie. Vuoi aiutare anche gli altri?",
-    thanksSubtitle: "Condividi la segnalazione per aggiornare chi sta arrivando.",
+    thanksSubtitle: "Condividi l'aggiornamento per aiutare chi sta arrivando.",
   },
   account: {
     requiredForFavorites:
       "Per salvare i preferiti devi creare un account. La navigazione dell'app resta libera.",
     requiredForReports:
-      "Per inviare segnalazioni devi accedere o registrarti.",
+      "Per aggiornare la mappa devi accedere o registrarti.",
     profileHintGuest: "Accedi o registrati per salvare i preferiti.",
     title: "Account richiesto",
     subtitle: "Crea un account per salvare e ritrovare i tuoi lidi preferiti.",
     subtitleReports:
-      "Accedi o registrati per inviare segnalazioni affidabili alla community.",
+      "Accedi o registrati per aggiornare la mappa e aiutare la community.",
     continueToRegister: "Crea e continua",
     registerTitle: "Registrazione",
     registerSubtitle: "Completa la registrazione e torni subito in app.",
@@ -400,7 +400,7 @@ export const STRINGS = {
     send: "Invia",
     sending: "ONDA sta scrivendo...",
     quickQuestions: {
-      report: "Come segnalo affollamento?",
+      report: "Come aggiorno la mappa?",
       favorites: "Come salvo un preferito?",
       states: "Cosa significa stato PRED?",
     },
