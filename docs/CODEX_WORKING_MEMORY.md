@@ -1,6 +1,6 @@
 # CODEX Working Memory
 
-Last update: 2026-04-11 21:53 (Europe/Rome)
+Last update: 2026-04-11 22:12 (Europe/Rome)
 
 ## Obiettivo condiviso
 - Massimo livello su design, funzionalita', affidabilita' reale.
@@ -47,6 +47,9 @@ Last update: 2026-04-11 21:53 (Europe/Rome)
 3. Prossimo sviluppo su feature/design con baseline verde.
 
 ## Log sintetico
+- 2026-04-11: eseguita nuova build EAS iOS production richiesta utente dopo fix tutorial; build cloud `f8fc887f-eb26-49c9-a03f-ff3416ca9edb` completata `FINISHED` con `appBuildVersion=20` e IPA pronta (`https://expo.dev/artifacts/eas/wKgeRzXkhCXJcmN7dHTpot.ipa`), mantenendo riferimento al commit `67fe7de`.
+- 2026-04-11: confermato stato "app live nello store"; fase corrente spostata su marketing execution con priorita' acquisizione installazioni (ASO, paid search minima, creator/local partnerships, referral loop e KPI funnel install -> first open -> first report).
+- 2026-04-11: entrati in fase go-to-market con priorita' acquisizione download: obiettivo operativo immediato su distribuzione (App Store/TestFlight), conversione store listing (ASO base + screenshot/video) e attivazione loop referral in-app per accelerare installazioni senza regressioni di prodotto.
 - 2026-04-11: fix bug restart tutorial da profilo mobile: il comando web `w2b-restart-tutorial` ora viene inviato con retry bridge in `src/app/App.tsx` (doppio post a 120ms) e il contenitore mobile forza sempre un reset reale del tutorial con transizione `false -> true` in `mobile/src/screens/AppWebScreen.tsx` (con cleanup `cancelAnimationFrame`); aggiunto test Playwright di regressione `profile restart tutorial posts bridge event in native shell` in `tests/app.account.spec.ts`; verifiche PASS (`npm run typecheck`, `npm run mobile:typecheck`, `npm run test:app -- --grep "account settings panel"`).
 - 2026-04-11: allineata landing al prodotto corrente lato gamification/commercial promise: copy aggiornato su coupon (`coming soon`), CTA tracking rinominate (`nav_store_ios`, `mobile_nav_store_ios`) con test Playwright aggiornati, e sostituzione visual chip emoji con medaglie reali (`public/landing/gamification/*.png`) + dot indicators coerenti; suite landing PASS (`6/6`). Nota: `npm run build` finale bloccato da errore TypeScript preesistente/non correlato in `src/lib/aggregate.ts` (`hasRoughSea` non presente in `BeachStats`).
 - 2026-04-11: eseguito audit coerenza landing vs prodotto attuale: base narrativa allineata (live crowd/meteo/community + CTA iOS + Android waitlist) ma rilevate incoerenze prioritarie da correggere: copy promesse coupon "attivi" mentre in app e' ancora "coming soon", naming tecnico `waitlist_*` su CTA iOS gia' live, e visual language landing (emoji chip traguardi/seguenti) non allineato all'estetica premium badge+achievement introdotta in app.

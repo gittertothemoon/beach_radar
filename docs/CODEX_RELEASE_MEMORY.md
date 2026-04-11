@@ -1,6 +1,6 @@
 # CODEX Release Memory
 
-Last update: 2026-03-29 22:28 (Europe/Rome)
+Last update: 2026-04-11 22:12 (Europe/Rome)
 
 ## Scopo
 - Evitare di ripetere ogni volta il flusso di rilascio mobile.
@@ -11,6 +11,15 @@ Last update: 2026-03-29 22:28 (Europe/Rome)
 - L'utente vuole dire solo "facciamo update".
 - Codex deve decidere e gestire il flusso corretto end-to-end.
 - Se mancano prerequisiti tecnici, Codex deve segnalarli e proporre fix immediato.
+
+## Fase distribuzione (download-first)
+- Quando il prodotto e' percepito "pronto", la priorita' passa da feature-build a distribuzione: pubblicazione store, ottimizzazione conversione pagina app e attivazione canali acquisizione.
+- Stato where2beach attuale: app dichiarata live nello store; quindi la priorita' non e' piu il submit tecnico ma la crescita installazioni qualificate.
+- Sequenza standard per where2beach:
+1. garantire disponibilita' installabile (`App Store` live o `TestFlight` con tester target);
+2. allineare store listing (screenshot coerenti, value proposition sopra la piega, CTA chiare);
+3. misurare conversione minima (view pagina -> installazione -> prima apertura) e iterare settimanalmente.
+- Regola operativa: nessun ciclo marketing senza link installabile verificato e tracciamento eventi base (`store tap`, `first_open`, `report_submitted`) gia' attivo.
 
 ## Regola decisionale (single source of truth)
 1. Se il cambiamento e' solo JS/UI/logica webview (nessun cambiamento nativo):
@@ -47,6 +56,9 @@ Note:
 - `eas.json` ha `autoIncrement: true` in production.
 - App Store Connect iOS gia' configurato (`submit.production.ios.ascAppId`).
 - Se la build e' gia' stata caricata in App Store Connect/TestFlight (es. build pronta in stato distribuibile), non serve rifare `submit`: basta entrare nella pagina versione iOS, associare quella build alla nuova versione App Store e inviare la versione ad App Review.
+
+## Ultima esecuzione release
+- 2026-04-11: eseguita build iOS production con commit `67fe7de` (fix restart tutorial mobile) tramite `npm --prefix mobile run eas:build:ios:prod`; build completata `FINISHED` su EAS con `appBuildVersion=20` e artefatto `.ipa` disponibile su `https://expo.dev/artifacts/eas/wKgeRzXkhCXJcmN7dHTpot.ipa`.
 
 ## Stato OTA
 - Al 2026-03-28 non risultano configurazioni OTA esplicite (`runtimeVersion` / `updates`).
