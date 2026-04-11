@@ -30,9 +30,11 @@ import { getDevMockAccount } from "../lib/devMockAuth";
 import {
   fetchAccountRewards,
   redeemBadge,
+  claimMissionReward,
   awardMockPoints,
   getMockBalance,
   type AccountRewardsSummary,
+  type GamificationCelebrationEvent,
 } from "../lib/rewards";
 import {
   loadActiveBadge,
@@ -130,6 +132,7 @@ const PerformanceOverlay = lazy(() => import("../components/PerformanceOverlay")
 const AccountRequiredModal = lazy(() => import("../components/AccountRequiredModal"));
 const ProfileModal = lazy(() => import("../components/ProfileModal"));
 const BadgeCelebrationModal = lazy(() => import("../components/BadgeCelebrationModal"));
+const GamificationCelebrationModal = lazy(() => import("../components/GamificationCelebrationModal"));
 
 type ToastTone = "info" | "success" | "error";
 
@@ -208,6 +211,9 @@ function App() {
   const [redeemingBadgeCode, setRedeemingBadgeCode] = useState<string | null>(null);
   const [activeBadge, setActiveBadge] = useState<ActiveBadge | null>(() => loadActiveBadge());
   const [celebrationBadge, setCelebrationBadge] = useState<ActiveBadge & { description: string } | null>(null);
+  const [pendingGamification, setPendingGamification] = useState<GamificationCelebrationEvent[]>([]);
+  const [claimingMission, setClaimingMission] = useState(false);
+  const rewardsSummaryRef = useRef<AccountRewardsSummary | null>(null);
   const [reportThanksOpen, setReportThanksOpen] = useState(false);
   const [lastReportReward, setLastReportReward] = useState<{ awardedPoints: number; newBalance: number | null } | null>(null);
   const [reportsFeedReady, setReportsFeedReady] = useState(false);
@@ -485,16 +491,37 @@ function App() {
   });
 
   const refreshRewards = useCallback(
-    async (options?: { silent?: boolean }) => {
+    async (options?: { silent?: boolean; detectAchievements?: boolean }) => {
       if (!account) {
         setRewardsSummary(null);
+        rewardsSummaryRef.current = null;
         setRewardsLoading(false);
         return;
       }
       setRewardsLoading(true);
       const result = await fetchAccountRewards();
       if (result.ok) {
+        // Detect newly unlocked achievements (only when explicitly requested and we have a previous state)
+        if (options?.detectAchievements && rewardsSummaryRef.current !== null) {
+          const prevAchievements = rewardsSummaryRef.current.achievements;
+          const newlyUnlocked = result.summary.achievements.filter(
+            (a) => a.unlocked && !prevAchievements.find((p) => p.id === a.id && p.unlocked),
+          );
+          if (newlyUnlocked.length > 0) {
+            const events: GamificationCelebrationEvent[] = newlyUnlocked.map((a) => {
+              const locale = STRINGS.achievements[a.id as keyof typeof STRINGS.achievements];
+              return {
+                type: "achievement" as const,
+                id: a.id,
+                name: locale?.name ?? a.id,
+                description: locale?.description ?? "",
+              };
+            });
+            setPendingGamification((prev) => [...prev, ...events]);
+          }
+        }
         setRewardsSummary(result.summary);
+        rewardsSummaryRef.current = result.summary;
         setRewardsLoading(false);
         return;
       }
@@ -502,6 +529,7 @@ function App() {
       if (result.code === "account_required") {
         setAccount(null);
         setRewardsSummary(null);
+        rewardsSummaryRef.current = null;
         return;
       }
       if (options?.silent) return;
@@ -554,6 +582,34 @@ function App() {
     saveActiveBadge(badge);
     setActiveBadge(badge);
   }, []);
+
+  const handleClaimMission = useCallback(async () => {
+    if (claimingMission) return;
+    setClaimingMission(true);
+    const result = await claimMissionReward();
+    setClaimingMission(false);
+    if (result.ok) {
+      setRewardsSummary(result.summary);
+      rewardsSummaryRef.current = result.summary;
+      setPendingGamification((prev) => [
+        ...prev,
+        { type: "mission" as const, pointsEarned: result.summary.weeklyMission.reward },
+      ]);
+      return;
+    }
+    if (result.code === "account_required") {
+      setAccount(null);
+      setRewardsSummary(null);
+      rewardsSummaryRef.current = null;
+      return;
+    }
+    if (result.code === "already_claimed") {
+      // Summary is stale — refresh silently
+      void refreshRewards({ silent: true });
+      return;
+    }
+    showLocationToast(STRINGS.account.missionClaimFailed, "error");
+  }, [claimingMission, setAccount, refreshRewards, showLocationToast]);
 
   useEffect(() => {
     if (!account) {
@@ -859,7 +915,7 @@ function App() {
       } else {
         setLastReportReward({ awardedPoints, newBalance: pointsBalance ?? null });
       }
-      void refreshRewards({ silent: true });
+      void refreshRewards({ silent: true, detectAchievements: true });
     },
   });
   const selectedOverride = selectedBeachId ? overrides[selectedBeachId] : null;
@@ -1591,6 +1647,14 @@ function App() {
           />
         </Suspense>
       ) : null}
+      {pendingGamification.length > 0 && !celebrationBadge && !reportThanksOpen ? (
+        <Suspense fallback={null}>
+          <GamificationCelebrationModal
+            event={pendingGamification[0]}
+            onClose={() => setPendingGamification((prev) => prev.slice(1))}
+          />
+        </Suspense>
+      ) : null}
       {reportThanksOpen ? (
         <Suspense fallback={null}>
           <ReportThanksModal
@@ -1803,9 +1867,11 @@ function App() {
         rewards={rewardsSummary}
         rewardsLoading={rewardsLoading}
         redeemingBadgeCode={redeemingBadgeCode}
+        claimingMission={claimingMission}
         activeBadge={activeBadge}
         onRedeemBadge={handleRedeemBadge}
         onEquipBadge={handleEquipBadge}
+        onClaimMission={handleClaimMission}
       />
       {selectedBeach ? (
         <Suspense fallback={null}>

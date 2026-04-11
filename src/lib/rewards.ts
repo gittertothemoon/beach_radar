@@ -31,9 +31,15 @@ export type Achievement = {
 export type WeeklyMission = {
   goal: number;
   progress: number;
+  reward: number;
+  claimed: boolean;
   periodStart: string;
   periodEnd: string;
 };
+
+export type GamificationCelebrationEvent =
+  | { type: "mission"; pointsEarned: number }
+  | { type: "achievement"; id: string; name: string; description: string };
 
 export type AccountRewardsSummary = {
   balance: number;
@@ -56,6 +62,18 @@ type FetchRewardsErrorCode =
   | "account_required"
   | "unavailable"
   | "invalid_payload";
+
+type ClaimMissionErrorCode =
+  | "network"
+  | "account_required"
+  | "mission_not_complete"
+  | "already_claimed"
+  | "unavailable"
+  | "invalid_payload";
+
+export type ClaimMissionResult =
+  | { ok: true; summary: AccountRewardsSummary }
+  | { ok: false; code: ClaimMissionErrorCode };
 
 type RedeemBadgeErrorCode =
   | "network"
@@ -101,6 +119,8 @@ let mockState: AccountRewardsSummary = {
   weeklyMission: {
     goal: 3,
     progress: 1,
+    reward: 20,
+    claimed: false,
     periodStart: new Date(Date.now() - 2 * 86400 * 1000).toISOString(),
     periodEnd: new Date(Date.now() + 4 * 86400 * 1000).toISOString(),
   },
@@ -217,6 +237,8 @@ const parseSummary = (value: unknown): AccountRewardsSummary | null => {
   const missionRaw = isObject(value.weeklyMission) ? value.weeklyMission : null;
   const missionGoal = toFiniteNumber(missionRaw?.goal) ?? 3;
   const missionProgress = toFiniteNumber(missionRaw?.progress) ?? 0;
+  const missionReward = toFiniteNumber(missionRaw?.reward) ?? 20;
+  const missionClaimed = missionRaw?.claimed === true;
   const periodStart = toSingleString(missionRaw?.periodStart) ?? new Date().toISOString();
   const periodEnd = toSingleString(missionRaw?.periodEnd) ?? new Date().toISOString();
 
@@ -236,6 +258,8 @@ const parseSummary = (value: unknown): AccountRewardsSummary | null => {
     weeklyMission: {
       goal: Math.max(1, Math.round(missionGoal)),
       progress: Math.max(0, Math.round(missionProgress)),
+      reward: Math.max(1, Math.round(missionReward)),
+      claimed: missionClaimed,
       periodStart,
       periodEnd,
     },
@@ -341,6 +365,60 @@ export const fetchAccountRewards = async (): Promise<FetchAccountRewardsResult> 
   if (!summary) {
     return { ok: false, code: "invalid_payload" };
   }
+  return { ok: true, summary };
+};
+
+export const claimMissionReward = async (): Promise<ClaimMissionResult> => {
+  if (getDevMockAccount()) {
+    if (mockState.weeklyMission.claimed) return { ok: false, code: "already_claimed" };
+    if (mockState.weeklyMission.progress < mockState.weeklyMission.goal) return { ok: false, code: "mission_not_complete" };
+    const pts = mockState.weeklyMission.reward;
+    const newBalance = mockState.balance + pts;
+    mockState = {
+      ...mockState,
+      balance: newBalance,
+      pointsEarned: mockState.pointsEarned + pts,
+      weeklyMission: { ...mockState.weeklyMission, claimed: true },
+      badges: mockState.badges.map((b) => ({
+        ...b,
+        redeemable: !b.owned && newBalance >= b.pointsCost,
+      })),
+    };
+    return { ok: true, summary: mockState };
+  }
+
+  const authToken = await loadAuthToken();
+  if (!authToken) return { ok: false, code: "account_required" };
+
+  let response: Response;
+  try {
+    response = await fetch("/api/account/rewards", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+      body: JSON.stringify({ action: "claim_mission" }),
+    });
+  } catch {
+    return { ok: false, code: "network" };
+  }
+
+  const payload = await readJson(response);
+  if (!response.ok) {
+    const apiError = toApiErrorPayload(payload);
+    if (response.status === 401 || response.status === 403 || apiError?.error === "missing_token" || apiError?.error === "invalid_token") {
+      return { ok: false, code: "account_required" };
+    }
+    if (response.status === 409) {
+      const errCode = apiError?.error;
+      if (errCode === "already_claimed") return { ok: false, code: "already_claimed" };
+      if (errCode === "mission_not_complete") return { ok: false, code: "mission_not_complete" };
+    }
+    return { ok: false, code: "unavailable" };
+  }
+
+  const parsed = payload as RewardsSummaryPayload;
+  if (!parsed || parsed.ok !== true) return { ok: false, code: "invalid_payload" };
+  const summary = parseSummary(parsed.summary);
+  if (!summary) return { ok: false, code: "invalid_payload" };
   return { ok: true, summary };
 };
 

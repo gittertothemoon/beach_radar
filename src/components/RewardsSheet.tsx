@@ -7,10 +7,12 @@ type RewardsSheetProps = {
   rewards: AccountRewardsSummary | null;
   rewardsLoading: boolean;
   redeemingBadgeCode: string | null;
+  claimingMission: boolean;
   activeBadge: ActiveBadge | null;
   accountEmail: string | null;
   onRedeemBadge: (badgeCode: string) => void;
   onEquipBadge: (badge: ActiveBadge) => void;
+  onClaimMission: () => void;
   onOpenSignIn: () => void;
 };
 
@@ -18,10 +20,12 @@ const RewardsSheet = ({
   rewards,
   rewardsLoading,
   redeemingBadgeCode,
+  claimingMission,
   activeBadge,
   accountEmail,
   onRedeemBadge,
   onEquipBadge,
+  onClaimMission,
   onOpenSignIn,
 }: RewardsSheetProps) => {
   const nextUnowned = rewards?.badges
@@ -89,6 +93,7 @@ const RewardsSheet = ({
         const { weeklyMission } = rewards;
         const pct = Math.min(100, Math.round((weeklyMission.progress / weeklyMission.goal) * 100));
         const done = weeklyMission.progress >= weeklyMission.goal;
+        const canClaim = done && !weeklyMission.claimed;
         return (
           <div className={[
             "rounded-[14px] border px-4 py-3.5 transition-colors",
@@ -107,9 +112,11 @@ const RewardsSheet = ({
                 "text-[11px] font-semibold",
                 done ? "text-sky-200" : "text-slate-400",
               ].join(" ")}>
-                {done
-                  ? STRINGS.account.missionCompleted
-                  : STRINGS.account.missionProgressLabel(weeklyMission.progress, weeklyMission.goal)}
+                {weeklyMission.claimed
+                  ? STRINGS.account.missionClaimedLabel
+                  : done
+                    ? STRINGS.account.missionCompleted
+                    : STRINGS.account.missionProgressLabel(weeklyMission.progress, weeklyMission.goal)}
               </div>
             </div>
             <div className="mt-2 text-[12px] br-text-primary">
@@ -124,6 +131,16 @@ const RewardsSheet = ({
                 style={{ width: `${pct}%` }}
               />
             </div>
+            {canClaim ? (
+              <button
+                type="button"
+                disabled={claimingMission}
+                onClick={onClaimMission}
+                className="br-press mt-3 w-full rounded-[10px] border border-sky-300/50 bg-sky-500/20 py-2 text-[13px] font-bold text-sky-50 transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-sky-300/70 focus-visible:outline-offset-1 disabled:cursor-not-allowed disabled:opacity-55"
+              >
+                {claimingMission ? STRINGS.account.missionClaimingAction : STRINGS.account.missionClaimAction(weeklyMission.reward)}
+              </button>
+            ) : null}
           </div>
         );
       })() : null}

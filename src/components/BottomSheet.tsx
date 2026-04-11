@@ -84,9 +84,11 @@ type BottomSheetProps = {
   rewards: import("../lib/rewards").AccountRewardsSummary | null;
   rewardsLoading: boolean;
   redeemingBadgeCode: string | null;
+  claimingMission: boolean;
   activeBadge: import("../lib/activeBadge").ActiveBadge | null;
   onRedeemBadge: (badgeCode: string) => void;
   onEquipBadge: (badge: import("../lib/activeBadge").ActiveBadge) => void;
+  onClaimMission: () => void;
 };
 
 export type BottomSheetSection = "map" | "profile" | "chatbot" | "rewards";
@@ -328,9 +330,11 @@ const BottomSheetComponent = ({
   rewards,
   rewardsLoading,
   redeemingBadgeCode,
+  claimingMission,
   activeBadge,
   onRedeemBadge,
   onEquipBadge,
+  onClaimMission,
 }: BottomSheetProps) => {
   type SettingsPanel = "language" | "interests" | null;
 
@@ -1315,10 +1319,12 @@ const BottomSheetComponent = ({
               rewards={rewards}
               rewardsLoading={rewardsLoading}
               redeemingBadgeCode={redeemingBadgeCode}
+              claimingMission={claimingMission}
               activeBadge={activeBadge}
               accountEmail={accountEmail}
               onRedeemBadge={onRedeemBadge}
               onEquipBadge={onEquipBadge}
+              onClaimMission={onClaimMission}
               onOpenSignIn={onOpenSignIn}
             />
           ) : null}
@@ -1485,9 +1491,11 @@ const bottomSheetEqual = (prev: BottomSheetProps, next: BottomSheetProps) =>
   prev.rewards === next.rewards &&
   prev.rewardsLoading === next.rewardsLoading &&
   prev.redeemingBadgeCode === next.redeemingBadgeCode &&
+  prev.claimingMission === next.claimingMission &&
   prev.activeBadge === next.activeBadge &&
   prev.onRedeemBadge === next.onRedeemBadge &&
-  prev.onEquipBadge === next.onEquipBadge;
+  prev.onEquipBadge === next.onEquipBadge &&
+  prev.onClaimMission === next.onClaimMission;
 
 const BottomSheet = memo(BottomSheetComponent, bottomSheetEqual);
 

@@ -7,10 +7,12 @@ const BALANCES_TABLE = "user_points_balances";
 const BADGE_CATALOG_TABLE = "badge_catalog";
 const USER_BADGES_TABLE = "user_badges";
 const POINTS_LEDGER_TABLE = "points_ledger";
+const MISSION_CLAIMS_TABLE = "user_mission_claims";
 const REPORT_COMPLETED_POINTS = 15;
 const MAX_BADGE_CODE_LENGTH = 80;
 const MAX_BODY_BYTES = 8 * 1024;
 const WEEKLY_MISSION_GOAL = 3;
+const WEEKLY_MISSION_REWARD = 20;
 
 const ACHIEVEMENT_DEFS = [
   { id: "first_report", threshold: 1 },
@@ -49,6 +51,8 @@ type RewardsSummary = {
   weeklyMission: {
     goal: number;
     progress: number;
+    reward: number;
+    claimed: boolean;
     periodStart: string;
     periodEnd: string;
   };
@@ -225,6 +229,7 @@ async function loadRewardsSummary(
     { data: ownedData, error: ownedError },
     { count: totalReportCount, error: totalReportError },
     { count: weeklyReportCount, error: weeklyReportError },
+    { count: missionClaimedCount, error: missionClaimedError },
   ] = await Promise.all([
     supabase
       .from(BALANCES_TABLE)
@@ -253,6 +258,11 @@ async function loadRewardsSummary(
       .eq("reason", "report_completed")
       .gte("created_at", weekBounds.start)
       .lte("created_at", weekBounds.end),
+    supabase
+      .from(MISSION_CLAIMS_TABLE)
+      .select("user_id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("period_start", weekBounds.start),
   ]);
 
   if (balanceError) return { ok: false, error: "db_balance_fetch_failed" };
@@ -260,6 +270,7 @@ async function loadRewardsSummary(
   if (ownedError) return { ok: false, error: "db_user_badges_fetch_failed" };
   if (totalReportError) return { ok: false, error: "db_ledger_fetch_failed" };
   if (weeklyReportError) return { ok: false, error: "db_ledger_fetch_failed" };
+  if (missionClaimedError) return { ok: false, error: "db_mission_claims_fetch_failed" };
 
   const balanceRow = isObject(balanceData) ? (balanceData as UserPointsBalanceRow) : {};
   const pointsBalance = Math.max(0, Math.round(toFiniteNumber(balanceRow.points_balance) ?? 0));
@@ -312,6 +323,8 @@ async function loadRewardsSummary(
     weeklyMission: {
       goal: WEEKLY_MISSION_GOAL,
       progress: weeklyReports,
+      reward: WEEKLY_MISSION_REWARD,
+      claimed: (missionClaimedCount ?? 0) > 0,
       periodStart: weekBounds.start,
       periodEnd: weekBounds.end,
     },
@@ -376,6 +389,53 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ ok: false, error: "missing_body" });
   }
 
+  const action = toSingleString(body.action);
+
+  // ── Claim weekly mission reward ──────────────────────────────────────────
+  if (action === "claim_mission") {
+    const weekBounds = getIsoWeekBounds();
+    const weeklyCount = await (async () => {
+      const { count, error } = await supabase
+        .from(POINTS_LEDGER_TABLE)
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("reason", "report_completed")
+        .gte("created_at", weekBounds.start)
+        .lte("created_at", weekBounds.end);
+      return error ? 0 : (count ?? 0);
+    })();
+
+    if (weeklyCount < WEEKLY_MISSION_GOAL) {
+      return res.status(409).json({ ok: false, error: "mission_not_complete" });
+    }
+
+    type ClaimFnRow = { ok?: unknown; error?: unknown };
+    const { data: claimData, error: claimError } = await supabase.rpc(
+      "claim_weekly_mission_reward",
+      {
+        p_user_id: userId,
+        p_period_start: weekBounds.start,
+        p_points: WEEKLY_MISSION_REWARD,
+      },
+    );
+    if (claimError) {
+      return res.status(500).json({ ok: false, error: "mission_claim_failed" });
+    }
+    const claimRow = isObject(claimData) ? (claimData as ClaimFnRow) : null;
+    if (claimRow?.ok !== true) {
+      const claimErrCode = toSingleString(claimRow?.error);
+      const status = claimErrCode === "already_claimed" ? 409 : 400;
+      return res.status(status).json({ ok: false, error: claimErrCode ?? "mission_claim_failed" });
+    }
+
+    const summaryResult = await loadRewardsSummary(supabase, userId);
+    if (!summaryResult.ok) {
+      return res.status(500).json({ ok: false, error: summaryResult.error });
+    }
+    return res.status(200).json({ ok: true, summary: summaryResult.summary });
+  }
+
+  // ── Redeem badge ─────────────────────────────────────────────────────────
   const badgeCode = toSingleString(body.badgeCode);
   if (!badgeCode || badgeCode.length > MAX_BADGE_CODE_LENGTH) {
     return res.status(400).json({ ok: false, error: "invalid_badge_code" });
