@@ -1,6 +1,7 @@
 import { STRINGS } from "../i18n/strings";
 import type { AccountRewardsSummary } from "../lib/rewards";
 import type { ActiveBadge } from "../lib/activeBadge";
+import AchievementIcon from "./AchievementIcon";
 import BadgeIcon from "./BadgeIcon";
 
 type RewardsSheetProps = {
@@ -167,12 +168,12 @@ const RewardsSheet = ({
                   ].join(" ")}
                 >
                   <div className={[
-                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[15px]",
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border",
                     ach.unlocked
-                      ? "border-violet-300/50 bg-violet-500/20 text-violet-100"
-                      : "border-white/12 bg-black/30 text-slate-600",
+                      ? "border-violet-300/40 bg-violet-500/12"
+                      : "border-white/12 bg-black/30",
                   ].join(" ")}>
-                    {ach.unlocked ? "✦" : "·"}
+                    <AchievementIcon id={ach.id} unlocked={ach.unlocked} size={34} />
                   </div>
                   <div className="min-w-0">
                     <div className={[
