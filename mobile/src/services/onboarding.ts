@@ -29,6 +29,21 @@ export const hasCompletedOnboarding = async (): Promise<boolean> => {
   return value === "1";
 };
 
+export const resetOnboarding = async (): Promise<void> => {
+  try {
+    await SecureStore.deleteItemAsync(
+      ONBOARDING_COMPLETED_KEY,
+      ONBOARDING_STORE_OPTIONS,
+    );
+  } catch {
+    try {
+      await SecureStore.deleteItemAsync(ONBOARDING_COMPLETED_KEY);
+    } catch {
+      // Ignore.
+    }
+  }
+};
+
 export const markOnboardingCompleted = async (): Promise<void> => {
   try {
     await SecureStore.setItemAsync(

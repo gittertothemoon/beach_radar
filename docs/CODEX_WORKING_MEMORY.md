@@ -1,6 +1,6 @@
 # CODEX Working Memory
 
-Last update: 2026-03-29 22:32 (Europe/Rome)
+Last update: 2026-04-11 19:42 (Europe/Rome)
 
 ## Obiettivo condiviso
 - Massimo livello su design, funzionalita', affidabilita' reale.
@@ -47,6 +47,7 @@ Last update: 2026-03-29 22:32 (Europe/Rome)
 3. Prossimo sviluppo su feature/design con baseline verde.
 
 ## Log sintetico
+- 2026-04-11: ricognizione completa stato repo dopo lavoro parallelo con Claude Code: `main` allineato a `origin/main` con work-in-progress locale su 8 file (tutorial mobile + restart dal Profilo + bridge web/native + fix host simulator su `127.0.0.1`), check tecnici del codice attivo verdi (`npm run typecheck`, `npm run mobile:typecheck`, `npm run build`), mentre `npm run check` non e' attendibile finche' ESLint include `.claude/worktrees/*` (rumore massivo fuori dal codice sorgente principale).
 - 2026-03-29: ridotto il critical path del boot app intervenendo sul shell web dentro la WebView: `src/main.tsx` ora carica `App` eager (non piu lazy al root) e `src/app/App.tsx` segnala `w2b-native-first-paint` al primo frame utile del native shell invece di attendere `mapReady`; check verdi con `npm run check`, `npm run build` e `cd mobile && npm run typecheck`.
 - 2026-03-29: verificata l'IPA `/Users/ivanpanto/Downloads/application-78b95184-bac3-40d6-a039-b9564cbce630.ipa` come vera build 19 (`CFBundleVersion=19`, `1.0.1`, `com.where2beach.mobile`); sul simulatore Apple Silicon l'app si installa nel catalogo ma il launch viene negato da SpringBoard, quindi il boot reale della build 19 non e' misurabile da questa macchina senza iPhone fisico o build specifica per simulator.
 - 2026-03-29: verificato blocco sulla richiesta "misura build 19": nel simulatore e nel workspace non e' disponibile la build store/testflight 19; l'app installata localmente e' solo la dev build `com.where2beach.mobile` con `CFBundleVersion = 1`, senza `.ipa`/`.xcarchive` locale da installare e misurare.

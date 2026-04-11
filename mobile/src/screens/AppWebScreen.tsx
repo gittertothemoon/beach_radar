@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Linking, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebSurface } from "../components/WebSurface";
 import {
@@ -11,6 +11,7 @@ import {
 import {
   hasCompletedOnboarding,
   markOnboardingCompleted,
+  resetOnboarding,
 } from "../services/onboarding";
 
 const MOBILE_SCHEME = "where2beach:";
@@ -126,6 +127,10 @@ export const AppWebScreen = ({ onInitialWebReady }: AppWebScreenProps) => {
     void markOnboardingCompleted();
   }, []);
 
+  const handleRestartTutorial = useCallback(() => {
+    void resetOnboarding().then(() => setShowFirstRunTutorial(true));
+  }, []);
+
   if (!MOBILE_APP_ACCESS_KEY && !MOBILE_BASE_URL_IS_LOCAL) {
     return (
       <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
@@ -143,18 +148,57 @@ export const AppWebScreen = ({ onInitialWebReady }: AppWebScreenProps) => {
   }
 
   return (
-    <WebSurface
-      initialUrl={currentUrl}
-      blockLandingRedirect
-      landingBlockedMessage="Chiave app non valida o configurazione backend incompleta. Verifica EXPO_PUBLIC_APP_ACCESS_KEY su mobile e APP_ACCESS_KEY/APP_ACCESS_KEY_HASH sulle API."
-      firstRunTutorialEnabled={showFirstRunTutorial === true}
-      onCompleteFirstRunTutorial={handleCompleteTutorial}
-      onInitialLoadSettled={onInitialWebReady}
-    />
+    <>
+      <WebSurface
+        initialUrl={currentUrl}
+        blockLandingRedirect
+        landingBlockedMessage="Chiave app non valida o configurazione backend incompleta. Verifica EXPO_PUBLIC_APP_ACCESS_KEY su mobile e APP_ACCESS_KEY/APP_ACCESS_KEY_HASH sulle API."
+        firstRunTutorialEnabled={showFirstRunTutorial === true}
+        onCompleteFirstRunTutorial={handleCompleteTutorial}
+        onRestartTutorial={handleRestartTutorial}
+        onInitialLoadSettled={onInitialWebReady}
+      />
+      {MOBILE_BASE_URL_IS_LOCAL ? (
+        <SafeAreaView
+          style={styles.devResetWrap}
+          edges={["bottom"]}
+          pointerEvents="box-none"
+        >
+          <Pressable
+            style={styles.devResetButton}
+            onPress={() => {
+              void resetOnboarding().then(() => setShowFirstRunTutorial(true));
+            }}
+          >
+            <Text style={styles.devResetLabel}>↺ Tutorial</Text>
+          </Pressable>
+        </SafeAreaView>
+      ) : null}
+    </>
   );
 };
 
 const styles = StyleSheet.create({
+  devResetWrap: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    pointerEvents: "box-none",
+  },
+  devResetButton: {
+    margin: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: "rgba(15, 23, 42, 0.85)",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(148, 163, 184, 0.3)",
+  },
+  devResetLabel: {
+    color: "#94a3b8",
+    fontSize: 12,
+    fontWeight: "600",
+  },
   safeArea: {
     flex: 1,
     backgroundColor: "#020617",

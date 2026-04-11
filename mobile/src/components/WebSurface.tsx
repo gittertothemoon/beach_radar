@@ -22,6 +22,7 @@ type WebSurfaceProps = {
   landingBlockedMessage?: string;
   firstRunTutorialEnabled?: boolean;
   onCompleteFirstRunTutorial?: () => void;
+  onRestartTutorial?: () => void;
   onInitialLoadSettled?: () => void;
 };
 
@@ -37,8 +38,7 @@ type TutorialStepId =
   | "search"
   | "map-overview"
   | "onda"
-  | "onda-close"
-  | "return-map";
+  | "premi";
 
 type AvatarPose =
   | "idle"
@@ -100,6 +100,10 @@ type NativeFirstPaintBridgeMessage = {
   ready: boolean;
 };
 
+type RestartTutorialBridgeMessage = {
+  type: "w2b-restart-tutorial";
+};
+
 type TutorialSpotlightProfile = {
   padX: number;
   padY: number;
@@ -143,16 +147,14 @@ const STEP_AVATAR_POSE: Record<TutorialStepId, AvatarPose> = {
   search: "pointSearch",
   "map-overview": "pointMap",
   onda: "pointNav",
-  "onda-close": "pointNav",
-  "return-map": "pointMap",
+  premi: "pointNav",
 };
 
 const FIRST_RUN_TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: "intro",
-    title: "Benvenuto, ci sono io: ONDA",
-    body:
-      "Tranquillo: in meno di un minuto ti mostro come funziona Where2Beach. Obiettivo? Trovare la spiaggia giusta, in modo semplice e veloce.",
+    title: "Ciao! Sono ONDA, la tua guida.",
+    body: "In pochi passi ti mostro tutto. Pronti a trovare la spiaggia giusta?",
     fallback: (surfaceWidth, surfaceHeight, _topInset, _bottomInset) => ({
       x: surfaceWidth * 0.18,
       y: surfaceHeight * 0.26,
@@ -162,9 +164,8 @@ const FIRST_RUN_TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "search",
-    title: "Dimmi dove vuoi andare",
-    body:
-      "Scrivi il nome della spiaggia o della citta nella barra in alto. Anche poche lettere bastano per trovare subito il posto giusto.",
+    title: "Cerca la tua spiaggia",
+    body: "Scrivi il nome nella barra qui sopra — poche lettere bastano.",
     selector: '[data-testid="search-input"]',
     completionMode: "search-input",
     completionSelector: '[data-testid="search-input"]',
@@ -178,9 +179,8 @@ const FIRST_RUN_TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "map-overview",
-    title: "Guarda la mappa in tempo reale",
-    body:
-      "Ogni pin rappresenta una spiaggia. Toccalo per vedere informazioni utili come affluenza, meteo e segnalazioni della community.",
+    title: "La mappa è il tuo radar",
+    body: "Ogni pin è una spiaggia. Toccalo per vedere affollamento, meteo e segnalazioni live.",
     selector: '[data-testid="map-container"]',
     fallback: (surfaceWidth, surfaceHeight, topInset, _bottomInset) => ({
       x: 22,
@@ -191,15 +191,12 @@ const FIRST_RUN_TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: "onda",
-    title: "Apri ONDA dal menu in basso",
-    body:
-      "Tocca ONDA per aprire il chatbot e vedere la sezione dedicata.",
+    title: "Aprimi dal menu in basso!",
+    body: "Tocca ONDA per aprire il chatbot e vedere le segnalazioni in tempo reale.",
     selector: '[data-testid="bottom-nav-chatbot"]',
     completionMode: "target-touch",
     completionSelector: '[data-testid="bottom-nav-chatbot"]',
-    interactionHint: "Tocca ONDA: si apre la tab con il chatbot.",
-    autoAdvanceOnComplete: true,
-    compactCard: true,
+    interactionHint: "Tocca ONDA per aprire il chatbot.",
     fallback: (surfaceWidth, surfaceHeight, _topInset, bottomInset) => {
       const width = Math.min(138, surfaceWidth * 0.34);
       return {
@@ -211,40 +208,14 @@ const FIRST_RUN_TUTORIAL_STEPS: TutorialStep[] = [
     },
   },
   {
-    id: "onda-close",
-    title: "Chiudi ONDA dalla barra superiore",
-    body:
-      "Ora che ONDA e visibile, tocca la barra superiore della tab ONDA per richiuderla.",
-    selector: '[data-testid="bottom-sheet-header-toggle"]',
-    completionMode: "target-touch",
-    completionSelector: '[data-testid="bottom-sheet-header-toggle"]',
-    interactionHint: "Tocca la barra superiore della tab ONDA per chiuderla.",
-    autoAdvanceOnComplete: true,
-    compactCard: true,
-    fallback: (surfaceWidth, surfaceHeight, _topInset, bottomInset) => {
-      const width = Math.max(220, surfaceWidth - 32);
-      return {
-        x: (surfaceWidth - width) / 2,
-        y: surfaceHeight - bottomInset - 236,
-        width,
-        height: 42,
-      };
-    },
-  },
-  {
-    id: "return-map",
-    title: "Perfetto, ora torna su Mappa",
-    body:
-      "Ultimo passaggio: tocca Mappa in basso a sinistra per rientrare alla vista principale.",
-    selector: '[data-testid="bottom-nav-map"]',
-    completionMode: "target-touch",
-    completionSelector: '[data-testid="bottom-nav-map"]',
-    interactionHint: "Tocca Mappa per concludere il tutorial.",
-    autoAdvanceOnComplete: true,
+    id: "premi",
+    title: "Segnala e guadagna punti",
+    body: "Ogni segnalazione vale 15 punti. Accumulali per sbloccare badge esclusivi nel tab Premi.",
+    selector: '[data-testid="bottom-nav-rewards"]',
     fallback: (surfaceWidth, surfaceHeight, _topInset, bottomInset) => {
       const width = Math.min(138, surfaceWidth * 0.34);
       return {
-        x: 16,
+        x: surfaceWidth - width - 16,
         y: surfaceHeight - bottomInset - 88,
         width,
         height: 52,
@@ -344,6 +315,11 @@ const isNativeFirstPaintBridgeMessage = (
   );
 };
 
+const isRestartTutorialBridgeMessage = (value: unknown): value is RestartTutorialBridgeMessage => {
+  if (!value || typeof value !== "object") return false;
+  return (value as Record<string, unknown>).type === "w2b-restart-tutorial";
+};
+
 const getTutorialSpotlightProfile = (
   stepId: TutorialStepId | null | undefined,
 ): TutorialSpotlightProfile => {
@@ -354,16 +330,7 @@ const getTutorialSpotlightProfile = (
       return { padX: 14, padY: 14, radius: TUTORIAL_SPOTLIGHT_RADIUS, pulseRadius: TUTORIAL_SPOTLIGHT_PULSE_RADIUS };
     case "onda":
       return { padX: 9, padY: 6, radius: TUTORIAL_SPOTLIGHT_RADIUS, pulseRadius: TUTORIAL_SPOTLIGHT_PULSE_RADIUS };
-    case "onda-close":
-      return {
-        padX: 6,
-        padY: 6,
-        radius: TUTORIAL_SPOTLIGHT_RADIUS,
-        pulseRadius: TUTORIAL_SPOTLIGHT_PULSE_RADIUS,
-        minWidth: 34,
-        minHeight: 34,
-      };
-    case "return-map":
+    case "premi":
       return { padX: 9, padY: 6, radius: TUTORIAL_SPOTLIGHT_RADIUS, pulseRadius: TUTORIAL_SPOTLIGHT_PULSE_RADIUS };
     default:
       return {
@@ -545,18 +512,11 @@ const resolveAvatarTarget = (
       tilt: 0,
     };
   }
-  if (step.id === "onda-close") {
+  if (step.id === "premi") {
     return {
-      x: clamp(surfaceWidth - TUTORIAL_AVATAR_SIZE - 10, minX, maxX),
-      y: clamp(spotlightRect.y - TUTORIAL_AVATAR_SIZE - 8, minY, maxY),
-      tilt: 0.2,
-    };
-  }
-  if (step.id === "return-map") {
-    return {
-      x: clamp(12, minX, maxX),
-      y: clamp(spotlightRect.y - TUTORIAL_AVATAR_SIZE - 10, minY, maxY),
-      tilt: -0.28,
+      x: clamp(TUTORIAL_AVATAR_EDGE_GAP, minX, maxX),
+      y: clamp(topInset + 8, minY, maxY),
+      tilt: 0.18,
     };
   }
   return bestTarget;
@@ -568,6 +528,7 @@ export const WebSurface = ({
   landingBlockedMessage,
   firstRunTutorialEnabled = false,
   onCompleteFirstRunTutorial,
+  onRestartTutorial,
   onInitialLoadSettled,
 }: WebSurfaceProps) => {
   const insets = useSafeAreaInsets();
@@ -674,8 +635,7 @@ export const WebSurface = ({
   const tutorialAutoAdvanceOnComplete = tutorialStep?.autoAdvanceOnComplete === true;
   const tutorialCompactCard = tutorialStep?.compactCard === true;
   const tutorialShouldForceOndaPanelOpen =
-    (tutorialStep?.id === "onda" && tutorialStepCompleted) ||
-    (tutorialStep?.id === "onda-close" && !tutorialStepCompleted);
+    tutorialStep?.id === "onda" && tutorialStepCompleted;
   const tutorialOndaPanelPriority = tutorialShouldForceOndaPanelOpen;
   const tutorialInteractionHintText =
     tutorialStep?.interactionHint ?? "Completa l'azione evidenziata per continuare.";
@@ -728,7 +688,7 @@ export const WebSurface = ({
     [tutorialStep?.id],
   );
   const tutorialCardAtTop = Boolean(
-    (tutorialStep?.id === "onda" || tutorialStep?.id === "onda-close") ||
+    tutorialStep?.id === "onda" ||
       (tutorialActiveSelector &&
         tutorialSpotlightRect &&
         tutorialSpotlightRect.y > (surfaceSize.height > 0 ? surfaceSize.height : 844) * 0.55),
@@ -1177,6 +1137,11 @@ export const WebSurface = ({
         return;
       }
 
+      if (isRestartTutorialBridgeMessage(parsed)) {
+        onRestartTutorial?.();
+        return;
+      }
+
       if (
         isTutorialSearchBridgeMessage(parsed) &&
         tutorialVisible &&
@@ -1234,6 +1199,7 @@ export const WebSurface = ({
     },
     [
       notifyInitialLoadSettled,
+      onRestartTutorial,
       tutorialActiveCompletionSelector,
       tutorialActiveSelector,
       tutorialCompletionMode,
@@ -1253,11 +1219,6 @@ export const WebSurface = ({
     setTutorialCompletionReady(false);
     setTutorialSearchValueLength(0);
   }, []);
-
-  const handleFinishTutorial = useCallback(() => {
-    setTutorialCelebrationVisible(false);
-    onCompleteFirstRunTutorial?.();
-  }, [onCompleteFirstRunTutorial]);
 
   const dismissTutorialSearchDropdown = useCallback(() => {
     const script = `
@@ -1343,6 +1304,31 @@ export const WebSurface = ({
     `;
     webViewRef.current?.injectJavaScript(script);
   }, []);
+
+  const ensureNavTabActive = useCallback((selector: string) => {
+    const selectorLiteral = JSON.stringify(selector);
+    const script = `
+      (function() {
+        try {
+          var nav = document.querySelector(${selectorLiteral});
+          var cls = nav && typeof nav.className === "string" ? nav.className : "";
+          if (nav && cls.indexOf("border-white/38") === -1 && typeof nav.click === "function") {
+            nav.click();
+          }
+        } catch (_error) {
+          // Ignore DOM bridge errors.
+        }
+      })();
+      true;
+    `;
+    webViewRef.current?.injectJavaScript(script);
+  }, []);
+
+  const handleFinishTutorial = useCallback(() => {
+    ensureNavTabActive('[data-testid="bottom-nav-map"]');
+    setTutorialCelebrationVisible(false);
+    onCompleteFirstRunTutorial?.();
+  }, [ensureNavTabActive, onCompleteFirstRunTutorial]);
 
   const ensureTutorialOndaPanelVisible = useCallback(() => {
     const script = `
@@ -1628,6 +1614,28 @@ export const WebSurface = ({
     tutorialShouldForceOndaPanelOpen,
     tutorialStepOverlayVisible,
   ]);
+
+  useEffect(() => {
+    if (!tutorialStepOverlayVisible || tutorialStep?.id !== "premi") return;
+    ensureNavTabActive('[data-testid="bottom-nav-rewards"]');
+    const retry = setTimeout(() => {
+      ensureNavTabActive('[data-testid="bottom-nav-rewards"]');
+    }, 280);
+    return () => {
+      clearTimeout(retry);
+    };
+  // tutorialStepOverlayVisible intentionally omitted: kept as early-return guard only.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ensureNavTabActive, tutorialStep?.id]);
+
+  useEffect(() => {
+    const id = tutorialStep?.id;
+    if (!tutorialStepOverlayVisible || id === "onda" || id === "premi") return;
+    // Reset to map tab whenever a non-navigation step is active (handles back-navigation).
+    ensureNavTabActive('[data-testid="bottom-nav-map"]');
+  // tutorialStepOverlayVisible intentionally omitted: early-return only.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ensureNavTabActive, tutorialStep?.id]);
 
   useEffect(() => {
     if (!tutorialStepOverlayVisible) return;
@@ -2213,18 +2221,16 @@ export const WebSurface = ({
                     resizeMode="contain"
                   />
                   <Text style={styles.tutorialCelebrationTitle}>
-                    Complimenti, hai terminato il tutorial.
+                    Fatto! Sei pronto a esplorare.
                   </Text>
                   <Text style={styles.tutorialCelebrationBody}>
-                    Ora hai tutto quello che serve per usare Where2Beach al meglio: apri la
-                    mappa, confronta l'affollamento in tempo reale e scegli la spiaggia ideale
-                    per te, al momento giusto.
+                    Cerca la spiaggia giusta, segnala l'affollamento e guadagna punti nel tab Premi. Buona spiaggia!
                   </Text>
                   <Pressable
                     style={styles.tutorialCelebrationButton}
                     onPress={handleFinishTutorial}
                   >
-                    <Text style={styles.tutorialCelebrationButtonLabel}>Inizia a navigare</Text>
+                    <Text style={styles.tutorialCelebrationButtonLabel}>Vai alla mappa</Text>
                   </Pressable>
                 </Animated.View>
               </View>

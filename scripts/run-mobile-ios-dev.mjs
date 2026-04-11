@@ -81,12 +81,9 @@ const chooseSimulatorHost = (baseHost) => {
   const firstLanHost = localIPv4s.find((candidate) => isPrivateOrLocalHost(candidate));
 
   if (LOCAL_BASE_HOSTS.has(baseHost)) {
-    return {
-      host: firstLanHost ?? "127.0.0.1",
-      reason: firstLanHost
-        ? `base loopback, uso IP LAN ${firstLanHost} per il simulator`
-        : "base loopback senza IP LAN disponibile, uso 127.0.0.1",
-    };
+    // iOS simulator moderno (macOS 12+) raggiunge localhost direttamente.
+    // Usare l'IP LAN introduce latenza e rende instabile l'HMR WebSocket.
+    return { host: "127.0.0.1", reason: null };
   }
 
   if (localSet.has(baseHost)) {

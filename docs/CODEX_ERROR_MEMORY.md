@@ -1,6 +1,6 @@
 # CODEX Error Memory
 
-Last update: 2026-03-29 (Europe/Rome)
+Last update: 2026-04-11 (Europe/Rome)
 
 ## Scopo
 - Tenere una memoria operativa degli errori commessi durante debug complessi.
@@ -28,6 +28,16 @@ Last update: 2026-03-29 (Europe/Rome)
 ```
 
 ## Lessons
+### 2026-04-11 - `npm run check` inquinato da `.claude/worktrees/*`
+- Contesto: ricognizione stato repository dopo sessioni con Claude Code e worktree locali presenti sotto `.claude/worktrees/`.
+- Errore commesso: leggere il risultato di `npm run check` come stato reale della codebase principale senza separare il codice sorgente da copie/worktree di supporto.
+- Segnale ignorato: centinaia di errori ESLint puntavano a percorsi `.claude/worktrees/...` invece che ai file attivi nel root del progetto.
+- Causa radice: lo script `lint` usa `eslint .` e il pattern corrente non esclude automaticamente le directory di worktree Claude.
+- Fix applicata: validazione stato reale fatta con check mirati sul codice attivo (`npm run typecheck`, `npm run mobile:typecheck`, `npm run build`) e interpretazione del lint globale come non affidabile finche' non si esclude `.claude/worktrees/*`.
+- Regola permanente: quando sono presenti worktree/repliche locali, ogni gate qualita' deve distinguere esplicitamente `codice attivo` vs `workspace ausiliari` prima di classificare un task come rotto.
+- Verifica eseguita: `npm run check` (fallito su `.claude/worktrees/*`) + `npm run typecheck` PASS + `npm run mobile:typecheck` PASS + `npm run build` PASS.
+- Guardrail futuro (test/check/alert): escludere `.claude/worktrees/**` dai check globali o eseguire lint con target esplicito ai path sorgente (`src`, `api`, `scripts`, `tests`, `mobile`).
+
 ### 2026-03-29 - IPA store/device installata sul simulatore ma non launchabile
 - Contesto: richiesta di misurare il boot della build 19 partendo dall'artefatto `.ipa` fornito dall'utente.
 - Errore commesso: rischio di considerare l'installazione riuscita via `simctl install` come prova sufficiente che la build store sia eseguibile e quindi misurabile sul simulatore.
