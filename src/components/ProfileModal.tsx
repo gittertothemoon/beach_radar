@@ -18,6 +18,7 @@ type ProfileModalProps = {
   onSelectFavorite: (beachId: string) => void;
   onSignOut: () => void;
   onDeleteAccount: () => void;
+  onRestartTutorial?: () => void;
 };
 
 const ProfileModal = ({
@@ -31,6 +32,7 @@ const ProfileModal = ({
   onSelectFavorite,
   onSignOut,
   onDeleteAccount,
+  onRestartTutorial,
 }: ProfileModalProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -161,6 +163,26 @@ const ProfileModal = ({
               </div>
             )}
           </div>
+
+          {/* Tutorial */}
+          {onRestartTutorial ? (
+            <div className="mt-3 rounded-[12px] border border-white/20 bg-black/82 px-4 py-3">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.08em] br-text-tertiary">
+                {STRINGS.account.tutorialSectionTitle}
+              </div>
+              <p className="mt-1 text-[12px] br-text-secondary">
+                {STRINGS.account.tutorialSectionDescription}
+              </p>
+              <button
+                type="button"
+                data-testid="profile-restart-tutorial"
+                onClick={onRestartTutorial}
+                className="br-press mt-2.5 w-full rounded-[10px] border border-sky-400/40 bg-sky-500/15 px-3 py-2 text-[13px] font-semibold text-sky-200 focus-visible:outline focus-visible:outline-1 focus-visible:outline-sky-400/70 focus-visible:outline-offset-1"
+              >
+                {STRINGS.account.tutorialRestartAction}
+              </button>
+            </div>
+          ) : null}
 
           {/* Actions */}
           <div className="mt-4 space-y-2.5">

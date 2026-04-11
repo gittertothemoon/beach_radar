@@ -362,6 +362,9 @@ export const STRINGS = {
     passwordMismatch: "Le password non coincidono.",
     consentRequired: "Devi accettare privacy e cookie policy per continuare.",
     created: "Account creato. Ora puoi salvare i preferiti.",
+    tutorialSectionTitle: "Tutorial",
+    tutorialSectionDescription: "Rivedi i passi base dell'app in meno di un minuto.",
+    tutorialRestartAction: "Inizia il tutorial",
     comingSoon: "Prossimamente",
   },
   chatbot: {

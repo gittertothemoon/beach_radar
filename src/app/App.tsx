@@ -1203,6 +1203,16 @@ function App() {
     },
   });
 
+  const handleRestartTutorial = useCallback(() => {
+    setProfileOpen(false);
+    try {
+      (window as Window & { ReactNativeWebView?: { postMessage?: (p: string) => void } })
+        .ReactNativeWebView?.postMessage?.(JSON.stringify({ type: "w2b-restart-tutorial" }));
+    } catch {
+      // Outside native shell — no-op.
+    }
+  }, []);
+
   const handleOpenReport = useCallback(() => {
     if (!account) {
       applyAccountRequiredState(
@@ -1566,6 +1576,7 @@ function App() {
             onSelectFavorite={handleSelectProfileFavorite}
             onSignOut={handleSignOut}
             onDeleteAccount={handleDeleteAccount}
+            onRestartTutorial={shouldSkipInitialSplash ? handleRestartTutorial : undefined}
           />
         </Suspense>
       ) : null}

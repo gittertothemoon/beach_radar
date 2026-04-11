@@ -358,6 +358,9 @@ export const STRINGS = {
     passwordMismatch: "Passwords do not match.",
     consentRequired: "You must accept the privacy and cookie policy to continue.",
     created: "Account created. You can now save favourites.",
+    tutorialSectionTitle: "Tutorial",
+    tutorialSectionDescription: "Review the app basics in under a minute.",
+    tutorialRestartAction: "Start tutorial",
     comingSoon: "Coming soon",
   },
   chatbot: {
