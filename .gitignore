@@ -43,6 +43,11 @@ w2b-hero/public/landing/
 w2b-hero/public/privacy/
 w2b-hero/public/waitlist/
 
+# Claude Code local state
+.claude/settings.local.json
+.claude/worktrees/
+output/
+
 # Local generated artifacts in this repo
 .playwright-cli/
 public/app-shell/

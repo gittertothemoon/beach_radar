@@ -1,6 +1,6 @@
 # CODEX Working Memory
 
-Last update: 2026-04-11 20:24 (Europe/Rome)
+Last update: 2026-04-11 21:02 (Europe/Rome)
 
 ## Obiettivo condiviso
 - Massimo livello su design, funzionalita', affidabilita' reale.
@@ -47,6 +47,7 @@ Last update: 2026-04-11 20:24 (Europe/Rome)
 3. Prossimo sviluppo su feature/design con baseline verde.
 
 ## Log sintetico
+- 2026-04-11: integrata iconografia dedicata anche per gli achievement/traguardi con asset utente in `src/assets/achievements/` (`first_report`, `reporter_5`, `reporter_10`, `reporter_25`, `reporter_50`) ottimizzati e ritagliati in tondo trasparente; introdotto `src/components/AchievementIcon.tsx` e aggiornata `RewardsSheet` per mostrare le medaglie con stato locked in grayscale; verifiche PASS (`npm run typecheck`, `npm run build`, `npm run test:app -- --grep \"account settings panel\"`).
 - 2026-04-11: completata passata "game-ready" dei badge per mobile con pipeline dedicata `npm run badges:optimize` (`scripts/optimize-badge-assets.mjs`): resize a 256px, micro-tuning contrasto/nitidezza e compressione PNG palette mantenendo alpha; peso totale badge ridotto da ~1.59MB a ~206KB (-87.3%) con `typecheck`/`build` verdi.
 - 2026-04-11: integrati i 6 badge finali forniti dall'utente (generati esternamente) sostituendo gli asset in `src/assets/badges/*.png` con versioni pulite a maschera circolare trasparente; `BadgeIcon` aggiornato per usare sempre i raster badge su tutte le taglie evitando fallback line-art; verifica verde con `npm run typecheck` e `npm run build`.
 - 2026-04-11: avviato redesign badge "ready-to-ship": tentata generazione AI via skill `imagegen` ma bloccata da `billing_hard_limit_reached`; applicato fallback operativo locale con set premium raster (PNG trasparenti 512x512) + sorgenti SVG in `src/assets/badges/`, integrazione diretta in UI tramite `src/components/BadgeIcon.tsx` (raster per taglie principali, fallback vettoriale per taglie piccole) e script rigenerabile `npm run badges:gen`.
