@@ -217,14 +217,24 @@ otp_length = 6
 otp_expiry = 3600
 
 # Use a production-ready SMTP server
+# Production uses Resend via the Supabase dashboard (Settings → Auth → SMTP).
+# Local dev can also use Resend if RESEND_API_KEY is set:
 # [auth.email.smtp]
 # enabled = true
-# host = "smtp.sendgrid.net"
-# port = 587
-# user = "apikey"
-# pass = "env(SENDGRID_API_KEY)"
-# admin_email = "admin@email.com"
-# sender_name = "Admin"
+# host = "smtp.resend.com"
+# port = 465
+# user = "resend"
+# pass = "env(RESEND_API_KEY)"
+# admin_email = "noreply@where2beach.com"
+# sender_name = "Where2Beach"
+
+[auth.email.template.confirmation]
+subject = "Conferma la tua email – Where2Beach"
+content_path = "./supabase/templates/confirm.html"
+
+[auth.email.template.recovery]
+subject = "Reimposta la password – Where2Beach"
+content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
