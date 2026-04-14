@@ -15,7 +15,7 @@ export const PRIVACY_URL = "/privacy/";
 export const COOKIE_POLICY_URL = "/cookie-policy/";
 export const LANDING_URL = "/landing/";
 export const SUPPORT_EMAIL = "info@where2beach.com";
-export const SHARE_APP_URL = "https://where2beach.com/";
+export const SHARE_APP_URL = "https://apps.apple.com/app/id6760668956";
 const DEFAULT_REVIEW_URL = "https://apps.apple.com/it/search?term=where2beach";
 export const APP_REVIEW_URL = import.meta.env.VITE_APP_REVIEW_URL?.trim() || DEFAULT_REVIEW_URL;
 
