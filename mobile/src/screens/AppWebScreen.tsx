@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebSurface } from "../components/WebSurface";
 import {
@@ -13,6 +13,7 @@ import {
   markOnboardingCompleted,
   resetOnboarding,
 } from "../services/onboarding";
+import { checkForUpdate, dismissUpdate } from "../services/updateCheck";
 
 const MOBILE_SCHEME = "where2beach:";
 type AppWebScreenProps = {
@@ -129,6 +130,28 @@ export const AppWebScreen = ({ onInitialWebReady }: AppWebScreenProps) => {
       cancelAnimationFrame(restartTutorialFrameRef.current);
       restartTutorialFrameRef.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    if (MOBILE_BASE_URL_IS_LOCAL) return;
+    void checkForUpdate().then((result) => {
+      if (!result.hasUpdate) return;
+      Alert.alert(
+        "Aggiornamento disponibile",
+        `La versione ${result.storeVersion} è disponibile su App Store.`,
+        [
+          {
+            text: "Non ora",
+            style: "cancel",
+            onPress: () => { void dismissUpdate(result.storeVersion); },
+          },
+          {
+            text: "Aggiorna",
+            onPress: () => { void Linking.openURL(result.storeUrl); },
+          },
+        ],
+      );
+    });
   }, []);
 
   const handleCompleteTutorial = useCallback(() => {

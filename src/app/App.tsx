@@ -7,7 +7,7 @@ import WeatherWidget from "../components/WeatherWidget";
 import logo from "../assets/logo.png";
 import splashBg from "../assets/initial-bg.png";
 import { SPOTS, hasFiniteCoords } from "../data/spots";
-import { STRINGS, subscribeToLanguage } from "../i18n/strings";
+import { STRINGS, subscribeToLanguage, getCurrentLanguage } from "../i18n/strings";
 import {
   aggregateBeachStatsFromIndex,
   buildReportsIndex,
@@ -259,7 +259,7 @@ function App() {
     nativeFirstPaintPostedRef.current = true;
     try {
       browserWindow.ReactNativeWebView?.postMessage?.(
-        JSON.stringify({ type: "w2b-native-first-paint", ready: true }),
+        JSON.stringify({ type: "w2b-native-first-paint", ready: true, language: getCurrentLanguage() }),
       );
     } catch {
       // Ignore bridge post errors outside native shell.
@@ -1260,7 +1260,7 @@ function App() {
   });
 
   const handleRestartTutorial = useCallback(() => {
-    const payload = JSON.stringify({ type: "w2b-restart-tutorial" });
+    const payload = JSON.stringify({ type: "w2b-restart-tutorial", language: getCurrentLanguage() });
     try {
       const browserWindow = window as Window & {
         ReactNativeWebView?: { postMessage?: (p: string) => void };

@@ -98,10 +98,12 @@ type TutorialTargetBridgeMessage = {
 type NativeFirstPaintBridgeMessage = {
   type: "w2b-native-first-paint";
   ready: boolean;
+  language?: string;
 };
 
 type RestartTutorialBridgeMessage = {
   type: "w2b-restart-tutorial";
+  language?: string;
 };
 
 type TutorialSpotlightProfile = {
@@ -150,79 +152,152 @@ const STEP_AVATAR_POSE: Record<TutorialStepId, AvatarPose> = {
   premi: "pointNav",
 };
 
-const FIRST_RUN_TUTORIAL_STEPS: TutorialStep[] = [
-  {
-    id: "intro",
-    title: "Ciao! Sono ONDA, la tua guida.",
-    body: "In pochi passi ti mostro tutto. Pronti a trovare la spiaggia giusta?",
-    fallback: (surfaceWidth, surfaceHeight, _topInset, _bottomInset) => ({
-      x: surfaceWidth * 0.18,
-      y: surfaceHeight * 0.26,
-      width: surfaceWidth * 0.64,
-      height: 84,
-    }),
+type TutorialLang = "it" | "en";
+
+const TUTORIAL_STRINGS: Record<TutorialLang, {
+  introTitle: string; introBody: string;
+  searchTitle: string; searchBody: string; searchHint: string;
+  mapTitle: string; mapBody: string;
+  ondaTitle: string; ondaBody: string; ondaHint: string;
+  premiTitle: string; premiBody: string;
+  btnStart: string; btnContinue: string; btnFinish: string;
+  stepOf: (current: number, total: number) => string;
+  skip: string;
+  defaultHint: string;
+  completionAutoAdvance: string;
+  completionManual: string;
+  missionComplete: string;
+  celebrationFlag: string;
+  celebrationCta: string;
+}> = {
+  it: {
+    introTitle: "Ciao! Sono ONDA, la tua guida.",
+    introBody: "In pochi passi ti mostro tutto. Pronti a trovare la spiaggia giusta?",
+    searchTitle: "Cerca la tua spiaggia",
+    searchBody: "Scrivi il nome nella barra qui sopra — poche lettere bastano.",
+    searchHint: "Scrivi almeno 2 lettere nella barra evidenziata, poi premi Continua.",
+    mapTitle: "La mappa è il tuo radar",
+    mapBody: "Ogni pin è una spiaggia. Toccalo per vedere affollamento, meteo e segnalazioni live.",
+    ondaTitle: "Aprimi dal menu in basso!",
+    ondaBody: "Tocca ONDA per aprire il chatbot e vedere le segnalazioni in tempo reale.",
+    ondaHint: "Tocca ONDA per aprire il chatbot.",
+    premiTitle: "Segnala e guadagna punti",
+    premiBody: "Ogni segnalazione vale 15 punti. Accumulali per sbloccare badge esclusivi nel tab Premi.",
+    btnStart: "Partiamo",
+    btnContinue: "Continua",
+    btnFinish: "Inizia a esplorare",
+    stepOf: (current, total) => `Passo ${current} di ${total}`,
+    skip: "Salta per ora",
+    defaultHint: "Completa l'azione evidenziata per continuare.",
+    completionAutoAdvance: "Perfetto, passo successivo in arrivo.",
+    completionManual: "Perfetto. Ora puoi leggere e premere Continua.",
+    missionComplete: "Missione completata",
+    celebrationFlag: "Tutorial completato",
+    celebrationCta: "Vai alla mappa",
   },
-  {
-    id: "search",
-    title: "Cerca la tua spiaggia",
-    body: "Scrivi il nome nella barra qui sopra — poche lettere bastano.",
-    selector: '[data-testid="search-input"]',
-    completionMode: "search-input",
-    completionSelector: '[data-testid="search-input"]',
-    interactionHint: "Scrivi almeno 2 lettere nella barra evidenziata, poi premi Continua.",
-    fallback: (surfaceWidth, _surfaceHeight, topInset, _bottomInset) => ({
-      x: 16,
-      y: topInset + 18,
-      width: Math.max(220, surfaceWidth - 32),
-      height: 58,
-    }),
+  en: {
+    introTitle: "Hi! I'm ONDA, your guide.",
+    introBody: "In a few steps I'll show you everything. Ready to find the right beach?",
+    searchTitle: "Find your beach",
+    searchBody: "Type a name in the bar above — a few letters are enough.",
+    searchHint: "Type at least 2 letters in the highlighted bar, then press Continue.",
+    mapTitle: "The map is your radar",
+    mapBody: "Every pin is a beach. Tap it to see crowd level, weather and live reports.",
+    ondaTitle: "Open me from the bottom menu!",
+    ondaBody: "Tap ONDA to open the chatbot and see live reports.",
+    ondaHint: "Tap ONDA to open the chatbot.",
+    premiTitle: "Report and earn points",
+    premiBody: "Each report earns 15 points. Collect them to unlock exclusive badges in the Rewards tab.",
+    btnStart: "Let's go",
+    btnContinue: "Continue",
+    btnFinish: "Start exploring",
+    stepOf: (current, total) => `Step ${current} of ${total}`,
+    skip: "Skip for now",
+    defaultHint: "Complete the highlighted action to continue.",
+    completionAutoAdvance: "Great, next step on its way.",
+    completionManual: "Great. Read and press Continue.",
+    missionComplete: "Mission complete",
+    celebrationFlag: "Tutorial completed",
+    celebrationCta: "Go to the map",
   },
-  {
-    id: "map-overview",
-    title: "La mappa è il tuo radar",
-    body: "Ogni pin è una spiaggia. Toccalo per vedere affollamento, meteo e segnalazioni live.",
-    selector: '[data-testid="map-container"]',
-    fallback: (surfaceWidth, surfaceHeight, topInset, _bottomInset) => ({
-      x: 22,
-      y: Math.max(topInset + 110, surfaceHeight * 0.28),
-      width: Math.max(230, surfaceWidth - 44),
-      height: Math.min(250, surfaceHeight * 0.34),
-    }),
-  },
-  {
-    id: "onda",
-    title: "Aprimi dal menu in basso!",
-    body: "Tocca ONDA per aprire il chatbot e vedere le segnalazioni in tempo reale.",
-    selector: '[data-testid="bottom-nav-chatbot"]',
-    completionMode: "target-touch",
-    completionSelector: '[data-testid="bottom-nav-chatbot"]',
-    interactionHint: "Tocca ONDA per aprire il chatbot.",
-    fallback: (surfaceWidth, surfaceHeight, _topInset, bottomInset) => {
-      const width = Math.min(138, surfaceWidth * 0.34);
-      return {
-        x: surfaceWidth / 2 - width / 2,
-        y: surfaceHeight - bottomInset - 88,
-        width,
-        height: 52,
-      };
+};
+
+const getTutorialSteps = (lang: TutorialLang): TutorialStep[] => {
+  const s = TUTORIAL_STRINGS[lang];
+  return [
+    {
+      id: "intro",
+      title: s.introTitle,
+      body: s.introBody,
+      fallback: (surfaceWidth, surfaceHeight, _topInset, _bottomInset) => ({
+        x: surfaceWidth * 0.18,
+        y: surfaceHeight * 0.26,
+        width: surfaceWidth * 0.64,
+        height: 84,
+      }),
     },
-  },
-  {
-    id: "premi",
-    title: "Segnala e guadagna punti",
-    body: "Ogni segnalazione vale 15 punti. Accumulali per sbloccare badge esclusivi nel tab Premi.",
-    selector: '[data-testid="bottom-nav-rewards"]',
-    fallback: (surfaceWidth, surfaceHeight, _topInset, bottomInset) => {
-      const width = Math.min(138, surfaceWidth * 0.34);
-      return {
-        x: surfaceWidth - width - 16,
-        y: surfaceHeight - bottomInset - 88,
-        width,
-        height: 52,
-      };
+    {
+      id: "search",
+      title: s.searchTitle,
+      body: s.searchBody,
+      selector: '[data-testid="search-input"]',
+      completionMode: "search-input",
+      completionSelector: '[data-testid="search-input"]',
+      interactionHint: s.searchHint,
+      fallback: (surfaceWidth, _surfaceHeight, topInset, _bottomInset) => ({
+        x: 16,
+        y: topInset + 18,
+        width: Math.max(220, surfaceWidth - 32),
+        height: 58,
+      }),
     },
-  },
-];
+    {
+      id: "map-overview",
+      title: s.mapTitle,
+      body: s.mapBody,
+      selector: '[data-testid="map-container"]',
+      fallback: (surfaceWidth, surfaceHeight, topInset, _bottomInset) => ({
+        x: 22,
+        y: Math.max(topInset + 110, surfaceHeight * 0.28),
+        width: Math.max(230, surfaceWidth - 44),
+        height: Math.min(250, surfaceHeight * 0.34),
+      }),
+    },
+    {
+      id: "onda",
+      title: s.ondaTitle,
+      body: s.ondaBody,
+      selector: '[data-testid="bottom-nav-chatbot"]',
+      completionMode: "target-touch",
+      completionSelector: '[data-testid="bottom-nav-chatbot"]',
+      interactionHint: s.ondaHint,
+      fallback: (surfaceWidth, surfaceHeight, _topInset, bottomInset) => {
+        const width = Math.min(138, surfaceWidth * 0.34);
+        return {
+          x: surfaceWidth / 2 - width / 2,
+          y: surfaceHeight - bottomInset - 88,
+          width,
+          height: 52,
+        };
+      },
+    },
+    {
+      id: "premi",
+      title: s.premiTitle,
+      body: s.premiBody,
+      selector: '[data-testid="bottom-nav-rewards"]',
+      fallback: (surfaceWidth, surfaceHeight, _topInset, bottomInset) => {
+        const width = Math.min(138, surfaceWidth * 0.34);
+        return {
+          x: surfaceWidth - width - 16,
+          y: surfaceHeight - bottomInset - 88,
+          width,
+          height: 52,
+        };
+      },
+    },
+  ];
+};
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
@@ -550,6 +625,7 @@ export const WebSurface = ({
   const [tutorialSearchValueLength, setTutorialSearchValueLength] = useState(0);
   const [tutorialKeyboardInset, setTutorialKeyboardInset] = useState(0);
   const [tutorialCelebrationVisible, setTutorialCelebrationVisible] = useState(false);
+  const [tutorialLanguage, setTutorialLanguage] = useState<TutorialLang>("it");
   const [avatarPose, setAvatarPose] = useState<AvatarPose>("idle");
   const [previousAvatarPose, setPreviousAvatarPose] = useState<AvatarPose | null>(
     null,
@@ -607,14 +683,15 @@ export const WebSurface = ({
 
   const tutorialActive = firstRunTutorialEnabled && !Boolean(error);
   const tutorialVisible = tutorialActive && hasLoadedOnce && !loading && tutorialDomReady;
-  const tutorialStepsCount = FIRST_RUN_TUTORIAL_STEPS.length;
+  const tutorialSteps = getTutorialSteps(tutorialLanguage);
+  const tutorialStepsCount = tutorialSteps.length;
   const safeTutorialStepIndex = clamp(
     tutorialStepIndex,
     0,
     Math.max(0, tutorialStepsCount - 1),
   );
   const tutorialStep = tutorialActive
-    ? FIRST_RUN_TUTORIAL_STEPS[safeTutorialStepIndex]
+    ? tutorialSteps[safeTutorialStepIndex]
     : null;
   const tutorialStepOverlayVisible =
     tutorialVisible && Boolean(tutorialStep) && !tutorialCelebrationVisible;
@@ -637,8 +714,9 @@ export const WebSurface = ({
   const tutorialShouldForceOndaPanelOpen =
     tutorialStep?.id === "onda" && tutorialStepCompleted;
   const tutorialOndaPanelPriority = tutorialShouldForceOndaPanelOpen;
+  const ts = TUTORIAL_STRINGS[tutorialLanguage];
   const tutorialInteractionHintText =
-    tutorialStep?.interactionHint ?? "Completa l'azione evidenziata per continuare.";
+    tutorialStep?.interactionHint ?? ts.defaultHint;
   const tutorialBodyText = tutorialStep?.body ?? "";
   const tutorialIsDoneStep = false;
   const tutorialUsesSyntheticTargetTap =
@@ -736,10 +814,10 @@ export const WebSurface = ({
 
   const tutorialPrimaryLabel =
     safeTutorialStepIndex === 0
-      ? "Partiamo"
+      ? ts.btnStart
       : safeTutorialStepIndex === tutorialStepsCount - 1
-        ? "Inizia a esplorare"
-        : "Continua";
+        ? ts.btnFinish
+        : ts.btnContinue;
   const tutorialCardBottomOffset = useMemo(() => {
     const baseOffset = Math.max(insets.bottom + 16, 18);
     if (tutorialStep?.id !== "search" || tutorialKeyboardInset <= 0) {
@@ -1133,11 +1211,17 @@ export const WebSurface = ({
       }
 
       if (isNativeFirstPaintBridgeMessage(parsed)) {
+        if (parsed.language === "en" || parsed.language === "it") {
+          setTutorialLanguage(parsed.language);
+        }
         if (parsed.ready) notifyInitialLoadSettled();
         return;
       }
 
       if (isRestartTutorialBridgeMessage(parsed)) {
+        if (parsed.language === "en" || parsed.language === "it") {
+          setTutorialLanguage(parsed.language);
+        }
         onRestartTutorial?.();
         return;
       }
@@ -2213,7 +2297,7 @@ export const WebSurface = ({
                   style={[styles.tutorialCelebrationCard, tutorialCelebrationCardTransform]}
                 >
                   <View style={styles.tutorialCelebrationFlag}>
-                    <Text style={styles.tutorialCelebrationFlagLabel}>Tutorial completato</Text>
+                    <Text style={styles.tutorialCelebrationFlagLabel}>{ts.celebrationFlag}</Text>
                   </View>
                   <Image
                     source={ONDA_POSE_ASSETS.celebrate}
@@ -2230,7 +2314,7 @@ export const WebSurface = ({
                     style={styles.tutorialCelebrationButton}
                     onPress={handleFinishTutorial}
                   >
-                    <Text style={styles.tutorialCelebrationButtonLabel}>Vai alla mappa</Text>
+                    <Text style={styles.tutorialCelebrationButtonLabel}>{ts.celebrationCta}</Text>
                   </Pressable>
                 </Animated.View>
               </View>
@@ -2377,11 +2461,11 @@ export const WebSurface = ({
               >
                 {tutorialIsDoneStep ? (
                   <View style={styles.tutorialFinalBadge}>
-                    <Text style={styles.tutorialFinalBadgeLabel}>Missione completata</Text>
+                    <Text style={styles.tutorialFinalBadgeLabel}>{ts.missionComplete}</Text>
                   </View>
                 ) : null}
                 <Text style={styles.tutorialEyebrow}>
-                  Passo {safeTutorialStepIndex + 1} di {tutorialStepsCount}
+                  {ts.stepOf(safeTutorialStepIndex + 1, tutorialStepsCount)}
                 </Text>
                 <Text style={[styles.tutorialTitle, tutorialCompactCard ? styles.tutorialTitleCompact : null]}>
                   {tutorialStep.title}
@@ -2392,7 +2476,7 @@ export const WebSurface = ({
 
                 {!tutorialCompactCard ? (
                   <View style={styles.tutorialDots}>
-                    {FIRST_RUN_TUTORIAL_STEPS.map((step, index) => (
+                    {tutorialSteps.map((step, index) => (
                       <View
                         key={step.id}
                         style={[
@@ -2413,8 +2497,8 @@ export const WebSurface = ({
                   >
                     {tutorialStepCompleted
                       ? tutorialAutoAdvanceOnComplete
-                        ? "Perfetto, passo successivo in arrivo."
-                        : "Perfetto. Ora puoi leggere e premere Continua."
+                        ? ts.completionAutoAdvance
+                        : ts.completionManual
                       : tutorialInteractionHintText}
                   </Text>
                 ) : null}
@@ -2446,7 +2530,7 @@ export const WebSurface = ({
                 )}
 
                 <Pressable style={styles.tutorialSkipButton} onPress={handleFinishTutorial}>
-                  <Text style={styles.tutorialSkipButtonLabel}>Salta per ora</Text>
+                  <Text style={styles.tutorialSkipButtonLabel}>{ts.skip}</Text>
                 </Pressable>
               </Animated.View>
             </>
