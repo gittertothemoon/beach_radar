@@ -12,7 +12,7 @@ import type {
   ReactNode,
 } from "react";
 import type { BeachWithStats } from "../lib/types";
-import { STRINGS, applyLanguage } from "../i18n/strings";
+import { STRINGS, applyLanguage, subscribeToLanguage } from "../i18n/strings";
 import { useLanguageRefresh } from "../i18n/useLanguageRefresh";
 import BottomNav from "./BottomNav";
 import RewardsSheet from "./RewardsSheet";
@@ -675,6 +675,15 @@ const BottomSheetComponent = ({
       totalTokens: null,
     },
   ]);
+  useEffect(() => subscribeToLanguage(() => {
+    setChatMessages((prev) => {
+      if (prev.length === 1 && prev[0].source === "local") {
+        return [{ ...prev[0], content: STRINGS.chatbot.welcome }];
+      }
+      return prev;
+    });
+  }), []);
+
   const [chatInput, setChatInput] = useState("");
   const [chatSending, setChatSending] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
@@ -840,7 +849,7 @@ const BottomSheetComponent = ({
       ? (accountEmail
         ? STRINGS.account.signedInAs
         : STRINGS.account.profileHintGuest)
-      : `${hasChatAccess ? ondaHeaderVisual.statusLabel : STRINGS.chatbot.lockedStatus} • Tocca per aprire`;
+      : `${hasChatAccess ? ondaHeaderVisual.statusLabel : STRINGS.chatbot.lockedStatus} • ${STRINGS.chatbot.tapToOpen}`;
 
   return (
     <div
@@ -1346,7 +1355,7 @@ const BottomSheetComponent = ({
                     </div>
                     <div>
                       <div className="text-[13px] font-semibold tracking-[0.01em] text-sky-50">
-                        ONDA
+                        {STRINGS.chatbot.title}
                       </div>
                       <div className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] text-sky-100/82">
                         <span
@@ -1362,7 +1371,7 @@ const BottomSheetComponent = ({
                   </div>
                   <div className="mt-3 text-[12px] leading-relaxed text-slate-200/80">
                     {hasChatAccess
-                      ? "Supporto su mappa, meteo, segnalazioni e preferiti."
+                      ? STRINGS.chatbot.subtitle
                       : STRINGS.chatbot.lockedDescription}
                   </div>
                 </div>

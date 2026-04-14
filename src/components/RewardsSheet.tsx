@@ -195,7 +195,7 @@ const RewardsSheet = ({
                       {name}
                     </div>
                     <div className="mt-0.5 text-[10px] leading-snug br-text-tertiary">
-                      {ach.unlocked ? description : STRINGS.account.achievementLocked}
+                      {ach.unlocked ? description : (locale?.hint ?? STRINGS.account.achievementLocked)}
                     </div>
                   </div>
                   {ach.unlocked ? (

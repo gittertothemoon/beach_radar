@@ -136,7 +136,7 @@ const BottomNavComponent = ({
             className={navItemClass(activeSection === "chatbot")}
           >
             <ChatbotIcon active={activeSection === "chatbot"} />
-            <span>ONDA</span>
+            <span>{STRINGS.chatbot.title}</span>
           </button>
           <button
             type="button"

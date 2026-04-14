@@ -383,17 +383,18 @@ export const STRINGS = {
     achievementUnlockedHint: "Added to your achievements",
   },
   achievements: {
-    first_report: { name: "First Wave", description: "You sent your first report" },
-    reporter_5: { name: "In Shape", description: "5 reports sent" },
-    reporter_10: { name: "Regular", description: "10 reports sent" },
-    reporter_25: { name: "Veteran", description: "25 reports sent" },
-    reporter_50: { name: "Legend", description: "50 reports sent" },
+    first_report: { name: "First Wave", description: "You sent your first report", hint: "Send your first report" },
+    reporter_5: { name: "In Shape", description: "5 reports sent", hint: "Send 5 reports" },
+    reporter_10: { name: "Regular", description: "10 reports sent", hint: "Send 10 reports" },
+    reporter_25: { name: "Veteran", description: "25 reports sent", hint: "Send 25 reports" },
+    reporter_50: { name: "Legend", description: "50 reports sent", hint: "Send 50 reports" },
   },
   chatbot: {
     title: "ONDA",
     subtitle:
       "Ask ONDA for help with the map, weather, reports, favourites and your account.",
     lockedStatus: "Sign in required",
+    tapToOpen: "Tap to open",
     lockedDescription: "Create a profile or sign in to use ONDA.",
     lockedAction: "Sign in or create profile",
     inputPlaceholder: "Type your question...",

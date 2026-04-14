@@ -387,17 +387,18 @@ export const STRINGS = {
     achievementUnlockedHint: "Aggiunto ai tuoi traguardi",
   },
   achievements: {
-    first_report: { name: "Prima Onda", description: "Hai inviato la tua prima segnalazione" },
-    reporter_5: { name: "In Forma", description: "5 segnalazioni inviate" },
-    reporter_10: { name: "Habitué", description: "10 segnalazioni inviate" },
-    reporter_25: { name: "Veterano", description: "25 segnalazioni inviate" },
-    reporter_50: { name: "Leggenda", description: "50 segnalazioni inviate" },
+    first_report: { name: "Prima Onda", description: "Hai inviato la tua prima segnalazione", hint: "Invia la tua prima segnalazione" },
+    reporter_5: { name: "In Forma", description: "5 segnalazioni inviate", hint: "Invia 5 segnalazioni" },
+    reporter_10: { name: "Habitué", description: "10 segnalazioni inviate", hint: "Invia 10 segnalazioni" },
+    reporter_25: { name: "Veterano", description: "25 segnalazioni inviate", hint: "Invia 25 segnalazioni" },
+    reporter_50: { name: "Leggenda", description: "50 segnalazioni inviate", hint: "Invia 50 segnalazioni" },
   },
   chatbot: {
     title: "ONDA",
     subtitle:
       "Chiedi a ONDA supporto su mappa, meteo, segnalazioni, preferiti e account.",
     lockedStatus: "Accesso richiesto",
+    tapToOpen: "Tocca per aprire",
     lockedDescription: "Per consultare ONDA devi creare un profilo o accedere.",
     lockedAction: "Accedi o crea profilo",
     inputPlaceholder: "Scrivi la tua domanda...",
