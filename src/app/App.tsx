@@ -35,7 +35,6 @@ import {
   awardMockPoints,
   getMockBalance,
   unlockMockAchievement,
-  resetMockAchievement,
   completeMockMission,
   completeMockDailyMission,
   type AccountRewardsSummary,
