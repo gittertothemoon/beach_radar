@@ -85,10 +85,12 @@ type BottomSheetProps = {
   rewardsLoading: boolean;
   redeemingBadgeCode: string | null;
   claimingMission: boolean;
+  claimingDailyMission: boolean;
   activeBadge: import("../lib/activeBadge").ActiveBadge | null;
   onRedeemBadge: (badgeCode: string) => void;
   onEquipBadge: (badge: import("../lib/activeBadge").ActiveBadge) => void;
   onClaimMission: () => void;
+  onClaimDailyMission: () => void;
 };
 
 export type BottomSheetSection = "map" | "profile" | "chatbot" | "rewards";
@@ -331,10 +333,12 @@ const BottomSheetComponent = ({
   rewardsLoading,
   redeemingBadgeCode,
   claimingMission,
+  claimingDailyMission,
   activeBadge,
   onRedeemBadge,
   onEquipBadge,
   onClaimMission,
+  onClaimDailyMission,
 }: BottomSheetProps) => {
   type SettingsPanel = "language" | "interests" | null;
 
@@ -1329,11 +1333,13 @@ const BottomSheetComponent = ({
               rewardsLoading={rewardsLoading}
               redeemingBadgeCode={redeemingBadgeCode}
               claimingMission={claimingMission}
+              claimingDailyMission={claimingDailyMission}
               activeBadge={activeBadge}
               accountEmail={accountEmail}
               onRedeemBadge={onRedeemBadge}
               onEquipBadge={onEquipBadge}
               onClaimMission={onClaimMission}
+              onClaimDailyMission={onClaimDailyMission}
               onOpenSignIn={onOpenSignIn}
             />
           ) : null}
@@ -1501,10 +1507,12 @@ const bottomSheetEqual = (prev: BottomSheetProps, next: BottomSheetProps) =>
   prev.rewardsLoading === next.rewardsLoading &&
   prev.redeemingBadgeCode === next.redeemingBadgeCode &&
   prev.claimingMission === next.claimingMission &&
+  prev.claimingDailyMission === next.claimingDailyMission &&
   prev.activeBadge === next.activeBadge &&
   prev.onRedeemBadge === next.onRedeemBadge &&
   prev.onEquipBadge === next.onEquipBadge &&
-  prev.onClaimMission === next.onClaimMission;
+  prev.onClaimMission === next.onClaimMission &&
+  prev.onClaimDailyMission === next.onClaimDailyMission;
 
 const BottomSheet = memo(BottomSheetComponent, bottomSheetEqual);
 

@@ -9,6 +9,7 @@ type BadgeIconProps = {
   icon: string;
   size?: number;
   className?: string;
+  forceVector?: boolean;
 };
 
 const rasterIcons: Record<string, string> = {
@@ -79,15 +80,16 @@ const fallback = (s: number) => (
   </svg>
 );
 
-const BadgeIcon = ({ icon, size = 24, className }: BadgeIconProps) => {
+const BadgeIcon = ({ icon, size = 24, className, forceVector }: BadgeIconProps) => {
   const rasterSrc = rasterIcons[icon];
-  const useRaster = Boolean(rasterSrc);
+  const useRaster = Boolean(rasterSrc) && !forceVector;
   const isMuted = className?.includes("slate-500") || className?.includes("text-slate");
   const filter = isMuted ? "grayscale(1) saturate(0.18) brightness(0.95)" : undefined;
+  const mixBlendMode = !isMuted && useRaster ? ("screen" as const) : undefined;
   const opacity = isMuted ? 0.72 : 1;
   const render = vectorIcons[icon] ?? fallback;
   return (
-    <span className={className} aria-hidden="true" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+    <span className={className} aria-hidden="true" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: size, height: size, flexShrink: 0 }}>
       {useRaster ? (
         <img
           src={rasterSrc}
@@ -101,6 +103,7 @@ const BadgeIcon = ({ icon, size = 24, className }: BadgeIconProps) => {
             objectFit: "contain",
             filter,
             opacity,
+            mixBlendMode,
           }}
         />
       ) : (

@@ -8,11 +8,14 @@ const BADGE_CATALOG_TABLE = "badge_catalog";
 const USER_BADGES_TABLE = "user_badges";
 const POINTS_LEDGER_TABLE = "points_ledger";
 const MISSION_CLAIMS_TABLE = "user_mission_claims";
+const DAILY_MISSION_CLAIMS_TABLE = "user_daily_mission_claims";
 const REPORT_COMPLETED_POINTS = 15;
 const MAX_BADGE_CODE_LENGTH = 80;
 const MAX_BODY_BYTES = 8 * 1024;
-const WEEKLY_MISSION_GOAL = 3;
+const WEEKLY_MISSION_GOAL = 10;
 const WEEKLY_MISSION_REWARD = 20;
+const DAILY_MISSION_GOAL = 3;
+const DAILY_MISSION_REWARD = 5;
 
 const ACHIEVEMENT_DEFS = [
   { id: "first_report", threshold: 1 },
@@ -49,6 +52,14 @@ type RewardsSummary = {
     unlocked: boolean;
   }[];
   weeklyMission: {
+    goal: number;
+    progress: number;
+    reward: number;
+    claimed: boolean;
+    periodStart: string;
+    periodEnd: string;
+  };
+  dailyMission: {
     goal: number;
     progress: number;
     reward: number;
@@ -196,6 +207,13 @@ function getIsoWeekBounds(): { start: string; end: string } {
   };
 }
 
+function getDayBounds(): { start: string; end: string } {
+  const now = new Date();
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+
 function buildSupabaseClient(): SupabaseClient | null {
   const supabaseUrl = readEnv("SUPABASE_URL");
   const serviceRole = readEnv("SUPABASE_SERVICE_ROLE_KEY");
@@ -222,6 +240,7 @@ async function loadRewardsSummary(
   }
 
   const weekBounds = getIsoWeekBounds();
+  const dayBounds = getDayBounds();
 
   const [
     { data: balanceData, error: balanceError },
@@ -230,6 +249,8 @@ async function loadRewardsSummary(
     { count: totalReportCount, error: totalReportError },
     { count: weeklyReportCount, error: weeklyReportError },
     { count: missionClaimedCount, error: missionClaimedError },
+    { count: dailyReportCount, error: dailyReportError },
+    { count: dailyMissionClaimedCount, error: dailyMissionClaimedError },
   ] = await Promise.all([
     supabase
       .from(BALANCES_TABLE)
@@ -263,6 +284,18 @@ async function loadRewardsSummary(
       .select("user_id", { count: "exact", head: true })
       .eq("user_id", userId)
       .eq("period_start", weekBounds.start),
+    supabase
+      .from(POINTS_LEDGER_TABLE)
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("reason", "report_completed")
+      .gte("created_at", dayBounds.start)
+      .lte("created_at", dayBounds.end),
+    supabase
+      .from(DAILY_MISSION_CLAIMS_TABLE)
+      .select("user_id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("period_start", dayBounds.start),
   ]);
 
   if (balanceError) return { ok: false, error: "db_balance_fetch_failed" };
@@ -271,6 +304,8 @@ async function loadRewardsSummary(
   if (totalReportError) return { ok: false, error: "db_ledger_fetch_failed" };
   if (weeklyReportError) return { ok: false, error: "db_ledger_fetch_failed" };
   if (missionClaimedError) return { ok: false, error: "db_mission_claims_fetch_failed" };
+  if (dailyReportError) return { ok: false, error: "db_ledger_fetch_failed" };
+  if (dailyMissionClaimedError) return { ok: false, error: "db_daily_mission_claims_fetch_failed" };
 
   const balanceRow = isObject(balanceData) ? (balanceData as UserPointsBalanceRow) : {};
   const pointsBalance = Math.max(0, Math.round(toFiniteNumber(balanceRow.points_balance) ?? 0));
@@ -289,6 +324,7 @@ async function loadRewardsSummary(
 
   const totalReports = Math.max(0, totalReportCount ?? 0);
   const weeklyReports = Math.max(0, Math.min(WEEKLY_MISSION_GOAL, weeklyReportCount ?? 0));
+  const dailyReports = Math.max(0, Math.min(DAILY_MISSION_GOAL, dailyReportCount ?? 0));
 
   const summary: RewardsSummary = {
     balance: pointsBalance,
@@ -327,6 +363,14 @@ async function loadRewardsSummary(
       claimed: (missionClaimedCount ?? 0) > 0,
       periodStart: weekBounds.start,
       periodEnd: weekBounds.end,
+    },
+    dailyMission: {
+      goal: DAILY_MISSION_GOAL,
+      progress: dailyReports,
+      reward: DAILY_MISSION_REWARD,
+      claimed: (dailyMissionClaimedCount ?? 0) > 0,
+      periodStart: dayBounds.start,
+      periodEnd: dayBounds.end,
     },
   };
 
@@ -416,6 +460,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         p_user_id: userId,
         p_period_start: weekBounds.start,
         p_points: WEEKLY_MISSION_REWARD,
+      },
+    );
+    if (claimError) {
+      return res.status(500).json({ ok: false, error: "mission_claim_failed" });
+    }
+    const claimRow = isObject(claimData) ? (claimData as ClaimFnRow) : null;
+    if (claimRow?.ok !== true) {
+      const claimErrCode = toSingleString(claimRow?.error);
+      const status = claimErrCode === "already_claimed" ? 409 : 400;
+      return res.status(status).json({ ok: false, error: claimErrCode ?? "mission_claim_failed" });
+    }
+
+    const summaryResult = await loadRewardsSummary(supabase, userId);
+    if (!summaryResult.ok) {
+      return res.status(500).json({ ok: false, error: summaryResult.error });
+    }
+    return res.status(200).json({ ok: true, summary: summaryResult.summary });
+  }
+
+  // ── Claim daily mission reward ───────────────────────────────────────────
+  if (action === "claim_daily_mission") {
+    const dayBounds = getDayBounds();
+    const dailyCount = await (async () => {
+      const { count, error } = await supabase
+        .from(POINTS_LEDGER_TABLE)
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("reason", "report_completed")
+        .gte("created_at", dayBounds.start)
+        .lte("created_at", dayBounds.end);
+      return error ? 0 : (count ?? 0);
+    })();
+
+    if (dailyCount < DAILY_MISSION_GOAL) {
+      return res.status(409).json({ ok: false, error: "mission_not_complete" });
+    }
+
+    type ClaimFnRow = { ok?: unknown; error?: unknown };
+    const { data: claimData, error: claimError } = await supabase.rpc(
+      "claim_daily_mission_reward",
+      {
+        p_user_id: userId,
+        p_period_start: dayBounds.start,
+        p_points: DAILY_MISSION_REWARD,
       },
     );
     if (claimError) {

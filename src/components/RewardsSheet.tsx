@@ -9,11 +9,13 @@ type RewardsSheetProps = {
   rewardsLoading: boolean;
   redeemingBadgeCode: string | null;
   claimingMission: boolean;
+  claimingDailyMission: boolean;
   activeBadge: ActiveBadge | null;
   accountEmail: string | null;
   onRedeemBadge: (badgeCode: string) => void;
   onEquipBadge: (badge: ActiveBadge) => void;
   onClaimMission: () => void;
+  onClaimDailyMission: () => void;
   onOpenSignIn: () => void;
 };
 
@@ -22,11 +24,13 @@ const RewardsSheet = ({
   rewardsLoading,
   redeemingBadgeCode,
   claimingMission,
+  claimingDailyMission,
   activeBadge,
   accountEmail,
   onRedeemBadge,
   onEquipBadge,
   onClaimMission,
+  onClaimDailyMission,
   onOpenSignIn,
 }: RewardsSheetProps) => {
   const nextUnowned = rewards?.badges
@@ -152,6 +156,75 @@ const RewardsSheet = ({
                 className="br-press mt-3 w-full rounded-[10px] border border-sky-300/50 bg-sky-500/20 py-2 text-[13px] font-bold text-sky-50 transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-sky-300/70 focus-visible:outline-offset-1 disabled:cursor-not-allowed disabled:opacity-55"
               >
                 {claimingMission ? STRINGS.account.missionClaimingAction : STRINGS.account.missionClaimAction(weeklyMission.reward)}
+              </button>
+            ) : null}
+          </div>
+        );
+      })() : null}
+
+      {/* ── Daily mission ── */}
+      {rewards ? (() => {
+        const { dailyMission } = rewards;
+        const pct = Math.min(100, Math.round((dailyMission.progress / dailyMission.goal) * 100));
+        const done = dailyMission.progress >= dailyMission.goal;
+        const canClaim = done && !dailyMission.claimed;
+        return (
+          <div className={[
+            "rounded-[14px] border px-4 py-3.5 transition-colors",
+            done
+              ? "border-emerald-300/30 bg-emerald-500/8"
+              : "border-white/10 bg-black/25",
+          ].join(" ")}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className={[
+                  "text-[12px] font-semibold uppercase tracking-[0.08em]",
+                  done ? "text-emerald-200/90" : "text-emerald-100/60",
+                ].join(" ")}>
+                  {STRINGS.account.dailyMissionsTitle}
+                </div>
+                <span className={[
+                  "rounded-full border px-2 py-0.5 text-[10px] font-bold",
+                  dailyMission.claimed
+                    ? "border-slate-600/40 bg-black/30 text-slate-500"
+                    : done
+                      ? "border-emerald-300/50 bg-emerald-500/20 text-emerald-200"
+                      : "border-emerald-400/25 bg-emerald-500/8 text-emerald-300/70",
+                ].join(" ")}>
+                  +{dailyMission.reward} pt
+                </span>
+              </div>
+              <div className={[
+                "text-[11px] font-semibold shrink-0",
+                done ? "text-emerald-200" : "text-slate-400",
+              ].join(" ")}>
+                {dailyMission.claimed
+                  ? STRINGS.account.missionClaimedLabel
+                  : done
+                    ? STRINGS.account.missionCompleted
+                    : STRINGS.account.missionProgressLabel(dailyMission.progress, dailyMission.goal)}
+              </div>
+            </div>
+            <div className="mt-2 text-[12px] br-text-primary">
+              {STRINGS.account.missionDailyLabel(dailyMission.goal)}
+            </div>
+            <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                className={[
+                  "h-full rounded-full transition-all duration-500",
+                  done ? "bg-emerald-400" : "bg-emerald-500/60",
+                ].join(" ")}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            {canClaim ? (
+              <button
+                type="button"
+                disabled={claimingDailyMission}
+                onClick={onClaimDailyMission}
+                className="br-press mt-3 w-full rounded-[10px] border border-emerald-300/50 bg-emerald-500/20 py-2 text-[13px] font-bold text-emerald-50 transition-colors focus-visible:outline focus-visible:outline-1 focus-visible:outline-emerald-300/70 focus-visible:outline-offset-1 disabled:cursor-not-allowed disabled:opacity-55"
+              >
+                {claimingDailyMission ? STRINGS.account.missionClaimingAction : STRINGS.account.missionClaimAction(dailyMission.reward)}
               </button>
             ) : null}
           </div>

@@ -202,48 +202,11 @@ export const AppWebScreen = ({ onInitialWebReady }: AppWebScreenProps) => {
         onRestartTutorial={handleRestartTutorial}
         onInitialLoadSettled={onInitialWebReady}
       />
-      {MOBILE_BASE_URL_IS_LOCAL ? (
-        <SafeAreaView
-          style={styles.devResetWrap}
-          edges={["bottom"]}
-          pointerEvents="box-none"
-        >
-          <Pressable
-            style={styles.devResetButton}
-            onPress={() => {
-              void resetOnboarding().then(() => setShowFirstRunTutorial(true));
-            }}
-          >
-            <Text style={styles.devResetLabel}>↺ Tutorial</Text>
-          </Pressable>
-        </SafeAreaView>
-      ) : null}
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  devResetWrap: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    pointerEvents: "box-none",
-  },
-  devResetButton: {
-    margin: 12,
-    marginBottom: 76,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    backgroundColor: "rgba(15, 23, 42, 0.85)",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "rgba(148, 163, 184, 0.3)",
-  },
-  devResetLabel: {
-    color: "#94a3b8",
-    fontSize: 12,
-    fontWeight: "600",
-  },
   safeArea: {
     flex: 1,
     backgroundColor: "#020617",

@@ -31,8 +31,13 @@ import {
   fetchAccountRewards,
   redeemBadge,
   claimMissionReward,
+  claimDailyMissionReward,
   awardMockPoints,
   getMockBalance,
+  unlockMockAchievement,
+  resetMockAchievement,
+  completeMockMission,
+  completeMockDailyMission,
   type AccountRewardsSummary,
   type GamificationCelebrationEvent,
 } from "../lib/rewards";
@@ -213,6 +218,7 @@ function App() {
   const [celebrationBadge, setCelebrationBadge] = useState<ActiveBadge & { description: string } | null>(null);
   const [pendingGamification, setPendingGamification] = useState<GamificationCelebrationEvent[]>([]);
   const [claimingMission, setClaimingMission] = useState(false);
+  const [claimingDailyMission, setClaimingDailyMission] = useState(false);
   const rewardsSummaryRef = useRef<AccountRewardsSummary | null>(null);
   const [reportThanksOpen, setReportThanksOpen] = useState(false);
   const [lastReportReward, setLastReportReward] = useState<{ awardedPoints: number; newBalance: number | null } | null>(null);
@@ -593,7 +599,7 @@ function App() {
       rewardsSummaryRef.current = result.summary;
       setPendingGamification((prev) => [
         ...prev,
-        { type: "mission" as const, pointsEarned: result.summary.weeklyMission.reward },
+        { type: "mission" as const, missionType: "weekly" as const, pointsEarned: result.summary.weeklyMission.reward },
       ]);
       return;
     }
@@ -611,6 +617,33 @@ function App() {
     showLocationToast(STRINGS.account.missionClaimFailed, "error");
   }, [claimingMission, setAccount, refreshRewards, showLocationToast]);
 
+  const handleClaimDailyMission = useCallback(async () => {
+    if (claimingDailyMission) return;
+    setClaimingDailyMission(true);
+    const result = await claimDailyMissionReward();
+    setClaimingDailyMission(false);
+    if (result.ok) {
+      setRewardsSummary(result.summary);
+      rewardsSummaryRef.current = result.summary;
+      setPendingGamification((prev) => [
+        ...prev,
+        { type: "mission" as const, missionType: "daily" as const, pointsEarned: result.summary.dailyMission.reward },
+      ]);
+      return;
+    }
+    if (result.code === "account_required") {
+      setAccount(null);
+      setRewardsSummary(null);
+      rewardsSummaryRef.current = null;
+      return;
+    }
+    if (result.code === "already_claimed") {
+      void refreshRewards({ silent: true });
+      return;
+    }
+    showLocationToast(STRINGS.account.missionDailyClaimFailed, "error");
+  }, [claimingDailyMission, setAccount, refreshRewards, showLocationToast]);
+
   useEffect(() => {
     if (!account) {
       setRewardsSummary(null);
@@ -625,6 +658,36 @@ function App() {
     if (!account || !profileOpen) return;
     void refreshRewards({ silent: true });
   }, [account, profileOpen, refreshRewards]);
+
+  const mockAchievementFiredRef = useRef(false);
+  useEffect(() => {
+    if (!devMockAccount || !rewardsSummary || mockAchievementFiredRef.current) return;
+    mockAchievementFiredRef.current = true;
+    const timer = setTimeout(() => {
+      completeMockMission();
+      void handleClaimMission();
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [devMockAccount, rewardsSummary, refreshRewards, handleClaimMission]);
+
+  useEffect(() => {
+    if (!devMockAccount) return;
+    (window as unknown as Record<string, unknown>).__br_dev = {
+      unlockAchievement: (id: string) => {
+        unlockMockAchievement(id);
+        void refreshRewards({ silent: true, detectAchievements: true });
+      },
+      triggerMission: () => {
+        completeMockMission();
+        void handleClaimMission();
+      },
+      triggerDailyMission: () => {
+        completeMockDailyMission();
+        void handleClaimDailyMission();
+      },
+    };
+  }, [devMockAccount, refreshRewards, handleClaimMission, handleClaimDailyMission]);
+
 
   const applyAccountRequiredState = useCallback(
     (nextState: AccountRequiredState) => {
@@ -1878,10 +1941,12 @@ function App() {
         rewardsLoading={rewardsLoading}
         redeemingBadgeCode={redeemingBadgeCode}
         claimingMission={claimingMission}
+        claimingDailyMission={claimingDailyMission}
         activeBadge={activeBadge}
         onRedeemBadge={handleRedeemBadge}
         onEquipBadge={handleEquipBadge}
         onClaimMission={handleClaimMission}
+        onClaimDailyMission={handleClaimDailyMission}
       />
       {selectedBeach ? (
         <Suspense fallback={null}>

@@ -812,7 +812,7 @@ const MapViewComponent = ({
     return {
       coarsePointer,
       detectRetina: !coarsePointer && window.devicePixelRatio > 1,
-      tileKeepBuffer: coarsePointer ? 2 : 4,
+      tileKeepBuffer: coarsePointer ? 4 : 6,
     };
   }, []);
 
@@ -841,11 +841,26 @@ const MapViewComponent = ({
           minZoom={2}
           maxZoom={18}
           updateWhenIdle={!mapRenderProfile.coarsePointer}
-          updateWhenZooming={mapRenderProfile.coarsePointer}
-          updateInterval={mapRenderProfile.coarsePointer ? 80 : 150}
+          updateWhenZooming={false}
+          updateInterval={200}
           keepBuffer={mapRenderProfile.tileKeepBuffer}
           noWrap
           bounds={WORLD_BOUNDS}
+          eventHandlers={{
+            tileerror: (e) => {
+              const tile = (e as unknown as { tile: HTMLImageElement }).tile;
+              if (!tile) return;
+              const retries = parseInt(tile.dataset.retries ?? "0", 10);
+              if (retries >= 2) return;
+              tile.dataset.retries = String(retries + 1);
+              const delay = (retries + 1) * 1500;
+              setTimeout(() => {
+                const src = tile.src;
+                tile.src = "";
+                tile.src = src;
+              }, delay);
+            },
+          }}
         />
         <MapViewportFix />
         <MapReady onReady={onMapReady} />

@@ -10,17 +10,36 @@ type BadgeCelebrationModalProps = {
   onClose: () => void;
 };
 
-const CONFETTI_PIECES = [
-  { x: 20, delay: 0, color: "#fbbf24", size: 7, duration: 1.1 },
-  { x: 45, delay: 0.15, color: "#34d399", size: 5, duration: 1.3 },
-  { x: 70, delay: 0.05, color: "#60a5fa", size: 8, duration: 1.0 },
-  { x: 30, delay: 0.25, color: "#f472b6", size: 5, duration: 1.2 },
-  { x: 60, delay: 0.1, color: "#fbbf24", size: 6, duration: 1.4 },
-  { x: 80, delay: 0.2, color: "#a78bfa", size: 7, duration: 1.1 },
-  { x: 15, delay: 0.3, color: "#34d399", size: 5, duration: 1.3 },
-  { x: 90, delay: 0.08, color: "#f472b6", size: 6, duration: 1.2 },
-];
+type ConfettiPiece = {
+  x: number;
+  delay: number;
+  color: string;
+  size: number;
+  duration: number;
+  drift: number;
+  circle: boolean;
+};
 
+const CONFETTI_PIECES: ConfettiPiece[] = [
+  { x:  6, delay: 0,    color: "#fbbf24", size: 7, duration: 1.2, drift: -12, circle: false },
+  { x: 14, delay: 0.28, color: "#34d399", size: 5, duration: 1.5, drift:  8,  circle: true  },
+  { x: 22, delay: 0.1,  color: "#60a5fa", size: 6, duration: 1.1, drift: -6,  circle: false },
+  { x: 10, delay: 0.45, color: "#f472b6", size: 4, duration: 1.4, drift: 14,  circle: true  },
+  { x: 32, delay: 0.18, color: "#fbbf24", size: 8, duration: 1.0, drift: -10, circle: false },
+  { x: 40, delay: 0,    color: "#a78bfa", size: 5, duration: 1.3, drift:  6,  circle: true  },
+  { x: 28, delay: 0.38, color: "#34d399", size: 6, duration: 1.2, drift: -8,  circle: false },
+  { x: 48, delay: 0.12, color: "#fbbf24", size: 7, duration: 1.1, drift: 10,  circle: true  },
+  { x: 55, delay: 0.32, color: "#60a5fa", size: 5, duration: 1.4, drift: -14, circle: false },
+  { x: 62, delay: 0.06, color: "#f472b6", size: 8, duration: 1.0, drift:  8,  circle: true  },
+  { x: 70, delay: 0.22, color: "#fbbf24", size: 5, duration: 1.3, drift: -6,  circle: false },
+  { x: 58, delay: 0.42, color: "#a78bfa", size: 6, duration: 1.2, drift: 12,  circle: true  },
+  { x: 78, delay: 0.08, color: "#34d399", size: 7, duration: 1.1, drift: -10, circle: false },
+  { x: 85, delay: 0.26, color: "#fbbf24", size: 5, duration: 1.5, drift:  6,  circle: true  },
+  { x: 75, delay: 0.4,  color: "#60a5fa", size: 6, duration: 1.2, drift: -8,  circle: false },
+  { x: 92, delay: 0.14, color: "#f472b6", size: 4, duration: 1.3, drift: 14,  circle: true  },
+  { x: 44, delay: 0.5,  color: "#fbbf24", size: 5, duration: 1.4, drift: -12, circle: false },
+  { x: 18, delay: 0.36, color: "#a78bfa", size: 6, duration: 1.1, drift:  8,  circle: true  },
+];
 
 const BadgeCelebrationModal = ({
   isOpen,
@@ -51,25 +70,24 @@ const BadgeCelebrationModal = ({
       style={{ animation: "br-celebration-fade-in 240ms ease both" }}
     >
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/82 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Confetti layer */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 overflow-hidden h-48">
+      {/* Confetti */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 overflow-hidden">
         {CONFETTI_PIECES.map((p, i) => (
           <div
             key={i}
-            className="absolute top-0 rounded-sm"
+            className="absolute top-0"
             style={{
               left: `${p.x}%`,
               width: p.size,
-              height: p.size * 1.6,
+              height: p.circle ? p.size : p.size * 1.7,
               background: p.color,
+              borderRadius: p.circle ? "50%" : 2,
               opacity: 0,
+              "--drift": `${p.drift}px`,
               animation: `br-confetti-fall ${p.duration}s ${p.delay}s ease-in 1 forwards`,
-            }}
+            } as React.CSSProperties}
           />
         ))}
       </div>
@@ -80,32 +98,59 @@ const BadgeCelebrationModal = ({
         role="dialog"
         aria-modal="true"
         aria-label={STRINGS.account.badgeCelebrationTitle}
-        className="relative z-10 w-full max-w-[340px] overflow-hidden rounded-[24px] border border-amber-300/30 bg-[rgba(12,10,6,0.97)] shadow-[0_32px_80px_-20px_rgba(0,0,0,0.9)]"
-        style={{ animation: "br-celebration-slide-up 320ms 80ms cubic-bezier(0.34,1.56,0.64,1) both" }}
+        className="relative z-10 w-full max-w-[340px] overflow-hidden rounded-[26px] border border-amber-300/25 bg-[rgba(14,10,4,0.98)] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.95)]"
+        style={{ animation: "br-celebration-slide-up 380ms 60ms cubic-bezier(0.34,1.56,0.64,1) both" }}
       >
-        {/* Glow background */}
+        {/* Top accent line */}
         <div
-          className="pointer-events-none absolute inset-0 rounded-[24px]"
+          className="absolute inset-x-0 top-0 h-[2px]"
           style={{
-            background:
-              "radial-gradient(ellipse at 50% 30%, rgba(251,191,36,0.15) 0%, transparent 65%)",
+            background: "linear-gradient(90deg, transparent, rgba(251,191,36,0.7) 40%, rgba(252,211,77,0.7) 60%, transparent)",
           }}
         />
 
-        <div className="relative flex flex-col items-center px-6 pb-7 pt-8">
-          {/* Badge icon */}
-          <div
-            className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-amber-300/50 bg-amber-500/15 text-amber-100"
-            style={{
-              animation: "br-badge-pop 600ms 160ms cubic-bezier(0.34,1.56,0.64,1) both, br-badge-glow 2s 800ms ease-in-out infinite",
-            }}
-          >
-            <BadgeIcon icon={badgeIcon} size={52} />
+        {/* Glow background */}
+        <div
+          className="pointer-events-none absolute inset-0 rounded-[26px]"
+          style={{
+            background: "radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.18) 0%, transparent 60%)",
+          }}
+        />
+
+        <div className="relative flex flex-col items-center px-6 pb-7 pt-9">
+          {/* Icon with pulsing ring */}
+          <div className="relative flex items-center justify-center">
+            <div
+              className="absolute rounded-full"
+              style={{
+                width: 116,
+                height: 116,
+                border: "2px solid rgba(251,191,36,0.35)",
+                animation: "br-ring-pulse 2s 700ms ease-out infinite",
+              }}
+            />
+            <div
+              className="absolute rounded-full"
+              style={{
+                width: 116,
+                height: 116,
+                border: "2px solid rgba(251,191,36,0.35)",
+                animation: "br-ring-pulse 2s 1300ms ease-out infinite",
+              }}
+            />
+            <div
+              className="relative flex h-[88px] w-[88px] items-center justify-center rounded-full border-2 border-amber-300/50 bg-amber-500/15 text-amber-100"
+              style={{
+                animation: "br-badge-pop 600ms 160ms cubic-bezier(0.34,1.56,0.64,1) both, br-badge-glow 2.2s 800ms ease-in-out infinite",
+              }}
+            >
+              <BadgeIcon icon={badgeIcon} size={48} />
+            </div>
           </div>
 
-          {/* "Badge sbloccato!" label */}
+          {/* Eyebrow */}
           <div
-            className="mt-5 text-[11px] font-bold uppercase tracking-[0.12em] text-amber-300/90"
+            className="mt-5 text-[11px] font-bold uppercase tracking-[0.14em] text-amber-300/90"
             style={{ animation: "br-celebration-slide-up 280ms 350ms ease both" }}
           >
             {STRINGS.account.badgeCelebrationTitle}
@@ -113,7 +158,7 @@ const BadgeCelebrationModal = ({
 
           {/* Badge name */}
           <div
-            className="mt-1.5 text-center text-[22px] font-bold leading-tight text-amber-50"
+            className="mt-1.5 text-center text-[23px] font-bold leading-tight text-amber-50"
             style={{ animation: "br-celebration-slide-up 280ms 420ms ease both" }}
           >
             {badgeName}
@@ -121,26 +166,28 @@ const BadgeCelebrationModal = ({
 
           {/* Description */}
           <div
-            className="mt-2 text-center text-[13px] leading-relaxed text-slate-300/80"
+            className="mt-2 text-center text-[13px] leading-relaxed text-slate-300/75"
             style={{ animation: "br-celebration-slide-up 280ms 490ms ease both" }}
           >
             {badgeDescription}
           </div>
 
-          {/* "Badge equipaggiato" hint */}
+          {/* Pill */}
           <div
-            className="mt-4 flex items-center gap-1.5 rounded-full border border-amber-300/25 bg-amber-500/10 px-3.5 py-1.5 text-[11px] font-semibold text-amber-200/80"
+            className="mt-4 flex items-center gap-1.5 rounded-full border border-amber-300/25 bg-amber-500/12 px-4 py-1.5 text-[11px] font-semibold text-amber-200/80"
             style={{ animation: "br-celebration-slide-up 280ms 560ms ease both" }}
           >
-            <span aria-hidden="true">✨</span>
+            <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+              <path d="M5 0l1.1 3.6H10L6.9 5.8l1.1 3.6L5 7.3l-3 2.1 1.1-3.6L0 3.6h3.9z"/>
+            </svg>
             {STRINGS.account.badgeCelebrationEquippedHint}
           </div>
 
-          {/* Close button */}
+          {/* Close */}
           <button
             type="button"
             onClick={onClose}
-            className="br-press mt-6 w-full rounded-[14px] border border-amber-300/40 bg-amber-500/20 px-4 py-3 text-[14px] font-bold text-amber-50 focus-visible:outline focus-visible:outline-1 focus-visible:outline-amber-300/70 focus-visible:outline-offset-1"
+            className="br-press mt-6 w-full rounded-[14px] border border-amber-300/35 bg-amber-500/18 px-4 py-3 text-[14px] font-bold text-amber-50 focus-visible:outline focus-visible:outline-1 focus-visible:outline-amber-300/70 focus-visible:outline-offset-1"
             style={{ animation: "br-celebration-slide-up 280ms 620ms ease both" }}
           >
             {STRINGS.account.badgeCelebrationClose}
