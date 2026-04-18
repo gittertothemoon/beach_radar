@@ -1,5 +1,15 @@
 {
   "webcredentials": {
     "apps": ["YCA462KN4T.com.where2beach.mobile"]
+  },
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["YCA462KN4T.com.where2beach.mobile"],
+        "components": [
+          { "/": "/register/*" }
+        ]
+      }
+    ]
   }
 }

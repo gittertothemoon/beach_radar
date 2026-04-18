@@ -12,8 +12,11 @@ import {
 import {
   completeOAuthProfile,
   ensureAppSession,
+  getOAuthSignInUrl,
+  isNativeShellAuthContext,
   isOAuthProfileComplete,
   loginAccount,
+  NATIVE_OAUTH_REDIRECT_URL,
   registerAccount,
   requestPasswordReset,
   setFavoriteBeach,
@@ -84,6 +87,7 @@ const RegisterPage = () => {
     () => new URLSearchParams(window.location.search),
     [],
   );
+  const isNativeShell = useMemo(() => isNativeShellAuthContext(), []);
   const authModeParam = searchParams.get("mode");
   const authMode: AuthMode =
     authModeParam === "login" || authModeParam === "forgot" || authModeParam === "reset"
@@ -415,6 +419,28 @@ const RegisterPage = () => {
     if (oauthButtonPending) return;
     setOauthButtonPending(provider);
     setError(null);
+
+    if (isNativeShell) {
+      const urlResult = await getOAuthSignInUrl(provider, NATIVE_OAUTH_REDIRECT_URL);
+      if (!urlResult.ok) {
+        setOauthButtonPending(null);
+        showError(STRINGS.account.oauthSignInFailed);
+        return;
+      }
+      const rn = (window as unknown as {
+        ReactNativeWebView?: { postMessage: (msg: string) => void };
+      }).ReactNativeWebView;
+      if (!rn?.postMessage) {
+        setOauthButtonPending(null);
+        showError(STRINGS.account.oauthSignInFailed);
+        return;
+      }
+      rn.postMessage(
+        JSON.stringify({ type: "w2b-oauth-open", provider, url: urlResult.url }),
+      );
+      return;
+    }
+
     const result = await signInWithOAuth(provider);
     if (!result.ok) {
       setOauthButtonPending(null);
@@ -482,6 +508,15 @@ const RegisterPage = () => {
     if (oauthPendingAccount.firstName) setFirstName(oauthPendingAccount.firstName);
     if (oauthPendingAccount.lastName) setLastName(oauthPendingAccount.lastName);
   }, [isCompletingProfile, oauthPendingAccount]);
+
+  useEffect(() => {
+    if (!isNativeShell) return;
+    const handleCancelled = () => {
+      setOauthButtonPending(null);
+    };
+    window.addEventListener("w2b-oauth-cancelled", handleCancelled);
+    return () => window.removeEventListener("w2b-oauth-cancelled", handleCancelled);
+  }, [isNativeShell]);
 
   useEffect(() => {
     const hasCallbackTokens =

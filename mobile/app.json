@@ -2,7 +2,7 @@
   "expo": {
     "name": "Where2Beach",
     "slug": "where2beach-mobile",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -16,7 +16,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.where2beach.mobile",
       "buildNumber": "1",
-      "associatedDomains": ["webcredentials:where2beach.com"],
+      "associatedDomains": ["webcredentials:where2beach.com", "applinks:where2beach.com"],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "Where2Beach usa la tua posizione per mostrarti spiagge vicine e abilitare la funzione \"La mia posizione\" nella mappa.",

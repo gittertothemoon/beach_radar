@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
+import * as WebBrowser from "expo-web-browser";
 
 type WebSurfaceProps = {
   initialUrl: string;
@@ -106,6 +107,12 @@ type NativeFirstPaintBridgeMessage = {
 type RestartTutorialBridgeMessage = {
   type: "w2b-restart-tutorial";
   language?: string;
+};
+
+type OAuthOpenBridgeMessage = {
+  type: "w2b-oauth-open";
+  provider: string;
+  url: string;
 };
 
 type TutorialSpotlightProfile = {
@@ -395,6 +402,16 @@ const isNativeFirstPaintBridgeMessage = (
 const isRestartTutorialBridgeMessage = (value: unknown): value is RestartTutorialBridgeMessage => {
   if (!value || typeof value !== "object") return false;
   return (value as Record<string, unknown>).type === "w2b-restart-tutorial";
+};
+
+const isOAuthOpenBridgeMessage = (value: unknown): value is OAuthOpenBridgeMessage => {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+  return (
+    record.type === "w2b-oauth-open" &&
+    typeof record.url === "string" &&
+    (record.url as string).length > 0
+  );
 };
 
 const getTutorialSpotlightProfile = (
@@ -1227,6 +1244,46 @@ export const WebSurface = ({
         return;
       }
 
+      if (isOAuthOpenBridgeMessage(parsed)) {
+        const oauthUrl = parsed.url;
+        void (async () => {
+          try {
+            const result = await WebBrowser.openAuthSessionAsync(
+              oauthUrl,
+              "where2beach://",
+            );
+            if (result.type === "success" && result.url) {
+              // result.url = where2beach://auth/callback?code=xxxx
+              const qs = result.url.includes("?")
+                ? result.url.slice(result.url.indexOf("?") + 1)
+                : "";
+              const params = new URLSearchParams(qs);
+              const code = params.get("code");
+              if (!code) {
+                webViewRef.current?.injectJavaScript(
+                  "window.dispatchEvent(new CustomEvent('w2b-oauth-cancelled')); true;",
+                );
+                return;
+              }
+              const target = new URL("/register/", appOrigin ?? "https://where2beach.com");
+              target.searchParams.set("mode", "login");
+              target.searchParams.set("code", code);
+              target.searchParams.set("returnTo", "/app/?native_shell=1");
+              applySourceUrl(target.toString());
+            } else {
+              webViewRef.current?.injectJavaScript(
+                "window.dispatchEvent(new CustomEvent('w2b-oauth-cancelled')); true;",
+              );
+            }
+          } catch {
+            webViewRef.current?.injectJavaScript(
+              "window.dispatchEvent(new CustomEvent('w2b-oauth-cancelled')); true;",
+            );
+          }
+        })();
+        return;
+      }
+
       if (isTutorialReadyBridgeMessage(parsed)) {
         setTutorialDomReady(parsed.ready);
         return;
@@ -1304,6 +1361,8 @@ export const WebSurface = ({
       setTutorialAnchorRect(normalizedRect);
     },
     [
+      appOrigin,
+      applySourceUrl,
       notifyInitialLoadSettled,
       onRestartTutorial,
       tutorialActiveCompletionSelector,

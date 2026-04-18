@@ -620,6 +620,10 @@ export type OAuthSignInResult =
   | { ok: true }
   | { ok: false; code: "missing_config" | "unknown" };
 
+export type OAuthSignInUrlResult =
+  | { ok: true; url: string }
+  | { ok: false; code: "missing_config" | "unknown" };
+
 export type CompleteOAuthProfileResult =
   | { ok: true; account: AppAccount }
   | { ok: false; code: "missing_config" | "nickname_exists" | "network" | "unknown" };
@@ -641,6 +645,28 @@ export const signInWithOAuth = async (
   });
   if (error) return { ok: false, code: "unknown" };
   return { ok: true };
+};
+
+// Native-shell OAuth: returns the OAuth provider URL without redirecting the
+// browser, so the native app can open it in ASWebAuthenticationSession
+// (SFSafariViewController) via expo-web-browser.
+// Uses the mobile deep-link scheme so ASWebAuthenticationSession can
+// intercept the callback and close automatically.
+export const NATIVE_OAUTH_REDIRECT_URL = `${MOBILE_DEEP_LINK_SCHEME}://auth/callback`;
+
+export const getOAuthSignInUrl = async (
+  provider: OAuthProvider,
+  redirectOverride?: string,
+): Promise<OAuthSignInUrlResult> => {
+  const supabase = getSupabaseClient();
+  if (!supabase) return { ok: false, code: "missing_config" };
+  const redirectTo = redirectOverride ?? buildWebAuthEmailRedirectUrl();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo, skipBrowserRedirect: true },
+  });
+  if (error || !data?.url) return { ok: false, code: "unknown" };
+  return { ok: true, url: data.url };
 };
 
 export const completeOAuthProfile = async (input: {
