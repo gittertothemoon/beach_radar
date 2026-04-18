@@ -532,10 +532,11 @@ const RegisterPage = () => {
   }, [isNativeShell]);
 
   useEffect(() => {
-    const hasCallbackTokens =
-      window.location.hash.includes("access_token") ||
-      new URLSearchParams(window.location.search).has("code");
-    if (!hasCallbackTokens) return;
+    // Use the initial state captured at mount (from the URL) instead of
+    // re-reading window.location — Supabase's `detectSessionInUrl` may have
+    // already stripped the `?code=` from the URL by the time this effect
+    // runs, which would make us skip the subscription and miss SIGNED_IN.
+    if (!oauthCallbackLoading) return;
 
     const unsubscribe = subscribeAuthSignIn((account) => {
       unsubscribe();
