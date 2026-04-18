@@ -243,8 +243,8 @@ const toAccount = (user: User | null): AppAccount | null => {
   return {
     id: user.id,
     email: user.email,
-    firstName: readUserMetadataString(user, "first_name", "firstName"),
-    lastName: readUserMetadataString(user, "last_name", "lastName"),
+    firstName: readUserMetadataString(user, "first_name", "firstName", "given_name"),
+    lastName: readUserMetadataString(user, "last_name", "lastName", "family_name"),
     nickname: readUserMetadataString(user, "nickname", "user_name", "username"),
   };
 };
@@ -612,6 +612,85 @@ export const deleteCurrentAccount = async (): Promise<DeleteAccountResult> => {
     return { ok: false, code: "network" };
   }
   return { ok: false, code: "unknown" };
+};
+
+export type OAuthProvider = "google" | "apple" | "facebook";
+
+export type OAuthSignInResult =
+  | { ok: true }
+  | { ok: false; code: "missing_config" | "unknown" };
+
+export type CompleteOAuthProfileResult =
+  | { ok: true; account: AppAccount }
+  | { ok: false; code: "missing_config" | "nickname_exists" | "network" | "unknown" };
+
+export const isOAuthProfileComplete = (account: AppAccount): boolean =>
+  account.nickname.trim().length > 0;
+
+export const signInWithOAuth = async (
+  provider: OAuthProvider,
+): Promise<OAuthSignInResult> => {
+  const supabase = getSupabaseClient();
+  if (!supabase) return { ok: false, code: "missing_config" };
+  const redirectTo = buildAuthEmailRedirectUrl();
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo },
+  });
+  if (error) return { ok: false, code: "unknown" };
+  return { ok: true };
+};
+
+export const completeOAuthProfile = async (input: {
+  nickname: string;
+  firstName: string;
+  lastName: string;
+}): Promise<CompleteOAuthProfileResult> => {
+  const supabase = getSupabaseClient();
+  if (!supabase) return { ok: false, code: "missing_config" };
+
+  const normalizedNickname = input.nickname.trim();
+  if (normalizedNickname.length > 0) {
+    const { data: nicknameAvailability, error: nicknameAvailabilityError } =
+      await supabase.rpc("is_nickname_available", {
+        nickname_input: normalizedNickname,
+      });
+    if (!nicknameAvailabilityError) {
+      const available = readNicknameAvailability(nicknameAvailability);
+      if (available === false) return { ok: false, code: "nickname_exists" };
+    }
+  }
+
+  const { data, error } = await supabase.auth.updateUser({
+    data: {
+      nickname: normalizedNickname,
+      first_name: input.firstName.trim(),
+      last_name: input.lastName.trim(),
+    },
+  });
+
+  if (error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("network")) return { ok: false, code: "network" };
+    return { ok: false, code: "unknown" };
+  }
+
+  const account = toAccount(data.user);
+  if (!account) return { ok: false, code: "unknown" };
+  return { ok: true, account };
+};
+
+export const subscribeAuthSignIn = (
+  onSignIn: (account: AppAccount) => void,
+): (() => void) => {
+  const supabase = getSupabaseClient();
+  if (!supabase) return () => {};
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    if (event !== "SIGNED_IN" || !session?.user) return;
+    const account = toAccount(session.user);
+    if (account) onSignIn(account);
+  });
+  return () => data.subscription.unsubscribe();
 };
 
 export const ensureAppSession = async (): Promise<AppSessionResult> => {

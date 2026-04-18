@@ -10,12 +10,18 @@ import {
   getResetPasswordErrorMessage,
 } from "../lib/authErrorCopy";
 import {
+  completeOAuthProfile,
   ensureAppSession,
+  isOAuthProfileComplete,
   loginAccount,
   registerAccount,
   requestPasswordReset,
   setFavoriteBeach,
+  signInWithOAuth,
+  subscribeAuthSignIn,
   updateAccountPassword,
+  type AppAccount,
+  type OAuthProvider,
 } from "../lib/account";
 import {
   DEFAULT_LEGAL_INTERNAL_PATHS,
@@ -38,6 +44,27 @@ import {
 type AuthMode = "register" | "login" | "forgot" | "reset";
 type NoticeTone = "success" | "info";
 
+const AppleIcon = () => (
+  <svg width="16" height="19" viewBox="0 0 814 1000" fill="currentColor" aria-hidden="true">
+    <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 376.6 0 262.9 0 156.4c0-162.4 106.3-248.3 211.2-248.3 55.7 0 101.7 35.9 169.7 35.9 66 0 122.7-39.5 197.4-39.5 33.5 0 122.2 4.5 184.2 78.1zm-72.1-119.3c-15.6-24.1-22.6-46.2-22.6-69.7 0-3.2.6-6.5.9-9.8 28.5 11 54.3 33.2 73 59.9 15.6 21.7 24.6 43.8 24.6 67.3 0 3.9-.3 7.7-.9 11.5-2.9.3-5.8.6-9.1.6-26.2 0-53.5-14-66-59.8z" />
+  </svg>
+);
+
+const GoogleIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+    <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" />
+    <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" />
+    <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" />
+    <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" />
+  </svg>
+);
+
+const FacebookIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+  </svg>
+);
+
 const RegisterPage = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -51,6 +78,13 @@ const RegisterPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [noticeTone, setNoticeTone] = useState<NoticeTone>("success");
+  const [isCompletingProfile, setIsCompletingProfile] = useState(false);
+  const [oauthPendingAccount, setOauthPendingAccount] = useState<AppAccount | null>(null);
+  const [oauthButtonPending, setOauthButtonPending] = useState<OAuthProvider | null>(null);
+  const [oauthCallbackLoading, setOauthCallbackLoading] = useState(() => {
+    if (window.location.hash.includes("access_token")) return true;
+    return new URLSearchParams(window.location.search).has("code");
+  });
 
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
@@ -301,37 +335,45 @@ const RegisterPage = () => {
     return null;
   };
 
-  const pageTitle = isLoginMode
-    ? STRINGS.account.signInTitle
-    : isForgotMode
-      ? STRINGS.account.forgotPasswordTitle
-      : isResetMode
-        ? STRINGS.account.resetPasswordTitle
-        : STRINGS.account.registerTitle;
+  const pageTitle = isCompletingProfile
+    ? STRINGS.account.completeProfileTitle
+    : isLoginMode
+      ? STRINGS.account.signInTitle
+      : isForgotMode
+        ? STRINGS.account.forgotPasswordTitle
+        : isResetMode
+          ? STRINGS.account.resetPasswordTitle
+          : STRINGS.account.registerTitle;
 
-  const pageSubtitle = isLoginMode
-    ? STRINGS.account.signInSubtitle
-    : isForgotMode
-      ? STRINGS.account.forgotPasswordSubtitle
-      : isResetMode
-        ? STRINGS.account.resetPasswordSubtitle
-        : STRINGS.account.registerSubtitle;
+  const pageSubtitle = isCompletingProfile
+    ? STRINGS.account.completeProfileSubtitle
+    : isLoginMode
+      ? STRINGS.account.signInSubtitle
+      : isForgotMode
+        ? STRINGS.account.forgotPasswordSubtitle
+        : isResetMode
+          ? STRINGS.account.resetPasswordSubtitle
+          : STRINGS.account.registerSubtitle;
 
   const submitLabel = submitting
-    ? isLoginMode
-      ? STRINGS.account.signingInAction
-      : isForgotMode
-        ? STRINGS.account.forgotPasswordSubmittingAction
-        : isResetMode
-          ? STRINGS.account.resettingPasswordAction
-          : STRINGS.account.creatingAction
-    : isLoginMode
-      ? STRINGS.account.signInSubmitAction
-      : isForgotMode
-        ? STRINGS.account.forgotPasswordSubmitAction
-      : isResetMode
-          ? STRINGS.account.resetPasswordSubmitAction
-          : STRINGS.account.createAction;
+    ? isCompletingProfile
+      ? STRINGS.account.completingProfileAction
+      : isLoginMode
+        ? STRINGS.account.signingInAction
+        : isForgotMode
+          ? STRINGS.account.forgotPasswordSubmittingAction
+          : isResetMode
+            ? STRINGS.account.resettingPasswordAction
+            : STRINGS.account.creatingAction
+    : isCompletingProfile
+      ? STRINGS.account.completeProfileAction
+      : isLoginMode
+        ? STRINGS.account.signInSubmitAction
+        : isForgotMode
+          ? STRINGS.account.forgotPasswordSubmitAction
+          : isResetMode
+            ? STRINGS.account.resetPasswordSubmitAction
+            : STRINGS.account.createAction;
 
   const passwordFieldStyle = {
     WebkitTextSecurity: showPasswords ? "none" : "disc",
@@ -352,6 +394,121 @@ const RegisterPage = () => {
   const showEmailConfirmationRequiredNotice = () => {
     showNotice(STRINGS.account.emailConfirmationRequired, "info");
   };
+
+  const handleOAuthSignInComplete = async (accountId: string) => {
+    try {
+      if (pendingFavoriteBeachId) {
+        await setFavoriteBeach(accountId, pendingFavoriteBeachId, true);
+      }
+      const target = new URL(safeReturnPath, window.location.origin);
+      const needsAppSession =
+        target.pathname === "/app" || target.pathname.startsWith("/app/");
+      if (needsAppSession) {
+        const appSessionResult = await ensureAppSession();
+        if (!appSessionResult.ok) {
+          showError(getAppSessionErrorMessage(appSessionResult.code));
+          return;
+        }
+      }
+      target.searchParams.set("resume", "1");
+      window.location.assign(`${target.pathname}${target.search}${target.hash}`);
+    } catch {
+      showError(STRINGS.account.loginNetworkFailed);
+    }
+  };
+
+  const handleOAuthSignIn = async (provider: OAuthProvider) => {
+    if (oauthButtonPending) return;
+    setOauthButtonPending(provider);
+    setError(null);
+    const result = await signInWithOAuth(provider);
+    if (!result.ok) {
+      setOauthButtonPending(null);
+      showError(STRINGS.account.oauthSignInFailed);
+    }
+  };
+
+  const handleProfileCompletion = async () => {
+    const normalizedNickname = nickname.trim();
+    const normalizedFirstName = firstName.trim();
+    const normalizedLastName = lastName.trim();
+
+    if (!normalizedNickname || !normalizedFirstName || !normalizedLastName) {
+      showError(STRINGS.account.requiredField);
+      return;
+    }
+    if (!NICKNAME_PATTERN.test(normalizedNickname)) {
+      showError(STRINGS.account.invalidNickname);
+      return;
+    }
+    if (
+      !NAME_PATTERN.test(normalizedFirstName) ||
+      !NAME_PATTERN.test(normalizedLastName)
+    ) {
+      showError(STRINGS.account.invalidName);
+      return;
+    }
+    if (!consentAccepted) {
+      showError(STRINGS.account.consentRequired);
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      const result = await completeOAuthProfile({
+        nickname: normalizedNickname,
+        firstName: normalizedFirstName,
+        lastName: normalizedLastName,
+      });
+
+      if (!result.ok) {
+        if (result.code === "nickname_exists") {
+          showError(STRINGS.account.nicknameAlreadyInUse);
+        } else if (result.code === "network") {
+          showError(STRINGS.account.createNetworkFailed);
+        } else {
+          showError(STRINGS.account.createFailed);
+        }
+        return;
+      }
+
+      await handleOAuthSignInComplete(result.account.id);
+    } catch {
+      showError(STRINGS.account.createNetworkFailed);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isCompletingProfile || !oauthPendingAccount) return;
+    if (oauthPendingAccount.firstName) setFirstName(oauthPendingAccount.firstName);
+    if (oauthPendingAccount.lastName) setLastName(oauthPendingAccount.lastName);
+  }, [isCompletingProfile, oauthPendingAccount]);
+
+  useEffect(() => {
+    const hasCallbackTokens =
+      window.location.hash.includes("access_token") ||
+      new URLSearchParams(window.location.search).has("code");
+    if (!hasCallbackTokens) return;
+
+    const unsubscribe = subscribeAuthSignIn((account) => {
+      unsubscribe();
+      setOauthCallbackLoading(false);
+      if (!isOAuthProfileComplete(account)) {
+        setOauthPendingAccount(account);
+        setIsCompletingProfile(true);
+        return;
+      }
+      void handleOAuthSignInComplete(account.id);
+    });
+
+    return unsubscribe;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async () => {
     const validationError = validateForm();
@@ -494,6 +651,12 @@ const RegisterPage = () => {
     void handleSubmit();
   };
 
+  const handleProfileCompletionSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (submitting) return;
+    void handleProfileCompletion();
+  };
+
   return (
     <div className="min-h-screen min-h-[100dvh] bg-[radial-gradient(1100px_600px_at_12%_-8%,rgba(56,189,248,0.14),transparent_55%),radial-gradient(900px_500px_at_95%_12%,rgba(251,191,36,0.12),transparent_58%),linear-gradient(160deg,#07090d_0%,#0b0f16_70%,#0f1720_100%)] px-3 py-[calc(env(safe-area-inset-top)+10px)] text-slate-100 sm:px-4 sm:py-[calc(env(safe-area-inset-top)+20px)]">
       <div className="mx-auto flex h-full w-full max-w-screen-sm items-start sm:items-center">
@@ -520,9 +683,43 @@ const RegisterPage = () => {
 
             <p className="mt-2 text-[13px] leading-snug br-text-secondary">{pageSubtitle}</p>
 
-            <form onSubmit={handleFormSubmit} noValidate autoComplete="on">
+            {oauthCallbackLoading ? (
+              <div className="mt-8 flex flex-col items-center gap-4 py-8">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-sky-400" />
+                <p className="text-center text-[13px] br-text-secondary">{STRINGS.account.oauthProcessing}</p>
+              </div>
+            ) : (
+            <form onSubmit={isCompletingProfile ? handleProfileCompletionSubmit : handleFormSubmit} noValidate autoComplete="on">
+              {(isLoginMode || isRegisterMode) && !isCompletingProfile ? (
+                <div className="mt-4 space-y-2.5">
+                  <button
+                    type="button"
+                    disabled={oauthButtonPending !== null}
+                    onClick={() => void handleOAuthSignIn("apple")}
+                    className="br-press flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#050505] px-3 py-3 text-[14px] font-semibold text-white shadow-[0_2px_8px_rgba(0,0,0,0.35)] disabled:opacity-60"
+                  >
+                    <AppleIcon />
+                    {oauthButtonPending === "apple" ? "..." : STRINGS.account.oauthSignInWithApple}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={oauthButtonPending !== null}
+                    onClick={() => void handleOAuthSignIn("google")}
+                    className="br-press flex w-full items-center justify-center gap-2 rounded-[10px] bg-white px-3 py-3 text-[14px] font-semibold text-gray-800 shadow-[0_2px_8px_rgba(0,0,0,0.25)] disabled:opacity-60"
+                  >
+                    <GoogleIcon />
+                    {oauthButtonPending === "google" ? "..." : STRINGS.account.oauthSignInWithGoogle}
+                  </button>
+                  <div className="flex items-center gap-3 pt-0.5">
+                    <div className="h-px flex-1 bg-white/10" />
+                    <span className="text-[11px] br-text-tertiary">{STRINGS.account.oauthOrContinueWithEmail}</span>
+                    <div className="h-px flex-1 bg-white/10" />
+                  </div>
+                </div>
+              ) : null}
+
               <div className="mt-4 grid grid-cols-1 gap-x-2.5 gap-y-3.5 min-[390px]:grid-cols-2">
-                {isRegisterMode ? (
+                {isRegisterMode || isCompletingProfile ? (
                   <label className="block">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
                       {STRINGS.account.firstNameLabel}
@@ -540,12 +737,12 @@ const RegisterPage = () => {
                       }}
                       placeholder={STRINGS.account.firstNamePlaceholder}
                       className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
-                      autoFocus
+                      autoFocus={isRegisterMode}
                     />
                   </label>
                 ) : null}
 
-                {isRegisterMode ? (
+                {isRegisterMode || isCompletingProfile ? (
                   <label className="block">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
                       {STRINGS.account.lastNameLabel}
@@ -567,7 +764,7 @@ const RegisterPage = () => {
                   </label>
                 ) : null}
 
-                {isRegisterMode ? (
+                {isRegisterMode || isCompletingProfile ? (
                   <label className="col-span-full block">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
                       {STRINGS.account.nicknameLabel}
@@ -586,12 +783,13 @@ const RegisterPage = () => {
                       placeholder={STRINGS.account.nicknamePlaceholder}
                       autoCapitalize="none"
                       spellCheck={false}
+                      autoFocus={isCompletingProfile}
                       className="mt-2 w-full rounded-[10px] border border-white/20 bg-black/40 px-3 py-2.5 text-[14px] br-text-primary placeholder:text-[color:var(--text-tertiary)] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
                     />
                   </label>
                 ) : null}
 
-                {!isResetMode ? (
+                {!isResetMode && !isCompletingProfile ? (
                   <label className="col-span-full block">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
                       {STRINGS.account.emailLabel}
@@ -618,7 +816,7 @@ const RegisterPage = () => {
                   </label>
                 ) : null}
 
-                {!isForgotMode ? (
+                {!isForgotMode && !isCompletingProfile ? (
                   <label className={isLoginMode ? "col-span-full block" : "block"}>
                     <span className="text-[10px] font-semibold uppercase tracking-[0.09em] br-text-tertiary">
                       {STRINGS.account.passwordLabel}
@@ -676,7 +874,7 @@ const RegisterPage = () => {
                   </div>
                 ) : null}
 
-                {!isForgotMode ? (
+                {!isForgotMode && !isCompletingProfile ? (
                   <label className="col-span-full flex items-center gap-2.5 rounded-[10px] border border-white/12 bg-black/30 px-3 py-2.5 text-[12px] leading-snug br-text-secondary">
                     <input
                       type="checkbox"
@@ -690,7 +888,7 @@ const RegisterPage = () => {
                   </label>
                 ) : null}
 
-                {isRegisterMode ? (
+                {isRegisterMode || isCompletingProfile ? (
                   <label className="col-span-full flex items-start gap-2.5 rounded-[10px] border border-white/12 bg-black/30 px-3 py-2.5 text-[12px] leading-snug br-text-secondary">
                     <input
                       type="checkbox"
@@ -759,7 +957,7 @@ const RegisterPage = () => {
               <button
                 type="button"
                 onClick={() => {
-                  if (isForgotMode || isResetMode) {
+                  if (isCompletingProfile || isForgotMode || isResetMode) {
                     window.location.assign(loginModeUrl);
                     return;
                   }
@@ -767,12 +965,12 @@ const RegisterPage = () => {
                 }}
                 className="br-press w-full rounded-[10px] border border-white/16 bg-black/35 px-3 py-3.5 text-[14px] font-semibold br-text-primary backdrop-blur-sm focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1"
               >
-                {isForgotMode || isResetMode
+                {isCompletingProfile || isForgotMode || isResetMode
                   ? STRINGS.account.backToLoginAction
                   : STRINGS.account.cancelAndBack}
               </button>
 
-              {isLoginMode ? (
+              {isLoginMode && !isCompletingProfile ? (
                 <>
                   <div className="rounded-[10px] border border-white/12 bg-black/25 px-3 py-3 text-center">
                     <p className="text-[12px] leading-snug br-text-secondary">
@@ -806,7 +1004,7 @@ const RegisterPage = () => {
                 </>
               ) : null}
 
-              {isRegisterMode ? (
+              {isRegisterMode && !isCompletingProfile ? (
                 <div className="rounded-[10px] border border-white/12 bg-black/25 px-3 py-3 text-center">
                   <p className="text-[12px] leading-snug br-text-secondary">
                     {STRINGS.account.registerHasAccountPrompt}{" "}
@@ -841,6 +1039,7 @@ const RegisterPage = () => {
               ) : null}
               </div>
             </form>
+            )}
           </div>
         </div>
       </div>

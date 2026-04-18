@@ -427,7 +427,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const auth = await authenticateUser(req);
-  if (!auth.ok) {
+  if (auth.ok === false) {
     return res.status(auth.status).json({ ok: false, error: auth.error });
   }
 
