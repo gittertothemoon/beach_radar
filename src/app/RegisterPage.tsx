@@ -21,6 +21,7 @@ import {
   requestPasswordReset,
   setFavoriteBeach,
   signInWithOAuth,
+  signOutAccount,
   subscribeAuthSignIn,
   updateAccountPassword,
   type AppAccount,
@@ -123,6 +124,18 @@ const RegisterPage = () => {
     params.set("mode", "login");
     const query = params.toString();
     return `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+  }, []);
+
+  // Strips OAuth callback params (?code, ?state, ?error) so landing on this
+  // URL doesn't trigger the code-exchange flow again.
+  const cleanLoginUrl = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("mode", "login");
+    for (const key of ["code", "state", "error", "error_code", "error_description"]) {
+      params.delete(key);
+    }
+    const query = params.toString();
+    return `${window.location.pathname}${query ? `?${query}` : ""}`;
   }, []);
 
   const forgotModeUrl = useMemo(() => {
@@ -686,6 +699,20 @@ const RegisterPage = () => {
     void handleProfileCompletion();
   };
 
+  const handleCancelProfileCompletion = async () => {
+    // The user authenticated via OAuth but doesn't want to finish picking a
+    // nickname. Sign them out so the next `/register/?mode=login` visit
+    // actually shows the login form instead of immediately re-running the
+    // code exchange and landing back on this screen.
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await signOutAccount();
+    } finally {
+      window.location.assign(cleanLoginUrl);
+    }
+  };
+
   return (
     <div className="min-h-screen min-h-[100dvh] bg-[radial-gradient(1100px_600px_at_12%_-8%,rgba(56,189,248,0.14),transparent_55%),radial-gradient(900px_500px_at_95%_12%,rgba(251,191,36,0.12),transparent_58%),linear-gradient(160deg,#07090d_0%,#0b0f16_70%,#0f1720_100%)] px-3 py-[calc(env(safe-area-inset-top)+10px)] text-slate-100 sm:px-4 sm:py-[calc(env(safe-area-inset-top)+20px)]">
       <div className="mx-auto flex h-full w-full max-w-screen-sm items-start sm:items-center">
@@ -986,7 +1013,11 @@ const RegisterPage = () => {
               <button
                 type="button"
                 onClick={() => {
-                  if (isCompletingProfile || isForgotMode || isResetMode) {
+                  if (isCompletingProfile) {
+                    void handleCancelProfileCompletion();
+                    return;
+                  }
+                  if (isForgotMode || isResetMode) {
                     window.location.assign(loginModeUrl);
                     return;
                   }
