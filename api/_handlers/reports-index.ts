@@ -44,6 +44,7 @@ type ReportRow = {
   created_at: string;
   attribution: unknown;
   reporter_hash?: string;
+  confirmation_count?: number | null;
 };
 
 type PublicReport = {
@@ -58,6 +59,7 @@ type PublicReport = {
   hasStrongWind?: boolean;
   createdAt: number;
   attribution?: unknown;
+  confirmationCount?: number;
 };
 
 type ReportRewardSummary = {
@@ -255,6 +257,8 @@ function toReportRow(value: unknown): ReportRow | null {
     attribution: value.attribution,
     reporter_hash:
       typeof value.reporter_hash === "string" ? value.reporter_hash : undefined,
+    confirmation_count:
+      typeof value.confirmation_count === "number" ? value.confirmation_count : undefined,
   };
 }
 
@@ -289,6 +293,10 @@ function toPublicReport(row: ReportRow): PublicReport | null {
     hasStrongWind: typeof hasStrongWindRaw === "boolean" ? hasStrongWindRaw : undefined,
     createdAt,
     attribution: row.attribution ?? undefined,
+    confirmationCount:
+      typeof row.confirmation_count === "number" && row.confirmation_count > 0
+        ? row.confirmation_count
+        : undefined,
   };
 }
 
@@ -393,7 +401,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data, error } = await supabase
       .from(REPORTS_TABLE)
-      .select("id, beach_id, crowd_level, water_condition, beach_condition, created_at, attribution")
+      .select("id, beach_id, crowd_level, water_condition, beach_condition, created_at, attribution, confirmation_count")
       .gte("created_at", lookbackIso)
       .order("created_at", { ascending: false })
       .limit(REPORTS_GET_LIMIT);

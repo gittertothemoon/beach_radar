@@ -520,7 +520,7 @@ const RegisterPage = () => {
 
             <p className="mt-2 text-[13px] leading-snug br-text-secondary">{pageSubtitle}</p>
 
-            <form onSubmit={handleFormSubmit} noValidate>
+            <form onSubmit={handleFormSubmit} noValidate autoComplete="on">
               <div className="mt-4 grid grid-cols-1 gap-x-2.5 gap-y-3.5 min-[390px]:grid-cols-2">
                 {isRegisterMode ? (
                   <label className="block">
@@ -529,6 +529,9 @@ const RegisterPage = () => {
                     </span>
                     <input
                       type="text"
+                      id="given-name"
+                      name="given-name"
+                      autoComplete="given-name"
                       value={firstName}
                       onChange={(event) => {
                         setFirstName(event.target.value);
@@ -549,6 +552,9 @@ const RegisterPage = () => {
                     </span>
                     <input
                       type="text"
+                      id="family-name"
+                      name="family-name"
+                      autoComplete="family-name"
                       value={lastName}
                       onChange={(event) => {
                         setLastName(event.target.value);
@@ -568,6 +574,9 @@ const RegisterPage = () => {
                     </span>
                     <input
                       type="text"
+                      id="username"
+                      name="username"
+                      autoComplete="username"
                       value={nickname}
                       onChange={(event) => {
                         setNickname(event.target.value);

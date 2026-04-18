@@ -16,6 +16,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.where2beach.mobile",
       "buildNumber": "1",
+      "associatedDomains": ["webcredentials:where2beach.com"],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "Where2Beach usa la tua posizione per mostrarti spiagge vicine e abilitare la funzione \"La mia posizione\" nella mappa.",
