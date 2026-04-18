@@ -1247,38 +1247,52 @@ export const WebSurface = ({
       if (isOAuthOpenBridgeMessage(parsed)) {
         const oauthUrl = parsed.url;
         void (async () => {
+          const dispatchCancelled = () => {
+            webViewRef.current?.injectJavaScript(
+              "window.dispatchEvent(new CustomEvent('w2b-oauth-cancelled')); true;",
+            );
+          };
           try {
             const result = await WebBrowser.openAuthSessionAsync(
               oauthUrl,
               "where2beach://",
             );
-            if (result.type === "success" && result.url) {
-              // result.url = where2beach://auth/callback?code=xxxx
-              const qs = result.url.includes("?")
-                ? result.url.slice(result.url.indexOf("?") + 1)
-                : "";
-              const params = new URLSearchParams(qs);
-              const code = params.get("code");
-              if (!code) {
-                webViewRef.current?.injectJavaScript(
-                  "window.dispatchEvent(new CustomEvent('w2b-oauth-cancelled')); true;",
-                );
-                return;
-              }
-              const target = new URL("/register/", appOrigin ?? "https://where2beach.com");
-              target.searchParams.set("mode", "login");
-              target.searchParams.set("code", code);
-              target.searchParams.set("returnTo", "/app/?native_shell=1");
-              applySourceUrl(target.toString());
-            } else {
-              webViewRef.current?.injectJavaScript(
-                "window.dispatchEvent(new CustomEvent('w2b-oauth-cancelled')); true;",
-              );
+            if (result.type !== "success" || !result.url) {
+              dispatchCancelled();
+              return;
             }
-          } catch {
+            // Callback shape: where2beach://auth/callback?code=... (or with # for some providers).
+            const rawUrl = result.url;
+            const queryIdx = rawUrl.indexOf("?");
+            const hashIdx = rawUrl.indexOf("#");
+            let paramsString = "";
+            if (queryIdx !== -1) {
+              paramsString =
+                hashIdx !== -1 && hashIdx > queryIdx
+                  ? rawUrl.slice(queryIdx + 1, hashIdx)
+                  : rawUrl.slice(queryIdx + 1);
+            } else if (hashIdx !== -1) {
+              paramsString = rawUrl.slice(hashIdx + 1);
+            }
+            const params = new URLSearchParams(paramsString);
+            const code = params.get("code");
+            if (!code) {
+              dispatchCancelled();
+              return;
+            }
+            const target = new URL("/register/", appOrigin ?? "https://where2beach.com");
+            target.searchParams.set("mode", "login");
+            target.searchParams.set("code", code);
+            target.searchParams.set("returnTo", "/app/?native_shell=1");
+            // react-native-webview's source prop update is unreliable when the
+            // pathname stays the same and only the query string changes, so we
+            // force the navigation via window.location inside the WebView.
+            const targetUrl = target.toString();
             webViewRef.current?.injectJavaScript(
-              "window.dispatchEvent(new CustomEvent('w2b-oauth-cancelled')); true;",
+              "window.location.replace(" + JSON.stringify(targetUrl) + "); true;",
             );
+          } catch {
+            dispatchCancelled();
           }
         })();
         return;
