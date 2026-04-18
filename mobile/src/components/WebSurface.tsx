@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Easing,
   Image,
@@ -1256,6 +1257,10 @@ export const WebSurface = ({
             const result = await WebBrowser.openAuthSessionAsync(
               oauthUrl,
               "where2beach://",
+            );
+            Alert.alert(
+              "OAuth debug",
+              "type=" + result.type + "\nurl=" + ((result as { url?: string }).url ?? "(none)"),
             );
             if (result.type !== "success" || !result.url) {
               dispatchCancelled();
