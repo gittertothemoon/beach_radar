@@ -65,6 +65,10 @@ export type AccountRewardsSummary = {
   achievements: Achievement[];
   weeklyMission: WeeklyMission;
   dailyMission: DailyMission;
+  streak: {
+    current: number;
+    longestEver: number;
+  };
 };
 
 type FetchRewardsErrorCode =
@@ -157,6 +161,10 @@ let mockState: AccountRewardsSummary = {
     periodStart: new Date(new Date().setUTCHours(0, 0, 0, 0)).toISOString(),
     periodEnd: new Date(new Date().setUTCHours(23, 59, 59, 999)).toISOString(),
   },
+  streak: {
+    current: 3,
+    longestEver: 7,
+  },
 };
 
 /** Returns the current mock balance (after any awardMockPoints calls). */
@@ -231,6 +239,14 @@ export function awardMockPoints(pts: number): void {
       ...b,
       redeemable: !b.owned && newBalance >= b.pointsCost,
     })),
+    weeklyMission: {
+      ...mockState.weeklyMission,
+      progress: Math.min(mockState.weeklyMission.goal, mockState.weeklyMission.progress + 1),
+    },
+    dailyMission: {
+      ...mockState.dailyMission,
+      progress: Math.min(mockState.dailyMission.goal, mockState.dailyMission.progress + 1),
+    },
   };
 }
 
@@ -339,6 +355,10 @@ const parseSummary = (value: unknown): AccountRewardsSummary | null => {
   const dailyPeriodStart = toSingleString(dailyRaw?.periodStart) ?? new Date().toISOString();
   const dailyPeriodEnd = toSingleString(dailyRaw?.periodEnd) ?? new Date().toISOString();
 
+  const streakRaw = isObject(value.streak) ? value.streak : null;
+  const streakCurrent = Math.max(0, toFiniteNumber(streakRaw?.current) ?? 0);
+  const streakLongest = Math.max(0, toFiniteNumber(streakRaw?.longestEver) ?? 0);
+
   return {
     balance: Math.max(0, Math.round(balance)),
     pointsEarned: Math.max(0, Math.round(pointsEarned)),
@@ -367,6 +387,10 @@ const parseSummary = (value: unknown): AccountRewardsSummary | null => {
       claimed: dailyClaimed,
       periodStart: dailyPeriodStart,
       periodEnd: dailyPeriodEnd,
+    },
+    streak: {
+      current: streakCurrent,
+      longestEver: streakLongest,
     },
   };
 };

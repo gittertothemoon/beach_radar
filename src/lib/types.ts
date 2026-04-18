@@ -60,6 +60,7 @@ export type Report = {
   hasStrongWind?: boolean;
   reporterHash?: string;
   attribution?: AttributionSnapshot;
+  confirmationCount?: number;
 };
 
 export type BeachState = "LIVE" | "RECENT" | "PRED";

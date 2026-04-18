@@ -91,6 +91,7 @@ type BottomSheetProps = {
   onEquipBadge: (badge: import("../lib/activeBadge").ActiveBadge) => void;
   onClaimMission: () => void;
   onClaimDailyMission: () => void;
+  rewardsBadgeDot?: boolean;
 };
 
 export type BottomSheetSection = "map" | "profile" | "chatbot" | "rewards";
@@ -339,6 +340,7 @@ const BottomSheetComponent = ({
   onEquipBadge,
   onClaimMission,
   onClaimDailyMission,
+  rewardsBadgeDot,
 }: BottomSheetProps) => {
   type SettingsPanel = "language" | "interests" | null;
 
@@ -1476,6 +1478,7 @@ const BottomSheetComponent = ({
             accountEmail={accountEmail}
             onChange={onSectionChange}
             onHeightChange={onBottomNavHeightChange}
+            rewardsBadgeDot={rewardsBadgeDot}
           />
         </div>
       </div>
@@ -1512,7 +1515,8 @@ const bottomSheetEqual = (prev: BottomSheetProps, next: BottomSheetProps) =>
   prev.onRedeemBadge === next.onRedeemBadge &&
   prev.onEquipBadge === next.onEquipBadge &&
   prev.onClaimMission === next.onClaimMission &&
-  prev.onClaimDailyMission === next.onClaimDailyMission;
+  prev.onClaimDailyMission === next.onClaimDailyMission &&
+  prev.rewardsBadgeDot === next.rewardsBadgeDot;
 
 const BottomSheet = memo(BottomSheetComponent, bottomSheetEqual);
 

@@ -67,6 +67,7 @@ import {
 } from "../lib/perf";
 import { normalizeSearchText } from "../lib/search";
 import { fetchBeachReviews, submitBeachReview } from "../lib/reviews";
+import { confirmReport } from "../lib/reports";
 import type {
   BeachWithStats,
   CrowdLevel,
@@ -218,7 +219,11 @@ function App() {
   const [pendingGamification, setPendingGamification] = useState<GamificationCelebrationEvent[]>([]);
   const [claimingMission, setClaimingMission] = useState(false);
   const [claimingDailyMission, setClaimingDailyMission] = useState(false);
+  const [missionReadyToast, setMissionReadyToast] = useState(false);
+  const [rewardsBadgeDot, setRewardsBadgeDot] = useState(false);
   const rewardsSummaryRef = useRef<AccountRewardsSummary | null>(null);
+  const confirmedReportIdsRef = useRef<Set<string>>(new Set());
+  const validationDismissedIdsRef = useRef<Set<string>>(new Set());
   const [reportThanksOpen, setReportThanksOpen] = useState(false);
   const [lastReportReward, setLastReportReward] = useState<{ awardedPoints: number; newBalance: number | null } | null>(null);
   const [reportsFeedReady, setReportsFeedReady] = useState(false);
@@ -506,6 +511,19 @@ function App() {
       setRewardsLoading(true);
       const result = await fetchAccountRewards();
       if (result.ok) {
+        // Detect missions that just became claimable (progress hit goal while user was in another screen)
+        if (rewardsSummaryRef.current !== null) {
+          const prev = rewardsSummaryRef.current;
+          const prevWeeklyClaimable = prev.weeklyMission.progress >= prev.weeklyMission.goal && !prev.weeklyMission.claimed;
+          const nowWeeklyClaimable = result.summary.weeklyMission.progress >= result.summary.weeklyMission.goal && !result.summary.weeklyMission.claimed;
+          const prevDailyClaimable = prev.dailyMission.progress >= prev.dailyMission.goal && !prev.dailyMission.claimed;
+          const nowDailyClaimable = result.summary.dailyMission.progress >= result.summary.dailyMission.goal && !result.summary.dailyMission.claimed;
+          if ((!prevWeeklyClaimable && nowWeeklyClaimable) || (!prevDailyClaimable && nowDailyClaimable)) {
+            setMissionReadyToast(true);
+            setRewardsBadgeDot(true);
+          }
+        }
+
         // Detect newly unlocked achievements (only when explicitly requested and we have a previous state)
         if (options?.detectAchievements && rewardsSummaryRef.current !== null) {
           const prevAchievements = rewardsSummaryRef.current.achievements;
@@ -653,6 +671,32 @@ function App() {
     void refreshRewards({ silent: true });
   }, [account, refreshRewards]);
 
+  // Register Expo push token with the server when received from the native shell.
+  useEffect(() => {
+    if (!account) return;
+    const handlePushToken = async (event: Event) => {
+      const token = (event as CustomEvent<{ token?: unknown }>).detail?.token;
+      if (typeof token !== "string" || !token.trim()) return;
+      try {
+        const { getSupabaseClient } = await import("../lib/supabase");
+        const supabase = getSupabaseClient();
+        if (!supabase) return;
+        const { data } = await supabase.auth.getSession();
+        const authToken = data.session?.access_token;
+        if (!authToken) return;
+        await fetch("/api/notifications/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+          body: JSON.stringify({ token, platform: "ios" }),
+        });
+      } catch {
+        // Non-fatal
+      }
+    };
+    window.addEventListener("w2b-push-token", handlePushToken as EventListener);
+    return () => window.removeEventListener("w2b-push-token", handlePushToken as EventListener);
+  }, [account]);
+
   useEffect(() => {
     if (!account || !profileOpen) return;
     void refreshRewards({ silent: true });
@@ -697,6 +741,12 @@ function App() {
     },
     [],
   );
+
+  useEffect(() => {
+    if (!missionReadyToast) return;
+    const timeout = window.setTimeout(() => setMissionReadyToast(false), 5000);
+    return () => window.clearTimeout(timeout);
+  }, [missionReadyToast]);
 
   useEffect(() => {
     if (!debugToast) return;
@@ -930,6 +980,27 @@ function App() {
   }, [selectedBeachBase, selectedBeachProfile]);
   const selectedBeachIsFavorite =
     !!selectedBeachId && favoriteBeachIds.has(selectedBeachId);
+
+  // Feature 5A/5B: the latest report for the selected beach
+  const latestBeachReport = selectedBeachId
+    ? (reportsIndex.get(selectedBeachId)?.[0] ?? null)
+    : null;
+  // Report is "confirmable" when: exists, user is logged in, not already confirmed this session
+  const confirmableReportId = useMemo(() => {
+    if (!latestBeachReport || !account || !isLidoModalOpen) return null;
+    if (confirmedReportIdsRef.current.has(latestBeachReport.id)) return null;
+    return latestBeachReport.id;
+  }, [latestBeachReport, account, isLidoModalOpen]);
+  // Feature 5B: show "È ancora così?" when modal is open with a report >30 min old
+  const VALIDATION_PROMPT_MIN = 30;
+  const showValidationPrompt = useMemo(() => {
+    if (!latestBeachReport || !isLidoModalOpen || !account) return false;
+    if (validationDismissedIdsRef.current.has(latestBeachReport.id)) return false;
+    if (confirmedReportIdsRef.current.has(latestBeachReport.id)) return false;
+    const ageMin = (now - latestBeachReport.createdAt) / 60_000;
+    return ageMin >= VALIDATION_PROMPT_MIN;
+  }, [latestBeachReport, isLidoModalOpen, account, now]);
+
   const selectedBeachLat = selectedBeach?.lat ?? null;
   const selectedBeachLng = selectedBeach?.lng ?? null;
   const reportDistanceM =
@@ -1281,6 +1352,10 @@ function App() {
   }, []);
 
   const handleChangeBottomSection = useCallback((section: BottomSheetSection) => {
+    if (section === "rewards") {
+      setRewardsBadgeDot(false);
+      setMissionReadyToast(false);
+    }
     setActiveSheetSection((prev) => {
       if (prev !== section) return section;
       return prev;
@@ -1527,6 +1602,21 @@ function App() {
     setReviewOpen(false);
   }, []);
 
+  const handleConfirmReport = useCallback(
+    async (reportId: string) => {
+      confirmedReportIdsRef.current = new Set([...confirmedReportIdsRef.current, reportId]);
+      validationDismissedIdsRef.current = new Set([...validationDismissedIdsRef.current, reportId]);
+      await confirmReport(reportId);
+    },
+    [],
+  );
+
+  const handleValidateDismiss = useCallback(() => {
+    if (latestBeachReport) {
+      validationDismissedIdsRef.current = new Set([...validationDismissedIdsRef.current, latestBeachReport.id]);
+    }
+  }, [latestBeachReport]);
+
   const handleSubmitReview = useCallback(
     async (content: string, rating: number) => {
       if (!selectedBeach || !account) return;
@@ -1678,6 +1768,17 @@ function App() {
         <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+168px)] z-40 -translate-x-1/2 rounded-xl border border-sky-300/65 bg-sky-800/45 px-4 py-2 text-[12px] font-medium text-sky-50 shadow-[0_14px_30px_rgba(0,0,0,0.45)] backdrop-blur-md">
           {shareToast}
         </div>
+      ) : null}
+      {missionReadyToast ? (
+        <button
+          type="button"
+          onClick={() => handleChangeBottomSection("rewards")}
+          className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+130px)] z-40 -translate-x-1/2 flex items-center gap-2 rounded-xl border border-amber-300/65 bg-amber-800/55 px-4 py-2.5 text-[12px] font-semibold text-amber-50 shadow-[0_14px_30px_rgba(0,0,0,0.45)] backdrop-blur-md br-press"
+        >
+          <span>⭐</span>
+          <span>{STRINGS.account.missionReadyToastTitle}</span>
+          <span className="text-amber-200/80">{STRINGS.account.missionReadyToastAction}</span>
+        </button>
       ) : null}
 
       {accountRequiredOpen ? (
@@ -1946,6 +2047,7 @@ function App() {
         onEquipBadge={handleEquipBadge}
         onClaimMission={handleClaimMission}
         onClaimDailyMission={handleClaimDailyMission}
+        rewardsBadgeDot={rewardsBadgeDot}
       />
       {selectedBeach ? (
         <Suspense fallback={null}>
@@ -1966,6 +2068,11 @@ function App() {
             reviews={reviews}
             reviewsLoading={reviewsLoading}
             onWriteReview={handleWriteReview}
+            confirmableReportId={confirmableReportId}
+            confirmationCount={latestBeachReport?.confirmationCount}
+            showValidationPrompt={showValidationPrompt}
+            onConfirm={handleConfirmReport}
+            onValidateDismiss={handleValidateDismiss}
           />
         </Suspense>
       ) : null}

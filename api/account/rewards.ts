@@ -67,6 +67,10 @@ type RewardsSummary = {
     periodStart: string;
     periodEnd: string;
   };
+  streak: {
+    current: number;
+    longestEver: number;
+  };
 };
 
 type UserPointsBalanceRow = {
@@ -251,6 +255,7 @@ async function loadRewardsSummary(
     { count: missionClaimedCount, error: missionClaimedError },
     { count: dailyReportCount, error: dailyReportError },
     { count: dailyMissionClaimedCount, error: dailyMissionClaimedError },
+    { data: streakData, error: streakError },
   ] = await Promise.all([
     supabase
       .from(BALANCES_TABLE)
@@ -296,6 +301,7 @@ async function loadRewardsSummary(
       .select("user_id", { count: "exact", head: true })
       .eq("user_id", userId)
       .eq("period_start", dayBounds.start),
+    supabase.rpc("get_user_daily_streak", { p_user_id: userId }),
   ]);
 
   if (balanceError) return { ok: false, error: "db_balance_fetch_failed" };
@@ -306,6 +312,7 @@ async function loadRewardsSummary(
   if (missionClaimedError) return { ok: false, error: "db_mission_claims_fetch_failed" };
   if (dailyReportError) return { ok: false, error: "db_ledger_fetch_failed" };
   if (dailyMissionClaimedError) return { ok: false, error: "db_daily_mission_claims_fetch_failed" };
+  // streakError is non-fatal — gracefully default to 0
 
   const balanceRow = isObject(balanceData) ? (balanceData as UserPointsBalanceRow) : {};
   const pointsBalance = Math.max(0, Math.round(toFiniteNumber(balanceRow.points_balance) ?? 0));
@@ -325,6 +332,12 @@ async function loadRewardsSummary(
   const totalReports = Math.max(0, totalReportCount ?? 0);
   const weeklyReports = Math.max(0, Math.min(WEEKLY_MISSION_GOAL, weeklyReportCount ?? 0));
   const dailyReports = Math.max(0, Math.min(DAILY_MISSION_GOAL, dailyReportCount ?? 0));
+
+  const streakRow = !streakError && Array.isArray(streakData) && streakData.length > 0
+    ? (streakData[0] as { current_streak?: unknown; longest_streak?: unknown })
+    : null;
+  const currentStreak = Math.max(0, toFiniteNumber(streakRow?.current_streak) ?? 0);
+  const longestStreak = Math.max(0, toFiniteNumber(streakRow?.longest_streak) ?? 0);
 
   const summary: RewardsSummary = {
     balance: pointsBalance,
@@ -371,6 +384,10 @@ async function loadRewardsSummary(
       claimed: (dailyMissionClaimedCount ?? 0) > 0,
       periodStart: dayBounds.start,
       periodEnd: dayBounds.end,
+    },
+    streak: {
+      current: currentStreak,
+      longestEver: longestStreak,
     },
   };
 

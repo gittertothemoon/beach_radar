@@ -9,6 +9,7 @@ type BottomNavProps = {
   accountEmail: string | null;
   onChange: (section: BottomSheetSection) => void;
   onHeightChange?: (height: number) => void;
+  rewardsBadgeDot?: boolean;
 };
 
 const navItemClass = (active: boolean) =>
@@ -88,6 +89,7 @@ const BottomNavComponent = ({
   accountEmail,
   onChange,
   onHeightChange,
+  rewardsBadgeDot,
 }: BottomNavProps) => {
   useLanguageRefresh();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -144,7 +146,15 @@ const BottomNavComponent = ({
             onClick={() => onChange("rewards")}
             className={navItemClass(activeSection === "rewards")}
           >
-            <RewardsIcon active={activeSection === "rewards"} />
+            <div className="relative shrink-0">
+              <RewardsIcon active={activeSection === "rewards"} />
+              {rewardsBadgeDot && activeSection !== "rewards" ? (
+                <span
+                  className="absolute -right-0.5 -top-0.5 inline-flex h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_0_1.5px_rgba(251,191,36,0.28),0_0_6px_rgba(251,191,36,0.4)]"
+                  aria-hidden="true"
+                />
+              ) : null}
+            </div>
             <span>{STRINGS.nav.rewards}</span>
           </button>
           <button
@@ -174,7 +184,8 @@ const bottomNavEqual = (prev: BottomNavProps, next: BottomNavProps) =>
   prev.activeSection === next.activeSection &&
   prev.accountEmail === next.accountEmail &&
   prev.onChange === next.onChange &&
-  prev.onHeightChange === next.onHeightChange;
+  prev.onHeightChange === next.onHeightChange &&
+  prev.rewardsBadgeDot === next.rewardsBadgeDot;
 
 const BottomNav = memo(BottomNavComponent, bottomNavEqual);
 

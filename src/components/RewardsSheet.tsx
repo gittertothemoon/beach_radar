@@ -231,6 +231,26 @@ const RewardsSheet = ({
         );
       })() : null}
 
+      {/* ── Daily streak ── */}
+      {rewards && (rewards.streak.current > 0 || rewards.streak.longestEver > 0) ? (
+        <div className="rounded-[14px] border border-orange-300/25 bg-orange-500/8 px-4 py-3.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[18px] leading-none" aria-hidden="true">🔥</span>
+              <div className="text-[12px] font-semibold uppercase tracking-[0.08em] text-orange-200/90">
+                {STRINGS.account.streakTitle}
+              </div>
+            </div>
+            <div className="text-[13px] font-bold text-orange-100">
+              {STRINGS.account.streakCurrent(rewards.streak.current)}
+            </div>
+          </div>
+          <div className="mt-1.5 text-[11px] text-orange-100/60">
+            {STRINGS.account.streakBest(rewards.streak.longestEver)}
+          </div>
+        </div>
+      ) : null}
+
       {/* ── Achievements ── */}
       {rewards?.achievements?.length ? (
         <div className="rounded-[14px] border border-white/12 bg-black/30 px-4 py-3.5">

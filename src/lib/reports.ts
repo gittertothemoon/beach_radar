@@ -108,6 +108,7 @@ const parseReport = (value: unknown): Report | null => {
     attribution: isAttributionSnapshot(attribution)
       ? attribution
       : undefined,
+    confirmationCount: toFiniteNumber(value.confirmationCount) ?? undefined,
   };
 };
 
@@ -303,4 +304,39 @@ export const submitSharedReport = async (input: {
   }
   const rewards = parseReportRewards(parsed.rewards) ?? undefined;
   return { ok: true, report, rewards };
+};
+
+export type ConfirmReportResult =
+  | { ok: true }
+  | { ok: false; code: "network" | "account_required" | "not_found" | "already_confirmed" | "cannot_confirm_own" | "unavailable" };
+
+export const confirmReport = async (reportId: string): Promise<ConfirmReportResult> => {
+  if (getDevMockAccount()) {
+    return { ok: true };
+  }
+
+  const authToken = await loadAuthToken();
+  if (!authToken) return { ok: false, code: "account_required" };
+
+  let response: Response;
+  try {
+    response = await fetch("/api/reports?action=confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+      body: JSON.stringify({ reportId }),
+    });
+  } catch {
+    return { ok: false, code: "network" };
+  }
+
+  if (response.status === 401 || response.status === 403) return { ok: false, code: "account_required" };
+  if (response.status === 404) return { ok: false, code: "not_found" };
+  if (response.status === 409) {
+    const payload = await readJson(response) as { error?: string } | null;
+    if (payload?.error === "cannot_confirm_own_report") return { ok: false, code: "cannot_confirm_own" };
+    return { ok: false, code: "already_confirmed" };
+  }
+  if (!response.ok) return { ok: false, code: "unavailable" };
+
+  return { ok: true };
 };
