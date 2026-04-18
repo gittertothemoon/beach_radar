@@ -4,6 +4,7 @@ export type DevMockAccount = {
   firstName: string;
   lastName: string;
   nickname: string;
+  nicknameGenerated: boolean;
 };
 
 const DEV_MOCK_AUTH_SESSION_KEY = "where2beach-dev-mock-auth-v1";
@@ -18,6 +19,7 @@ const DEFAULT_MOCK_ACCOUNT: DevMockAccount = {
   firstName: "Dev",
   lastName: "User",
   nickname: "DevUser",
+  nicknameGenerated: false,
 };
 
 const parseBooleanFlag = (value: string | null): boolean | null => {
@@ -184,6 +186,7 @@ export const getDevMockAccount = (): DevMockAccount | null => {
     firstName,
     lastName,
     nickname,
+    nicknameGenerated: false,
   };
 };
 
