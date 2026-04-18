@@ -515,7 +515,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       confirmUrl
     });
 
-    if (!emailResult.ok) {
+    if (emailResult.ok === false) {
       return res.status(500).json({ ok: false, error: emailResult.error || "email_send_failed" });
     }
   }

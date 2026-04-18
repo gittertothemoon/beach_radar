@@ -731,7 +731,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     inflightRequests.delete(cacheKey);
   }
 
-  if (!result.ok) {
+  if (result.ok === false) {
     if (result.error === "upstream_auth_failed") {
       return res.status(500).json({ ok: false, error: "upstream_auth_failed" });
     }

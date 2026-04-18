@@ -435,7 +435,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === "GET") {
     const summaryResult = await loadRewardsSummary(supabase, userId);
-    if (!summaryResult.ok) {
+    if (summaryResult.ok === false) {
       return res.status(500).json({ ok: false, error: summaryResult.error });
     }
     return res.status(200).json({ ok: true, summary: summaryResult.summary });
@@ -490,7 +490,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const summaryResult = await loadRewardsSummary(supabase, userId);
-    if (!summaryResult.ok) {
+    if (summaryResult.ok === false) {
       return res.status(500).json({ ok: false, error: summaryResult.error });
     }
     return res.status(200).json({ ok: true, summary: summaryResult.summary });
@@ -534,7 +534,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const summaryResult = await loadRewardsSummary(supabase, userId);
-    if (!summaryResult.ok) {
+    if (summaryResult.ok === false) {
       return res.status(500).json({ ok: false, error: summaryResult.error });
     }
     return res.status(200).json({ ok: true, summary: summaryResult.summary });
@@ -575,7 +575,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const summaryResult = await loadRewardsSummary(supabase, userId);
-  if (!summaryResult.ok) {
+  if (summaryResult.ok === false) {
     return res.status(500).json({ ok: false, error: summaryResult.error });
   }
 
