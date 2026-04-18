@@ -176,7 +176,7 @@ const buildMobileAuthEmailRedirectUrl = (): string => {
   return `${MOBILE_DEEP_LINK_SCHEME}://${MOBILE_DEEP_LINK_HOST}?${deepLinkParams.toString()}`;
 };
 
-const isNativeShellAuthContext = (): boolean => {
+export const isNativeShellAuthContext = (): boolean => {
   if (typeof window === "undefined") return false;
   const currentParams = new URLSearchParams(window.location.search);
   if (hasNativeShellFlag(currentParams)) return true;
@@ -632,7 +632,9 @@ export const signInWithOAuth = async (
 ): Promise<OAuthSignInResult> => {
   const supabase = getSupabaseClient();
   if (!supabase) return { ok: false, code: "missing_config" };
-  const redirectTo = buildAuthEmailRedirectUrl();
+  // OAuth providers require HTTPS redirect URLs — always use the web URL,
+  // never the mobile deep-link scheme.
+  const redirectTo = buildWebAuthEmailRedirectUrl();
   const { error } = await supabase.auth.signInWithOAuth({
     provider,
     options: { redirectTo },
@@ -686,7 +688,8 @@ export const subscribeAuthSignIn = (
   const supabase = getSupabaseClient();
   if (!supabase) return () => {};
   const { data } = supabase.auth.onAuthStateChange((event, session) => {
-    if (event !== "SIGNED_IN" || !session?.user) return;
+    if (event !== "SIGNED_IN" && event !== "INITIAL_SESSION") return;
+    if (!session?.user) return;
     const account = toAccount(session.user);
     if (account) onSignIn(account);
   });
