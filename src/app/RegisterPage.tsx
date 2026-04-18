@@ -12,7 +12,6 @@ import {
 import {
   completeOAuthProfile,
   ensureAppSession,
-  isNativeShellAuthContext,
   isOAuthProfileComplete,
   loginAccount,
   registerAccount,
@@ -85,7 +84,6 @@ const RegisterPage = () => {
     () => new URLSearchParams(window.location.search),
     [],
   );
-  const isNativeShell = useMemo(() => isNativeShellAuthContext(), []);
   const authModeParam = searchParams.get("mode");
   const authMode: AuthMode =
     authModeParam === "login" || authModeParam === "forgot" || authModeParam === "reset"
@@ -686,7 +684,7 @@ const RegisterPage = () => {
               </div>
             ) : (
             <form onSubmit={isCompletingProfile ? handleProfileCompletionSubmit : handleFormSubmit} noValidate autoComplete="on">
-              {(isLoginMode || isRegisterMode) && !isCompletingProfile && !isNativeShell ? (
+              {(isLoginMode || isRegisterMode) && !isCompletingProfile ? (
                 <div className="mt-4 space-y-2.5">
                   <button
                     type="button"
