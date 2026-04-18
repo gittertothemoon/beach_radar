@@ -24,6 +24,8 @@ type WebSurfaceProps = {
   onCompleteFirstRunTutorial?: () => void;
   onRestartTutorial?: () => void;
   onInitialLoadSettled?: () => void;
+  /** Expo push token to relay to the WebView so the web app can register it with the API. */
+  expoPushToken?: string | null;
 };
 
 type TutorialRect = {
@@ -605,11 +607,13 @@ export const WebSurface = ({
   onCompleteFirstRunTutorial,
   onRestartTutorial,
   onInitialLoadSettled,
+  expoPushToken,
 }: WebSurfaceProps) => {
   const insets = useSafeAreaInsets();
   const statusBarOverlayHeight = Math.max(28, insets.top + 2);
   const webViewRef = useRef<WebView>(null);
   const retryAttemptRef = useRef(0);
+  const pushedTokenRef = useRef<string | null>(null);
   const fallbackAppliedRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
@@ -665,6 +669,24 @@ export const WebSurface = ({
     clearInitialLoadProbeTimers();
     onInitialLoadSettled?.();
   }, [clearInitialLoadProbeTimers, onInitialLoadSettled]);
+
+  // Relay Expo push token to the WebView so the web app can register it with the API.
+  useEffect(() => {
+    if (!expoPushToken || !hasLoadedOnce) return;
+    if (pushedTokenRef.current === expoPushToken) return;
+    pushedTokenRef.current = expoPushToken;
+    const safeToken = expoPushToken.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    const script = `
+      (function() {
+        try {
+          window.dispatchEvent(new CustomEvent('w2b-push-token', { detail: { token: '${safeToken}' } }));
+        } catch(e) {}
+      })();
+      true;
+    `;
+    webViewRef.current?.injectJavaScript(script);
+  }, [expoPushToken, hasLoadedOnce]);
+
   const appOrigin = useMemo(() => {
     try {
       return new URL(currentUrl).origin;

@@ -18,7 +18,10 @@
       "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSLocationWhenInUseUsageDescription": "Where2Beach usa la tua posizione per mostrarti spiagge vicine e abilitare la funzione \"La mia posizione\" nella mappa."
+        "NSLocationWhenInUseUsageDescription": "Where2Beach usa la tua posizione per mostrarti spiagge vicine e abilitare la funzione \"La mia posizione\" nella mappa.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Where2Beach usa la tua posizione in background per avvisarti quando sei vicino a una spiaggia senza segnalazioni recenti.",
+        "NSLocationAlwaysUsageDescription": "Where2Beach usa la tua posizione in background per avvisarti quando sei vicino a una spiaggia senza segnalazioni recenti.",
+        "UIBackgroundModes": ["location", "fetch"]
       }
     },
     "android": {
@@ -28,7 +31,8 @@
       "usesCleartextTraffic": false,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION"
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -43,6 +47,21 @@
     },
     "plugins": [
       "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Where2Beach usa la tua posizione in background per avvisarti quando sei vicino a una spiaggia senza segnalazioni recenti.",
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#020617",
+          "sounds": []
+        }
+      ],
       [
         "expo-splash-screen",
         {

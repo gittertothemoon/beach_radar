@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, AppState, type AppStateStatus, Linking, Platform, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Notifications from "expo-notifications";
+import * as Location from "expo-location";
+// Register background task — must be imported at module level before use
+import "../tasks/nearbyBeachTask";
+import { requestBackgroundLocationPermission, updateNearbyGeofences } from "../services/geofencing";
+import { schedulePeriodicReminders } from "../services/periodicReminders";
+import beachesData from "../data/beaches.json";
 import { WebSurface } from "../components/WebSurface";
 import {
   MOBILE_APP_ACCESS_KEY,
@@ -14,6 +21,14 @@ import {
   resetOnboarding,
 } from "../services/onboarding";
 import { checkForUpdate, dismissUpdate } from "../services/updateCheck";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const MOBILE_SCHEME = "where2beach:";
 type AppWebScreenProps = {
@@ -87,7 +102,9 @@ export const AppWebScreen = ({ onInitialWebReady }: AppWebScreenProps) => {
   const [showFirstRunTutorial, setShowFirstRunTutorial] = useState<boolean | null>(
     null,
   );
+  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const restartTutorialFrameRef = useRef<number | null>(null);
+  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
 
   const applyIncomingDeepLink = useCallback((rawUrl: string | null) => {
     if (!rawUrl) return;
@@ -130,6 +147,58 @@ export const AppWebScreen = ({ onInitialWebReady }: AppWebScreenProps) => {
       cancelAnimationFrame(restartTutorialFrameRef.current);
       restartTutorialFrameRef.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    // Request push notification permissions and get token (iOS/Android only).
+    if (Platform.OS === "web") return;
+    void (async () => {
+      try {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        if (existingStatus !== "granted") {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+        if (finalStatus !== "granted") return;
+        const tokenData = await Notifications.getExpoPushTokenAsync();
+        setExpoPushToken(tokenData.data);
+      } catch {
+        // Non-fatal: push notifications are optional
+      }
+    })();
+  }, []);
+
+  // Set up geofencing for nearby beaches + periodic reminders
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+    void (async () => {
+      try {
+        const granted = await requestBackgroundLocationPermission();
+        if (!granted) return;
+
+        // Get current location and register nearest geofences
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        await updateNearbyGeofences(loc.coords.latitude, loc.coords.longitude, beachesData);
+
+        // Schedule friendly periodic reminders
+        await schedulePeriodicReminders();
+      } catch {
+        // Non-fatal
+      }
+    })();
+
+    // Refresh geofences when app comes to foreground
+    const sub = AppState.addEventListener("change", (nextState) => {
+      if (appStateRef.current.match(/inactive|background/) && nextState === "active") {
+        void Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+          .then((loc) => updateNearbyGeofences(loc.coords.latitude, loc.coords.longitude, beachesData))
+          .catch(() => {});
+      }
+      appStateRef.current = nextState;
+    });
+
+    return () => sub.remove();
   }, []);
 
   useEffect(() => {
@@ -201,6 +270,7 @@ export const AppWebScreen = ({ onInitialWebReady }: AppWebScreenProps) => {
         onCompleteFirstRunTutorial={handleCompleteTutorial}
         onRestartTutorial={handleRestartTutorial}
         onInitialLoadSettled={onInitialWebReady}
+        expoPushToken={expoPushToken}
       />
     </>
   );
