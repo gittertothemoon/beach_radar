@@ -22,7 +22,7 @@ const MESSAGES = [
 
 TaskManager.defineTask(
   NEARBY_BEACH_TASK,
-  ({ data, error }: TaskManager.TaskManagerTaskBody<{ eventType: Location.GeofencingEventType; region: Location.LocationRegion }>) => {
+  async ({ data, error }: TaskManager.TaskManagerTaskBody<{ eventType: Location.GeofencingEventType; region: Location.LocationRegion }>) => {
     if (error) return;
     const { eventType, region } = data;
     if (eventType !== Location.GeofencingEventType.Enter) return;
@@ -35,7 +35,7 @@ TaskManager.defineTask(
     lastNotifiedAt[beachId] = now;
 
     const msgFn = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
-    void Notifications.scheduleNotificationAsync({
+    await Notifications.scheduleNotificationAsync({
       content: {
         title: "Where2Beach",
         body: msgFn(beachName),

@@ -6,7 +6,6 @@
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import { NEARBY_BEACH_TASK } from "../tasks/nearbyBeachTask";
-import type { Beach } from "../types";
 
 const MAX_GEOFENCES = 18;
 const GEOFENCE_RADIUS_M = 500;
