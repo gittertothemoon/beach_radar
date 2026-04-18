@@ -2,5 +2,8 @@ node_modules
 w2b-hero/node_modules
 api/beach-enrich/run.ts
 api/beach-profile.ts
+api/analytics.ts
+api/legal-config.ts
+api/reports-prune.ts
 w2b-hero/api/beach-enrich/run.ts
 w2b-hero/api/beach-profile.ts
