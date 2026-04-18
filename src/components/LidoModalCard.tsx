@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useLanguageRefresh } from "../i18n/useLanguageRefresh";
 import type { BeachProfile, BeachWithStats, Review } from "../lib/types";
 import { STRINGS } from "../i18n/strings";
@@ -28,6 +28,13 @@ type LidoModalCardProps = {
   onReport: () => void;
   onShare: () => void;
   onWriteReview?: () => void;
+  // Feature 5A: confirm report
+  confirmableReportId?: string | null;
+  confirmationCount?: number;
+  // Feature 5B: auto-validation prompt
+  showValidationPrompt?: boolean;
+  onConfirm?: (reportId: string) => Promise<void>;
+  onValidateDismiss?: () => void;
 };
 
 const stateClass = (state: string) => {
@@ -171,6 +178,11 @@ const LidoModalCardComponent = ({
   onReport,
   onShare,
   onWriteReview,
+  confirmableReportId,
+  confirmationCount,
+  showValidationPrompt,
+  onConfirm,
+  onValidateDismiss,
 }: LidoModalCardProps) => {
   useLanguageRefresh();
   const perfEnabled = isPerfEnabled();
@@ -178,6 +190,10 @@ const LidoModalCardComponent = ({
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const isPred = beach.state === "PRED";
+  // Track which reportId the confirmState belongs to, so it auto-resets for new reports
+  const [confirmFor, setConfirmFor] = useState<{ id: string; state: "loading" | "done" } | null>(null);
+  const confirmState: "idle" | "loading" | "done" =
+    confirmFor !== null && confirmFor.id === confirmableReportId ? confirmFor.state : "idle";
 
   useEffect(() => {
     if (!isOpen) return;
@@ -303,6 +319,39 @@ const LidoModalCardComponent = ({
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-6 pb-6 pt-4">
+          {showValidationPrompt && !isPred ? (
+            <div className="rounded-[12px] border border-amber-400/30 bg-amber-500/10 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[13px] font-semibold text-amber-100">
+                  {STRINGS.confirm.validationPrompt}
+                </span>
+                <div className="flex shrink-0 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirmableReportId && onConfirm && confirmState === "idle") {
+                        setConfirmFor({ id: confirmableReportId, state: "loading" });
+                        onConfirm(confirmableReportId).then(() => {
+                          setConfirmFor({ id: confirmableReportId, state: "done" });
+                        });
+                      }
+                      onValidateDismiss?.();
+                    }}
+                    className="br-press rounded-[8px] border border-emerald-400/40 bg-emerald-500/20 px-3 py-1.5 text-[12px] font-semibold text-emerald-100"
+                  >
+                    {STRINGS.confirm.validationYes}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onValidateDismiss?.()}
+                    className="br-press rounded-[8px] border border-white/15 bg-white/5 px-3 py-1.5 text-[12px] font-semibold br-text-secondary"
+                  >
+                    {STRINGS.confirm.validationNo}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
           <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 text-sm br-text-primary backdrop-blur-sm">
             <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
               <span>{STRINGS.labels.crowdStatus}</span>
@@ -650,7 +699,34 @@ const LidoModalCardComponent = ({
           </div>
         </div>
 
-        <div className="br-hairline border-t bg-black/40 px-6 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4">
+        <div className="br-hairline border-t bg-black/40 px-6 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 space-y-2">
+          {confirmableReportId && !isPred ? (
+            <button
+              type="button"
+              disabled={confirmState !== "idle"}
+              onClick={() => {
+                if (confirmState !== "idle") return;
+                setConfirmFor({ id: confirmableReportId, state: "loading" });
+                onConfirm?.(confirmableReportId).then(() => {
+                  setConfirmFor({ id: confirmableReportId, state: "done" });
+                });
+              }}
+              className={`br-press w-full rounded-[12px] border px-4 py-3 text-[14px] font-semibold backdrop-blur-sm focus-visible:outline focus-visible:outline-1 focus-visible:outline-[color:var(--focus-ring)] focus-visible:outline-offset-1 transition-colors ${
+                confirmState === "done"
+                  ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-200 cursor-default"
+                  : confirmState === "loading"
+                  ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300 cursor-default"
+                  : "border-emerald-400/50 bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30"
+              }`}
+            >
+              <span className="flex items-center justify-center gap-2">
+                {confirmState === "idle" ? STRINGS.confirm.buttonIdle : confirmState === "loading" ? STRINGS.confirm.buttonLoading : STRINGS.confirm.buttonDone}
+                {confirmState === "idle" && confirmationCount && confirmationCount > 0 ? (
+                  <span className="text-[12px] text-emerald-300/70">· {STRINGS.confirm.confirmationCount(confirmationCount)}</span>
+                ) : null}
+              </span>
+            </button>
+          ) : null}
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={onReport}
@@ -692,6 +768,11 @@ const lidoModalEqual = (prev: LidoModalCardProps, next: LidoModalCardProps) => {
   if (prev.onReport !== next.onReport) return false;
   if (prev.onShare !== next.onShare) return false;
   if (prev.onWriteReview !== next.onWriteReview) return false;
+  if (prev.confirmableReportId !== next.confirmableReportId) return false;
+  if (prev.confirmationCount !== next.confirmationCount) return false;
+  if (prev.showValidationPrompt !== next.showValidationPrompt) return false;
+  if (prev.onConfirm !== next.onConfirm) return false;
+  if (prev.onValidateDismiss !== next.onValidateDismiss) return false;
   const a = prev.beach;
   const b = next.beach;
   return (
