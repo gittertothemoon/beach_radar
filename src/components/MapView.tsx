@@ -117,6 +117,35 @@ const createClusterIcon = (_cluster: Cluster, zoom: number) => {
   return createClusterPinDivIcon(_cluster.count, zoom);
 };
 
+const clusterByRegion = (beaches: BeachWithStats[]): Cluster[] => {
+  const regionMap = new Map<string, { list: BeachWithStats[]; mask: number }>();
+  for (const beach of beaches) {
+    const region = beach.region || "Altro";
+    const entry = regionMap.get(region);
+    if (entry) {
+      entry.list.push(beach);
+      entry.mask |= getBeachStateMask(beach);
+    } else {
+      regionMap.set(region, { list: [beach], mask: getBeachStateMask(beach) });
+    }
+  }
+  const clusters: Cluster[] = [];
+  for (const [region, { list, mask }] of regionMap) {
+    const lat = list.reduce((s, b) => s + b.lat, 0) / list.length;
+    const lng = list.reduce((s, b) => s + b.lng, 0) / list.length;
+    clusters.push({
+      id: `region-${region}`,
+      lat,
+      lng,
+      members: list.map((b) => ({ beach: b, lat: b.lat, lng: b.lng })),
+      count: list.length,
+      beachIds: list.map((b) => b.id),
+      state: getStateFromMask(mask),
+    });
+  }
+  return clusters;
+};
+
 const clusterBeaches = (
   beaches: BeachWithStats[],
   map: L.Map,
@@ -149,6 +178,20 @@ const clusterBeaches = (
   }
 
   const zoom = getSafeZoom(map);
+
+  if (zoom <= 7) {
+    const regionClusters = clusterByRegion(rest);
+    const singles: SingleMarker[] = [];
+    const addedSingles = new Set<string>();
+    const pushSingle = (beach: BeachWithStats, lat: number, lng: number) => {
+      if (addedSingles.has(beach.id)) return;
+      addedSingles.add(beach.id);
+      singles.push({ id: beach.id, beach, lat, lng, state: getStateFromMask(getBeachStateMask(beach)) });
+    };
+    if (selected) pushSingle(selected, selected.lat, selected.lng);
+    for (const fav of favorites) pushSingle(fav, fav.lat, fav.lng);
+    return { clusters: regionClusters, singles };
+  }
   const clusterRadiusPx = getClusterRadiusPx(zoom);
   const clusterRadiusPxSquared = clusterRadiusPx * clusterRadiusPx;
   const projected = rest.map((beach) => {
