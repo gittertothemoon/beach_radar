@@ -346,12 +346,51 @@ const ClusteredMarkers = ({
     void mapTick;
     // eslint-disable-next-line react-hooks/purity -- dev-only timing instrumentation.
     const start = perfEnabled ? performance.now() : 0;
-    const result = clusterBeaches(
-      validBeaches,
-      map,
-      favoriteBeachIds,
-      selectedIdForClustering,
-    );
+
+    let result: { clusters: Cluster[]; singles: SingleMarker[] };
+
+    if (zoom <= 8) {
+      // At full-Italy view (zoom ≤ 8): one cluster per region, centroid-positioned.
+      // Uses React-tracked `zoom` so this activates correctly after fitBounds resolves.
+      const regionMap = new Map<string, { list: BeachWithStats[]; mask: number }>();
+      const regionSingles: SingleMarker[] = [];
+      for (const beach of validBeaches) {
+        if (selectedIdForClustering && beach.id === selectedIdForClustering) {
+          regionSingles.push({ id: beach.id, beach, lat: beach.lat, lng: beach.lng, state: getStateFromMask(getBeachStateMask(beach)) });
+          continue;
+        }
+        if (favoriteBeachIds.has(beach.id)) {
+          regionSingles.push({ id: beach.id, beach, lat: beach.lat, lng: beach.lng, state: getStateFromMask(getBeachStateMask(beach)) });
+          continue;
+        }
+        const region = beach.region || "Altro";
+        const entry = regionMap.get(region);
+        if (entry) {
+          entry.list.push(beach);
+          entry.mask |= getBeachStateMask(beach);
+        } else {
+          regionMap.set(region, { list: [beach], mask: getBeachStateMask(beach) });
+        }
+      }
+      const regionClusters: Cluster[] = [];
+      for (const [region, { list, mask }] of regionMap) {
+        const lat = list.reduce((s, b) => s + b.lat, 0) / list.length;
+        const lng = list.reduce((s, b) => s + b.lng, 0) / list.length;
+        regionClusters.push({
+          id: `region-${region}`,
+          lat,
+          lng,
+          members: list.map((b) => ({ beach: b, lat: b.lat, lng: b.lng })),
+          count: list.length,
+          beachIds: list.map((b) => b.id),
+          state: getStateFromMask(mask),
+        });
+      }
+      result = { clusters: regionClusters, singles: regionSingles };
+    } else {
+      result = clusterBeaches(validBeaches, map, favoriteBeachIds, selectedIdForClustering);
+    }
+
     if (perfEnabled) {
       recordClusterStats({
         // eslint-disable-next-line react-hooks/purity -- dev-only timing instrumentation.
