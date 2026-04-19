@@ -14,6 +14,8 @@ type SeedSpot = {
   lng?: number | string | null;
   notes?: string;
   status?: "pilot" | "draft" | "inactive";
+  openingHours?: string;
+  contact?: { website?: string; phone?: string; email?: string };
 };
 
 export type Spot = Beach & {
@@ -55,6 +57,9 @@ const normalizeSpot = (spot: SeedSpot): Spot => ({
   lat: parseCoord(spot.lat),
   lng: parseCoord(spot.lng),
   status: normalizeStatus(spot.status),
+  hours: spot.openingHours || undefined,
+  phone: spot.contact?.phone || undefined,
+  website: spot.contact?.website || undefined,
 });
 
 export const hasFiniteCoords = (spot: Pick<Spot, "lat" | "lng">) =>
