@@ -363,7 +363,7 @@ const ClusteredMarkers = ({
           regionSingles.push({ id: beach.id, beach, lat: beach.lat, lng: beach.lng, state: getStateFromMask(getBeachStateMask(beach)) });
           continue;
         }
-        const region = beach.region || "Altro";
+        const region = beach.rawRegion || beach.region || "Altro";
         const entry = regionMap.get(region);
         if (entry) {
           entry.list.push(beach);
@@ -386,6 +386,8 @@ const ClusteredMarkers = ({
           state: getStateFromMask(mask),
         });
       }
+      // eslint-disable-next-line no-console
+      console.log("[br-cluster] regional clusters:", regionClusters.length, regionClusters.map((c) => `${c.id}:${c.count}`).join(", "));
       result = { clusters: regionClusters, singles: regionSingles };
     } else {
       result = clusterBeaches(validBeaches, map, favoriteBeachIds, selectedIdForClustering);

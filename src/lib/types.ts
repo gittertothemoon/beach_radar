@@ -16,6 +16,7 @@ export type Beach = {
   id: string;
   name: string;
   region: string;
+  rawRegion?: string;
   lat: number;
   lng: number;
   baselineLevel?: CrowdLevel;
