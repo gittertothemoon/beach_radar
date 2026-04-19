@@ -2,7 +2,7 @@ import type { CrowdLevel } from "../lib/types";
 import type { LatLng } from "../lib/geo";
 
 export const DEFAULT_CENTER: LatLng = { lat: 41.9028, lng: 12.4964 };
-export const INITIAL_MAP_ZOOM = 7;
+export const INITIAL_MAP_ZOOM = 9;
 export const ITALY_BOUNDS: [[number, number], [number, number]] = [
   [35.3, 6.3],
   [47.3, 18.7],
