@@ -70,11 +70,12 @@ const hasValidCoords = (beach: BeachWithStats) =>
 
 const getClusterRadiusPx = (zoom: number) => {
   const safeZoom = Number.isFinite(zoom) ? zoom : 12;
-  if (safeZoom <= 6) return 36;
-  if (safeZoom <= 7) return 30;
-  if (safeZoom <= 9) return 28;
-  if (safeZoom <= 11) return 26;
-  if (safeZoom <= 13) return 24;
+  if (safeZoom <= 5) return 14;
+  if (safeZoom <= 6) return 16;
+  if (safeZoom <= 7) return 18;
+  if (safeZoom <= 9) return 22;
+  if (safeZoom <= 11) return 24;
+  if (safeZoom <= 13) return 22;
   if (safeZoom <= 15) return 20;
   return CLUSTER_RADIUS_PX;
 };
