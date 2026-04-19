@@ -1,0 +1,324 @@
+{
+  "source": "FEE Italia / Ministero del Turismo / CNR",
+  "year": 2025,
+  "totalComuni": 246,
+  "totalBeaches": 487,
+  "notes": "Parsed from tuttitalia.it/bandiera-blu/2025-spiagge/ (aligned with official FEE list). Each beach is a separate award; slash-separated clusters are kept together as one entry when the FEE list groups them. Lake-region entries are included for completeness but flagged with 'lake=true'.",
+  "regions": {
+    "Abruzzo": {
+      "comuni": {
+        "Alba Adriatica": ["Spiaggia d'Argento"],
+        "Fossacesia": ["Fossacesia Marina"],
+        "Francavilla al Mare": ["Piazza Adriatico", "Piazza Sirena"],
+        "Giulianova": ["Lungomare Zara", "Lungomare Spalato/Rodi"],
+        "Martinsicuro": ["Villa Rosa", "Martinsicuro"],
+        "Ortona": ["Lido Saraceni", "Ripari di Giobbe"],
+        "Pescara": ["Riviera Nord/Centro", "Riviera Sud"],
+        "Pineto": ["Villa Fumosa", "Corfù", "Torre Cerrano", "Santa Maria a Valle Sud", "Santa Maria a Valle Nord", "Pineto Centro", "Pineta Catucci"],
+        "Roseto degli Abruzzi": ["Lungomare Sud", "Lungomare Nord", "Lungomare Centrale"],
+        "San Salvo": ["San Salvo Marina"],
+        "Silvi": ["Lungomare Centrale", "Arenile Sud"],
+        "Torino di Sangro": ["Lungomare Costa Verde", "Le Morge"],
+        "Tortoreto": ["Spiaggia del Sole"],
+        "Vasto": ["Punta Penna", "Vignola/San Nicola", "San Tommaso"]
+      }
+    },
+    "Basilicata": {
+      "comuni": {
+        "Bernalda": ["Lido di Metaponto"],
+        "Maratea": ["Marina di Santa Teresa/Calaficarra", "Macarro/Illicini/Nera", "Castrocucco/Secca", "Acquafredda"],
+        "Nova Siri": ["Lido"],
+        "Pisticci": ["Marina di Pisticci"],
+        "Policoro": ["Lido Nord", "Lido Sud"]
+      }
+    },
+    "Calabria": {
+      "comuni": {
+        "Cariati": ["Vascellero"],
+        "Catanzaro": ["Giovino"],
+        "Caulonia": ["Lido"],
+        "Cirò Marina": ["Punta Alice", "Cervara/Madonna di Mare"],
+        "Corigliano-Rossano": ["Lungomare Rossano Centro"],
+        "Cropani": ["Cropani Marina"],
+        "Diamante": ["Cirella", "Scogliera Cirella", "Pietrarossa", "Tropical"],
+        "Isola di Capo Rizzuto": ["Le Castella"],
+        "Melissa": ["Litorale Torre Melissa"],
+        "Parghelia": ["Costa dei Monaci/Bordila", "La Grazia/Vardano", "Michelino", "La Tonnara"],
+        "Praia a Mare": ["Camping Internazionale/Punta Fiuzzi"],
+        "Rocca Imperiale": ["Marina di Rocca Imperiale"],
+        "Roccella Ionica": ["Lido"],
+        "Roseto Capo Spulico": ["Lungomare"],
+        "San Nicola Arcella": ["Arcomagno/Canale Grande Marinella"],
+        "Santa Maria del Cedro": ["Chiatta in Ferro - Abatemarco"],
+        "Sellia Marina": ["Località Ruggero/San Vincenzo-Sena/Jonio-Rivachiara"],
+        "Siderno": ["Litorale"],
+        "Soverato": ["Baia dell'Ippocampo"],
+        "Tortora": ["La Pineta/Fiume Noce"],
+        "Trebisacce": ["Lungomare Sud", "Riviera dei Saraceni", "Viale Magna Grecia"],
+        "Tropea": ["Marina del Convento", "Marina dell'Isola", "Rocca Nettuno"],
+        "Villapiana": ["Villapiana Scalo", "Villapiana Lido"]
+      }
+    },
+    "Campania": {
+      "comuni": {
+        "Agropoli": ["Torre San Marco", "Trentova", "Lungomare San Marco", "Spiaggia Libera Porto", "Licina"],
+        "Anacapri": ["Faro Punta Carena", "Gradola (Grotta Azzurra)"],
+        "Ascea": ["Piana di Velia", "Torre del Telegrafo", "Marina di Ascea"],
+        "Camerota": ["Cala Finocchiara", "San Domenico - Lentiscelle"],
+        "Casal Velino": ["Torre Dominella", "Lungomare - Isola"],
+        "Castellabate": ["Lago Tresino", "Marina Piccola", "Pozzillo/San Marco", "Punta Inferno", "Baia Ogliastro"],
+        "Cellole": ["Baia Felice", "Baia Domizia sud"],
+        "Centola": ["Marinella/Baia del Buon Dormire", "Palinuro Porto", "Palinuro Dune e Saline"],
+        "Ispani": ["Capitello"],
+        "Massa Lubrense": ["Baia delle Sirene", "Marina di Puolo", "Recommone/Marina del Cantone"],
+        "Montecorice": ["San Nicola", "Baia Arena", "Agnone", "Capitello"],
+        "Piano di Sorrento": ["Marina di Cassano"],
+        "Pisciotta": ["Ficaiola/Torraca/Gabella", "Pietracciaio/Fosso della Marina/Marina Acquabianca"],
+        "Pollica": ["Acciaroli", "Pioppi"],
+        "Positano": ["Arienzo", "Fornillo", "Laurito", "Spiaggia Grande"],
+        "San Mauro Cilento": ["Mezzatorre"],
+        "Sapri": ["Lungomare San Giorgio"],
+        "Sorrento": ["San Francesco", "Riviera di Massa", "Tonnarella", "Puolo"],
+        "Vibonati": ["Oliveto", "Torre Villammare", "Santa Maria Le Piane"],
+        "Vico Equense": ["Scoglio Tre Fratelli - Bikini", "Scrajo Mare", "Capo la Gala", "Marina di Seiano Ovest Porto", "Marina di Vico"]
+      }
+    },
+    "Emilia-Romagna": {
+      "comuni": {
+        "Bellaria-Igea Marina": ["Igea Marina"],
+        "Cattolica": ["Regina dell'Adriatico"],
+        "Cervia": ["Milano Marittima", "Pinarella"],
+        "Cesenatico": ["Levante Valverde", "Levante Villamarina", "Ponente"],
+        "Comacchio": ["Lido degli Estensi", "Lido di Volano", "Lido delle Nazioni", "Lido di Pomposa", "Lido degli Scacchi", "Lido di Spina", "Porto Garibaldi"],
+        "Gatteo": ["Gatteo Mare"],
+        "Misano Adriatico": ["Misano Centro", "Porto Verde"],
+        "Ravenna": ["Marina Romea", "Porto Corsini", "Marina di Ravenna", "Lido Adriano", "Lido di Savio", "Lido di Dante", "Lido di Classe", "Casalborsetti"],
+        "Riccione": ["Litorale"],
+        "San Mauro Pascoli": ["San Mauro Mare"]
+      }
+    },
+    "Friuli-Venezia Giulia": {
+      "comuni": {
+        "Grado": ["Costa Azzurra", "Pineta", "Spiaggia Principale"],
+        "Lignano Sabbiadoro": ["Lido"]
+      }
+    },
+    "Lazio": {
+      "comuni": {
+        "Anzio": ["Riviera di Ponente", "Riviera di Levante"],
+        "Fondi": ["Levante", "Ponente"],
+        "Formia": ["Gianola", "Vindicio"],
+        "Gaeta": ["Arenauta", "Ariana", "Sant'Agostino", "Serapo"],
+        "Latina": ["Latina Mare"],
+        "Minturno": ["Ponente"],
+        "Sabaudia": ["Litorale"],
+        "San Felice Circeo": ["Litorale"],
+        "Sperlonga": ["Bazzano", "Levante", "Ponente", "Lago Lungo"],
+        "Terracina": ["Levante", "Ponente"],
+        "Trevignano Romano": ["Via della Rena"]
+      }
+    },
+    "Liguria": {
+      "comuni": {
+        "Albisola Superiore": ["Lido"],
+        "Albissola Marina": ["Lido"],
+        "Bergeggi": ["Il Faro", "Villaggio del Sole"],
+        "Bonassola": ["Litorale"],
+        "Bordighera": ["Litorale"],
+        "Borghetto Santo Spirito": ["Litorale"],
+        "Borgio Verezzi": ["Ex Sati", "Rio Batorezza", "Rio Bottasano"],
+        "Camogli": ["San Fruttuoso", "Camogli"],
+        "Celle Ligure": ["Levante", "Ponente"],
+        "Chiavari": ["Porto"],
+        "Diano Marina": ["Litorale"],
+        "Finale Ligure": ["Castelletto San Donato", "Varigotti", "Spiaggia del Porto", "Finalpia", "Finalmarina", "Malpasso"],
+        "Framura": ["Fornaci", "La Vallà - Apicchi"],
+        "Imperia": ["Spianata Borgo Peri", "Borgo Marina"],
+        "Laigueglia": ["Litorale"],
+        "Lavagna": ["Lungomare"],
+        "Lerici": ["Eco del Mare", "Colombo", "Lido", "Fiascherino", "Baia Blu/Marinella"],
+        "Levanto": ["Ghiararo", "Levante Porto"],
+        "Moneglia": ["Levante", "Centrale", "La Secca"],
+        "Noli": ["Le Cave", "Capo Noli", "Zona Vittoria", "Zona Anita", "Chiariventi"],
+        "Pietra Ligure": ["Ponente"],
+        "Recco": ["Ciappea", "Spiaggia Centrale"],
+        "Riva Ligure": ["Centro"],
+        "San Lorenzo al Mare": ["U'Nustromu/Prima Punta", "Baia delle Vele"],
+        "Sanremo": ["Tre Ponti", "Baia Capo Pino", "Tiro a Volo"],
+        "Santa Margherita Ligure": ["Scogliera Pagana", "Punta Pedale", "Zona Milite Ignoto"],
+        "Santo Stefano al Mare": ["Baia azzurra", "Il Vascello"],
+        "Savona": ["Fornaci"],
+        "Sestri Levante": ["Baia delle Favole Nord", "Baia Portobello", "Spiaggia Renà", "Riva Trigoso"],
+        "Sori": ["Centrale"],
+        "Spotorno": ["Lido"],
+        "Varazze": ["Levante Teiro", "Ponente Teiro", "Arrestra"]
+      }
+    },
+    "Lombardia": {
+      "lake": true,
+      "comuni": {
+        "Gardone Riviera": ["Lido", "Casinò"],
+        "Sirmione": ["Lido delle Grotte"],
+        "Toscolano-Maderno": ["Lido Azzurro"]
+      }
+    },
+    "Marche": {
+      "comuni": {
+        "Altidona": ["Lungomare Paolo Borsellino"],
+        "Ancona": ["Portonovo"],
+        "Campofilone": ["Lungomare dei Tintori"],
+        "Civitanova Marche": ["Lungomare Nord", "Lungomare Sud"],
+        "Cupra Marittima": ["Lido Nord", "Lido Sud"],
+        "Fano": ["Nord", "Sassonia", "Torrette", "Lido"],
+        "Fermo": ["Lido di Fermo/Casabianca", "Marina Palmense"],
+        "Gabicce Mare": ["Lido"],
+        "Grottammare": ["Nord", "Sud"],
+        "Mondolfo": ["Marotta"],
+        "Numana": ["Numana Alta", "Numana Bassa/Marcelli Nord"],
+        "Pedaso": ["Lungomare dei Cantautori"],
+        "Pesaro": ["Ponente", "Sottomonte"],
+        "Porto Recanati": ["Litorale Nord", "Litorale Centro"],
+        "Porto San Giorgio": ["Lungomare centro nord", "Lungomare centro sud"],
+        "Porto Sant'Elpidio": ["Lungomare Centrosud", "Lungomare Nord"],
+        "Potenza Picena": ["Lido Nord", "Lido Centro", "Lido Sud"],
+        "San Benedetto del Tronto": ["Riviera delle Palme"],
+        "Senigallia": ["Levante", "Ponente"],
+        "Sirolo": ["Sassi Neri", "San Michele", "Urbani", "Due Sorelle"]
+      }
+    },
+    "Molise": {
+      "comuni": {
+        "Campomarino": ["Lido"],
+        "Termoli": ["Sant'Antonio"]
+      }
+    },
+    "Piemonte": {
+      "lake": true,
+      "comuni": {
+        "Cannero Riviera": ["Lido"],
+        "Cannobio": ["Lido"],
+        "Gozzano": ["Lido di Gozzano"],
+        "Verbania": ["Fondotoce - Isolino"]
+      }
+    },
+    "Puglia": {
+      "comuni": {
+        "Bisceglie": ["La Salata", "Salsello", "Scogliera Scalette"],
+        "Carovigno": ["Mezzaluna", "Pantanagianni", "Punta Penna Grossa"],
+        "Castellaneta": ["Riva dei Tessali", "Pineta Giovinazzi", "Castellaneta Marina", "Bosco della Marina"],
+        "Castrignano del Capo": ["Santa Maria di Leuca"],
+        "Castro": ["La Zinzulusa", "La Sorgente"],
+        "Fasano": ["Egnazia Case Bianche", "Savelletri", "Torre Canne"],
+        "Gallipoli": ["Litoranea Sud", "Litoranea Nord"],
+        "Ginosa": ["Marina di Ginosa"],
+        "Isole Tremiti": ["Cala delle Arene"],
+        "Lecce": ["San Cataldo"],
+        "Leporano": ["Lido Gandoli", "Porto Pirrone", "Portosaturo", "Baia d'Argento"],
+        "Manduria": ["San Pietro in Bevagna"],
+        "Margherita di Savoia": ["Cannafesca - Centro Urbano"],
+        "Maruggio": ["Commenda", "Campomarino", "Acqua Dolce"],
+        "Melendugno": ["Roca", "San Foca Nord", "San Foca Centro", "Torre Specchia", "Torre Sant'Andrea", "Torre dell'Orso"],
+        "Monopoli": ["Castello Santo Stefano", "Capitolo", "Lido Porto Rosso", "Cala Paradiso"],
+        "Nardò": ["Porto Selvaggio", "Sant'Isidoro", "Santa Caterina", "Santa Maria al Bagno", "Torre Squillace"],
+        "Ostuni": ["Creta Rossa", "Lido Fontanelle", "Lido Stella", "Litorale Parco Dune Costiere", "Litorale Rosa Marina", "Litorale Torre Canne Sud"],
+        "Patù": ["Felloniche", "San Gregorio"],
+        "Peschici": ["Sfinale", "Gusmay", "Baia di Calalunga", "Baia di Monaccora", "Baia San Nicola", "Procinisco", "Baia di Peschici"],
+        "Polignano a Mare": ["Cala Paura", "San Vito", "Ripagnola - Coco Village", "Cala San Giovanni"],
+        "Pulsano": ["Marina di Pulsano"],
+        "Rodi Garganico": ["Riviera di Ponente", "Riviera di Levante"],
+        "Salve": ["Marina di Pescoluse", "Posto Vecchio", "Torre Pali"],
+        "Ugento": ["Torre San Giovanni", "Torre Mozza", "Lido Marini"],
+        "Vieste": ["San Lorenzo", "Scialara"],
+        "Zapponeta": ["Lido"]
+      }
+    },
+    "Sardegna": {
+      "comuni": {
+        "Aglientu": ["Rena Majore", "Lu Chiscinagghju"],
+        "Badesi": ["Li Junchi", "Li Mindi - Lu Stangioni", "Baia delle Mimose - Pirottu Li Frati", "Lu Poltu Biancu"],
+        "Bari Sardo": ["Bucca 'e Strumpu", "Torre di Barì", "Sa Marina", "CEA"],
+        "Budoni": ["Baia di Budoni"],
+        "Castelsardo": ["Sacro Cuore/Ampurias", "Madonnina/Stella Maris", "Ex Palazzo Americani"],
+        "La Maddalena": ["Bassa Trinità", "Carlotto/Nido d'Aquila", "Cala Garibaldi", "Due Mari", "Relitto", "Lo Strangolato", "Monte d'a Rena", "Porto Lungo", "Spalmatore", "Tegge"],
+        "Oristano": ["Torregrande"],
+        "Palau": ["Palau Vecchio", "Isolotto"],
+        "Quartu Sant'Elena": ["Mare Pintau", "Poetto"],
+        "San Teodoro": ["La Cinta"],
+        "Sant'Antioco": ["Maladroxia", "Coacuaddus"],
+        "Santa Teresa Gallura": ["Rena Ponente", "Rena Bianca", "Zia Culumba", "La Taltana - Santa Reparata", "Conca Verde", "La Marmorata"],
+        "Sassari": ["Porto Ferro", "Porto Palmas", "Platamona Rotonda"],
+        "Sorso": ["Marina di Sorso quarto pettine", "Marina di Sorso quinto pettine", "Marina di Sorso settimo pettine", "Spiaggia della Marina"],
+        "Tortolì": ["Lido di Cea", "Lido di Orrì I", "Lido di Orrì II", "Muxì", "Orrì Foxilioni", "Ponente", "Porto Frailis", "San Gemiliano"],
+        "Trinità d'Agultu e Vignola": ["La Marinedda", "Cala Sarraina", "Spiaggia Lunga Isola Rossa"]
+      }
+    },
+    "Sicilia": {
+      "comuni": {
+        "Alì Terme": ["Lungomare"],
+        "Furci Siculo": ["Litorale"],
+        "Letojanni": ["Centro"],
+        "Menfi": ["Lido Fiori Bertolino", "Porto Palo Cipollazzo"],
+        "Messina": ["Messina Nord", "Messina Sud", "Messina Tirreno"],
+        "Modica": ["Maganuco", "Marina di Modica"],
+        "Pozzallo": ["Pietre Nere", "Raganzino"],
+        "Ragusa": ["Marina di Ragusa"],
+        "Roccalumera": ["Litorale"],
+        "Santa Teresa di Riva": ["Lungomare"],
+        "Scicli": ["Sampieri", "Pisciotto"],
+        "Taormina": ["Mazzeo"],
+        "Tusa": ["Lungomare"]
+      }
+    },
+    "Toscana": {
+      "comuni": {
+        "Bibbona": ["Marina di Bibbona centro-sud"],
+        "Camaiore": ["Lido di Camaiore"],
+        "Carrara": ["Marina di Carrara Centro"],
+        "Castagneto Carducci": ["Marina di Castagneto Carducci"],
+        "Castiglione della Pescaia": ["Levante", "Tombolo", "Pian d'Alma", "Casetta Civinini - Piastrone", "Rocchette", "Roccamare", "Casa Mora", "Riva del Sole", "Capezzolo"],
+        "Cecina": ["Marina di Cecina", "Le Gorette"],
+        "Follonica": ["Litorale"],
+        "Forte dei Marmi": ["Litorale"],
+        "Grosseto": ["Marina di Grosseto", "Principina a Mare"],
+        "Livorno": ["Bagni Rex", "Cala Quercianella", "Parco Marina del Boccale", "Rogiolo", "Bagni Roma"],
+        "Marciana Marina": ["La Fenicia", "Re di Noce", "La Marina"],
+        "Massa": ["Marina di Massa"],
+        "Orbetello": ["Fertilia", "Puntata", "Osa - Albegna", "Giannella", "Tagliata"],
+        "Pietrasanta": ["La Versiliana", "Tonfano", "Focette"],
+        "Piombino": ["Parco Naturale della Sterpaia"],
+        "Pisa": ["Calambrone", "Tirrenia", "Marina di Pisa"],
+        "Rosignano Marittimo": ["Castiglioncello", "La Mazzanta"],
+        "San Vincenzo": ["Rimigliano nord", "Rimigliano sud", "Principessa", "Conchiglia - Fosso delle Rozze"],
+        "Viareggio": ["Levante", "Ponente", "Torre del Lago Puccini"]
+      }
+    },
+    "Trentino-Alto Adige": {
+      "lake": true,
+      "comuni": {
+        "Baselga di Pinè": ["Lido", "Alberon", "Bar Spiaggia"],
+        "Bedollo": ["Località Piazze"],
+        "Bondone": ["Porto Camarelle"],
+        "Calceranica al Lago": ["Alle Barche", "Al Pescatore", "Riviera"],
+        "Caldonazzo": ["Lido", "Spiaggetta"],
+        "Lavarone": ["Lido Marzari"],
+        "Pergine Valsugana": ["San Cristoforo"],
+        "Sella Giudicarie": ["Roncone"],
+        "Tenno": ["Grande"],
+        "Vallelaghi": ["Lido Terlago", "Tre Faggi"]
+      }
+    },
+    "Veneto": {
+      "comuni": {
+        "Caorle": ["Porto Santa Margherita", "Ponente", "Duna Verde", "Brussa", "Levante"],
+        "Cavallino-Treporti": ["Lido"],
+        "Chioggia": ["Sottomarina", "Le Dune"],
+        "Eraclea": ["Eraclea Mare"],
+        "Jesolo": ["Lido", "Levante"],
+        "Porto Tolle": ["Barricata", "Boccasette", "Conchiglie"],
+        "Rosolina": ["Albarella Capo Nord", "Rosolina Mare", "Albarella Centro Sportivo"],
+        "San Michele al Tagliamento": ["Bibione"],
+        "Venezia": ["Lido di Venezia", "Alberoni"]
+      }
+    }
+  }
+}
