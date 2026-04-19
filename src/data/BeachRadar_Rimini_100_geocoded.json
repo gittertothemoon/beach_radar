@@ -30183,36 +30183,6 @@
     }
   },
   {
-    "id": "BR-AP-BB-002",
-    "name": "Nord",
-    "address": "Grottammare, AP, Italia",
-    "city": "Grottammare",
-    "province": "AP",
-    "region": "Marche",
-    "baselineLevel": 3,
-    "baselineSource": "BANDIERA_BLU",
-    "lat": 43,
-    "lng": 13.8696526,
-    "notes": "",
-    "geocodeMeta": {
-      "queryUsed": "bb:Grottammare:Nord",
-      "fromCache": false,
-      "place_id": null,
-      "osm_id": null,
-      "display_name": null,
-      "status": "bb_import",
-      "source": "BANDIERA_BLU_2025",
-      "note": null,
-      "sources": [
-        "BANDIERA_BLU_2025",
-        "NOMINATIM_FORWARD"
-      ],
-      "confidence": "low",
-      "bandieraBlu": true,
-      "beachOriginalName": "Nord"
-    }
-  },
-  {
     "id": "BR-AP-BB-003",
     "name": "Sud",
     "address": "Grottammare, AP, Italia",
