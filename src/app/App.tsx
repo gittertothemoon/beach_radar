@@ -83,7 +83,6 @@ import {
   consumeRegisterResumeSnapshot,
   DEFAULT_CENTER,
   INITIAL_MAP_ZOOM,
-  ITALY_BOUNDS,
   LIMITED_DATA_HIDE_THRESHOLD,
   LIMITED_DATA_SHOW_THRESHOLD,
   LOCATION_FOCUS_ZOOM,
@@ -1333,11 +1332,8 @@ function App() {
       });
       resumeMapViewRef.current = null;
     } else {
-      map.fitBounds(ITALY_BOUNDS, {
+      map.setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], INITIAL_MAP_ZOOM, {
         animate: false,
-        maxZoom: INITIAL_MAP_ZOOM,
-        paddingTopLeft: [16, 96],
-        paddingBottomRight: [16, 140],
       });
     }
     setMapReady(true);
