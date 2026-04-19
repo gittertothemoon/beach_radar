@@ -1,5 +1,6 @@
 import { useCallback, type Dispatch, type SetStateAction } from "react";
 import {
+  completeOAuthProfile,
   deleteCurrentAccount,
   setFavoriteBeach,
   signOutAccount,
@@ -40,6 +41,16 @@ type UseAccountActionsInput = {
   };
 };
 
+type UpdateProfileInput = {
+  firstName: string;
+  lastName: string;
+  nickname: string;
+};
+
+export type UpdateProfileResult =
+  | { ok: true }
+  | { ok: false; code: "nickname_exists" | "invalid" | "network" | "unknown" };
+
 type UseAccountActionsOutput = {
   handleToggleFavorite: (beachId: string) => void;
   handleToggleSelectedFavorite: () => void;
@@ -47,6 +58,7 @@ type UseAccountActionsOutput = {
   handleDeleteAccount: () => void;
   handleOpenProfile: () => void;
   handleSelectProfileFavorite: (beachId: string) => void;
+  handleUpdateProfile: (input: UpdateProfileInput) => Promise<UpdateProfileResult>;
 };
 
 export const useAccountActions = ({
@@ -174,6 +186,21 @@ export const useAccountActions = ({
     showLocationToast,
   ]);
 
+  const handleUpdateProfile = useCallback(
+    async (input: UpdateProfileInput): Promise<UpdateProfileResult> => {
+      if (!account) return { ok: false, code: "unknown" };
+      const result = await completeOAuthProfile(input);
+      if (!result.ok) {
+        if (result.code === "nickname_exists") return { ok: false, code: "nickname_exists" };
+        if (result.code === "network") return { ok: false, code: "network" };
+        return { ok: false, code: "unknown" };
+      }
+      setAccount(result.account);
+      return { ok: true };
+    },
+    [account, setAccount],
+  );
+
   const handleOpenProfile = useCallback(() => {
     if (!account) return;
     setProfileOpen(true);
@@ -188,6 +215,7 @@ export const useAccountActions = ({
   );
 
   return {
+    handleUpdateProfile,
     handleToggleFavorite,
     handleToggleSelectedFavorite,
     handleSignOut,

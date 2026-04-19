@@ -1368,6 +1368,7 @@ function App() {
   }, [activeSheetSection]);
 
   const {
+    handleUpdateProfile,
     handleToggleFavorite,
     handleToggleSelectedFavorite,
     handleSignOut,
@@ -1798,6 +1799,9 @@ function App() {
             isOpen={profileOpen}
             name={accountDisplayName}
             email={account.email}
+            firstName={account.firstName}
+            lastName={account.lastName}
+            nickname={account.nickname}
             favoriteBeaches={profileFavoriteBeaches}
             activeBadge={activeBadge}
             deleting={deletingAccount}
@@ -1805,6 +1809,7 @@ function App() {
             onSelectFavorite={handleSelectProfileFavorite}
             onSignOut={handleSignOut}
             onDeleteAccount={handleDeleteAccount}
+            onUpdateProfile={handleUpdateProfile}
             onRestartTutorial={shouldSkipInitialSplash ? handleRestartTutorial : undefined}
           />
         </Suspense>
