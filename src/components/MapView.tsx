@@ -386,8 +386,6 @@ const ClusteredMarkers = ({
           state: getStateFromMask(mask),
         });
       }
-      // eslint-disable-next-line no-console
-      console.log("[br-cluster] regional clusters:", regionClusters.length, regionClusters.map((c) => `${c.id}:${c.count}`).join(", "));
       result = { clusters: regionClusters, singles: regionSingles };
     } else {
       result = clusterBeaches(validBeaches, map, favoriteBeachIds, selectedIdForClustering);
