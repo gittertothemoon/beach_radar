@@ -1258,41 +1258,59 @@ export const WebSurface = ({
               oauthUrl,
               "where2beach://",
             );
-            Alert.alert(
-              "OAuth debug",
-              "type=" + result.type + "\nurl=" + ((result as { url?: string }).url ?? "(none)"),
-            );
             if (result.type !== "success" || !result.url) {
               dispatchCancelled();
               return;
             }
-            // Callback shape: where2beach://auth/callback?code=... (or with # for some providers).
+            // Supabase returns tokens either as `?code=…` (PKCE flow) or
+            // `#access_token=…&refresh_token=…` (implicit flow, used when the
+            // redirectTo is a custom URL scheme). We preserve whichever the
+            // callback URL carries and forward it to the register page so
+            // Supabase's `detectSessionInUrl` can establish the session.
             const rawUrl = result.url;
             const queryIdx = rawUrl.indexOf("?");
             const hashIdx = rawUrl.indexOf("#");
-            let paramsString = "";
+
+            let queryString = "";
             if (queryIdx !== -1) {
-              paramsString =
+              queryString =
                 hashIdx !== -1 && hashIdx > queryIdx
                   ? rawUrl.slice(queryIdx + 1, hashIdx)
                   : rawUrl.slice(queryIdx + 1);
-            } else if (hashIdx !== -1) {
-              paramsString = rawUrl.slice(hashIdx + 1);
             }
-            const params = new URLSearchParams(paramsString);
-            const code = params.get("code");
-            if (!code) {
+            let hashString = "";
+            if (hashIdx !== -1) {
+              hashString =
+                queryIdx !== -1 && queryIdx > hashIdx
+                  ? rawUrl.slice(hashIdx + 1, queryIdx)
+                  : rawUrl.slice(hashIdx + 1);
+            }
+
+            const queryParams = new URLSearchParams(queryString);
+            const hashParams = new URLSearchParams(hashString);
+            const hasCode = queryParams.has("code");
+            const hasAccessToken = hashParams.has("access_token");
+
+            if (!hasCode && !hasAccessToken) {
               dispatchCancelled();
               return;
             }
+
             const target = new URL("/register/", appOrigin ?? "https://where2beach.com");
             target.searchParams.set("mode", "login");
-            target.searchParams.set("code", code);
             target.searchParams.set("returnTo", "/app/?native_shell=1");
+            if (hasCode) {
+              target.searchParams.set("code", queryParams.get("code") as string);
+            }
+            let targetUrl = target.toString();
+            if (hasAccessToken) {
+              // Preserve the full hash fragment (access_token, refresh_token,
+              // expires_at, provider_token, …) so Supabase's client picks it up.
+              targetUrl = targetUrl + "#" + hashString;
+            }
             // react-native-webview's source prop update is unreliable when the
             // pathname stays the same and only the query string changes, so we
             // force the navigation via window.location inside the WebView.
-            const targetUrl = target.toString();
             webViewRef.current?.injectJavaScript(
               "window.location.replace(" + JSON.stringify(targetUrl) + "); true;",
             );
