@@ -70,13 +70,11 @@ const hasValidCoords = (beach: BeachWithStats) =>
 
 const getClusterRadiusPx = (zoom: number) => {
   const safeZoom = Number.isFinite(zoom) ? zoom : 12;
-  if (safeZoom <= 5) return 14;
-  if (safeZoom <= 6) return 16;
-  if (safeZoom <= 7) return 18;
-  if (safeZoom <= 9) return 22;
-  if (safeZoom <= 11) return 24;
-  if (safeZoom <= 13) return 22;
-  if (safeZoom <= 15) return 20;
+  if (safeZoom <= 7) return 22;
+  if (safeZoom <= 9) return 18;
+  if (safeZoom <= 11) return 15;
+  if (safeZoom <= 13) return 12;
+  if (safeZoom <= 15) return 10;
   return CLUSTER_RADIUS_PX;
 };
 
@@ -351,10 +349,9 @@ const ClusteredMarkers = ({
 
     let result: { clusters: Cluster[]; singles: SingleMarker[] };
 
-    if (zoom <= 7) {
-      // At full-Italy view: group by region (1 cluster per region, centroid position).
-      // Uses the React-tracked `zoom` variable (not getSafeZoom inside clusterBeaches)
-      // to ensure this runs at the correct zoom level after fitBounds resolves.
+    if (zoom <= 8) {
+      // At full-Italy view (zoom ≤ 8): one cluster per region, centroid-positioned.
+      // Uses React-tracked `zoom` so this activates correctly after fitBounds resolves.
       const regionMap = new Map<string, { list: BeachWithStats[]; mask: number }>();
       const regionSingles: SingleMarker[] = [];
       for (const beach of validBeaches) {
@@ -366,7 +363,7 @@ const ClusteredMarkers = ({
           regionSingles.push({ id: beach.id, beach, lat: beach.lat, lng: beach.lng, state: getStateFromMask(getBeachStateMask(beach)) });
           continue;
         }
-        const region = beach.region || "Altro";
+        const region = beach.rawRegion || beach.region || "Altro";
         const entry = regionMap.get(region);
         if (entry) {
           entry.list.push(beach);
@@ -391,12 +388,7 @@ const ClusteredMarkers = ({
       }
       result = { clusters: regionClusters, singles: regionSingles };
     } else {
-      result = clusterBeaches(
-        validBeaches,
-        map,
-        favoriteBeachIds,
-        selectedIdForClustering,
-      );
+      result = clusterBeaches(validBeaches, map, favoriteBeachIds, selectedIdForClustering);
     }
 
     if (perfEnabled) {
