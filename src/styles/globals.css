@@ -392,32 +392,6 @@ body {
   border: 0;
 }
 
-.br-cluster-bubble {
-  width: var(--s);
-  height: var(--s);
-  border-radius: 50%;
-  background: var(--bg);
-  border: 2px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: var(--fs);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  pointer-events: auto;
-  cursor: pointer;
-  transition: transform 150ms ease, box-shadow 150ms ease;
-  will-change: transform;
-}
-
-.br-cluster-bubble:active {
-  transform: scale(0.88);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-}
-
 .br-cluster {
   width: var(--s);
   height: var(--s);

@@ -38,7 +38,9 @@ const getUmbrellaSizeForZoom = (zoom: number) => {
 
 const getClusterSizeForZoom = (zoom: number) => {
   const z = getRoundedZoom(zoom);
-  if (z <= 10) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 52);
+  if (z <= 6) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 36);
+  if (z <= 8) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 40);
+  if (z <= 10) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 46);
   if (z <= 13) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 48);
   if (z <= 16) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 44);
   return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 40);
@@ -134,41 +136,8 @@ export const createBeachPinIcon = (options: BeachPinOptions) => {
   return icon;
 };
 
-const getBubbleParams = (count: number) => {
-  if (count >= 200) return { size: 36, bg: "#1e40af" };
-  if (count >= 50) return { size: 30, bg: "#2563eb" };
-  return { size: 24, bg: "#3b82f6" };
-};
-
 export const createClusterPinDivIcon = (count: number, zoom: number) => {
   const safeCount = Math.max(1, Math.round(count));
-  const safeZoom = Number.isFinite(zoom) ? zoom : 12;
-
-  if (safeZoom <= 8) {
-    const { size, bg } = getBubbleParams(safeCount);
-    const label = safeCount >= 1000
-      ? `${(safeCount / 1000).toFixed(safeCount >= 10000 ? 0 : 1)}k`
-      : String(safeCount);
-    const fontSize = Math.max(9, Math.round(size * (label.length >= 4 ? 0.28 : 0.34)));
-    const key = `bubble|${size}|${safeCount}`;
-    const cached = clusterPinCache.get(key);
-    if (cached) return cached;
-
-    const perfEnabled = isPerfEnabled();
-    const start = perfEnabled ? performance.now() : 0;
-    const icon = L.divIcon({
-      className: "br-cluster-icon",
-      html: `<div class="br-cluster-bubble" style="--s:${size}px;--bg:${bg};--fs:${fontSize}px">${label}</div>`,
-      iconSize: [size, size],
-      iconAnchor: [size / 2, size / 2],
-      popupAnchor: [0, -(size / 2 + 4)],
-    });
-    clusterPinCache.set(key, icon);
-    if (perfEnabled) recordTiming("cluster_icon_create", performance.now() - start, perfEnabled);
-    updateCacheSizeStat();
-    return icon;
-  }
-
   const digitCount = String(safeCount).length;
   const size = getClusterSizeForZoom(zoom);
   const digitScale = getClusterDigitScale(digitCount);
