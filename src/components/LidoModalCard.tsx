@@ -244,7 +244,7 @@ const LidoModalCardComponent = ({
   const profileSources = profile?.sources ?? [];
   const hasCoords = Number.isFinite(beach.lat) && Number.isFinite(beach.lng);
   const mapsLink = hasCoords
-    ? `https://www.google.com/maps/place/${encodeURIComponent(beach.name)}/@${beach.lat},${beach.lng},17z`
+    ? `https://www.google.com/maps/dir/?api=1&destination=${beach.lat},${beach.lng}`
     : null;
   const websiteHref = website
     ? website.startsWith("http")
