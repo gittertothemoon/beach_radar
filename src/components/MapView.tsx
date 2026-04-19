@@ -363,7 +363,15 @@ const ClusteredMarkers = ({
           regionSingles.push({ id: beach.id, beach, lat: beach.lat, lng: beach.lng, state: getStateFromMask(getBeachStateMask(beach)) });
           continue;
         }
-        const region = beach.rawRegion || beach.region || "Altro";
+        const REGION_MERGE: Record<string, string> = {
+          "Trentino-Alto Adige": "Veneto",
+          "Molise": "Abruzzo",
+          "Basilicata": "Puglia",
+          "Umbria": "Lazio",
+          "Valle d'Aosta": "Piemonte",
+        };
+        const rawRegion = beach.rawRegion || beach.region || "Altro";
+        const region = REGION_MERGE[rawRegion] ?? rawRegion;
         const entry = regionMap.get(region);
         if (entry) {
           entry.list.push(beach);
