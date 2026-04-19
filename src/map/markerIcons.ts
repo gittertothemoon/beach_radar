@@ -38,9 +38,7 @@ const getUmbrellaSizeForZoom = (zoom: number) => {
 
 const getClusterSizeForZoom = (zoom: number) => {
   const z = getRoundedZoom(zoom);
-  if (z <= 6) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 36);
-  if (z <= 8) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 40);
-  if (z <= 10) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 46);
+  if (z <= 10) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 52);
   if (z <= 13) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 48);
   if (z <= 16) return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 44);
   return clamp(CLUSTER_MIN_SIZE, CLUSTER_MAX_SIZE, 40);
