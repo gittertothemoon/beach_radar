@@ -351,8 +351,9 @@ const ClusteredMarkers = ({
 
     let result: { clusters: Cluster[]; singles: SingleMarker[] };
 
-    if (zoom <= 7) {
+    if (zoom <= 8) {
       // At full-Italy view: group by region (1 cluster per region, centroid position).
+      // Threshold is 8 (not 7) because fitBounds(ITALY_BOUNDS) lands at zoom=8 on mobile.
       // Uses the React-tracked `zoom` variable (not getSafeZoom inside clusterBeaches)
       // to ensure this runs at the correct zoom level after fitBounds resolves.
       const regionMap = new Map<string, { list: BeachWithStats[]; mask: number }>();
