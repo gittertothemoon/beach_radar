@@ -11,12 +11,14 @@ import type {
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from "react";
-import type { BeachWithStats } from "../lib/types";
+import type { BeachProfile, BeachWithStats } from "../lib/types";
+import type { BeachWeatherSnapshot } from "../lib/weather";
 import { STRINGS, applyLanguage, subscribeToLanguage } from "../i18n/strings";
 import { useLanguageRefresh } from "../i18n/useLanguageRefresh";
 import BottomNav from "./BottomNav";
 import RewardsSheet from "./RewardsSheet";
 import {
+  crowdLevelLabel,
   formatConfidenceInline,
   formatDistanceLabel,
   formatMinutesAgo,
@@ -80,6 +82,9 @@ type BottomSheetProps = {
   accountEmail: string | null;
   onOpenProfile: () => void;
   onOpenSignIn: () => void;
+  // chatbot enrichment
+  selectedBeachWeather?: BeachWeatherSnapshot | null;
+  selectedBeachProfile?: BeachProfile | null;
   // rewards
   rewards: import("../lib/rewards").AccountRewardsSummary | null;
   rewardsLoading: boolean;
@@ -341,6 +346,8 @@ const BottomSheetComponent = ({
   onClaimMission,
   onClaimDailyMission,
   rewardsBadgeDot,
+  selectedBeachWeather,
+  selectedBeachProfile,
 }: BottomSheetProps) => {
   type SettingsPanel = "language" | "interests" | null;
 
@@ -702,17 +709,63 @@ const BottomSheetComponent = ({
     [],
   );
 
-  const chatContext = useMemo(
-    () => ({
+  const chatContext = useMemo(() => {
+    const weather = selectedBeachWeather?.current
+      ? {
+        temperatureC: selectedBeachWeather.current.temperatureC,
+        windKmh: selectedBeachWeather.current.windKmh,
+        windDirectionLabel: selectedBeachWeather.current.windDirectionLabel,
+        rainProbability: selectedBeachWeather.current.rainProbability,
+        conditionLabel: selectedBeachWeather.current.conditionLabel,
+      }
+      : null;
+
+    const crowd = selectedBeach
+      ? {
+        state: selectedBeach.state,
+        crowdLevel: selectedBeach.crowdLevel,
+        crowdLevelLabel: crowdLevelLabel(selectedBeach.crowdLevel),
+        confidence: selectedBeach.confidence,
+        updatedAt: selectedBeach.updatedAt,
+        hasJellyfish: selectedBeach.hasJellyfish ?? null,
+        hasAlgae: selectedBeach.hasAlgae ?? null,
+        hasRoughSea: selectedBeach.hasRoughSea ?? null,
+        hasStrongWind: selectedBeach.hasStrongWind ?? null,
+      }
+      : null;
+
+    const profileServices =
+      selectedBeachProfile?.services && selectedBeachProfile.services.length > 0
+        ? selectedBeachProfile.services
+        : null;
+    const beachServices =
+      profileServices ??
+      (selectedBeach?.services && selectedBeach.services.length > 0
+        ? selectedBeach.services
+        : null);
+
+    return {
       selectedBeachName: selectedBeach?.name ?? null,
       selectedBeachRegion: selectedBeach?.region ?? null,
       favoriteCount: favoriteBeaches.length,
       hasAccount: !!accountEmail,
       preferredLanguage,
       interests: interestIds,
-    }),
-    [accountEmail, favoriteBeaches.length, interestIds, preferredLanguage, selectedBeach],
-  );
+      weather,
+      crowd,
+      beachServices,
+      beachHours: selectedBeachProfile?.hours ?? selectedBeach?.hours ?? null,
+      beachAddress: selectedBeach?.address ?? null,
+    };
+  }, [
+    accountEmail,
+    favoriteBeaches.length,
+    interestIds,
+    preferredLanguage,
+    selectedBeach,
+    selectedBeachWeather,
+    selectedBeachProfile,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -822,14 +875,20 @@ const BottomSheetComponent = ({
     [chatInput, sendChatMessage],
   );
 
-  const quickQuestions = useMemo(
-    () => [
+  const quickQuestions = useMemo(() => {
+    if (selectedBeach) {
+      return [
+        STRINGS.chatbot.quickQuestions.weather,
+        STRINGS.chatbot.quickQuestions.crowd,
+        STRINGS.chatbot.quickQuestions.services,
+      ];
+    }
+    return [
       STRINGS.chatbot.quickQuestions.report,
       STRINGS.chatbot.quickQuestions.favorites,
       STRINGS.chatbot.quickQuestions.states,
-    ],
-    [],
-  );
+    ];
+  }, [selectedBeach]);
 
   const hasChatConversation = chatMessages.length > 1;
   const hasChatAccess = Boolean(accountEmail);
@@ -1516,7 +1575,9 @@ const bottomSheetEqual = (prev: BottomSheetProps, next: BottomSheetProps) =>
   prev.onEquipBadge === next.onEquipBadge &&
   prev.onClaimMission === next.onClaimMission &&
   prev.onClaimDailyMission === next.onClaimDailyMission &&
-  prev.rewardsBadgeDot === next.rewardsBadgeDot;
+  prev.rewardsBadgeDot === next.rewardsBadgeDot &&
+  prev.selectedBeachWeather === next.selectedBeachWeather &&
+  prev.selectedBeachProfile === next.selectedBeachProfile;
 
 const BottomSheet = memo(BottomSheetComponent, bottomSheetEqual);
 

@@ -445,6 +445,9 @@ export const STRINGS = {
       report: "Come aggiorno la mappa?",
       favorites: "Come salvo un preferito?",
       states: "Cosa significa stato PRED?",
+      weather: "Com'è il meteo?",
+      crowd: "È affollata?",
+      services: "Che servizi ha?",
     },
     welcome:
       "Ciao, sono ONDA, l'assistente di Where2Beach. Posso aiutarti a usare meglio l'app.",
