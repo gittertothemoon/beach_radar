@@ -509,6 +509,14 @@ export const STRINGS = {
     food: "Food & drink",
     events: "Eventi",
   },
+  predictions: {
+    title: "Previsione Affollamento",
+    loading: "Calcolo previsione...",
+    unavailable: "Previsione non disponibile.",
+    highConfidence: "Previsione affidabile",
+    mediumConfidence: "Previsione indicativa",
+    lowConfidence: "Pochi dati storici",
+  },
   debug: {
     title: "Debug",
     editPositions: "Modifica posizioni spiagge",
