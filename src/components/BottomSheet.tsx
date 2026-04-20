@@ -846,7 +846,17 @@ const BottomSheetComponent = ({
     setChatSending(false);
 
     if (!result.ok) {
-      setChatError(mapChatError(result.error));
+      if (result.error === "account_required") {
+        setChatError(mapChatError(result.error));
+      } else {
+        pushChatMessage({
+          id: createMessageId(),
+          role: "assistant",
+          content: STRINGS.chatbot.errors.fallback,
+          source: null,
+          totalTokens: null,
+        });
+      }
       return;
     }
 
