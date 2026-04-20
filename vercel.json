@@ -11,6 +11,10 @@
     {
       "path": "/api/predictions-prune",
       "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/ml-optimize",
+      "schedule": "45 3 * * *"
     }
   ],
   "headers": [
@@ -230,6 +234,10 @@
     {
       "source": "/api/predictions-prune",
       "destination": "/api/predictions?action=prune"
+    },
+    {
+      "source": "/api/ml-optimize",
+      "destination": "/api/reports?action=ml-optimize"
     },
     {
       "source": "/landing/",

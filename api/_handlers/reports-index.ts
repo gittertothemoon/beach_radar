@@ -3,6 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { readTestModeStore, updateTestModeStore } from "./test-mode-store.js";
 import { applyApiSecurityHeaders, readBearerToken, readEnv } from "../_lib/security.js";
+import {
+  detectAndStoreAnomaly,
+  getUserReputationTier,
+  loadAdaptiveWeights,
+  updateAdaptiveWeights,
+} from "./ml-engine.js";
 
 const REPORTS_TABLE = "beach_reports";
 const USER_REPUTATION_TABLE = "user_reputation";
@@ -462,21 +468,46 @@ async function calcCrossConfirmScore(
   const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
   const { data } = await supabase
     .from(REPORTS_TABLE)
-    .select("crowd_level")
+    .select("crowd_level, user_id")
     .eq("beach_id", beachId)
     .neq("id", reportId)
     .gte("created_at", since)
     .order("created_at", { ascending: false })
     .limit(10);
   if (!Array.isArray(data) || data.length === 0) return 0.5;
+
+  type RecentRow = { crowd_level: number; user_id?: string | null };
   let bestDiff = Infinity;
-  for (const row of data as Array<{ crowd_level: number }>) {
+  const matchingUserIds: string[] = [];
+
+  for (const row of data as RecentRow[]) {
     const diff = Math.abs((row.crowd_level ?? 0) - crowdLevel);
     if (diff < bestDiff) bestDiff = diff;
+    if (diff <= 1 && row.user_id) matchingUserIds.push(row.user_id);
   }
-  if (bestDiff === 0) return 1.0;
-  if (bestDiff === 1) return 0.8;
-  return 0.3;
+
+  let baseScore: number;
+  if (bestDiff === 0) baseScore = 1.0;
+  else if (bestDiff === 1) baseScore = 0.8;
+  else baseScore = 0.3;
+
+  // Boost if any confirming reporter is a super reporter (high accuracy, ≥10 reports)
+  if (matchingUserIds.length > 0) {
+    const { data: repData } = await supabase
+      .from(USER_REPUTATION_TABLE)
+      .select("total_reports, verified_count")
+      .in("user_id", matchingUserIds.slice(0, 5));
+    const hasSuperReporter =
+      Array.isArray(repData) &&
+      repData.some((r) => {
+        const total = typeof r.total_reports === "number" ? r.total_reports : 0;
+        const verified = typeof r.verified_count === "number" ? r.verified_count : 0;
+        return total >= 10 && total > 0 && verified / total >= 0.70;
+      });
+    if (hasSuperReporter) baseScore = Math.min(1.0, baseScore + 0.10);
+  }
+
+  return baseScore;
 }
 
 async function runConsensusEngine(
@@ -492,18 +523,19 @@ async function runConsensusEngine(
 ): Promise<void> {
   if (!supabase) return;
 
-  const [reputationScore, environmentalScore, crossConfirmScore] = await Promise.all([
+  const [reputationScore, environmentalScore, crossConfirmScore, weights] = await Promise.all([
     calcReputationScore(userId, supabase),
     calcEnvironmentalScore(crowdLevel, beachLat, beachLng),
     calcCrossConfirmScore(beachId, reportId, crowdLevel, supabase),
+    loadAdaptiveWeights(beachId, supabase),
   ]);
   const gpsScore = calcGpsScore(reporterLat, reporterLng, beachLat, beachLng);
 
   const consensusScore =
-    gpsScore * 0.30 +
-    reputationScore * 0.25 +
-    environmentalScore * 0.20 +
-    crossConfirmScore * 0.25;
+    gpsScore * weights.gps +
+    reputationScore * weights.reputation +
+    environmentalScore * weights.environmental +
+    crossConfirmScore * weights.crossConfirm;
 
   const consensusStatus = consensusScore >= CONSENSUS_THRESHOLD ? "verified" : "rejected";
   const verified = consensusStatus === "verified";
@@ -543,6 +575,14 @@ async function runConsensusEngine(
       { onConflict: "user_id" },
     );
   }
+
+  // Phase 4: update adaptive filter weights (fire-and-forget)
+  updateAdaptiveWeights(
+    beachId,
+    { gps: gpsScore, reputation: reputationScore, environmental: environmentalScore, crossConfirm: crossConfirmScore },
+    verified,
+    supabase,
+  ).catch(() => {});
 }
 
 // ── Handler ─────────────────────────────────────────────────────────────────
@@ -822,6 +862,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!report) {
     return res.status(500).json({ ok: false, error: "report_invalid" });
   }
+
+  // Phase 4: detect anomalies async (fire-and-forget, needs time patterns pre-computed)
+  detectAndStoreAnomaly(beachId, crowdLevel, report.id, supabase).catch(() => {});
 
   // Run consensus engine async — don't await so response is fast,
   // but errors are swallowed intentionally (non-critical path).

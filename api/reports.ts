@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import analyticsIndex from "./_handlers/analytics-index.js";
 import beachEnrichRun from "./_handlers/beach-enrich-run.js";
 import legalConfigIndex from "./_handlers/legal-config-index.js";
+import mlOptimize from "./_handlers/ml-optimize.js";
 import reportsConfirm from "./_handlers/reports-confirm.js";
 import reportsIndex from "./_handlers/reports-index.js";
 import reportsPrune from "./_handlers/reports-prune.js";
@@ -19,5 +20,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (action === "legal-config") return legalConfigIndex(req, res);
   if (action === "beach-enrich-run") return beachEnrichRun(req, res);
   if (action === "confirm") return reportsConfirm(req, res);
+  if (action === "ml-optimize") return mlOptimize(req, res);
   return reportsIndex(req, res);
 }

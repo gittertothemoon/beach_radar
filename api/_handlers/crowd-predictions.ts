@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { readEnv } from "../_lib/security.js";
+import { getActiveAnomaly, loadAllTimePatterns } from "./ml-engine.js";
 
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
 const BEACH_REPORTS_TABLE = "beach_reports";
@@ -215,6 +216,18 @@ export async function computePredictions(
 
   const hasRecentData = recent0to2.length > 0;
 
+  // Phase 4: load time patterns and check for active anomaly in parallel
+  const [timePatterns, activeAnomaly] = await Promise.all([
+    loadAllTimePatterns(beachId, supabase),
+    getActiveAnomaly(beachId, supabase),
+  ]);
+
+  // Anomaly boosts or dampens the trend depending on z-score direction
+  if (activeAnomaly) {
+    const anomalyFactor = activeAnomaly.zScore > 0 ? 1.2 : 0.8;
+    realtimeTrend = Math.min(1.3, Math.max(0.7, realtimeTrend * anomalyFactor));
+  }
+
   // Fetch historical reports (up to 1 year, older than 6h) in a single query
   const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString();
   const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString();
@@ -272,6 +285,21 @@ export async function computePredictions(
       baseline = totalWeight > 0 ? weightedSum / totalWeight : 50;
     }
 
+    // Phase 4: blend with precomputed time-series pattern when historical data is sparse
+    const patternKey = `${targetDow}:${targetHour}`;
+    const pattern = timePatterns.get(patternKey);
+    if (pattern) {
+      const patternIndex = crowdLevelToIndex(pattern.avgCrowdLevel);
+      if (similar.length === 0) {
+        // No historical — use pattern directly
+        baseline = patternIndex;
+      } else if (similar.length < 5) {
+        // Blend: more weight to pattern as historical count drops
+        const patternWeight = (5 - similar.length) / 5 * 0.6;
+        baseline = baseline * (1 - patternWeight) + patternIndex * patternWeight;
+      }
+    }
+
     // Fase B: contextual modifiers
     const weekendBonus = isWeekend(targetDate);
     const holidayBonus = isItalianHoliday(targetDate);
@@ -299,6 +327,10 @@ export async function computePredictions(
     else if (histCount >= 10) confidence = 0.7;
     else if (histCount >= 5) confidence = 0.5;
     if (hasRecentData) confidence = Math.min(1.0, confidence + 0.1);
+    // Phase 4: time pattern adds confidence when historical data is sparse
+    if (pattern && pattern.sampleCount >= 10 && histCount < 5) {
+      confidence = Math.min(1.0, confidence + 0.15);
+    }
 
     predictions.push({
       targetTime: targetDate.toISOString(),
