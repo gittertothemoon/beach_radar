@@ -515,7 +515,7 @@ export const STRINGS = {
     unavailable: "Previsione non disponibile.",
     highConfidence: "Previsione affidabile",
     mediumConfidence: "Previsione indicativa",
-    lowConfidence: "Pochi dati storici",
+    lowConfidence: "Migliora con le segnalazioni",
   },
   debug: {
     title: "Debug",

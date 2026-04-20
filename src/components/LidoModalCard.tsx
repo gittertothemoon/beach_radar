@@ -11,8 +11,9 @@ import {
 import { formatWeatherHour, type BeachWeatherSnapshot } from "../lib/weather";
 import { isPerfEnabled, useRenderCounter } from "../lib/perf";
 import {
+  crowdIndexToBarColor,
   crowdIndexToColorClass,
-  crowdIndexToDotClass,
+  crowdIndexToLabel,
   formatPredictionHour,
   minConfidence,
   type CrowdPrediction,
@@ -459,13 +460,21 @@ const LidoModalCardComponent = ({
                   {predictions.map((pred) => (
                     <div
                       key={pred.targetTime}
-                      className={`flex-none flex flex-col items-center gap-1.5 rounded-[10px] border px-3 py-2 min-w-[54px] ${crowdIndexToColorClass(pred.crowdIndex)}`}
+                      className={`flex-none flex flex-col items-center gap-1 rounded-[10px] border px-3 py-2 min-w-[60px] ${crowdIndexToColorClass(pred.crowdIndex)}`}
                     >
                       <span className="text-[10px] font-medium opacity-80">
                         {formatPredictionHour(pred.targetTime, "Europe/Rome")}
                       </span>
-                      <div className={`w-2 h-2 rounded-full ${crowdIndexToDotClass(pred.crowdIndex)}`} />
-                      <span className="text-[12px] font-bold">{pred.crowdIndex}</span>
+                      <span className="text-[11px] font-semibold leading-tight text-center">
+                        {crowdIndexToLabel(pred.crowdIndex)}
+                      </span>
+                      <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden mt-0.5">
+                        <div
+                          className={`h-full rounded-full ${crowdIndexToBarColor(pred.crowdIndex)}`}
+                          style={{ width: `${pred.crowdIndex}%` }}
+                        />
+                      </div>
+                      <span className="text-[9px] opacity-50 mt-0.5">{pred.crowdIndex}</span>
                     </div>
                   ))}
                 </div>

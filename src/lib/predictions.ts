@@ -54,6 +54,22 @@ export function crowdIndexToDotClass(index: number): string {
   return "bg-red-500";
 }
 
+export function crowdIndexToLabel(index: number): string {
+  if (index <= 20) return "Vuota";
+  if (index <= 40) return "Tranquilla";
+  if (index <= 60) return "Moderata";
+  if (index <= 80) return "Affollata";
+  return "Piena";
+}
+
+export function crowdIndexToBarColor(index: number): string {
+  if (index <= 20) return "bg-emerald-400";
+  if (index <= 40) return "bg-emerald-300";
+  if (index <= 60) return "bg-amber-400";
+  if (index <= 80) return "bg-orange-500";
+  return "bg-red-500";
+}
+
 export function formatPredictionHour(isoString: string, timezone?: string): string {
   try {
     const date = new Date(isoString);
