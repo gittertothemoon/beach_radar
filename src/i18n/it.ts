@@ -442,12 +442,12 @@ export const STRINGS = {
     send: "Invia",
     sending: "ONDA sta scrivendo...",
     quickQuestions: {
-      report: "Come aggiorno la mappa?",
-      favorites: "Come salvo un preferito?",
+      report: "Come faccio una segnalazione?",
+      favorites: "Cosa sono i Premi?",
       states: "Cosa significa stato PRED?",
       weather: "Com'è il meteo?",
       crowd: "È affollata?",
-      services: "Che servizi ha?",
+      services: "Condizioni del mare?",
     },
     welcome:
       "Ciao, sono ONDA, l'assistente di Where2Beach. Posso aiutarti a usare meglio l'app.",
@@ -459,6 +459,7 @@ export const STRINGS = {
       notConfigured: "ONDA non ancora configurata lato server.",
       accountRequired: "Per usare ONDA devi accedere o creare un profilo.",
       generic: "Non riesco a rispondere ora. Riprova tra poco.",
+      fallback: "Non ho capito la domanda. Prova a riformularla oppure chiedimi di: meteo, affollamento, segnalazioni, preferiti o navigazione nell'app.",
     },
   },
   location: {
