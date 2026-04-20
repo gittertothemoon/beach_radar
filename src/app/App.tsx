@@ -123,6 +123,7 @@ import {
 } from "./accountRequiredUtils";
 import { useBeachProfiles } from "./useBeachProfiles";
 import { useBeachWeather } from "./useBeachWeather";
+import { useBeachPredictions } from "./useBeachPredictions";
 import { useAccountSync } from "./useAccountSync";
 import { useAccountActions } from "./useAccountActions";
 import { useGeoLocation } from "./useGeoLocation";
@@ -1020,6 +1021,15 @@ function App() {
   } = useBeachWeather({
     selectedBeachLat,
     selectedBeachLng,
+  });
+  const {
+    predictions: selectedBeachPredictions,
+    predictionsLoading: selectedBeachPredictionsLoading,
+  } = useBeachPredictions({
+    selectedBeachId,
+    selectedBeachLat,
+    selectedBeachLng,
+    isLidoModalOpen,
   });
   const {
     reportError,
@@ -2066,6 +2076,8 @@ function App() {
             weather={selectedWeather}
             weatherLoading={selectedWeatherLoading}
             weatherUnavailable={selectedWeatherUnavailable}
+            predictions={selectedBeachPredictions}
+            predictionsLoading={selectedBeachPredictionsLoading}
             onClose={handleCloseDrawer}
             onToggleFavorite={handleToggleSelectedFavorite}
             onReport={handleOpenReport}

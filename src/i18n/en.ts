@@ -487,6 +487,14 @@ export const STRINGS = {
     food: "Food & drink",
     events: "Events",
   },
+  predictions: {
+    title: "Crowd Forecast",
+    loading: "Computing forecast...",
+    unavailable: "Forecast unavailable.",
+    highConfidence: "Reliable forecast",
+    mediumConfidence: "Indicative forecast",
+    lowConfidence: "Limited historical data",
+  },
   debug: {
     title: "Debug",
     editPositions: "Edit beach positions",

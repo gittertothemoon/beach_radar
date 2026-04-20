@@ -10,6 +10,13 @@ import {
 } from "../lib/format";
 import { formatWeatherHour, type BeachWeatherSnapshot } from "../lib/weather";
 import { isPerfEnabled, useRenderCounter } from "../lib/perf";
+import {
+  crowdIndexToColorClass,
+  crowdIndexToDotClass,
+  formatPredictionHour,
+  minConfidence,
+  type CrowdPrediction,
+} from "../lib/predictions";
 
 type LidoModalCardProps = {
   beach: BeachWithStats;
@@ -28,6 +35,8 @@ type LidoModalCardProps = {
   onReport: () => void;
   onShare: () => void;
   onWriteReview?: () => void;
+  predictions?: CrowdPrediction[];
+  predictionsLoading?: boolean;
   // Feature 5A: confirm report
   confirmableReportId?: string | null;
   confirmationCount?: number;
@@ -178,6 +187,8 @@ const LidoModalCardComponent = ({
   onReport,
   onShare,
   onWriteReview,
+  predictions = [],
+  predictionsLoading = false,
   confirmableReportId,
   confirmationCount,
   showValidationPrompt,
@@ -426,6 +437,41 @@ const LidoModalCardComponent = ({
               </div>
             </div>
           </div>
+
+          {(predictions.length > 0 || predictionsLoading) ? (
+            <div className="rounded-[12px] border border-white/15 bg-black/30 p-4 backdrop-blur-sm">
+              <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] br-text-tertiary">
+                <span>{STRINGS.predictions.title}</span>
+                {predictions.length > 0 ? (
+                  <span className={`text-[10px] font-medium normal-case tracking-normal ${minConfidence(predictions) >= 0.7 ? "text-emerald-300/80" : minConfidence(predictions) >= 0.4 ? "text-amber-300/80" : "text-slate-400"}`}>
+                    {minConfidence(predictions) >= 0.7
+                      ? STRINGS.predictions.highConfidence
+                      : minConfidence(predictions) >= 0.4
+                        ? STRINGS.predictions.mediumConfidence
+                        : STRINGS.predictions.lowConfidence}
+                  </span>
+                ) : null}
+              </div>
+              {predictionsLoading && predictions.length === 0 ? (
+                <p className="mt-3 text-[13px] br-text-secondary">{STRINGS.predictions.loading}</p>
+              ) : (
+                <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  {predictions.map((pred) => (
+                    <div
+                      key={pred.targetTime}
+                      className={`flex-none flex flex-col items-center gap-1.5 rounded-[10px] border px-3 py-2 min-w-[54px] ${crowdIndexToColorClass(pred.crowdIndex)}`}
+                    >
+                      <span className="text-[10px] font-medium opacity-80">
+                        {formatPredictionHour(pred.targetTime, "Europe/Rome")}
+                      </span>
+                      <div className={`w-2 h-2 rounded-full ${crowdIndexToDotClass(pred.crowdIndex)}`} />
+                      <span className="text-[12px] font-bold">{pred.crowdIndex}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : null}
 
           <div
             data-testid="lido-weather"
@@ -748,11 +794,22 @@ const LidoModalCardComponent = ({
   );
 };
 
+const samePredictions = (a: CrowdPrediction[], b: CrowdPrediction[]) => {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].targetTime !== b[i].targetTime || a[i].crowdIndex !== b[i].crowdIndex) return false;
+  }
+  return true;
+};
+
 const lidoModalEqual = (prev: LidoModalCardProps, next: LidoModalCardProps) => {
   if (prev.isOpen !== next.isOpen) return false;
   if (prev.now !== next.now) return false;
   if (prev.isFavorite !== next.isFavorite) return false;
   if (prev.reviewsLoading !== next.reviewsLoading) return false;
+  if (prev.predictionsLoading !== next.predictionsLoading) return false;
+  if (!samePredictions(prev.predictions ?? [], next.predictions ?? [])) return false;
   if (prev.profileLoading !== next.profileLoading) return false;
   if (prev.profile?.beachId !== next.profile?.beachId) return false;
   if (prev.profile?.verifiedAt !== next.profile?.verifiedAt) return false;

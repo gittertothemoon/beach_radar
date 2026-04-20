@@ -7,6 +7,10 @@
     {
       "path": "/api/notifications/daily-remind",
       "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/predictions-prune",
+      "schedule": "0 * * * *"
     }
   ],
   "headers": [
@@ -222,6 +226,10 @@
     {
       "source": "/api/beach-enrich/run",
       "destination": "/api/reports?action=beach-enrich-run"
+    },
+    {
+      "source": "/api/predictions-prune",
+      "destination": "/api/predictions?action=prune"
     },
     {
       "source": "/landing/",
