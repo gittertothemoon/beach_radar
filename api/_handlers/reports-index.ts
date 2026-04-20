@@ -5,6 +5,7 @@ import { readTestModeStore, updateTestModeStore } from "./test-mode-store.js";
 import { applyApiSecurityHeaders, readBearerToken, readEnv } from "../_lib/security.js";
 
 const REPORTS_TABLE = "beach_reports";
+const USER_REPUTATION_TABLE = "user_reputation";
 const MAX_BODY_BYTES = 8 * 1024;
 const DEFAULT_REPORT_RATE_LIMIT_MIN = 10;
 const DEFAULT_REPORTS_LOOKBACK_HOURS = 6;
@@ -15,6 +16,10 @@ const REPORT_COMPLETED_POINTS = 15;
 const TEST_MODE_MAX_REPORTS = 5000;
 const REPORTS_TEST_STORE_FILE = "reports-state.json";
 const TEST_MODE = process.env.REPORTS_TEST_MODE === "1";
+const CONSENSUS_THRESHOLD = 0.6;
+const CONSENSUS_VERIFIED_POINTS = 3;
+const CONSENSUS_REJECTED_POINTS = -5;
+const OPEN_METEO_TIMEOUT_MS = 3000;
 const REPORT_RATE_LIMIT_MIN = readIntEnv(
   "REPORTS_RATE_LIMIT_MIN",
   DEFAULT_REPORT_RATE_LIMIT_MIN,
@@ -370,6 +375,178 @@ function sendTooSoon(res: VercelResponse) {
   });
 }
 
+// ── Consensus Engine ────────────────────────────────────────────────────────
+
+function parseOptionalCoord(value: unknown): number | null {
+  if (value === undefined || value === null) return null;
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function calcGpsScore(
+  reporterLat: number | null,
+  reporterLng: number | null,
+  beachLat: number | null,
+  beachLng: number | null,
+): number {
+  if (reporterLat == null || reporterLng == null || beachLat == null || beachLng == null) {
+    return 0.5;
+  }
+  const km = haversineKm(reporterLat, reporterLng, beachLat, beachLng);
+  if (km < 0.1) return 1.0;
+  if (km < 0.5) return 0.7;
+  if (km < 2.0) return 0.4;
+  return 0.1;
+}
+
+async function calcReputationScore(
+  userId: string | null,
+  supabase: ReturnType<typeof buildSupabaseClient>,
+): Promise<number> {
+  if (!userId || !supabase) return 0.5;
+  const { data } = await supabase
+    .from(USER_REPUTATION_TABLE)
+    .select("score")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!data || typeof data.score !== "number") return 0.5;
+  return data.score / 100;
+}
+
+async function calcEnvironmentalScore(
+  crowdLevel: number,
+  beachLat: number | null,
+  beachLng: number | null,
+): Promise<number> {
+  if (beachLat == null || beachLng == null) return 0.5;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), OPEN_METEO_TIMEOUT_MS);
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${beachLat}&longitude=${beachLng}&current=wind_speed_10m,precipitation&wind_speed_unit=kmh`;
+    const resp = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!resp.ok) return 0.5;
+    const data = (await resp.json()) as Record<string, unknown>;
+    const current = isObject(data.current) ? data.current : {};
+    const wind = typeof current.wind_speed_10m === "number" ? current.wind_speed_10m : 0;
+    const precip = typeof current.precipitation === "number" ? current.precipitation : 0;
+    const weatherGood = precip < 1 && wind < 20;
+    const crowdHigh = crowdLevel >= 3;
+    if (crowdHigh && weatherGood) return 0.9;
+    if (!crowdHigh && !weatherGood) return 0.85;
+    if (crowdHigh && !weatherGood) return 0.3;
+    return 0.2; // low crowd + good weather
+  } catch {
+    return 0.5;
+  }
+}
+
+async function calcCrossConfirmScore(
+  beachId: string,
+  reportId: string,
+  crowdLevel: number,
+  supabase: ReturnType<typeof buildSupabaseClient>,
+): Promise<number> {
+  if (!supabase) return 0.5;
+  const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+  const { data } = await supabase
+    .from(REPORTS_TABLE)
+    .select("crowd_level")
+    .eq("beach_id", beachId)
+    .neq("id", reportId)
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(10);
+  if (!Array.isArray(data) || data.length === 0) return 0.5;
+  let bestDiff = Infinity;
+  for (const row of data as Array<{ crowd_level: number }>) {
+    const diff = Math.abs((row.crowd_level ?? 0) - crowdLevel);
+    if (diff < bestDiff) bestDiff = diff;
+  }
+  if (bestDiff === 0) return 1.0;
+  if (bestDiff === 1) return 0.8;
+  return 0.3;
+}
+
+async function runConsensusEngine(
+  reportId: string,
+  beachId: string,
+  crowdLevel: number,
+  userId: string | null,
+  reporterLat: number | null,
+  reporterLng: number | null,
+  beachLat: number | null,
+  beachLng: number | null,
+  supabase: ReturnType<typeof buildSupabaseClient>,
+): Promise<void> {
+  if (!supabase) return;
+
+  const [reputationScore, environmentalScore, crossConfirmScore] = await Promise.all([
+    calcReputationScore(userId, supabase),
+    calcEnvironmentalScore(crowdLevel, beachLat, beachLng),
+    calcCrossConfirmScore(beachId, reportId, crowdLevel, supabase),
+  ]);
+  const gpsScore = calcGpsScore(reporterLat, reporterLng, beachLat, beachLng);
+
+  const consensusScore =
+    gpsScore * 0.30 +
+    reputationScore * 0.25 +
+    environmentalScore * 0.20 +
+    crossConfirmScore * 0.25;
+
+  const consensusStatus = consensusScore >= CONSENSUS_THRESHOLD ? "verified" : "rejected";
+  const verified = consensusStatus === "verified";
+
+  await supabase
+    .from(REPORTS_TABLE)
+    .update({ consensus_score: consensusScore, consensus_status: consensusStatus })
+    .eq("id", reportId);
+
+  if (userId) {
+    const { data: existing } = await supabase
+      .from(USER_REPUTATION_TABLE)
+      .select("score, streak, total_reports, verified_count, rejected_count")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const prevScore = typeof existing?.score === "number" ? existing.score : 50;
+    const prevStreak = typeof existing?.streak === "number" ? existing.streak : 0;
+    const prevTotal = typeof existing?.total_reports === "number" ? existing.total_reports : 0;
+    const prevVerified = typeof existing?.verified_count === "number" ? existing.verified_count : 0;
+    const prevRejected = typeof existing?.rejected_count === "number" ? existing.rejected_count : 0;
+
+    const pointDelta = verified ? CONSENSUS_VERIFIED_POINTS : CONSENSUS_REJECTED_POINTS;
+    const newScore = Math.max(0, Math.min(100, prevScore + pointDelta));
+    const newStreak = verified ? prevStreak + 1 : 0;
+
+    await supabase.from(USER_REPUTATION_TABLE).upsert(
+      {
+        user_id: userId,
+        score: newScore,
+        streak: newStreak,
+        total_reports: prevTotal + 1,
+        verified_count: prevVerified + (verified ? 1 : 0),
+        rejected_count: prevRejected + (verified ? 0 : 1),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
+  }
+}
+
+// ── Handler ─────────────────────────────────────────────────────────────────
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   applyApiSecurityHeaders(res);
 
@@ -513,6 +690,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ ok: false, error: "invalid_reporter_hash" });
   }
 
+  const reporterLat = parseOptionalCoord(body.reporterLat);
+  const reporterLng = parseOptionalCoord(body.reporterLng);
+  const beachLat = parseOptionalCoord(body.beachLat);
+  const beachLng = parseOptionalCoord(body.beachLng);
+
   const attribution = mergeAttributionFlags(
     sanitizeAttribution(body.attribution),
     hasJellyfish,
@@ -618,6 +800,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     source_ip: ipHash,
     user_agent: userAgentHash,
     created_at: nowIso,
+    reporter_lat: reporterLat,
+    reporter_lng: reporterLng,
+    beach_lat: beachLat,
+    beach_lng: beachLng,
+    consensus_status: "pending",
   };
 
   const { data: inserted, error: insertError } = await supabase
@@ -635,6 +822,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!report) {
     return res.status(500).json({ ok: false, error: "report_invalid" });
   }
+
+  // Run consensus engine async — don't await so response is fast,
+  // but errors are swallowed intentionally (non-critical path).
+  runConsensusEngine(
+    report.id,
+    beachId,
+    crowdLevel,
+    reporterUserId,
+    reporterLat,
+    reporterLng,
+    beachLat,
+    beachLng,
+    supabase,
+  ).catch(() => {});
+
   let pointsBalance: number | null = null;
   if (reporterUserId) {
     const { data: rewardRow } = await supabase

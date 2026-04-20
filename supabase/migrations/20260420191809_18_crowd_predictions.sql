@@ -26,6 +26,7 @@ CREATE INDEX IF NOT EXISTS crowd_predictions_valid_until_idx
 -- Row Level Security: public read, writes only via service role
 ALTER TABLE crowd_predictions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "crowd_predictions_read_public" ON crowd_predictions;
 CREATE POLICY "crowd_predictions_read_public"
   ON crowd_predictions FOR SELECT
   USING (true);
