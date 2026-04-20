@@ -2063,6 +2063,8 @@ function App() {
         onClaimMission={handleClaimMission}
         onClaimDailyMission={handleClaimDailyMission}
         rewardsBadgeDot={rewardsBadgeDot}
+        selectedBeachWeather={selectedWeather}
+        selectedBeachProfile={selectedBeachProfile}
       />
       {selectedBeach ? (
         <Suspense fallback={null}>
