@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/predictions-prune",
-      "schedule": "0 * * * *"
+      "schedule": "30 3 * * *"
     }
   ],
   "headers": [
