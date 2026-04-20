@@ -456,7 +456,7 @@ const LidoModalCardComponent = ({
               {predictionsLoading && predictions.length === 0 ? (
                 <p className="mt-3 text-[13px] br-text-secondary">{STRINGS.predictions.loading}</p>
               ) : (
-                <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                <div className="mt-3 flex gap-2 overflow-x-auto scrollbar-hide">
                   {predictions.map((pred) => (
                     <div
                       key={pred.targetTime}
