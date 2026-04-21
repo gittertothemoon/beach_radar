@@ -958,13 +958,13 @@ const BottomSheetComponent = ({
         >
           <div className={`min-w-0 ${isChatbotSection ? "flex items-center gap-2.5" : ""}`}>
             {isChatbotSection ? (
-              <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-sky-300/28 bg-sky-500/12 p-0.5">
+              <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center">
                 <img
                   src={ONDA_AVATARS.core}
                   alt="ONDA"
                   loading="lazy"
                   decoding="async"
-                  className="h-full w-full rounded-full object-cover object-top"
+                  className="h-full w-full object-cover object-top drop-shadow-[0_0_8px_rgba(34,211,238,0.45)]"
                 />
               </div>
             ) : null}
