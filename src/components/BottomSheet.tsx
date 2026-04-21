@@ -1418,35 +1418,7 @@ const BottomSheetComponent = ({
             <div className="space-y-4 pb-6">
               <section className="overflow-hidden rounded-[22px] border border-white/12 bg-[radial-gradient(120%_130%_at_85%_-20%,rgba(56,189,248,0.22),transparent_50%),linear-gradient(180deg,rgba(7,19,34,0.88),rgba(5,15,28,0.94))]">
                 <div className="px-4 pb-3 pt-4">
-                  <div className="flex items-center gap-3">
-                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-sky-300/30 bg-sky-500/12 p-0.5 shadow-[0_10px_22px_rgba(14,116,144,0.25)]">
-                      <img
-                        src={ondaHeaderVisual.image}
-                        alt="ONDA"
-                        loading="lazy"
-                        decoding="async"
-                        className={`h-full w-full rounded-full object-cover object-top ${
-                          chatSending ? "animate-pulse" : ""
-                        }`}
-                      />
-                    </div>
-                    <div>
-                      <div className="text-[13px] font-semibold tracking-[0.01em] text-sky-50">
-                        {STRINGS.chatbot.title}
-                      </div>
-                      <div className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] text-sky-100/82">
-                        <span
-                          className={`h-1.5 w-1.5 rounded-full ${
-                            hasChatAccess
-                              ? (chatSending ? "bg-sky-200 animate-pulse" : "bg-emerald-300")
-                              : "bg-amber-300"
-                          }`}
-                        />
-                        <span>{hasChatAccess ? ondaHeaderVisual.statusLabel : STRINGS.chatbot.lockedStatus}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-3 text-[12px] leading-relaxed text-slate-200/80">
+                  <div className="text-[12px] leading-relaxed text-slate-200/80">
                     {hasChatAccess
                       ? STRINGS.chatbot.subtitle
                       : STRINGS.chatbot.lockedDescription}
