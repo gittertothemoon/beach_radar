@@ -326,7 +326,6 @@ export const STRINGS = {
     settingsSavedLabel: "Saved",
     settingsLanguageLabel: "Language",
     settingsLanguageComingSoon: "Language selection coming soon.",
-    settingsInterestsLabel: "My interests",
     settingsPrivacyLabel: "Privacy Policy",
     settingsCookieLabel: "Cookie Policy",
     settingsReviewLabel: "Review Where2Beach",

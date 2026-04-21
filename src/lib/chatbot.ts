@@ -31,7 +31,6 @@ export type ChatbotContext = {
   favoriteCount?: number | null;
   hasAccount?: boolean | null;
   preferredLanguage?: "it" | "en" | null;
-  interests?: string[] | null;
   weather?: WeatherContext | null;
   crowd?: CrowdContext | null;
   beachServices?: string[] | null;

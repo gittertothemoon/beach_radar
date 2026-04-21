@@ -330,7 +330,6 @@ export const STRINGS = {
     settingsSavedLabel: "Salvati",
     settingsLanguageLabel: "Lingua",
     settingsLanguageComingSoon: "Scelta lingua in arrivo.",
-    settingsInterestsLabel: "I miei interessi",
     settingsPrivacyLabel: "Privacy Policy",
     settingsCookieLabel: "Cookie Policy",
     settingsReviewLabel: "Recensisci Where2Beach",

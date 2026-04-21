@@ -28,12 +28,8 @@ import {
 import { askChatbot, type ChatbotMessage } from "../lib/chatbot";
 import { isPerfEnabled, useRenderCounter } from "../lib/perf";
 import {
-  INTEREST_OPTIONS,
-  type InterestId,
   type PreferredLanguage,
-  readInterests,
   readPreferredLanguage,
-  writeInterests,
 } from "../lib/accountPreferences";
 import { PUBLIC_BASE_URL } from "../config/publicUrl";
 import {
@@ -349,7 +345,7 @@ const BottomSheetComponent = ({
   selectedBeachWeather,
   selectedBeachProfile,
 }: BottomSheetProps) => {
-  type SettingsPanel = "language" | "interests" | null;
+  type SettingsPanel = "language" | null;
 
   useLanguageRefresh();
   const perfEnabled = isPerfEnabled();
@@ -370,8 +366,7 @@ const BottomSheetComponent = ({
   const [preferredLanguage, setPreferredLanguage] = useState<PreferredLanguage>(() =>
     readPreferredLanguage(),
   );
-  const [interestIds, setInterestIds] = useState<InterestId[]>(() => readInterests());
-  const [runtimeLegalConfig, setRuntimeLegalConfig] = useState<RuntimeLegalConfig>(() => {
+const [runtimeLegalConfig, setRuntimeLegalConfig] = useState<RuntimeLegalConfig>(() => {
     if (typeof window === "undefined") return {};
     const browserWindow = window as WindowWithLegalConfig;
     return browserWindow.W2B_LEGAL_CONFIG ?? {};
@@ -527,18 +522,7 @@ const BottomSheetComponent = ({
     setPreferredLanguage(nextLanguage);
   }, [preferredLanguage]);
 
-  const toggleInterest = useCallback((interestId: InterestId) => {
-    setInterestIds((prev) => {
-      const exists = prev.includes(interestId);
-      const next = exists
-        ? prev.filter((item) => item !== interestId)
-        : [...prev, interestId];
-      writeInterests(next);
-      return next;
-    });
-  }, []);
-
-  const buildLegalUrl = useCallback((basePath: string) => {
+const buildLegalUrl = useCallback((basePath: string) => {
     const params = new URLSearchParams();
     params.set("lang", preferredLanguage);
     params.set("from", "app");
@@ -582,11 +566,8 @@ const BottomSheetComponent = ({
     params.set("from", "app");
     params.set("src", "account");
     params.set("lang", preferredLanguage);
-    if (interestIds.length > 0) {
-      params.set("interests", interestIds.join(","));
-    }
     return `${LANDING_URL}?${params.toString()}#business-request`;
-  }, [interestIds, preferredLanguage]);
+  }, [preferredLanguage]);
   const businessRequestExternalUrl = useMemo(
     () => new URL(businessRequestUrl, PUBLIC_BASE_URL).toString(),
     [businessRequestUrl],
@@ -606,11 +587,7 @@ const BottomSheetComponent = ({
     setSettingsPanel((prev) => (prev === "language" ? null : "language"));
   }, []);
 
-  const handleOpenInterests = useCallback(() => {
-    setSettingsPanel((prev) => (prev === "interests" ? null : "interests"));
-  }, []);
-
-  const handleOpenReview = useCallback(() => {
+const handleOpenReview = useCallback(() => {
     const isValidHttp = /^https?:\/\//i.test(APP_REVIEW_URL);
     if (isValidHttp) {
       openUrl(APP_REVIEW_URL);
@@ -750,7 +727,6 @@ const BottomSheetComponent = ({
       favoriteCount: favoriteBeaches.length,
       hasAccount: !!accountEmail,
       preferredLanguage,
-      interests: interestIds,
       weather,
       crowd,
       beachServices,
@@ -760,7 +736,6 @@ const BottomSheetComponent = ({
   }, [
     accountEmail,
     favoriteBeaches.length,
-    interestIds,
     preferredLanguage,
     selectedBeach,
     selectedBeachWeather,
@@ -1151,28 +1126,6 @@ const BottomSheetComponent = ({
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       >
-                        <circle cx="8" cy="9" r="2.5" />
-                        <circle cx="16" cy="8" r="2.5" />
-                        <path d="M3.5 18.5a4.5 4.5 0 0 1 9 0" />
-                        <path d="M11.5 18.5a4.5 4.5 0 0 1 9 0" />
-                      </svg>
-                    )}
-                    label={STRINGS.account.settingsInterestsLabel}
-                    onClick={handleOpenInterests}
-                    testId="settings-interests-row"
-                    badge={interestIds.length > 0 ? String(interestIds.length) : undefined}
-                  />
-                  <SettingsRow
-                    icon={(
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.9"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
                         <path d="M12 3l7 4v5c0 5.2-3 8.6-7 9-4-.4-7-3.8-7-9V7l7-4Z" />
                         <path d="M9.5 12.2l1.8 1.8 3.2-3.2" />
                       </svg>
@@ -1238,35 +1191,7 @@ const BottomSheetComponent = ({
                 </section>
               ) : null}
 
-              {settingsPanel === "interests" ? (
-                <section className="rounded-2xl border border-white/16 bg-white/8 p-3 backdrop-blur-md">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.1em] br-text-tertiary">
-                    {STRINGS.interests.title}
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {INTEREST_OPTIONS.map((option) => {
-                      const active = interestIds.includes(option.id);
-                      return (
-                        <button
-                          key={option.id}
-                          type="button"
-                          data-testid={`settings-interest-${option.id}`}
-                          onClick={() => toggleInterest(option.id)}
-                          className={`br-press rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
-                            active
-                              ? "border-cyan-300/80 bg-cyan-500/20 text-cyan-100"
-                              : "border-white/18 bg-white/5 br-text-secondary"
-                          }`}
-                        >
-                          {STRINGS.interests[option.id as keyof typeof STRINGS.interests] ?? option.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </section>
-              ) : null}
-
-              <section>
+<section>
                 <div className="px-1 text-[10px] font-semibold uppercase tracking-[0.11em] br-text-tertiary">
                   {STRINGS.account.settingsFeedbackTitle}
                 </div>
