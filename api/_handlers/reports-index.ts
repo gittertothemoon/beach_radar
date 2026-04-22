@@ -5,7 +5,6 @@ import { readTestModeStore, updateTestModeStore } from "./test-mode-store.js";
 import { applyApiSecurityHeaders, readBearerToken, readEnv } from "../_lib/security.js";
 import {
   detectAndStoreAnomaly,
-  getUserReputationTier,
   loadAdaptiveWeights,
   updateAdaptiveWeights,
 } from "./ml-engine.js";

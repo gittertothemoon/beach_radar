@@ -12,6 +12,12 @@ export default defineConfig([
     'remotion/**',
     'test-results',
     'playwright-report',
+    '.claude/**',
+    '.cache/**',
+    'tmp/**',
+    'output/**',
+    'seed/**',
+    'tools/**',
   ]),
   {
     files: ['**/*.{ts,tsx}'],

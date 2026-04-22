@@ -317,7 +317,7 @@ export async function computePredictions(
       windModifier;
 
     // Fase C: real-time trend correction
-    let adjusted = baseline * (1 + totalModifier) * realtimeTrend;
+    const adjusted = baseline * (1 + totalModifier) * realtimeTrend;
     const crowdIndex = Math.round(Math.min(100, Math.max(0, adjusted)));
 
     // Confidence: based on similar-condition report count

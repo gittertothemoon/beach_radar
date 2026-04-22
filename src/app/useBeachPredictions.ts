@@ -15,28 +15,33 @@ export function useBeachPredictions({
   const [predictions, setPredictions] = useState<CrowdPrediction[]>([]);
   const [predictionsLoading, setPredictionsLoading] = useState(false);
 
-  useEffect(() => {
-    if (!selectedBeachId || !isLidoModalOpen) {
-      setPredictions([]);
-      setPredictionsLoading(false);
-      return;
-    }
+  const active = Boolean(selectedBeachId) && isLidoModalOpen;
 
-    let active = true;
+  useEffect(() => {
+    if (!active || !selectedBeachId) return;
+
+    let cancelled = false;
+    // Loading flag is set synchronously so the UI can show the spinner
+    // before the network call resolves; deferring it causes a flash of
+    // stale data on beach switch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPredictionsLoading(true);
 
     fetchBeachPredictions(selectedBeachId, selectedBeachLat, selectedBeachLng).then(
       (result) => {
-        if (!active) return;
+        if (cancelled) return;
         setPredictions(result.ok ? result.predictions : []);
         setPredictionsLoading(false);
       },
     );
 
     return () => {
-      active = false;
+      cancelled = true;
     };
-  }, [selectedBeachId, selectedBeachLat, selectedBeachLng, isLidoModalOpen]);
+  }, [active, selectedBeachId, selectedBeachLat, selectedBeachLng]);
 
-  return { predictions, predictionsLoading };
+  return {
+    predictions: active ? predictions : [],
+    predictionsLoading: active ? predictionsLoading : false,
+  };
 }

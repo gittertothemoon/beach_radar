@@ -95,9 +95,15 @@ export default defineConfig({
   build: {
     sourcemap: false,
     minify: "esbuild",
+    // data-beaches chunk is an intentional static JSON payload (~2MB);
+    // bumping the warning threshold so it doesn't mask real regressions.
+    chunkSizeWarningLimit: 2500,
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes("/src/data/") && id.endsWith(".json")) {
+            return "data-beaches";
+          }
           if (!id.includes("node_modules")) return;
           if (id.includes("leaflet") || id.includes("react-leaflet")) {
             return "vendor-leaflet";

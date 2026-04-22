@@ -7,7 +7,6 @@ import { STRINGS as EN } from "./en";
 type Strings = typeof IT;
 type Lang = "it" | "en";
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 let _current: Strings = readPreferredLanguage() === "en" ? (EN as unknown as Strings) : IT;
 let _subscribers: Array<() => void> = [];
 
@@ -20,7 +19,6 @@ export const STRINGS: Strings = new Proxy({} as Strings, {
 });
 
 export function applyLanguage(lang: Lang): void {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   _current = lang === "en" ? (EN as unknown as Strings) : IT;
   writePreferredLanguage(lang);
   _subscribers.forEach((fn) => fn());

@@ -83,6 +83,11 @@ export const useBeachWeather = ({
 
     const controller = new AbortController();
 
+    // Cache entry must be marked loading synchronously to prevent a second
+    // render from re-entering the effect and kicking off a duplicate fetch
+    // before the "loading" flag is visible. Deferring this (microtask/layout)
+    // reintroduces the race observed when the hook was cache-miss prone.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setWeatherByKey((prev) => {
       const current = prev[selectedWeatherKey];
       return {
