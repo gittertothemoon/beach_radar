@@ -55,3 +55,18 @@ export function safeEqualSecret(a: string, b: string): boolean {
   if (aBuffer.length !== bBuffer.length) return false;
   return timingSafeEqual(aBuffer, bBuffer);
 }
+
+const HTML_ESCAPE_MAP: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  "\"": "&quot;",
+  "'": "&#39;",
+  "/": "&#x2F;",
+};
+
+export function escapeHtml(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  const str = typeof value === "string" ? value : String(value);
+  return str.replace(/[&<>"'/]/g, (ch) => HTML_ESCAPE_MAP[ch] ?? ch);
+}

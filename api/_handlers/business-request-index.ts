@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { promises as dns } from "node:dns";
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { applyApiSecurityHeaders, readEnv } from "../_lib/security.js";
+import { applyApiSecurityHeaders, escapeHtml, readEnv } from "../_lib/security.js";
 import { updateTestModeStore } from "./test-mode-store.js";
 
 type RateEntry = {
@@ -494,15 +494,15 @@ const sendLeadNotification = async (input: {
 
   const html = `
     <h2>Nuova richiesta partnership Where2Beach</h2>
-    <p><strong>Azienda:</strong> ${input.payload.companyName}</p>
-    <p><strong>Tipo:</strong> ${input.payload.businessType}</p>
-    <p><strong>Contatto:</strong> ${input.payload.contactName}</p>
-    <p><strong>Ruolo:</strong> ${input.payload.role}</p>
-    <p><strong>Email:</strong> ${input.payload.email}</p>
-    <p><strong>Telefono:</strong> ${input.payload.phone || "n/d"}</p>
-    <p><strong>Città:</strong> ${input.payload.city}</p>
-    <p><strong>Lingua:</strong> ${input.payload.lang}</p>
-    <p><strong>Messaggio:</strong> ${input.payload.message || "n/d"}</p>
+    <p><strong>Azienda:</strong> ${escapeHtml(input.payload.companyName)}</p>
+    <p><strong>Tipo:</strong> ${escapeHtml(input.payload.businessType)}</p>
+    <p><strong>Contatto:</strong> ${escapeHtml(input.payload.contactName)}</p>
+    <p><strong>Ruolo:</strong> ${escapeHtml(input.payload.role)}</p>
+    <p><strong>Email:</strong> ${escapeHtml(input.payload.email)}</p>
+    <p><strong>Telefono:</strong> ${input.payload.phone ? escapeHtml(input.payload.phone) : "n/d"}</p>
+    <p><strong>Città:</strong> ${escapeHtml(input.payload.city)}</p>
+    <p><strong>Lingua:</strong> ${escapeHtml(input.payload.lang)}</p>
+    <p><strong>Messaggio:</strong> ${input.payload.message ? escapeHtml(input.payload.message) : "n/d"}</p>
   `;
 
   try {

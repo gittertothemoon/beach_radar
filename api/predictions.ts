@@ -1,5 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { applyApiSecurityHeaders } from "./_lib/security.js";
+import {
+  applyApiSecurityHeaders,
+  readBearerToken,
+  readEnv,
+  safeEqualSecret,
+} from "./_lib/security.js";
 import {
   buildSupabaseClient,
   cachePredictions,
@@ -7,6 +12,14 @@ import {
   getCachedPredictions,
   pruneExpiredPredictions,
 } from "./_handlers/crowd-predictions.js";
+
+function isPruneAuthorized(req: VercelRequest): boolean {
+  const token = readBearerToken(req);
+  if (!token) return false;
+  const cronSecret = readEnv("CRON_SECRET");
+  if (!cronSecret) return false;
+  return safeEqualSecret(token, cronSecret);
+}
 
 const MAX_HOURS = 12;
 const DEFAULT_HOURS = 8;
@@ -41,6 +54,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const action = toQueryString(req.query.action);
     if (action !== "prune") {
       return res.status(400).json({ ok: false, error: "unknown_action" });
+    }
+    if (!isPruneAuthorized(req)) {
+      applyApiSecurityHeaders(res, { noStore: true });
+      return res.status(401).json({ ok: false, error: "unauthorized" });
     }
     const supabase = buildSupabaseClient();
     if (!supabase) {
