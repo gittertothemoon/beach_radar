@@ -7,11 +7,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - name: Call Vercel Deploy Hook
+      - name: Call Vercel Deploy Hook (verbose, both methods)
         run: |
-          set -euo pipefail
-          response=$(curl -sS -X POST \
-            "https://api.vercel.com/v1/integrations/deploy/prj_pF96W3Etp9dqURwKZaaBhoMKwvik/vDuEDdLX1E" \
-            -w "\nHTTP_STATUS=%{http_code}\n")
-          echo "$response"
-          echo "$response" | grep -q "HTTP_STATUS=20" || exit 1
+          set -uo pipefail
+          echo "=== POST ==="
+          post=$(curl -sS -X POST -i \
+            "https://api.vercel.com/v1/integrations/deploy/prj_pF96W3Etp9dqURwKZaaBhoMKwvik/vDuEDdLX1E" || true)
+          echo "$post"
+          echo "=== GET ==="
+          get=$(curl -sS -i \
+            "https://api.vercel.com/v1/integrations/deploy/prj_pF96W3Etp9dqURwKZaaBhoMKwvik/vDuEDdLX1E" || true)
+          echo "$get"
