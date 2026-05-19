@@ -9,5 +9,6 @@ api/beach-profile.ts
 api/analytics.ts
 api/legal-config.ts
 api/reports-prune.ts
+api/notifications/cooldown-remind.ts
 w2b-hero/api/beach-enrich/run.ts
 w2b-hero/api/beach-profile.ts
