@@ -22,6 +22,8 @@
     <!-- Preload first radar-sequence frame so it is on the wire before scripts.js parses -->
     <link rel="preload" as="image" href="/sequence/frame_0.webp" type="image/webp" media="(min-width: 768px)" fetchpriority="high">
     <link rel="preload" as="image" href="/sequence/mobile/frame_0.webp" type="image/webp" media="(max-width: 767px)" fetchpriority="high">
+    <!-- Preload hero app screenshot (LCP candidate) -->
+    <link rel="preload" as="image" href="app-ui-mobile.webp" type="image/webp" fetchpriority="high">
 
     <!-- Google Fonts: Poppins (3 weights) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -85,7 +87,7 @@
                 </div>
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden flex items-center z-10">
-                    <button id="mobile-menu-btn" class="text-white focus:outline-none p-2">
+                    <button id="mobile-menu-btn" class="text-white focus:outline-none p-2" aria-label="Apri menu" aria-controls="mobile-menu" aria-expanded="false">
                         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 6h16M4 12h16M4 18h16"></path>
@@ -113,6 +115,7 @@
         </div>
 </nav>
 
+    <main>
     <!-- Hero Section -->
     <section id="hero" class="hero-bg relative min-h-[100svh] flex items-center pt-28 md:pt-32 pb-16 md:pb-24 overflow-hidden">
         <!-- Mesh gradient blobs -->
@@ -171,7 +174,7 @@
                     <div class="phone-mockup-wrap">
                         <div class="phone-mockup w-[16rem] sm:w-[18rem] lg:w-[20rem] aspect-[9/19]">
                             <span class="phone-mockup-buttons" aria-hidden="true"></span>
-                            <img src="app-ui-mobile.webp" alt="Where2Beach app screenshot" loading="eager">
+                            <img src="app-ui-mobile.webp" alt="Where2Beach app screenshot" loading="eager" fetchpriority="high" width="540" height="1140">
                         </div>
                         <span class="phone-mockup-floor" aria-hidden="true"></span>
                         <span class="phone-mockup-badge" aria-hidden="true">
@@ -1078,6 +1081,8 @@
     </section>
 
 
+    </main>
+
     <!-- Footer -->
     <footer class="bg-[#0A1118] text-gray-400 py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1120,26 +1125,10 @@
         </div>
     </footer>
 
-    <script type="text/javascript">
-        (function (w, d) {
-            var loader = function () {
-                var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0];
-                s.src = "https://cdn.iubenda.com/iubenda.js";
-                tag.parentNode.insertBefore(s, tag);
-            };
-            if (w.addEventListener) {
-                w.addEventListener("load", loader, false);
-            } else if (w.attachEvent) {
-                w.attachEvent("onload", loader);
-            } else {
-                w.onload = loader;
-            }
-        })(window, document);
-    </script>
     <script type="text/javascript" src="https://embeds.iubenda.com/widgets/0d71235e-61c2-48bd-8249-cb23a0e08060.js" defer></script>
 
     <!-- Interactive JS -->
-    <script src="scripts.js"></script>
+    <script src="scripts.js" defer></script>
 </body>
 
 </html>
